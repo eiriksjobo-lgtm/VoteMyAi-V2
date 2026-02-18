@@ -177,6 +177,26 @@
   const SUPABASE_URL = 'https://gezijezmsecbtzytotax.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_hOOMtCz7gYsu_-CVD6lW9Q_SxtFlNhw';
   
+  // Check if user is logged in on page load
+  window.addEventListener('DOMContentLoaded', async () => {
+    const hash = window.location.hash.substring(1);
+    const params = new URLSearchParams(hash);
+    let accessToken = params.get('access_token');
+    
+    if (accessToken) {
+      // Store token from OAuth redirect
+      localStorage.setItem('sb_token', accessToken);
+      window.location.hash = ''; // Clean URL
+    } else {
+      // Check if already logged in
+      accessToken = localStorage.getItem('sb_token');
+      if (!accessToken) {
+        // Not logged in, redirect to login
+        window.location.href = '/login.html';
+      }
+    }
+  });
+  
   function extractYtId(url) {
     const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/))([^&\?\/]+)/);
     return match ? match[1] : null;
