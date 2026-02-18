@@ -54,6 +54,100 @@
     .lb-meta { color: var(--muted); font-size: 0.85rem; }
     .lb-votes { font-weight: 700; color: var(--accent); font-size: 1.1rem; }
     
+    /* ── AI Tools Section ── */
+    .tools-section { max-width: 1100px; margin: 0 auto; padding: 80px 40px 40px; }
+    .tools-section .section-title { text-align: center; margin-bottom: 16px; }
+    .tools-subtitle { text-align: center; color: var(--muted); font-size: 0.95rem; margin-bottom: 48px; }
+    .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+    .tool-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 28px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .tool-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    }
+    .tool-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      border-radius: 16px 16px 0 0;
+    }
+    .tool-card.suno::before { background: linear-gradient(90deg, #e8ff47, #a3e635); }
+    .tool-card.udio::before { background: linear-gradient(90deg, #818cf8, #c084fc); }
+    .tool-card.elevenlabs::before { background: linear-gradient(90deg, #38bdf8, #22d3ee); }
+
+    .tool-card .tool-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      margin-bottom: 20px;
+      font-weight: 700;
+    }
+    .tool-card.suno .tool-icon { background: rgba(232,255,71,0.12); color: var(--accent); }
+    .tool-card.udio .tool-icon { background: rgba(129,140,248,0.15); color: #818cf8; }
+    .tool-card.elevenlabs .tool-icon { background: rgba(56,189,248,0.15); color: #38bdf8; }
+
+    .tool-card .tool-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    .tool-card .tool-tagline {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    .tool-card .tool-features {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    .tool-card .tool-tag {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .tool-card .tool-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: gap 0.2s ease;
+    }
+    .tool-card.suno .tool-cta { color: var(--accent); }
+    .tool-card.udio .tool-cta { color: #818cf8; }
+    .tool-card.elevenlabs .tool-cta { color: #38bdf8; }
+    .tool-card .tool-cta:hover { gap: 14px; }
+    .tool-card .tool-cta .arrow { transition: transform 0.2s; }
+    .tool-card .tool-cta:hover .arrow { transform: translateX(2px); }
+
+    @media (max-width: 680px) {
+      .tools-grid { grid-template-columns: 1fr; }
+      .tools-section { padding: 60px 20px 20px; }
+    }
+
     footer { background: var(--surface); border-top: 1px solid var(--border); padding: 40px 20px; margin-top: 80px; }
     .footer-content { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
     .footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
@@ -125,6 +219,55 @@
   <div class="section-title">🏆 Top 10 Leaderboard</div>
   <div class="leaderboard" id="leaderboard">
     <p style="color: var(--muted); text-align: center; padding: 40px;">Loading...</p>
+  </div>
+</div>
+
+<!-- ── AI Music Tools ── -->
+<div class="tools-section">
+  <div class="section-title">🎧 Create With The Best AI Tools</div>
+  <p class="tools-subtitle">The most popular platforms for making AI-generated music</p>
+  
+  <div class="tools-grid">
+    
+    <div class="tool-card suno">
+      <div class="tool-icon">S</div>
+      <div class="tool-name">Suno</div>
+      <div class="tool-tagline">Full songs from a text prompt — lyrics, vocals, and production in seconds. The most popular choice for creators in 2026.</div>
+      <div class="tool-features">
+        <span class="tool-tag">Text to Song</span>
+        <span class="tool-tag">Vocals & Lyrics</span>
+        <span class="tool-tag">All Genres</span>
+        <span class="tool-tag">Free Tier</span>
+      </div>
+      <a href="#" class="tool-cta" target="_blank" rel="noopener">Try Suno <span class="arrow">→</span></a>
+    </div>
+    
+    <div class="tool-card udio">
+      <div class="tool-icon">U</div>
+      <div class="tool-name">Udio</div>
+      <div class="tool-tagline">High-fidelity music generation with realistic instrumentation. Known for creative experimentation and genre-blending.</div>
+      <div class="tool-features">
+        <span class="tool-tag">Hi-Fi Audio</span>
+        <span class="tool-tag">Genre Blending</span>
+        <span class="tool-tag">Voice Styles</span>
+        <span class="tool-tag">Free Tier</span>
+      </div>
+      <a href="#" class="tool-cta" target="_blank" rel="noopener">Try Udio <span class="arrow">→</span></a>
+    </div>
+    
+    <div class="tool-card elevenlabs">
+      <div class="tool-icon">XI</div>
+      <div class="tool-name">ElevenLabs Music</div>
+      <div class="tool-tagline">From the leaders in AI voice tech. Copyright-cleared music generation with studio-grade vocal quality.</div>
+      <div class="tool-features">
+        <span class="tool-tag">Copyright Cleared</span>
+        <span class="tool-tag">Pro Vocals</span>
+        <span class="tool-tag">Studio Quality</span>
+        <span class="tool-tag">API Access</span>
+      </div>
+      <a href="#" class="tool-cta" target="_blank" rel="noopener">Try ElevenLabs <span class="arrow">→</span></a>
+    </div>
+    
   </div>
 </div>
 
