@@ -113,7 +113,7 @@
   const SUPABASE_KEY = 'sb_publishable_hOOMtCz7gYsu_-CVD6lW9Q_SxtFlNhw';
   
   window.loginWithGoogle = async function() {
-    const redirectUrl = 'https://vote-my-ai-v2.vercel.app/submit.html';
+const redirectUrl = 'https://vote-my-ai-v2.vercel.app/submit.html';
     const authUrl = `${SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${redirectUrl}`;
     window.location.href = authUrl;
   };
