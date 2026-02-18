@@ -1,0 +1,12 @@
+# VoteMyAI - AI Music Voting Platform
+# https://www.votemyai.com
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://www.votemyai.com/sitemap.xml
+
+# Block admin panel from indexing
+User-agent: *
+Disallow: /admin.html
