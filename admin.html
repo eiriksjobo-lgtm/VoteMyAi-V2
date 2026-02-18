@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Panel – VoteMyAI</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230a0a0f'/><text y='72' x='12' font-size='60' font-family='sans-serif' font-weight='bold' fill='%23e8ff47'>V</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;500;700&display=swap" rel="stylesheet">
   <style>
@@ -14,29 +15,43 @@
     h1 { font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; color: var(--accent); margin-bottom: 32px; }
     h2 { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; margin: 40px 0 20px; }
     table { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-    th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
     th { background: rgba(232,255,71,0.1); font-weight: 600; }
-    .btn-delete { background: rgba(248, 113, 113, 0.1); border: 1px solid rgba(248, 113, 113, 0.3); color: #f87171; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+    td { max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .btn-delete { background: rgba(248, 113, 113, 0.1); border: 1px solid rgba(248, 113, 113, 0.3); color: #f87171; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; transition: background 0.2s; }
+    .btn-delete:hover { background: rgba(248, 113, 113, 0.25); }
+    .btn-delete:disabled { opacity: 0.4; cursor: not-allowed; }
     input[type="password"] { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 10px; border-radius: 6px; margin-right: 10px; }
     .btn-login { background: var(--accent); color: #0a0a0f; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+    .status { padding: 8px 14px; border-radius: 6px; margin-bottom: 16px; font-size: 0.85rem; display: none; }
+    .status.error { display: block; background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: #f87171; }
+    .status.success { display: block; background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3); color: #4ade80; }
+    .status.warning { display: block; background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.3); color: #fbbf24; }
+    .back-link { color: var(--muted); text-decoration: none; font-size: 0.85rem; display: inline-block; margin-bottom: 20px; }
+    .back-link:hover { color: var(--text); }
   </style>
 </head>
 <body>
 
 <div class="container" id="loginSection">
   <h1>Admin Login</h1>
-  <input type="password" id="passwordInput" placeholder="Enter admin password">
+  <p style="color:var(--muted); margin-bottom: 20px;">You must be logged in to your account first. Then enter the admin password below.</p>
+  <input type="password" id="passwordInput" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')login()">
   <button class="btn-login" onclick="login()">Login</button>
+  <div class="status" id="loginStatus"></div>
 </div>
 
 <div class="container" id="adminPanel" style="display:none;">
+  <a href="/" class="back-link">← Back to home</a>
   <h1>🔧 Admin Panel</h1>
+  
+  <div class="status" id="adminStatus"></div>
   
   <h2>📀 Tracks</h2>
   <table id="tracksTable"><tr><th>Title</th><th>Tool</th><th>Genre</th><th>Votes</th><th>Actions</th></tr></table>
   
   <h2>💬 Comments</h2>
-  <table id="commentsTable"><tr><th>Track</th><th>User</th><th>Comment</th><th>Actions</th></tr></table>
+  <table id="commentsTable"><tr><th>Track</th><th>Comment</th><th>Actions</th></tr></table>
   
   <h2>📬 Contact Messages</h2>
   <table id="messagesTable"><tr><th>Name</th><th>Email</th><th>Message</th><th>Date</th><th>Actions</th></tr></table>
@@ -47,99 +62,140 @@
   const SUPABASE_KEY = 'sb_publishable_hOOMtCz7gYsu_-CVD6lW9Q_SxtFlNhw';
   const ADMIN_PASSWORD = '5p1elBerg!';
   
-  window.login = function() {
-    if (document.getElementById('passwordInput').value === ADMIN_PASSWORD) {
-      document.getElementById('loginSection').style.display = 'none';
-      document.getElementById('adminPanel').style.display = 'block';
-      loadData();
-    } else {
-      alert('Wrong password');
+  let token = localStorage.getItem('sb_token');
+  
+  // XSS sanitization
+  function sanitize(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+  
+  function showStatus(elementId, message, type) {
+    const el = document.getElementById(elementId);
+    el.textContent = message;
+    el.className = `status ${type}`;
+  }
+  
+  // Auth headers — include both apikey AND user token for RLS
+  function authHeaders() {
+    const headers = {
+      'apikey': SUPABASE_KEY,
+      'Content-Type': 'application/json'
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
     }
+    return headers;
+  }
+  
+  window.login = function() {
+    if (document.getElementById('passwordInput').value !== ADMIN_PASSWORD) {
+      showStatus('loginStatus', 'Wrong password', 'error');
+      return;
+    }
+    
+    if (!token) {
+      showStatus('loginStatus', 'You need to be logged in first. Go to the main site, log in with Google, then come back here.', 'warning');
+      return;
+    }
+    
+    document.getElementById('loginSection').style.display = 'none';
+    document.getElementById('adminPanel').style.display = 'block';
+    loadData();
   };
   
   async function loadData() {
-    // Load tracks
-    const tracksRes = await fetch(`${SUPABASE_URL}/rest/v1/tracks?select=*&order=created_at.desc`, {
-      headers: { 'apikey': SUPABASE_KEY }
-    });
-    const tracks = await tracksRes.json();
-    
-    document.getElementById('tracksTable').innerHTML = `
-      <tr><th>Title</th><th>Tool</th><th>Genre</th><th>Votes</th><th>Actions</th></tr>
-      ${tracks.map(t => `
-        <tr>
-          <td>${t.title}</td>
-          <td>${t.tool}</td>
-          <td>${t.genre}</td>
-          <td>${t.votes || 0}</td>
-          <td><button class="btn-delete" onclick="deleteTrack('${t.id}')">Delete</button></td>
-        </tr>
-      `).join('')}
-    `;
-    
-    // Load comments
-    const commentsRes = await fetch(`${SUPABASE_URL}/rest/v1/comments?select=*,tracks(title)&order=created_at.desc`, {
-      headers: { 'apikey': SUPABASE_KEY }
-    });
-    const comments = await commentsRes.json();
-    
-    document.getElementById('commentsTable').innerHTML = `
-      <tr><th>Track</th><th>Comment</th><th>Actions</th></tr>
-      ${comments.map(c => `
-        <tr>
-          <td>${c.tracks?.title || 'Unknown'}</td>
-          <td>${c.content}</td>
-          <td><button class="btn-delete" onclick="deleteComment('${c.id}')">Delete</button></td>
-        </tr>
-      `).join('')}
-    `;
-    
-    // Load contact messages
-    const messagesRes = await fetch(`${SUPABASE_URL}/rest/v1/contact_messages?select=*&order=created_at.desc`, {
-      headers: { 'apikey': SUPABASE_KEY }
-    });
-    const messages = await messagesRes.json();
-    
-    document.getElementById('messagesTable').innerHTML = `
-      <tr><th>Name</th><th>Email</th><th>Message</th><th>Date</th><th>Actions</th></tr>
-      ${messages.map(m => `
-        <tr>
-          <td>${m.name}</td>
-          <td>${m.email}</td>
-          <td>${m.message}</td>
-          <td>${new Date(m.created_at).toLocaleDateString()}</td>
-          <td><button class="btn-delete" onclick="deleteMessage('${m.id}')">Delete</button></td>
-        </tr>
-      `).join('')}
-    `;
+    try {
+      // Load tracks
+      const tracksRes = await fetch(`${SUPABASE_URL}/rest/v1/tracks?select=*&order=created_at.desc`, {
+        headers: authHeaders()
+      });
+      const tracks = await tracksRes.json();
+      
+      document.getElementById('tracksTable').innerHTML = `
+        <tr><th>Title</th><th>Tool</th><th>Genre</th><th>Votes</th><th>Actions</th></tr>
+        ${tracks.map(t => `
+          <tr>
+            <td>${sanitize(t.title)}</td>
+            <td>${sanitize(t.tool)}</td>
+            <td>${sanitize(t.genre)}</td>
+            <td>${t.votes || 0}</td>
+            <td><button class="btn-delete" onclick="deleteTrack('${t.id}')">Delete</button></td>
+          </tr>
+        `).join('')}
+      `;
+      
+      // Load comments
+      const commentsRes = await fetch(`${SUPABASE_URL}/rest/v1/comments?select=*,tracks(title)&order=created_at.desc`, {
+        headers: authHeaders()
+      });
+      const comments = await commentsRes.json();
+      
+      document.getElementById('commentsTable').innerHTML = `
+        <tr><th>Track</th><th>Author</th><th>Comment</th><th>Actions</th></tr>
+        ${comments.map(c => `
+          <tr>
+            <td>${sanitize(c.tracks?.title || 'Unknown')}</td>
+            <td>${sanitize(c.author_name || 'Anonymous')}</td>
+            <td>${sanitize(c.content)}</td>
+            <td><button class="btn-delete" onclick="deleteComment('${c.id}')">Delete</button></td>
+          </tr>
+        `).join('')}
+      `;
+      
+      // Load contact messages
+      const messagesRes = await fetch(`${SUPABASE_URL}/rest/v1/contact_messages?select=*&order=created_at.desc`, {
+        headers: authHeaders()
+      });
+      const messages = await messagesRes.json();
+      
+      document.getElementById('messagesTable').innerHTML = `
+        <tr><th>Name</th><th>Email</th><th>Message</th><th>Date</th><th>Actions</th></tr>
+        ${messages.map(m => `
+          <tr>
+            <td>${sanitize(m.name)}</td>
+            <td>${sanitize(m.email)}</td>
+            <td>${sanitize(m.message)}</td>
+            <td>${new Date(m.created_at).toLocaleDateString()}</td>
+            <td><button class="btn-delete" onclick="deleteMessage('${m.id}')">Delete</button></td>
+          </tr>
+        `).join('')}
+      `;
+      
+    } catch (err) {
+      console.error('Load error:', err);
+      showStatus('adminStatus', 'Failed to load data: ' + err.message, 'error');
+    }
   }
   
-  window.deleteMessage = async function(id) {
-    if (!confirm('Delete this message?')) return;
-    await fetch(`${SUPABASE_URL}/rest/v1/contact_messages?id=eq.${id}`, {
-      method: 'DELETE',
-      headers: { 'apikey': SUPABASE_KEY }
-    });
-    loadData();
-  };
+  async function adminDelete(table, id, label) {
+    if (!confirm(`Delete this ${label}?`)) return;
+    
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
+        method: 'DELETE',
+        headers: authHeaders()
+      });
+      
+      if (res.ok || res.status === 204) {
+        showStatus('adminStatus', `${label} deleted successfully.`, 'success');
+        await loadData();
+      } else {
+        const errText = await res.text();
+        console.error(`Delete ${label} error:`, res.status, errText);
+        showStatus('adminStatus', `Failed to delete ${label}. Status: ${res.status}. Check RLS policies in Supabase — your user may need DELETE permission.`, 'error');
+      }
+    } catch (err) {
+      console.error(`Delete ${label} network error:`, err);
+      showStatus('adminStatus', `Network error deleting ${label}: ${err.message}`, 'error');
+    }
+  }
   
-  window.deleteTrack = async function(id) {
-    if (!confirm('Delete this track?')) return;
-    await fetch(`${SUPABASE_URL}/rest/v1/tracks?id=eq.${id}`, {
-      method: 'DELETE',
-      headers: { 'apikey': SUPABASE_KEY }
-    });
-    loadData();
-  };
-  
-  window.deleteComment = async function(id) {
-    if (!confirm('Delete this comment?')) return;
-    await fetch(`${SUPABASE_URL}/rest/v1/comments?id=eq.${id}`, {
-      method: 'DELETE',
-      headers: { 'apikey': SUPABASE_KEY }
-    });
-    loadData();
-  };
+  window.deleteTrack = (id) => adminDelete('tracks', id, 'track');
+  window.deleteComment = (id) => adminDelete('comments', id, 'comment');
+  window.deleteMessage = (id) => adminDelete('contact_messages', id, 'message');
 </script>
 
 </body>
