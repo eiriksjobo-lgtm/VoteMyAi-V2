@@ -54,6 +54,13 @@
     .lb-meta { color: var(--muted); font-size: 0.85rem; }
     .lb-votes { font-weight: 700; color: var(--accent); font-size: 1.1rem; }
     
+    footer { background: var(--surface); border-top: 1px solid var(--border); padding: 40px 20px; margin-top: 80px; }
+    .footer-content { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
+    .footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
+    .footer-links a { color: var(--muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--text); }
+    .footer-copy { color: var(--muted); font-size: 0.85rem; }
+    
     .track-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: transform 0.2s; }
     .track-card:hover { transform: translateY(-4px); }
     .track-video { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; }
@@ -385,6 +392,18 @@
   
   checkAuth().then(loadTracks);
 </script>
+
+<footer>
+  <div class="footer-content">
+    <div class="footer-copy">© 2026 VoteMyAI. All rights reserved.</div>
+    <div class="footer-links">
+      <a href="/faq.html">FAQ</a>
+      <a href="/contact.html">Contact</a>
+      <a href="/terms.html">Terms</a>
+      <a href="/privacy.html">Privacy</a>
+    </div>
+  </div>
+</footer>
 
 </body>
 </html>
