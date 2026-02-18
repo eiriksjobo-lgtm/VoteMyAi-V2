@@ -379,12 +379,14 @@
     }
     
     try {
-      // We store: platform, embed_id (yt_id kept for backward compat with YouTube tracks)
+      // Store platform as prefix in yt_id: "spotify:ID", "soundcloud:URL", or plain YouTube ID
+      const ytIdValue = detectedPlatform === 'youtube' 
+        ? detectedId 
+        : `${detectedPlatform}:${detectedId}`;
+      
       const trackData = {
         title,
-        yt_id: detectedPlatform === 'youtube' ? detectedId : '',
-        platform: detectedPlatform,
-        embed_id: detectedId,
+        yt_id: ytIdValue,
         tool,
         genre,
         votes: 0,
