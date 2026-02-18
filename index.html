@@ -3,20 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VoteMyAI – AI Music Voting Platform</title>
+  <title>VoteMyAI – AI Music Voting Platform | Vote for the Best AI-Generated Music</title>
   
   <!-- SEO Meta Tags -->
-  <meta name="description" content="Submit your AI-generated music tracks and let the community vote. Discover the best AI music from Suno, Udio, ElevenLabs and more.">
-  <meta name="keywords" content="AI music, vote, AI generated music, Suno, Udio, ElevenLabs, music voting, leaderboard">
+  <meta name="description" content="Submit your AI-generated music tracks and let the community vote. Discover the best AI music from Suno, Udio, ElevenLabs and more. Free to join.">
+  <meta name="keywords" content="AI music, vote AI music, AI generated music, Suno, Udio, ElevenLabs, music voting, AI music leaderboard, best AI songs, AI music community, AI music competition">
   <meta name="author" content="VoteMyAI">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <link rel="canonical" href="https://www.votemyai.com/">
+  <meta name="theme-color" content="#e8ff47">
   
   <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.votemyai.com/">
   <meta property="og:title" content="VoteMyAI – Vote the Future of AI Music">
-  <meta property="og:description" content="Submit your AI-generated tracks. The community votes. The best rise to the top.">
+  <meta property="og:description" content="Submit your AI-generated tracks. The community votes. The best rise to the top. Join the #1 AI music voting platform.">
   <meta property="og:image" content="https://www.votemyai.com/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="VoteMyAI - AI Music Voting Platform">
   <meta property="og:site_name" content="VoteMyAI">
+  <meta property="og:locale" content="en_US">
   
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
@@ -24,8 +31,53 @@
   <meta name="twitter:description" content="Submit your AI-generated tracks. The community votes. The best rise to the top.">
   <meta name="twitter:image" content="https://www.votemyai.com/og-image.png">
   
+  <!-- JSON-LD Structured Data: Website -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": "https://www.votemyai.com/#website",
+    "name": "VoteMyAI",
+    "url": "https://www.votemyai.com",
+    "description": "The community-driven platform for voting on the best AI-generated music. Submit tracks made with Suno, Udio, ElevenLabs and more.",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://www.votemyai.com/#tracks?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+  
+  <!-- JSON-LD Structured Data: Organization -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": "https://www.votemyai.com/#organization",
+    "name": "VoteMyAI",
+    "url": "https://www.votemyai.com",
+    "logo": "https://www.votemyai.com/og-image.png",
+    "description": "AI Music Voting Platform – Submit, vote, and discover the best AI-generated music tracks.",
+    "foundingDate": "2026"
+  }
+  </script>
+  
+  <!-- JSON-LD Structured Data: CollectionPage (for the track listings) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "@id": "https://www.votemyai.com/#collection",
+    "name": "AI Music Tracks – VoteMyAI",
+    "description": "Browse and vote on AI-generated music tracks from Suno, Udio, ElevenLabs and other AI music tools.",
+    "url": "https://www.votemyai.com",
+    "isPartOf": { "@id": "https://www.votemyai.com/#website" }
+  }
+  </script>
+  
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230a0a0f'/><text y='72' x='12' font-size='60' font-family='sans-serif' font-weight='bold' fill='%23e8ff47'>V</text></svg>">
+  <link rel="apple-touch-icon" href="https://www.votemyai.com/og-image.png">
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;500;700&display=swap" rel="stylesheet">
@@ -287,12 +339,39 @@
     @media (max-width: 680px) {
       .tools-grid { grid-template-columns: 1fr; }
       .tools-section { padding: 60px 20px 20px; }
+      .seo-section { padding: 60px 20px 20px; }
       nav { padding: 0 16px; }
       .nav-links { gap: 16px; }
       .hero { padding: 80px 20px 60px; }
       .tracks-section { padding: 40px 16px; }
       .leaderboard-section { padding: 40px 16px; }
     }
+
+    /* SEO Content Section */
+    .seo-section {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 80px 40px 40px;
+    }
+    .seo-section h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem;
+      letter-spacing: 1px;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+    .seo-section h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin: 24px 0 8px;
+      color: var(--text);
+    }
+    .seo-section p {
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+    .seo-section strong { color: var(--text); }
 
     footer { background: var(--surface); border-top: 1px solid var(--border); padding: 40px 20px; margin-top: 80px; }
     .footer-content { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
@@ -304,8 +383,8 @@
 </head>
 <body>
 
-<nav>
-  <a href="/" class="logo">VOTEMYAI</a>
+<nav role="navigation" aria-label="Main navigation">
+  <a href="/" class="logo" aria-label="VoteMyAI Home">VOTEMYAI</a>
   <div class="nav-links">
     <a href="#tracks">Tracks</a>
     <a href="/login.html" id="authLink">Login</a>
@@ -314,13 +393,14 @@
   </div>
 </nav>
 
-<div class="hero">
-  <h1>VOTE<br><span class="accent">THE</span><br>FUTURE</h1>
-  <p>Submit your AI-generated tracks. The community votes. The best rise to the top.</p>
-</div>
+<header class="hero">
+  <h1>VOTE<br><span class="accent">THE FUTURE</span><br>OF AI MUSIC</h1>
+  <p>The #1 community platform for AI-generated music. Submit tracks made with Suno, Udio, ElevenLabs &amp; more — and let the community decide the best.</p>
+</header>
 
-<div class="tracks-section" id="tracks">
-  <div class="section-title">🔥 Trending Tracks</div>
+<main>
+<section class="tracks-section" id="tracks" aria-label="Trending AI Music Tracks">
+  <h2 class="section-title">🔥 Trending Tracks</h2>
   
   <div class="genre-filters">
     <button class="genre-btn active" onclick="filterGenre('all')">All</button>
@@ -345,10 +425,10 @@
     <div class="skeleton-card"><div class="skeleton skeleton-video"></div><div class="skeleton-info"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-meta"></div><div class="skeleton skeleton-btn"></div></div></div>
     <div class="skeleton-card"><div class="skeleton skeleton-video"></div><div class="skeleton-info"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-meta"></div><div class="skeleton skeleton-btn"></div></div></div>
   </div>
-</div>
+</section>
 
-<div class="leaderboard-section">
-  <div class="section-title">🏆 Top 10 Leaderboard</div>
+<section class="leaderboard-section" aria-label="AI Music Leaderboard">
+  <h2 class="section-title">🏆 Top 10 Leaderboard</h2>
   <div class="leaderboard" id="leaderboard">
     <div class="skeleton skeleton-lb-row"></div>
     <div class="skeleton skeleton-lb-row"></div>
@@ -356,11 +436,11 @@
     <div class="skeleton skeleton-lb-row"></div>
     <div class="skeleton skeleton-lb-row"></div>
   </div>
-</div>
+</section>
 
 <!-- ── AI Music Tools ── -->
-<div class="tools-section">
-  <div class="section-title">🎧 Create With The Best AI Tools</div>
+<section class="tools-section" aria-label="AI Music Creation Tools">
+  <h2 class="section-title">🎧 Create With The Best AI Tools</h2>
   <p class="tools-subtitle">The most popular platforms for making AI-generated music</p>
   <div class="tools-grid">
     <div class="tool-card suno">
@@ -391,7 +471,24 @@
       <a href="https://elevenlabs.io" class="tool-cta" target="_blank" rel="noopener">Try ElevenLabs <span class="arrow">→</span></a>
     </div>
   </div>
-</div>
+</section>
+
+<!-- SEO Content Section — crawlable keyword-rich text -->
+<section class="seo-section" aria-label="About VoteMyAI">
+  <h2>What is VoteMyAI?</h2>
+  <p>VoteMyAI is the community-driven platform where AI music creators share their best tracks and let listeners vote. Whether you make music with <strong>Suno</strong>, <strong>Udio</strong>, <strong>ElevenLabs</strong>, or any other AI music generator, you can submit your tracks and compete for the top of our leaderboard.</p>
+  
+  <h3>How It Works</h3>
+  <p>Create an AI-generated song using your favorite tool, submit it with a YouTube or SoundCloud link, and the community votes. The most popular AI music rises to the top. It's free to join, free to vote, and free to submit.</p>
+  
+  <h3>Discover the Best AI Music</h3>
+  <p>Browse trending tracks across genres — from electronic and hip-hop to cinematic and pop. Filter by genre, sort by newest or most voted, and search for specific tracks. VoteMyAI is the best place to discover what's possible with AI music generation in 2026.</p>
+  
+  <h3>For AI Music Creators</h3>
+  <p>Get your AI-generated music heard by a real audience. Submit tracks from YouTube or SoundCloud, receive votes and comments from the community, and climb the leaderboard. Whether you're a beginner experimenting with AI music tools or an experienced producer pushing the boundaries of AI composition, VoteMyAI is your stage.</p>
+</section>
+
+</main>
 
 <script type="module">
   const SUPABASE_URL = 'https://gezijezmsecbtzytotax.supabase.co';
@@ -787,17 +884,25 @@
   checkAuth().then(loadTracks);
 </script>
 
-<footer>
+<footer role="contentinfo">
   <div class="footer-content">
-    <div class="footer-copy">© 2026 VoteMyAI. All rights reserved.</div>
+    <div class="footer-copy">© 2026 VoteMyAI — The AI Music Voting Platform. All rights reserved.</div>
     <div class="footer-links">
       <a href="/faq.html">FAQ</a>
       <a href="/contact.html">Contact</a>
-      <a href="/terms.html">Terms</a>
-      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms of Service</a>
+      <a href="/privacy.html">Privacy Policy</a>
+      <a href="/submit.html">Submit a Track</a>
     </div>
   </div>
 </footer>
+
+<noscript>
+  <div style="max-width:800px;margin:0 auto;padding:40px;color:#f0f0f0;font-family:sans-serif;">
+    <h1>VoteMyAI – AI Music Voting Platform</h1>
+    <p>VoteMyAI is the community-driven platform for voting on the best AI-generated music. Submit tracks made with Suno, Udio, ElevenLabs, and other AI music tools. Browse trending AI songs across genres including electronic, hip-hop, pop, rock, and cinematic. Vote for your favorites and help the best AI music rise to the top of our leaderboard. Please enable JavaScript to use VoteMyAI.</p>
+  </div>
+</noscript>
 
 </body>
 </html>
