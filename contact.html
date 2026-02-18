@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact – VoteMyAI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg: #0a0a0f; --surface: #111118; --border: #1e1e2e; --accent: #e8ff47; --text: #f0f0f0; --muted: #666680; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; line-height: 1.8; }
+    nav { position: sticky; top: 0; background: rgba(10,10,15,0.95); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 0 40px; height: 64px; display: flex; align-items: center; z-index: 100; }
+    .logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 2px; color: var(--accent); cursor: pointer; }
+    .container { max-width: 600px; margin: 0 auto; padding: 80px 40px; }
+    h1 { font-family: 'Bebas Neue', sans-serif; font-size: 3rem; letter-spacing: 2px; color: var(--accent); margin-bottom: 20px; }
+    p { color: var(--muted); margin-bottom: 32px; }
+    .contact-info { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 32px; }
+    .contact-item { margin-bottom: 24px; }
+    .contact-item:last-child { margin-bottom: 0; }
+    .contact-label { font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+    .contact-value { color: var(--text); }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="logo" onclick="window.location.href='/'">VOTEMYAI</div>
+</nav>
+
+<div class="container">
+  <h1>Contact Us</h1>
+  <p>Have questions, feedback, or need support? Get in touch with us!</p>
+
+  <div class="contact-info">
+    <div class="contact-item">
+      <div class="contact-label">Email</div>
+      <div class="contact-value"><a href="mailto:hello@votemyai.com">hello@votemyai.com</a></div>
+    </div>
+
+    <div class="contact-item">
+      <div class="contact-label">Support</div>
+      <div class="contact-value">For technical issues or account problems, please email us with a detailed description.</div>
+    </div>
+
+    <div class="contact-item">
+      <div class="contact-label">Partnerships</div>
+      <div class="contact-value">Interested in collaborating? Reach out to discuss opportunities.</div>
+    </div>
+
+    <div class="contact-item">
+      <div class="contact-label">Response Time</div>
+      <div class="contact-value">We typically respond within 24-48 hours.</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
