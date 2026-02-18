@@ -292,7 +292,7 @@
       content.innerHTML = comments.length ? comments.map(c => `
         <div class="comment">
           <div class="comment-text">${c.content}</div>
-          <div class="comment-author">— User</div>
+          <div class="comment-author">— ${c.author_name || 'Anonymous'}</div>
         </div>
       `).join('') : '<p style="font-size:0.8rem;color:var(--muted);">No comments yet</p>';
     } catch (err) {
@@ -311,6 +311,8 @@
       return;
     }
     
+    const authorName = currentUser.user_metadata?.name || currentUser.email?.split('@')[0] || 'Anonymous';
+    
     try {
       await fetch(`${SUPABASE_URL}/rest/v1/comments`, {
         method: 'POST',
@@ -319,7 +321,12 @@
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ track_id: trackId, user_id: currentUser.id, content })
+        body: JSON.stringify({ 
+          track_id: trackId, 
+          user_id: currentUser.id, 
+          content,
+          author_name: authorName
+        })
       });
       
       input.value = '';
