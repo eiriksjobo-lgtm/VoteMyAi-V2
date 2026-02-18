@@ -210,16 +210,33 @@
     }
     
     try {
-      // Get access token from URL hash
+      // Get access token from URL hash or localStorage
       const hash = window.location.hash.substring(1);
       const params = new URLSearchParams(hash);
-      const accessToken = params.get('access_token');
+      let accessToken = params.get('access_token');
+      
+      if (!accessToken) {
+        accessToken = localStorage.getItem('sb_token');
+      }
       
       if (!accessToken) {
         showMessage('Not authenticated. Please log in first.', 'error');
         setTimeout(() => window.location.href = '/login.html', 2000);
         return;
       }
+      
+      // Get current user
+      const userRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+        headers: { 'Authorization': `Bearer ${accessToken}`, 'apikey': SUPABASE_KEY }
+      });
+      
+      if (!userRes.ok) {
+        showMessage('Session expired. Please log in again.', 'error');
+        setTimeout(() => window.location.href = '/login.html', 2000);
+        return;
+      }
+      
+      const user = await userRes.json();
       
       const res = await fetch(`${SUPABASE_URL}/rest/v1/tracks`, {
         method: 'POST',
@@ -234,7 +251,8 @@
           yt_id: ytId,
           tool,
           genre,
-          votes: 0
+          votes: 0,
+          user_id: user.id
         })
       });
       
