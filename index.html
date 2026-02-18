@@ -10,7 +10,7 @@
   <meta name="keywords" content="AI music, vote, AI generated music, Suno, Udio, ElevenLabs, music voting, leaderboard">
   <meta name="author" content="VoteMyAI">
   
-  <!-- Open Graph / Social Sharing -->
+  <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.votemyai.com/">
   <meta property="og:title" content="VoteMyAI – Vote the Future of AI Music">
@@ -76,12 +76,7 @@
       animation: shimmer 1.5s infinite ease-in-out;
       border-radius: 8px;
     }
-    .skeleton-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      overflow: hidden;
-    }
+    .skeleton-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
     .skeleton-video { padding-bottom: 56.25%; }
     .skeleton-info { padding: 20px; }
     .skeleton-title { height: 20px; width: 70%; margin-bottom: 12px; }
@@ -89,6 +84,105 @@
     .skeleton-btn { height: 36px; width: 100%; margin-bottom: 12px; }
     .skeleton-lb-row { height: 56px; border-bottom: 1px solid var(--border); }
     
+    /* ── Track Cards ── */
+    .track-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: transform 0.2s; }
+    .track-card:hover { transform: translateY(-4px); }
+    
+    /* YouTube embed */
+    .track-embed { position: relative; overflow: hidden; }
+    .track-embed.youtube { padding-bottom: 56.25%; height: 0; }
+    .track-embed.youtube iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+    
+    /* Spotify embed */
+    .track-embed.spotify { height: 152px; }
+    .track-embed.spotify iframe { width: 100%; height: 100%; border: none; }
+    
+    /* SoundCloud embed */
+    .track-embed.soundcloud { height: 166px; }
+    .track-embed.soundcloud iframe { width: 100%; height: 100%; border: none; }
+    
+    /* Audio Visualizer for Spotify/SoundCloud cards */
+    .visualizer-bg {
+      position: relative;
+      height: 180px;
+      overflow: hidden;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 3px;
+      padding: 0 20px 0;
+    }
+    .visualizer-bg.spotify-bg {
+      background: linear-gradient(135deg, #0d1117 0%, #1a3a2a 50%, #0d1117 100%);
+    }
+    .visualizer-bg.soundcloud-bg {
+      background: linear-gradient(135deg, #0d1117 0%, #2a1a0d 50%, #0d1117 100%);
+    }
+    .viz-bar {
+      width: 4px;
+      border-radius: 2px 2px 0 0;
+      animation: vizPulse var(--duration) ease-in-out infinite alternate;
+      animation-delay: var(--delay);
+      opacity: 0.7;
+    }
+    .spotify-bg .viz-bar { background: #1ed760; }
+    .soundcloud-bg .viz-bar { background: #ff8800; }
+    
+    @keyframes vizPulse {
+      0% { height: var(--min-h); opacity: 0.4; }
+      100% { height: var(--max-h); opacity: 0.9; }
+    }
+    
+    .visualizer-embed {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 2;
+    }
+    .visualizer-embed.spotify-embed { height: 80px; }
+    .visualizer-embed.spotify-embed iframe { width: 100%; height: 80px; border: none; }
+    .visualizer-embed.soundcloud-embed { height: 80px; }
+    .visualizer-embed.soundcloud-embed iframe { width: 100%; height: 80px; border: none; }
+    
+    /* Platform badge on card */
+    .platform-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .platform-label.yt { background: rgba(255,0,0,0.12); color: #ff4444; }
+    .platform-label.sp { background: rgba(30,215,96,0.12); color: #1ed760; }
+    .platform-label.sc { background: rgba(255,136,0,0.12); color: #ff8800; }
+    
+    .track-info { padding: 20px; }
+    .track-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
+    .track-meta { color: var(--muted); font-size: 0.85rem; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .vote-btn { background: rgba(232,255,71,0.1); border: 1px solid rgba(232,255,71,0.3); color: var(--accent); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; width: 100%; }
+    .vote-btn:hover { background: rgba(232,255,71,0.2); }
+    .vote-btn.voted { background: var(--accent); color: #0a0a0f; cursor: default; opacity: 0.8; }
+    .vote-btn:disabled { cursor: not-allowed; }
+    .votes-count { text-align: center; margin-top: 8px; color: var(--accent); font-weight: 700; font-size: 1.2rem; }
+    
+    .comments-section { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+    .comments-toggle { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.85rem; padding: 4px 0; }
+    .comments-toggle:hover { color: var(--text); }
+    .comments-list { margin-top: 12px; display: none; }
+    .comments-list.show { display: block; }
+    .comment { padding: 8px 0; border-bottom: 1px solid rgba(30,30,46,0.5); }
+    .comment:last-child { border-bottom: none; }
+    .comment-author { font-weight: 500; font-size: 0.75rem; margin-top: 4px; color: var(--muted); font-style: italic; }
+    .comment-text { font-size: 0.85rem; color: var(--text); }
+    .comment-input { width: 100%; background: rgba(30,30,46,0.5); border: 1px solid var(--border); color: var(--text); padding: 8px; border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; margin-top: 8px; }
+    .comment-btn { background: var(--accent); color: #0a0a0f; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; margin-top: 8px; }
+    
+    /* Leaderboard */
     .leaderboard-section { max-width: 800px; margin: 0 auto; padding: 60px 40px; }
     .leaderboard { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
     .lb-row { display: flex; align-items: center; gap: 20px; padding: 16px 20px; border-bottom: 1px solid var(--border); transition: background 0.2s; }
@@ -98,7 +192,7 @@
     .lb-rank.top3 { color: var(--accent); }
     .lb-info { flex: 1; }
     .lb-title { font-weight: 700; font-size: 1rem; margin-bottom: 4px; }
-    .lb-meta { color: var(--muted); font-size: 0.85rem; }
+    .lb-meta { color: var(--muted); font-size: 0.85rem; display: flex; align-items: center; gap: 6px; }
     .lb-votes { font-weight: 700; color: var(--accent); font-size: 1.1rem; }
     
     /* ── AI Tools Section ── */
@@ -107,24 +201,13 @@
     .tools-subtitle { text-align: center; color: var(--muted); font-size: 0.95rem; margin-bottom: 48px; }
     .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
     .tool-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 32px 28px;
-      position: relative;
-      overflow: hidden;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+      padding: 32px 28px; position: relative; overflow: hidden;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
-    .tool-card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-    }
+    .tool-card:hover { transform: translateY(-6px); box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
     .tool-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 3px;
-      border-radius: 16px 16px 0 0;
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 16px 16px 0 0;
     }
     .tool-card.suno::before { background: linear-gradient(90deg, #e8ff47, #a3e635); }
     .tool-card.udio::before { background: linear-gradient(90deg, #818cf8, #c084fc); }
@@ -152,8 +235,6 @@
     .tool-card.udio .tool-cta { color: #818cf8; }
     .tool-card.elevenlabs .tool-cta { color: #38bdf8; }
     .tool-card .tool-cta:hover { gap: 14px; }
-    .tool-card .tool-cta .arrow { transition: transform 0.2s; }
-    .tool-card .tool-cta:hover .arrow { transform: translateX(2px); }
 
     @media (max-width: 680px) {
       .tools-grid { grid-template-columns: 1fr; }
@@ -171,31 +252,6 @@
     .footer-links a { color: var(--muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
     .footer-links a:hover { color: var(--text); }
     .footer-copy { color: var(--muted); font-size: 0.85rem; }
-    
-    .track-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: transform 0.2s; }
-    .track-card:hover { transform: translateY(-4px); }
-    .track-video { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; }
-    .track-video iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
-    .track-info { padding: 20px; }
-    .track-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
-    .track-meta { color: var(--muted); font-size: 0.85rem; margin-bottom: 16px; }
-    .vote-btn { background: rgba(232,255,71,0.1); border: 1px solid rgba(232,255,71,0.3); color: var(--accent); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; width: 100%; }
-    .vote-btn:hover { background: rgba(232,255,71,0.2); }
-    .vote-btn.voted { background: var(--accent); color: #0a0a0f; cursor: default; opacity: 0.8; }
-    .vote-btn:disabled { cursor: not-allowed; }
-    .votes-count { text-align: center; margin-top: 8px; color: var(--accent); font-weight: 700; font-size: 1.2rem; }
-    
-    .comments-section { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
-    .comments-toggle { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.85rem; padding: 4px 0; }
-    .comments-toggle:hover { color: var(--text); }
-    .comments-list { margin-top: 12px; display: none; }
-    .comments-list.show { display: block; }
-    .comment { padding: 8px 0; border-bottom: 1px solid rgba(30,30,46,0.5); }
-    .comment:last-child { border-bottom: none; }
-    .comment-author { font-weight: 500; font-size: 0.75rem; margin-top: 4px; color: var(--muted); font-style: italic; }
-    .comment-text { font-size: 0.85rem; color: var(--text); }
-    .comment-input { width: 100%; background: rgba(30,30,46,0.5); border: 1px solid var(--border); color: var(--text); padding: 8px; border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; margin-top: 8px; }
-    .comment-btn { background: var(--accent); color: #0a0a0f; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; margin-top: 8px; }
   </style>
 </head>
 <body>
@@ -250,43 +306,31 @@
 <div class="tools-section">
   <div class="section-title">🎧 Create With The Best AI Tools</div>
   <p class="tools-subtitle">The most popular platforms for making AI-generated music</p>
-  
   <div class="tools-grid">
     <div class="tool-card suno">
       <div class="tool-icon">S</div>
       <div class="tool-name">Suno</div>
       <div class="tool-tagline">Full songs from a text prompt — lyrics, vocals, and production in seconds. The most popular choice for creators in 2026.</div>
       <div class="tool-features">
-        <span class="tool-tag">Text to Song</span>
-        <span class="tool-tag">Vocals & Lyrics</span>
-        <span class="tool-tag">All Genres</span>
-        <span class="tool-tag">Free Tier</span>
+        <span class="tool-tag">Text to Song</span><span class="tool-tag">Vocals & Lyrics</span><span class="tool-tag">All Genres</span><span class="tool-tag">Free Tier</span>
       </div>
       <a href="https://suno.com" class="tool-cta" target="_blank" rel="noopener">Try Suno <span class="arrow">→</span></a>
     </div>
-    
     <div class="tool-card udio">
       <div class="tool-icon">U</div>
       <div class="tool-name">Udio</div>
       <div class="tool-tagline">High-fidelity music generation with realistic instrumentation. Known for creative experimentation and genre-blending.</div>
       <div class="tool-features">
-        <span class="tool-tag">Hi-Fi Audio</span>
-        <span class="tool-tag">Genre Blending</span>
-        <span class="tool-tag">Voice Styles</span>
-        <span class="tool-tag">Free Tier</span>
+        <span class="tool-tag">Hi-Fi Audio</span><span class="tool-tag">Genre Blending</span><span class="tool-tag">Voice Styles</span><span class="tool-tag">Free Tier</span>
       </div>
       <a href="https://www.udio.com" class="tool-cta" target="_blank" rel="noopener">Try Udio <span class="arrow">→</span></a>
     </div>
-    
     <div class="tool-card elevenlabs">
       <div class="tool-icon">XI</div>
       <div class="tool-name">ElevenLabs Music</div>
       <div class="tool-tagline">From the leaders in AI voice tech. Copyright-cleared music generation with studio-grade vocal quality.</div>
       <div class="tool-features">
-        <span class="tool-tag">Copyright Cleared</span>
-        <span class="tool-tag">Pro Vocals</span>
-        <span class="tool-tag">Studio Quality</span>
-        <span class="tool-tag">API Access</span>
+        <span class="tool-tag">Copyright Cleared</span><span class="tool-tag">Pro Vocals</span><span class="tool-tag">Studio Quality</span><span class="tool-tag">API Access</span>
       </div>
       <a href="https://elevenlabs.io" class="tool-cta" target="_blank" rel="noopener">Try ElevenLabs <span class="arrow">→</span></a>
     </div>
@@ -308,6 +352,73 @@
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
+  }
+  
+  // ── Platform helpers ──
+  function getTrackPlatform(track) {
+    // New tracks have platform field; old tracks only have yt_id
+    if (track.platform) return track.platform;
+    if (track.yt_id) return 'youtube';
+    return 'youtube';
+  }
+  
+  function getTrackEmbedId(track) {
+    if (track.embed_id) return track.embed_id;
+    if (track.yt_id) return track.yt_id;
+    return '';
+  }
+  
+  function generateVisualizerBars(count) {
+    let bars = '';
+    for (let i = 0; i < count; i++) {
+      const minH = 8 + Math.random() * 20;
+      const maxH = 40 + Math.random() * 100;
+      const duration = (0.6 + Math.random() * 1.2).toFixed(2);
+      const delay = (Math.random() * 1.5).toFixed(2);
+      bars += `<div class="viz-bar" style="--min-h:${minH}px;--max-h:${maxH}px;--duration:${duration}s;--delay:${delay}s"></div>`;
+    }
+    return bars;
+  }
+  
+  function renderEmbed(track) {
+    const platform = getTrackPlatform(track);
+    const embedId = getTrackEmbedId(track);
+    const safeId = encodeURIComponent(embedId);
+    
+    if (platform === 'youtube') {
+      return `<div class="track-embed youtube">
+        <iframe src="https://www.youtube.com/embed/${safeId}" allowfullscreen loading="lazy"></iframe>
+      </div>`;
+    }
+    
+    if (platform === 'spotify') {
+      return `<div class="visualizer-bg spotify-bg">
+        ${generateVisualizerBars(40)}
+        <div class="visualizer-embed spotify-embed">
+          <iframe src="https://open.spotify.com/embed/track/${safeId}?theme=0&compact=1" allow="encrypted-media" loading="lazy"></iframe>
+        </div>
+      </div>`;
+    }
+    
+    if (platform === 'soundcloud') {
+      return `<div class="visualizer-bg soundcloud-bg">
+        ${generateVisualizerBars(40)}
+        <div class="visualizer-embed soundcloud-embed">
+          <iframe scrolling="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=${safeId}&color=%23ff8800&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=false" loading="lazy"></iframe>
+        </div>
+      </div>`;
+    }
+    
+    return '<div class="track-embed youtube" style="background:var(--surface);height:180px;display:flex;align-items:center;justify-content:center;color:var(--muted);">No preview</div>';
+  }
+  
+  function platformBadge(platform) {
+    const map = {
+      youtube: '<span class="platform-label yt">▶ YouTube</span>',
+      spotify: '<span class="platform-label sp">♫ Spotify</span>',
+      soundcloud: '<span class="platform-label sc">☁ SoundCloud</span>'
+    };
+    return map[platform] || '';
   }
   
   // ── Auth ──
@@ -412,20 +523,17 @@
       const btnClass = hasVoted ? 'vote-btn voted' : 'vote-btn';
       const btnText = hasVoted ? '✓ Voted' : '▲ Vote';
       const btnDisabled = hasVoted ? 'disabled' : '';
-      
-      const safeTitle = sanitize(track.title);
-      const safeTool = sanitize(track.tool);
-      const safeGenre = sanitize(track.genre);
-      const safeYtId = encodeURIComponent(track.yt_id);
+      const platform = getTrackPlatform(track);
       
       return `
         <div class="track-card">
-          <div class="track-video">
-            <iframe src="https://www.youtube.com/embed/${safeYtId}" allowfullscreen loading="lazy"></iframe>
-          </div>
+          ${renderEmbed(track)}
           <div class="track-info">
-            <div class="track-title">${safeTitle}</div>
-            <div class="track-meta">${safeTool} • ${safeGenre}</div>
+            <div class="track-title">${sanitize(track.title)}</div>
+            <div class="track-meta">
+              ${platformBadge(platform)}
+              <span>${sanitize(track.tool)} • ${sanitize(track.genre)}</span>
+            </div>
             <button class="${btnClass}" onclick="vote('${track.id}')" ${btnDisabled}>${btnText}</button>
             <div class="votes-count">${parseInt(track.votes) || 0} votes</div>
             <div class="comments-section">
@@ -457,13 +565,14 @@
       const rank = i + 1;
       const medals = ['🥇', '🥈', '🥉'];
       const displayRank = rank <= 3 ? medals[i] : `#${rank}`;
+      const platform = getTrackPlatform(track);
       
       return `
         <div class="lb-row">
           <div class="lb-rank ${rank <= 3 ? 'top3' : ''}">${displayRank}</div>
           <div class="lb-info">
             <div class="lb-title">${sanitize(track.title)}</div>
-            <div class="lb-meta">${sanitize(track.tool)} • ${sanitize(track.genre)}</div>
+            <div class="lb-meta">${platformBadge(platform)} <span>${sanitize(track.tool)} • ${sanitize(track.genre)}</span></div>
           </div>
           <div class="lb-votes">${parseInt(track.votes) || 0} votes</div>
         </div>
@@ -494,7 +603,6 @@
         headers: { 'apikey': SUPABASE_KEY }
       });
       const comments = await res.json();
-      
       const content = document.getElementById(`comments-content-${trackId}`);
       content.innerHTML = comments.length ? comments.map(c => `
         <div class="comment">
@@ -514,51 +622,29 @@
     if (content.length > 500) { alert('Comment too long (max 500 characters)'); return; }
     
     const token = localStorage.getItem('sb_token');
-    if (!token || !currentUser) {
-      alert('Please log in to comment');
-      return;
-    }
+    if (!token || !currentUser) { alert('Please log in to comment'); return; }
     
     const authorName = currentUser.user_metadata?.name || currentUser.email?.split('@')[0] || 'Anonymous';
     
     try {
       await fetch(`${SUPABASE_URL}/rest/v1/comments`, {
         method: 'POST',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ 
-          track_id: trackId, 
-          user_id: currentUser.id, 
-          content,
-          author_name: authorName
-        })
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ track_id: trackId, user_id: currentUser.id, content, author_name: authorName })
       });
-      
       input.value = '';
       await loadComments(trackId);
-    } catch (err) {
-      console.error('Add comment error:', err);
-    }
+    } catch (err) { console.error('Add comment error:', err); }
   };
   
   window.vote = async function(trackId) {
     const anonVotes = JSON.parse(localStorage.getItem('anon_votes') || '[]');
-    
-    if (anonVotes.includes(trackId)) {
-      alert('You already voted for this track!');
-      return;
-    }
+    if (anonVotes.includes(trackId)) { alert('You already voted for this track!'); return; }
     
     try {
       await fetch(`${SUPABASE_URL}/rest/v1/rpc/increment_votes`, {
         method: 'POST',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Content-Type': 'application/json'
-        },
+        headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
         body: JSON.stringify({ track_id: trackId })
       });
       
@@ -569,12 +655,7 @@
         const token = localStorage.getItem('sb_token');
         await fetch(`${SUPABASE_URL}/rest/v1/votes`, {
           method: 'POST',
-          headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=minimal'
-          },
+          headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
           body: JSON.stringify({ user_id: currentUser.id, track_id: trackId })
         });
         userVotes.push(trackId);
