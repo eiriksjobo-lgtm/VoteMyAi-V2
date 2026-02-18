@@ -145,7 +145,8 @@
       }
       
       grid.innerHTML = tracks.map(track => {
-        const hasVoted = userVotes.includes(track.id);
+        const anonVotes = JSON.parse(localStorage.getItem('anon_votes') || '[]');
+        const hasVoted = userVotes.includes(track.id) || anonVotes.includes(track.id);
         const btnClass = hasVoted ? 'vote-btn voted' : 'vote-btn';
         const btnText = hasVoted ? '✓ Voted' : '▲ Vote';
         const btnDisabled = hasVoted ? 'disabled' : '';
@@ -170,27 +171,15 @@
   }
   
   window.vote = async function(trackId) {
-    if (!currentUser) {
-      alert('Please log in to vote!');
-      window.location.href = '/login.html';
+    // Track votes in localStorage for anonymous users
+    const anonVotes = JSON.parse(localStorage.getItem('anon_votes') || '[]');
+    
+    if (anonVotes.includes(trackId)) {
+      alert('You already voted for this track!');
       return;
     }
     
-    const token = localStorage.getItem('sb_token');
-    
     try {
-      // Insert vote
-      await fetch(`${SUPABASE_URL}/rest/v1/votes`, {
-        method: 'POST',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify({ user_id: currentUser.id, track_id: trackId })
-      });
-      
       // Increment vote count
       await fetch(`${SUPABASE_URL}/rest/v1/rpc/increment_votes`, {
         method: 'POST',
@@ -201,10 +190,30 @@
         body: JSON.stringify({ track_id: trackId })
       });
       
-      userVotes.push(trackId);
+      // Save vote locally
+      anonVotes.push(trackId);
+      localStorage.setItem('anon_votes', JSON.stringify(anonVotes));
+      
+      if (currentUser) {
+        // Also save to database if logged in
+        const token = localStorage.getItem('sb_token');
+        await fetch(`${SUPABASE_URL}/rest/v1/votes`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify({ user_id: currentUser.id, track_id: trackId })
+        });
+        userVotes.push(trackId);
+      }
+      
       await loadTracks();
     } catch (err) {
       console.error('Vote error:', err);
+      alert('Failed to vote. Please try again.');
     }
   };
   
