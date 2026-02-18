@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel – VoteMyAI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg: #0a0a0f; --surface: #111118; --border: #1e1e2e; --accent: #e8ff47; --text: #f0f0f0; --muted: #666680; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; padding: 40px 20px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    h1 { font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; color: var(--accent); margin-bottom: 32px; }
+    h2 { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; margin: 40px 0 20px; }
+    table { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: rgba(232,255,71,0.1); font-weight: 600; }
+    .btn-delete { background: rgba(248, 113, 113, 0.1); border: 1px solid rgba(248, 113, 113, 0.3); color: #f87171; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+    input[type="password"] { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 10px; border-radius: 6px; margin-right: 10px; }
+    .btn-login { background: var(--accent); color: #0a0a0f; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+<div class="container" id="loginSection">
+  <h1>Admin Login</h1>
+  <input type="password" id="passwordInput" placeholder="Enter admin password">
+  <button class="btn-login" onclick="login()">Login</button>
+</div>
+
+<div class="container" id="adminPanel" style="display:none;">
+  <h1>🔧 Admin Panel</h1>
+  
+  <h2>📀 Tracks</h2>
+  <table id="tracksTable"><tr><th>Title</th><th>Tool</th><th>Genre</th><th>Votes</th><th>Actions</th></tr></table>
+  
+  <h2>💬 Comments</h2>
+  <table id="commentsTable"><tr><th>Track</th><th>User</th><th>Comment</th><th>Actions</th></tr></table>
+</div>
+
+<script type="module">
+  const SUPABASE_URL = 'https://gezijezmsecbtzytotax.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_hOOMtCz7gYsu_-CVD6lW9Q_SxtFlNhw';
+  const ADMIN_PASSWORD = '5p1elBerg!';
+  
+  window.login = function() {
+    if (document.getElementById('passwordInput').value === ADMIN_PASSWORD) {
+      document.getElementById('loginSection').style.display = 'none';
+      document.getElementById('adminPanel').style.display = 'block';
+      loadData();
+    } else {
+      alert('Wrong password');
+    }
+  };
+  
+  async function loadData() {
+    // Load tracks
+    const tracksRes = await fetch(`${SUPABASE_URL}/rest/v1/tracks?select=*&order=created_at.desc`, {
+      headers: { 'apikey': SUPABASE_KEY }
+    });
+    const tracks = await tracksRes.json();
+    
+    document.getElementById('tracksTable').innerHTML = `
+      <tr><th>Title</th><th>Tool</th><th>Genre</th><th>Votes</th><th>Actions</th></tr>
+      ${tracks.map(t => `
+        <tr>
+          <td>${t.title}</td>
+          <td>${t.tool}</td>
+          <td>${t.genre}</td>
+          <td>${t.votes || 0}</td>
+          <td><button class="btn-delete" onclick="deleteTrack('${t.id}')">Delete</button></td>
+        </tr>
+      `).join('')}
+    `;
+    
+    // Load comments
+    const commentsRes = await fetch(`${SUPABASE_URL}/rest/v1/comments?select=*,tracks(title)&order=created_at.desc`, {
+      headers: { 'apikey': SUPABASE_KEY }
+    });
+    const comments = await commentsRes.json();
+    
+    document.getElementById('commentsTable').innerHTML = `
+      <tr><th>Track</th><th>Comment</th><th>Actions</th></tr>
+      ${comments.map(c => `
+        <tr>
+          <td>${c.tracks?.title || 'Unknown'}</td>
+          <td>${c.content}</td>
+          <td><button class="btn-delete" onclick="deleteComment('${c.id}')">Delete</button></td>
+        </tr>
+      `).join('')}
+    `;
+  }
+  
+  window.deleteTrack = async function(id) {
+    if (!confirm('Delete this track?')) return;
+    await fetch(`${SUPABASE_URL}/rest/v1/tracks?id=eq.${id}`, {
+      method: 'DELETE',
+      headers: { 'apikey': SUPABASE_KEY }
+    });
+    loadData();
+  };
+  
+  window.deleteComment = async function(id) {
+    if (!confirm('Delete this comment?')) return;
+    await fetch(`${SUPABASE_URL}/rest/v1/comments?id=eq.${id}`, {
+      method: 'DELETE',
+      headers: { 'apikey': SUPABASE_KEY }
+    });
+    loadData();
+  };
+</script>
+
+</body>
+</html>
