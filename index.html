@@ -283,7 +283,7 @@
   
   async function loadComments(trackId) {
     try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/comments?track_id=eq.${trackId}&select=*,profiles(name)&order=created_at.desc`, {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/comments?track_id=eq.${trackId}&select=*&order=created_at.desc`, {
         headers: { 'apikey': SUPABASE_KEY }
       });
       const comments = await res.json();
@@ -292,7 +292,7 @@
       content.innerHTML = comments.length ? comments.map(c => `
         <div class="comment">
           <div class="comment-text">${c.content}</div>
-          <div class="comment-author">— ${c.profiles?.name || 'Anonymous'}</div>
+          <div class="comment-author">— User</div>
         </div>
       `).join('') : '<p style="font-size:0.8rem;color:var(--muted);">No comments yet</p>';
     } catch (err) {
