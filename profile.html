@@ -74,8 +74,8 @@
   document.getElementById('userEmail').textContent = user.email;
   document.getElementById('avatar').textContent = name.charAt(0).toUpperCase();
   
-  // Load tracks - for now shows all, will filter by user_id when we add that column
-  const trackRes = await fetch(`${SUPABASE_URL}/rest/v1/tracks?select=*&order=created_at.desc`, {
+  // Load tracks - filter by current user and sort by votes
+  const trackRes = await fetch(`${SUPABASE_URL}/rest/v1/tracks?user_id=eq.${user.id}&select=*&order=votes.desc`, {
     headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${token}` }
   });
   const tracks = await trackRes.json();
