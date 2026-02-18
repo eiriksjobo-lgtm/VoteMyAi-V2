@@ -93,7 +93,7 @@
   <div class="logo">VOTEMYAI</div>
   <div class="nav-links">
     <a href="#tracks">Tracks</a>
-    <a href="/login.html">Login</a>
+    <a href="/login.html" id="authLink">Login</a>
     <button class="btn-submit" onclick="window.location.href='/submit.html'">Submit Track</button>
   </div>
 </nav>
@@ -135,29 +135,48 @@
   let currentUser = null;
   let userVotes = [];
   let allTracks = [];
-  let currentGenre = 'all';  
-  // Check if user is logged in
+  let currentGenre = 'all';
+  
+  // ── Auth ──
   async function checkAuth() {
     const hash = window.location.hash.substring(1);
     const params = new URLSearchParams(hash);
     const accessToken = params.get('access_token');
     
     if (accessToken) {
+      // Returning from Google OAuth
       const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
         headers: { 'Authorization': `Bearer ${accessToken}`, 'apikey': SUPABASE_KEY }
       });
       if (res.ok) {
         currentUser = await res.json();
         localStorage.setItem('sb_token', accessToken);
-        window.location.hash = '';
+        // Clean hash from URL
+        window.history.replaceState(null, '', window.location.pathname);
+        
+        // ── POST-LOGIN REDIRECT ──
+        // If user was trying to go somewhere before login, send them there
+        const redirect = localStorage.getItem('login_redirect');
+        if (redirect && redirect !== '/' && redirect !== window.location.pathname && redirect !== window.location.href) {
+          localStorage.removeItem('login_redirect');
+          window.location.href = redirect;
+          return;
+        }
+        localStorage.removeItem('login_redirect');
       }
     } else {
+      // Check existing session
       const token = localStorage.getItem('sb_token');
       if (token) {
         const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
           headers: { 'Authorization': `Bearer ${token}`, 'apikey': SUPABASE_KEY }
         });
-        if (res.ok) currentUser = await res.json();
+        if (res.ok) {
+          currentUser = await res.json();
+        } else {
+          // Token expired — clean up
+          localStorage.removeItem('sb_token');
+        }
       }
     }
     
@@ -168,10 +187,10 @@
   }
   
   function updateNavAuth() {
-    const loginLink = document.querySelector('.nav-links a[href="/login.html"]');
-    if (currentUser && loginLink) {
-      loginLink.textContent = currentUser.user_metadata?.name || 'Profile';
-      loginLink.href = '/profile.html';
+    const authLink = document.getElementById('authLink');
+    if (currentUser && authLink) {
+      authLink.textContent = currentUser.user_metadata?.name || 'Profile';
+      authLink.href = '/profile.html';
     }
   }
   
@@ -344,7 +363,6 @@
   };
   
   window.vote = async function(trackId) {
-    // Track votes in localStorage for anonymous users
     const anonVotes = JSON.parse(localStorage.getItem('anon_votes') || '[]');
     
     if (anonVotes.includes(trackId)) {
@@ -353,7 +371,6 @@
     }
     
     try {
-      // Increment vote count
       await fetch(`${SUPABASE_URL}/rest/v1/rpc/increment_votes`, {
         method: 'POST',
         headers: {
@@ -363,12 +380,10 @@
         body: JSON.stringify({ track_id: trackId })
       });
       
-      // Save vote locally
       anonVotes.push(trackId);
       localStorage.setItem('anon_votes', JSON.stringify(anonVotes));
       
       if (currentUser) {
-        // Also save to database if logged in
         const token = localStorage.getItem('sb_token');
         await fetch(`${SUPABASE_URL}/rest/v1/votes`, {
           method: 'POST',
