@@ -34,6 +34,12 @@
     
     .tracks-section { max-width: 1200px; margin: 0 auto; padding: 60px 40px; }
     .section-title { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 1px; margin-bottom: 32px; text-transform: uppercase; }
+    
+    .genre-filters { display: flex; gap: 12px; margin-bottom: 32px; flex-wrap: wrap; }
+    .genre-btn { background: rgba(232,255,71,0.1); border: 1px solid rgba(232,255,71,0.3); color: var(--accent); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: all 0.2s; }
+    .genre-btn:hover { background: rgba(232,255,71,0.2); }
+    .genre-btn.active { background: var(--accent); color: #0a0a0f; }
+    
     .tracks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
     
     .track-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: transform 0.2s; }
@@ -68,6 +74,17 @@
 
 <div class="tracks-section" id="tracks">
   <div class="section-title">🔥 Trending Tracks</div>
+  
+  <div class="genre-filters">
+    <button class="genre-btn active" onclick="filterGenre('all')">All</button>
+    <button class="genre-btn" onclick="filterGenre('Electronic')">🎹 Electronic</button>
+    <button class="genre-btn" onclick="filterGenre('Hip-Hop')">🎤 Hip-Hop</button>
+    <button class="genre-btn" onclick="filterGenre('Pop')">🎵 Pop</button>
+    <button class="genre-btn" onclick="filterGenre('Rock')">🎸 Rock</button>
+    <button class="genre-btn" onclick="filterGenre('Cinematic')">🎬 Cinematic</button>
+    <button class="genre-btn" onclick="filterGenre('Other')">✨ Other</button>
+  </div>
+  
   <div class="tracks-grid" id="tracksGrid">
     <p style="color: var(--muted); grid-column: 1/-1; text-align: center; padding: 60px;">Loading tracks...</p>
   </div>
@@ -79,7 +96,8 @@
   
   let currentUser = null;
   let userVotes = [];
-  
+  let allTracks = [];
+  let currentGenre = 'all';  
   // Check if user is logged in
   async function checkAuth() {
     const hash = window.location.hash.substring(1);
@@ -136,39 +154,53 @@
       const res = await fetch(`${SUPABASE_URL}/rest/v1/tracks?select=*&order=votes.desc`, {
         headers: { 'apikey': SUPABASE_KEY }
       });
-      const tracks = await res.json();
-      const grid = document.getElementById('tracksGrid');
-      
-      if (!tracks || tracks.length === 0) {
-        grid.innerHTML = '<p style="color: var(--muted); grid-column: 1/-1; text-align: center; padding: 60px;">No tracks yet. Be the first to submit!</p>';
-        return;
-      }
-      
-      grid.innerHTML = tracks.map(track => {
-        const anonVotes = JSON.parse(localStorage.getItem('anon_votes') || '[]');
-        const hasVoted = userVotes.includes(track.id) || anonVotes.includes(track.id);
-        const btnClass = hasVoted ? 'vote-btn voted' : 'vote-btn';
-        const btnText = hasVoted ? '✓ Voted' : '▲ Vote';
-        const btnDisabled = hasVoted ? 'disabled' : '';
-        
-        return `
-          <div class="track-card">
-            <div class="track-video">
-              <iframe src="https://www.youtube.com/embed/${track.yt_id}" allowfullscreen></iframe>
-            </div>
-            <div class="track-info">
-              <div class="track-title">${track.title}</div>
-              <div class="track-meta">${track.tool} • ${track.genre}</div>
-              <button class="${btnClass}" onclick="vote('${track.id}')" ${btnDisabled}>${btnText}</button>
-              <div class="votes-count">${track.votes || 0} votes</div>
-            </div>
-          </div>
-        `;
-      }).join('');
+      allTracks = await res.json();
+      renderTracks();
     } catch (err) {
       console.error('Error:', err);
     }
   }
+  
+  function renderTracks() {
+    const grid = document.getElementById('tracksGrid');
+    const filteredTracks = currentGenre === 'all' 
+      ? allTracks 
+      : allTracks.filter(t => t.genre === currentGenre);
+    
+    if (!filteredTracks || filteredTracks.length === 0) {
+      grid.innerHTML = '<p style="color: var(--muted); grid-column: 1/-1; text-align: center; padding: 60px;">No tracks in this genre yet!</p>';
+      return;
+    }
+    
+    grid.innerHTML = filteredTracks.map(track => {
+      const anonVotes = JSON.parse(localStorage.getItem('anon_votes') || '[]');
+      const hasVoted = userVotes.includes(track.id) || anonVotes.includes(track.id);
+      const btnClass = hasVoted ? 'vote-btn voted' : 'vote-btn';
+      const btnText = hasVoted ? '✓ Voted' : '▲ Vote';
+      const btnDisabled = hasVoted ? 'disabled' : '';
+      
+      return `
+        <div class="track-card">
+          <div class="track-video">
+            <iframe src="https://www.youtube.com/embed/${track.yt_id}" allowfullscreen></iframe>
+          </div>
+          <div class="track-info">
+            <div class="track-title">${track.title}</div>
+            <div class="track-meta">${track.tool} • ${track.genre}</div>
+            <button class="${btnClass}" onclick="vote('${track.id}')" ${btnDisabled}>${btnText}</button>
+            <div class="votes-count">${track.votes || 0} votes</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+  
+  window.filterGenre = function(genre) {
+    currentGenre = genre;
+    document.querySelectorAll('.genre-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    renderTracks();
+  };
   
   window.vote = async function(trackId) {
     // Track votes in localStorage for anonymous users
