@@ -184,16 +184,8 @@
     let accessToken = params.get('access_token');
     
     if (accessToken) {
-      // Store token from OAuth redirect
       localStorage.setItem('sb_token', accessToken);
-      window.location.hash = ''; // Clean URL
-    } else {
-      // Check if already logged in
-      accessToken = localStorage.getItem('sb_token');
-      if (!accessToken) {
-        // Not logged in, redirect to login
-        window.location.href = '/login.html';
-      }
+      window.location.hash = '';
     }
   });
   
