@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Profile – VoteMyAI</title>
   
+  <meta name="description" content="Manage your VoteMyAI profile – view and manage your submitted AI music tracks.">
+  <meta property="og:title" content="My Profile – VoteMyAI">
+  <meta property="og:site_name" content="VoteMyAI">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230a0a0f'/><text y='72' x='12' font-size='60' font-family='sans-serif' font-weight='bold' fill='%23e8ff47'>V</text></svg>">
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;500;700&display=swap" rel="stylesheet">
   
@@ -14,30 +19,54 @@
     body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; }
     
     nav { position: sticky; top: 0; background: rgba(10,10,15,0.95); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 0 40px; height: 64px; display: flex; align-items: center; justify-content: space-between; z-index: 100; }
-    .logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 2px; color: var(--accent); cursor: pointer; }
+    .logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 2px; color: var(--accent); cursor: pointer; text-decoration: none; }
     .nav-links { display: flex; gap: 32px; align-items: center; }
-    .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.8rem; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; }
-    .btn-logout { background: rgba(232,255,71,0.1); border: 1px solid rgba(232,255,71,0.3); color: var(--accent); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.8rem; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); }
+    .btn-logout { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: #f87171; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
     
     .container { max-width: 1000px; margin: 0 auto; padding: 60px 40px; }
     h1 { font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; letter-spacing: 2px; color: var(--accent); margin-bottom: 32px; }
     .user-info { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 40px; display: flex; align-items: center; gap: 20px; }
-    .user-avatar { width: 64px; height: 64px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700; color: #0a0a0f; }
+    .user-avatar { width: 64px; height: 64px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700; color: #0a0a0f; overflow: hidden; }
+    .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
     .section-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 1px; margin: 40px 0 24px; }
     .tracks-list { display: flex; flex-direction: column; gap: 16px; }
-    .track-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; gap: 20px; }
-    .track-thumb { width: 120px; height: 68px; border-radius: 6px; overflow: hidden; }
+    .track-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; gap: 20px; align-items: center; }
+    .track-thumb { width: 120px; height: 68px; border-radius: 6px; overflow: hidden; flex-shrink: 0; }
     .track-thumb img { width: 100%; height: 100%; object-fit: cover; }
     .track-details { flex: 1; }
     .track-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
     .track-meta { color: var(--muted); font-size: 0.85rem; }
-    .btn-delete { background: rgba(248, 113, 113, 0.1); border: 1px solid rgba(248, 113, 113, 0.3); color: #f87171; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
+    .btn-delete { background: rgba(248, 113, 113, 0.1); border: 1px solid rgba(248, 113, 113, 0.3); color: #f87171; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; flex-shrink: 0; }
+    .btn-delete:hover { background: rgba(248, 113, 113, 0.2); }
+
+    /* Skeleton */
+    @keyframes shimmer {
+      0% { background-position: -400px 0; }
+      100% { background-position: 400px 0; }
+    }
+    .skeleton {
+      background: linear-gradient(90deg, var(--surface) 25%, rgba(255,255,255,0.04) 50%, var(--surface) 75%);
+      background-size: 800px 100%;
+      animation: shimmer 1.5s infinite ease-in-out;
+      border-radius: 8px;
+    }
+    .skeleton-track { height: 68px; margin-bottom: 16px; border-radius: 12px; }
+    
+    @media (max-width: 680px) {
+      .container { padding: 40px 16px; }
+      nav { padding: 0 16px; }
+      .nav-links { gap: 16px; }
+      .track-item { flex-direction: column; }
+      .track-thumb { width: 100%; height: auto; aspect-ratio: 16/9; }
+    }
   </style>
 </head>
 <body>
 
 <nav>
-  <div class="logo" onclick="window.location.href='/'">VOTEMYAI</div>
+  <a href="/" class="logo">VOTEMYAI</a>
   <div class="nav-links">
     <a href="/">Home</a>
     <a href="/submit.html">Submit</a>
@@ -52,13 +81,25 @@
     <div><h2 id="userName">Loading...</h2><p id="userEmail" style="color:var(--muted)"></p></div>
   </div>
   <div class="section-title">📀 My Tracks</div>
-  <div class="tracks-list" id="tracksList"><p style="color: var(--muted); text-align: center; padding: 40px;">Loading...</p></div>
+  <div class="tracks-list" id="tracksList">
+    <div class="skeleton skeleton-track"></div>
+    <div class="skeleton skeleton-track"></div>
+    <div class="skeleton skeleton-track"></div>
+  </div>
 </div>
 
 <script type="module">
   const SUPABASE_URL = 'https://gezijezmsecbtzytotax.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_hOOMtCz7gYsu_-CVD6lW9Q_SxtFlNhw';
   let token = localStorage.getItem('sb_token');
+  
+  // XSS sanitization
+  function sanitize(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
   
   if (!token) { window.location.href = '/login.html'; }
   
@@ -72,9 +113,17 @@
   const name = user.user_metadata?.name || user.email.split('@')[0];
   document.getElementById('userName').textContent = name;
   document.getElementById('userEmail').textContent = user.email;
-  document.getElementById('avatar').textContent = name.charAt(0).toUpperCase();
   
-  // Load tracks - filter by current user and sort by votes
+  // Show Google avatar if available, otherwise show initial
+  const avatarEl = document.getElementById('avatar');
+  const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture;
+  if (avatarUrl) {
+    avatarEl.innerHTML = `<img src="${sanitize(avatarUrl)}" alt="${sanitize(name)}">`;
+  } else {
+    avatarEl.textContent = name.charAt(0).toUpperCase();
+  }
+  
+  // Load tracks
   const trackRes = await fetch(`${SUPABASE_URL}/rest/v1/tracks?user_id=eq.${user.id}&select=*&order=votes.desc`, {
     headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${token}` }
   });
@@ -82,17 +131,17 @@
   
   document.getElementById('tracksList').innerHTML = tracks.length ? tracks.map(t => `
     <div class="track-item">
-      <div class="track-thumb"><img src="https://img.youtube.com/vi/${t.yt_id}/mqdefault.jpg"></div>
+      <div class="track-thumb"><img src="https://img.youtube.com/vi/${encodeURIComponent(t.yt_id)}/mqdefault.jpg" alt="${sanitize(t.title)}"></div>
       <div class="track-details">
-        <div class="track-title">${t.title}</div>
-        <div class="track-meta">${t.tool} • ${t.genre} • ${t.votes || 0} votes</div>
+        <div class="track-title">${sanitize(t.title)}</div>
+        <div class="track-meta">${sanitize(t.tool)} • ${sanitize(t.genre)} • ${parseInt(t.votes) || 0} votes</div>
       </div>
       <button class="btn-delete" onclick="deleteTrack('${t.id}')">Delete</button>
     </div>
-  `).join('') : '<p style="color: var(--muted); text-align: center; padding: 40px;">No tracks yet.</p>';
+  `).join('') : '<p style="color: var(--muted); text-align: center; padding: 40px;">No tracks yet. <a href="/submit.html" style="color: var(--accent);">Submit your first track!</a></p>';
   
   window.deleteTrack = async (id) => {
-    if (!confirm('Delete this track?')) return;
+    if (!confirm('Delete this track? This cannot be undone.')) return;
     await fetch(`${SUPABASE_URL}/rest/v1/tracks?id=eq.${id}`, {
       method: 'DELETE',
       headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${token}` }
@@ -100,7 +149,11 @@
     location.reload();
   };
   
-  window.logout = () => { localStorage.removeItem('sb_token'); location.href = '/'; };
+  window.logout = () => {
+    localStorage.removeItem('sb_token');
+    localStorage.removeItem('anon_votes');
+    location.href = '/';
+  };
 </script>
 
 </body>
