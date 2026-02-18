@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VoteMyAI – AI Music Voting Platform</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;500;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --border: #1e1e2e;
+      --accent: #e8ff47;
+      --text: #f0f0f0;
+      --muted: #666680;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; line-height: 1.6; }
+    
+    nav { position: sticky; top: 0; background: rgba(10,10,15,0.95); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 0 40px; height: 64px; display: flex; align-items: center; justify-content: space-between; z-index: 100; }
+    .logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 2px; color: var(--accent); }
+    .nav-links { display: flex; gap: 32px; align-items: center; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.8rem; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); }
+    .btn-submit { background: var(--accent); color: #0a0a0f; padding: 10px 20px; border-radius: 6px; border: none; font-weight: 700; cursor: pointer; font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase; }
+    
+    .hero { text-align: center; padding: 120px 40px 80px; max-width: 900px; margin: 0 auto; }
+    .hero h1 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(3rem, 8vw, 5rem); letter-spacing: 2px; line-height: 1.1; margin-bottom: 20px; }
+    .hero .accent { color: var(--accent); }
+    .hero p { color: var(--muted); font-size: 1.1rem; margin-bottom: 40px; }
+    
+    .tracks-section { max-width: 1200px; margin: 0 auto; padding: 60px 40px; }
+    .section-title { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 1px; margin-bottom: 32px; text-transform: uppercase; }
+    .tracks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+    
+    .track-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: transform 0.2s; }
+    .track-card:hover { transform: translateY(-4px); }
+    .track-video { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; }
+    .track-video iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+    .track-info { padding: 20px; }
+    .track-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
+    .track-meta { color: var(--muted); font-size: 0.85rem; margin-bottom: 16px; }
+    .vote-btn { background: rgba(232,255,71,0.1); border: 1px solid rgba(232,255,71,0.3); color: var(--accent); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem; width: 100%; }
+    .vote-btn:hover { background: rgba(232,255,71,0.2); }
+    .votes-count { text-align: center; margin-top: 8px; color: var(--accent); font-weight: 700; font-size: 1.2rem; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">VOTEMYAI</div>
+  <div class="nav-links">
+    <a href="#tracks">Tracks</a>
+    <a href="/login.html">Login</a>
+    <button class="btn-submit" onclick="window.location.href='/login.html'">Submit Track</button>
+  </div>
+</nav>
+
+<div class="hero">
+  <h1>VOTE<br><span class="accent">THE</span><br>FUTURE</h1>
+  <p>Submit your AI-generated tracks. The community votes. The best rise to the top.</p>
+</div>
+
+<div class="tracks-section" id="tracks">
+  <div class="section-title">🔥 Trending Tracks</div>
+  <div class="tracks-grid" id="tracksGrid">
+    <p style="color: var(--muted); grid-column: 1/-1; text-align: center; padding: 60px;">Loading tracks...</p>
+  </div>
+</div>
+
+<script type="module">
+  // ⚠️ VIKTIG: Oppdater disse med dine Supabase-verdier!
+  const SUPABASE_URL = 'https://pkpkgaaowtcmuqzgqvda.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_px-Cw2XvKCGQKff0bb22uQ_ufIJchQw';
+  
+  async function loadTracks() {
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/tracks?select=*&order=votes.desc`, {
+        headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' }
+      });
+      const tracks = await res.json();
+      const grid = document.getElementById('tracksGrid');
+      
+      if (!tracks || tracks.length === 0) {
+        grid.innerHTML = '<p style="color: var(--muted); grid-column: 1/-1; text-align: center; padding: 60px;">No tracks yet. Be the first to submit!</p>';
+        return;
+      }
+      
+      grid.innerHTML = tracks.map(track => `
+        <div class="track-card">
+          <div class="track-video">
+            <iframe src="https://www.youtube.com/embed/${track.yt_id}" allowfullscreen></iframe>
+          </div>
+          <div class="track-info">
+            <div class="track-title">${track.title}</div>
+            <div class="track-meta">${track.tool} • ${track.genre}</div>
+            <button class="vote-btn" onclick="vote('${track.id}')">▲ Vote</button>
+            <div class="votes-count">${track.votes || 0} votes</div>
+          </div>
+        </div>
+      `).join('');
+    } catch (err) {
+      console.error('Error:', err);
+      document.getElementById('tracksGrid').innerHTML = '<p style="color: red; grid-column: 1/-1; text-align: center;">Failed to load tracks. Check console.</p>';
+    }
+  }
+  
+  window.vote = async function(trackId) {
+    await loadTracks();
+    alert('Voting coming soon!');
+  };
+  
+  loadTracks();
+</script>
+
+</body>
+</html>
