@@ -22,6 +22,12 @@
     .contact-value { color: var(--text); }
     a { color: var(--accent); text-decoration: none; }
     a:hover { text-decoration: underline; }
+    .form-group { margin-bottom: 20px; }
+    label { display: block; font-weight: 600; color: var(--accent); margin-bottom: 8px; font-size: 0.9rem; }
+    input, textarea { width: 100%; background: rgba(30,30,46,0.5); border: 1px solid var(--border); color: var(--text); padding: 12px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 1rem; }
+    input:focus, textarea:focus { outline: none; border-color: var(--accent); }
+    .submit-btn { background: var(--accent); color: #0a0a0f; border: none; padding: 14px 32px; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; font-size: 1rem; }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
   </style>
 </head>
 <body>
@@ -32,30 +38,68 @@
 
 <div class="container">
   <h1>Contact Us</h1>
-  <p>Have questions, feedback, or need support? Get in touch with us!</p>
+  <p>Have questions, feedback, or need support? Send us a message!</p>
 
   <div class="contact-info">
-    <div class="contact-item">
-      <div class="contact-label">Email</div>
-      <div class="contact-value"><a href="mailto:hello@votemyai.com">hello@votemyai.com</a></div>
-    </div>
-
-    <div class="contact-item">
-      <div class="contact-label">Support</div>
-      <div class="contact-value">For technical issues or account problems, please email us with a detailed description.</div>
-    </div>
-
-    <div class="contact-item">
-      <div class="contact-label">Partnerships</div>
-      <div class="contact-value">Interested in collaborating? Reach out to discuss opportunities.</div>
-    </div>
-
-    <div class="contact-item">
-      <div class="contact-label">Response Time</div>
-      <div class="contact-value">We typically respond within 24-48 hours.</div>
-    </div>
+    <form id="contactForm">
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" id="name" required>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="email" required>
+      </div>
+      <div class="form-group">
+        <label>Message</label>
+        <textarea id="message" rows="6" required></textarea>
+      </div>
+      <button type="submit" class="submit-btn">Send Message</button>
+      <div id="status"></div>
+    </form>
   </div>
 </div>
+
+<script>
+const SUPABASE_URL = 'https://gezijezmsecbtzytotax.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_hOOMtCz7gYsu_-CVD6lW9Q_SxtFlNhw';
+
+document.getElementById('contactForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = e.target.querySelector('button');
+  const status = document.getElementById('status');
+  
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+  
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/contact_messages`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        message: document.getElementById('message').value
+      })
+    });
+    
+    if (res.ok) {
+      status.innerHTML = '<p style="color: #4ade80; margin-top: 16px;">✅ Message sent successfully!</p>';
+      e.target.reset();
+    } else {
+      status.innerHTML = '<p style="color: #f87171; margin-top: 16px;">❌ Failed to send. Please try again.</p>';
+    }
+  } catch (err) {
+    status.innerHTML = '<p style="color: #f87171; margin-top: 16px;">❌ Network error. Please try again.</p>';
+  }
+  
+  btn.disabled = false;
+  btn.textContent = 'Send Message';
+});
+</script>
 
 </body>
 </html>
