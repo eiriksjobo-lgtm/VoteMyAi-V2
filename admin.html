@@ -35,7 +35,6 @@
 
 <div class="container" id="loginSection">
   <h1>Admin Login</h1>
-  <p style="color:var(--muted); margin-bottom: 20px;">You must be logged in to your account first. Then enter the admin password below.</p>
   <input type="password" id="passwordInput" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')login()">
   <button class="btn-login" onclick="login()">Login</button>
   <div class="status" id="loginStatus"></div>
@@ -106,33 +105,8 @@
       return;
     }
     
-    // Re-read token (might have been set since page load)
+    // Re-read token
     token = localStorage.getItem('sb_token');
-    
-    if (!token) {
-      // Redirect to login, come back after
-      localStorage.setItem('login_redirect', '/admin.html');
-      window.location.href = '/login.html?redirect=/admin.html';
-      return;
-    }
-    
-    // Validate token is still valid
-    try {
-      const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-        headers: { 'Authorization': `Bearer ${token}`, 'apikey': SUPABASE_KEY }
-      });
-      if (!res.ok) {
-        // Token expired — redirect to login
-        localStorage.removeItem('sb_token');
-        localStorage.setItem('login_redirect', '/admin.html');
-        window.location.href = '/login.html?redirect=/admin.html';
-        return;
-      }
-    } catch (e) {
-      localStorage.setItem('login_redirect', '/admin.html');
-      window.location.href = '/login.html?redirect=/admin.html';
-      return;
-    }
     
     document.getElementById('loginSection').style.display = 'none';
     document.getElementById('adminPanel').style.display = 'block';
@@ -206,6 +180,9 @@
   async function adminDelete(table, id, label) {
     if (!confirm(`Delete this ${label}?`)) return;
     
+    // Re-read token in case it was refreshed
+    token = localStorage.getItem('sb_token');
+    
     try {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
         method: 'DELETE',
@@ -215,14 +192,22 @@
       if (res.ok || res.status === 204) {
         showStatus('adminStatus', `${label} deleted successfully.`, 'success');
         await loadData();
+      } else if (res.status === 401 || res.status === 403) {
+        showStatus('adminStatus', `Not authorized. Please log in on the main site first, then try again.`, 'error');
       } else {
         const errText = await res.text();
         console.error(`Delete ${label} error:`, res.status, errText);
-        showStatus('adminStatus', `Failed to delete ${label}. Status: ${res.status}. Check RLS policies in Supabase — your user may need DELETE permission.`, 'error');
+        
+        // Check if it's an RLS error
+        if (errText.includes('policy') || errText.includes('permission') || res.status === 404) {
+          showStatus('adminStatus', `Cannot delete — RLS policy missing in Supabase. Run the SQL commands to add DELETE policies.`, 'error');
+        } else {
+          showStatus('adminStatus', `Failed to delete ${label}. Status: ${res.status}`, 'error');
+        }
       }
     } catch (err) {
       console.error(`Delete ${label} network error:`, err);
-      showStatus('adminStatus', `Network error deleting ${label}: ${err.message}`, 'error');
+      showStatus('adminStatus', `Network error: ${err.message}`, 'error');
     }
   }
   
