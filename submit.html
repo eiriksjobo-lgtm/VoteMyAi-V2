@@ -91,7 +91,6 @@
     }
     .platform-badge.show { display: inline-flex; }
     .platform-badge.youtube { background: rgba(255,0,0,0.1); border: 1px solid rgba(255,0,0,0.3); color: #ff4444; }
-    .platform-badge.spotify { background: rgba(30,215,96,0.1); border: 1px solid rgba(30,215,96,0.3); color: #1ed760; }
     .platform-badge.soundcloud { background: rgba(255,136,0,0.1); border: 1px solid rgba(255,136,0,0.3); color: #ff8800; }
     .platform-badge.invalid { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: #f87171; }
     
@@ -191,8 +190,8 @@
   <div id="formContainer" style="display: none;">
     <form id="submitForm">
       <div class="form-group">
-        <label>Track URL <span class="label-hint">— YouTube, Spotify, or SoundCloud</span></label>
-        <input type="url" id="trackUrl" placeholder="Paste a YouTube, Spotify, or SoundCloud link..." required>
+        <label>Track URL <span class="label-hint">— YouTube or SoundCloud</span></label>
+        <input type="url" id="trackUrl" placeholder="Paste a YouTube or SoundCloud link..." required>
         <div class="platform-badge" id="platformBadge"></div>
         <div class="preview-container" id="previewContainer"></div>
       </div>
@@ -288,10 +287,6 @@
     const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([^&\?\/\s]+)/);
     if (ytMatch) return { platform: 'youtube', id: ytMatch[1] };
     
-    // Spotify
-    const spMatch = url.match(/spotify\.com\/(?:intl-[a-z]+\/)?track\/([a-zA-Z0-9]+)/);
-    if (spMatch) return { platform: 'spotify', id: spMatch[1] };
-    
     // SoundCloud — we store the full URL since SC embed uses URLs
     if (url.includes('soundcloud.com/') && url.split('/').length >= 4) {
       return { platform: 'soundcloud', id: url.split('?')[0] };
@@ -305,8 +300,6 @@
     
     if (platform === 'youtube') {
       container.innerHTML = `<div class="preview-yt"><iframe src="https://www.youtube.com/embed/${encodeURIComponent(id)}" allowfullscreen loading="lazy"></iframe></div>`;
-    } else if (platform === 'spotify') {
-      container.innerHTML = `<iframe src="https://open.spotify.com/embed/track/${encodeURIComponent(id)}?theme=0" height="152" allow="encrypted-media" loading="lazy"></iframe>`;
     } else if (platform === 'soundcloud') {
       container.innerHTML = `<iframe height="166" scrolling="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=${encodeURIComponent(id)}&color=%23e8ff47&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false" loading="lazy"></iframe>`;
     }
@@ -337,14 +330,14 @@
         detectedPlatform = result.platform;
         detectedId = result.id;
         
-        const labels = { youtube: '▶ YouTube', spotify: '♫ Spotify', soundcloud: '☁ SoundCloud' };
+        const labels = { youtube: '▶ YouTube', soundcloud: '☁ SoundCloud' };
         badge.textContent = labels[result.platform] + ' detected';
         badge.className = `platform-badge show ${result.platform}`;
         showPreview(result.platform, result.id);
       } else {
         detectedPlatform = null;
         detectedId = null;
-        badge.textContent = '✗ Unsupported URL — use YouTube, Spotify, or SoundCloud';
+        badge.textContent = '✗ Unsupported URL — use YouTube or SoundCloud';
         badge.className = 'platform-badge show invalid';
         preview.classList.remove('show');
       }
@@ -372,7 +365,7 @@
     const genre = document.getElementById('genre').value;
     
     if (!detectedPlatform || !detectedId) {
-      showMessage('Please enter a valid YouTube, Spotify, or SoundCloud URL', 'error');
+      showMessage('Please enter a valid YouTube or SoundCloud URL', 'error');
       btn.disabled = false;
       btn.textContent = 'Submit Track';
       return;
