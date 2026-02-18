@@ -42,6 +42,18 @@
     
     .tracks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
     
+    .leaderboard-section { max-width: 800px; margin: 0 auto; padding: 60px 40px; }
+    .leaderboard { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .lb-row { display: flex; align-items: center; gap: 20px; padding: 16px 20px; border-bottom: 1px solid var(--border); transition: background 0.2s; }
+    .lb-row:last-child { border-bottom: none; }
+    .lb-row:hover { background: rgba(232,255,71,0.05); }
+    .lb-rank { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; color: var(--accent); width: 40px; text-align: center; }
+    .lb-rank.top3 { color: var(--accent); }
+    .lb-info { flex: 1; }
+    .lb-title { font-weight: 700; font-size: 1rem; margin-bottom: 4px; }
+    .lb-meta { color: var(--muted); font-size: 0.85rem; }
+    .lb-votes { font-weight: 700; color: var(--accent); font-size: 1.1rem; }
+    
     .track-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: transform 0.2s; }
     .track-card:hover { transform: translateY(-4px); }
     .track-video { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; }
@@ -87,6 +99,13 @@
   
   <div class="tracks-grid" id="tracksGrid">
     <p style="color: var(--muted); grid-column: 1/-1; text-align: center; padding: 60px;">Loading tracks...</p>
+  </div>
+</div>
+
+<div class="leaderboard-section">
+  <div class="section-title">🏆 Top 10 Leaderboard</div>
+  <div class="leaderboard" id="leaderboard">
+    <p style="color: var(--muted); text-align: center; padding: 40px;">Loading...</p>
   </div>
 </div>
 
@@ -156,6 +175,7 @@
       });
       allTracks = await res.json();
       renderTracks();
+      renderLeaderboard();
     } catch (err) {
       console.error('Error:', err);
     }
@@ -190,6 +210,33 @@
             <button class="${btnClass}" onclick="vote('${track.id}')" ${btnDisabled}>${btnText}</button>
             <div class="votes-count">${track.votes || 0} votes</div>
           </div>
+        </div>
+      `;
+    }).join('');
+  }
+  
+  function renderLeaderboard() {
+    const lb = document.getElementById('leaderboard');
+    const top10 = [...allTracks].sort((a, b) => (b.votes || 0) - (a.votes || 0)).slice(0, 10);
+    
+    if (top10.length === 0) {
+      lb.innerHTML = '<p style="color: var(--muted); text-align: center; padding: 40px;">No tracks yet!</p>';
+      return;
+    }
+    
+    lb.innerHTML = top10.map((track, i) => {
+      const rank = i + 1;
+      const medals = ['🥇', '🥈', '🥉'];
+      const displayRank = rank <= 3 ? medals[i] : `#${rank}`;
+      
+      return `
+        <div class="lb-row">
+          <div class="lb-rank ${rank <= 3 ? 'top3' : ''}">${displayRank}</div>
+          <div class="lb-info">
+            <div class="lb-title">${track.title}</div>
+            <div class="lb-meta">${track.tool} • ${track.genre}</div>
+          </div>
+          <div class="lb-votes">${track.votes || 0} votes</div>
         </div>
       `;
     }).join('');
