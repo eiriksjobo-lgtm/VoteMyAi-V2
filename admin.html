@@ -64,6 +64,16 @@
   
   let token = localStorage.getItem('sb_token');
   
+  // Handle OAuth return (if redirected back from login)
+  const hash = window.location.hash.substring(1);
+  const hashParams = new URLSearchParams(hash);
+  const hashToken = hashParams.get('access_token');
+  if (hashToken) {
+    token = hashToken;
+    localStorage.setItem('sb_token', token);
+    window.history.replaceState(null, '', window.location.pathname);
+  }
+  
   // XSS sanitization
   function sanitize(str) {
     if (!str) return '';
@@ -90,14 +100,37 @@
     return headers;
   }
   
-  window.login = function() {
+  window.login = async function() {
     if (document.getElementById('passwordInput').value !== ADMIN_PASSWORD) {
       showStatus('loginStatus', 'Wrong password', 'error');
       return;
     }
     
+    // Re-read token (might have been set since page load)
+    token = localStorage.getItem('sb_token');
+    
     if (!token) {
-      showStatus('loginStatus', 'You need to be logged in first. Go to the main site, log in with Google, then come back here.', 'warning');
+      // Redirect to login, come back after
+      localStorage.setItem('login_redirect', '/admin.html');
+      window.location.href = '/login.html?redirect=/admin.html';
+      return;
+    }
+    
+    // Validate token is still valid
+    try {
+      const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+        headers: { 'Authorization': `Bearer ${token}`, 'apikey': SUPABASE_KEY }
+      });
+      if (!res.ok) {
+        // Token expired — redirect to login
+        localStorage.removeItem('sb_token');
+        localStorage.setItem('login_redirect', '/admin.html');
+        window.location.href = '/login.html?redirect=/admin.html';
+        return;
+      }
+    } catch (e) {
+      localStorage.setItem('login_redirect', '/admin.html');
+      window.location.href = '/login.html?redirect=/admin.html';
       return;
     }
     
