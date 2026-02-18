@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Submit Track – VoteMyAI</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;500;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --border: #1e1e2e;
+      --accent: #e8ff47;
+      --text: #f0f0f0;
+      --muted: #666680;
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.5rem;
+      letter-spacing: 2px;
+      color: var(--accent);
+      margin-bottom: 32px;
+      text-align: center;
+    }
+    
+    .form-group {
+      margin-bottom: 24px;
+    }
+    
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    
+    input, select {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+    }
+    
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    
+    .submit-btn {
+      background: var(--accent);
+      color: #0a0a0f;
+      border: none;
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 16px;
+    }
+    
+    .submit-btn:hover {
+      opacity: 0.9;
+    }
+    
+    .submit-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 24px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+    }
+    
+    .message {
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    
+    .success {
+      background: rgba(74, 222, 128, 0.1);
+      border: 1px solid rgba(74, 222, 128, 0.3);
+      color: #4ade80;
+    }
+    
+    .error {
+      background: rgba(248, 113, 113, 0.1);
+      border: 1px solid rgba(248, 113, 113, 0.3);
+      color: #f87171;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Submit Your Track</h1>
+  
+  <div id="message"></div>
+  
+  <form id="submitForm">
+    <div class="form-group">
+      <label>YouTube URL</label>
+      <input type="url" id="ytUrl" placeholder="https://www.youtube.com/watch?v=..." required>
+    </div>
+    
+    <div class="form-group">
+      <label>Track Title</label>
+      <input type="text" id="title" placeholder="My Awesome AI Track" required>
+    </div>
+    
+    <div class="form-group">
+      <label>AI Tool Used</label>
+      <select id="tool" required>
+        <option value="">Select tool...</option>
+        <option value="Suno">Suno</option>
+        <option value="Udio">Udio</option>
+        <option value="ElevenLabs">ElevenLabs</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <label>Genre</label>
+      <select id="genre" required>
+        <option value="">Select genre...</option>
+        <option value="Electronic">Electronic</option>
+        <option value="Hip-Hop">Hip-Hop</option>
+        <option value="Pop">Pop</option>
+        <option value="Rock">Rock</option>
+        <option value="Cinematic">Cinematic</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    
+    <button type="submit" class="submit-btn" id="submitBtn">Submit Track</button>
+  </form>
+  
+  <a href="/" class="back-link">← Back to home</a>
+</div>
+
+<script type="module">
+  const SUPABASE_URL = 'https://gezijezmsecbtzytotax.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_hOOMtCz7gYsu_-CVD6lW9Q_SxtFlNhw';
+  
+  function extractYtId(url) {
+    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/))([^&\?\/]+)/);
+    return match ? match[1] : null;
+  }
+  
+  function showMessage(text, type) {
+    const msg = document.getElementById('message');
+    msg.className = `message ${type}`;
+    msg.textContent = text;
+    msg.style.display = 'block';
+  }
+  
+  document.getElementById('submitForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Submitting...';
+    
+    const ytUrl = document.getElementById('ytUrl').value;
+    const title = document.getElementById('title').value;
+    const tool = document.getElementById('tool').value;
+    const genre = document.getElementById('genre').value;
+    
+    const ytId = extractYtId(ytUrl);
+    if (!ytId) {
+      showMessage('Invalid YouTube URL', 'error');
+      btn.disabled = false;
+      btn.textContent = 'Submit Track';
+      return;
+    }
+    
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/tracks`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({
+          title,
+          yt_id: ytId,
+          tool,
+          genre,
+          votes: 0
+        })
+      });
+      
+      if (res.ok) {
+        showMessage('✅ Track submitted successfully!', 'success');
+        document.getElementById('submitForm').reset();
+        setTimeout(() => window.location.href = '/', 2000);
+      } else {
+        showMessage('Failed to submit track. Please try again.', 'error');
+      }
+    } catch (err) {
+      showMessage('Network error. Please try again.', 'error');
+    }
+    
+    btn.disabled = false;
+    btn.textContent = 'Submit Track';
+  });
+</script>
+
+</body>
+</html>
