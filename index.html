@@ -355,17 +355,19 @@
   }
   
   // ── Platform helpers ──
+  // yt_id format: "spotify:ID", "soundcloud:URL", or plain YouTube ID
   function getTrackPlatform(track) {
-    // New tracks have platform field; old tracks only have yt_id
-    if (track.platform) return track.platform;
-    if (track.yt_id) return 'youtube';
+    const val = track.yt_id || '';
+    if (val.startsWith('spotify:')) return 'spotify';
+    if (val.startsWith('soundcloud:')) return 'soundcloud';
     return 'youtube';
   }
   
   function getTrackEmbedId(track) {
-    if (track.embed_id) return track.embed_id;
-    if (track.yt_id) return track.yt_id;
-    return '';
+    const val = track.yt_id || '';
+    if (val.startsWith('spotify:')) return val.substring(8);
+    if (val.startsWith('soundcloud:')) return val.substring(11);
+    return val;
   }
   
   function generateVisualizerBars(count) {
