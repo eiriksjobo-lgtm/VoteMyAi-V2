@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Submit Track – VoteMyAI</title>
   
+  <meta name="description" content="Submit your AI-generated music track to VoteMyAI and let the community vote.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230a0a0f'/><text y='72' x='12' font-size='60' font-family='sans-serif' font-weight='bold' fill='%23e8ff47'>V</text></svg>">
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;500;700&display=swap" rel="stylesheet">
   
@@ -28,10 +31,7 @@
       padding: 40px 20px;
     }
     
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-    }
+    .container { max-width: 600px; margin: 0 auto; }
     
     h1 {
       font-family: 'Bebas Neue', sans-serif;
@@ -42,9 +42,7 @@
       text-align: center;
     }
     
-    .form-group {
-      margin-bottom: 24px;
-    }
+    .form-group { margin-bottom: 24px; }
     
     label {
       display: block;
@@ -54,6 +52,14 @@
       text-transform: uppercase;
       color: var(--muted);
       margin-bottom: 8px;
+    }
+    
+    .label-hint {
+      font-weight: 400;
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 0.8rem;
+      opacity: 0.7;
     }
     
     input, select {
@@ -72,6 +78,37 @@
       border-color: var(--accent);
     }
     
+    /* Platform detection badge */
+    .platform-badge {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .platform-badge.show { display: inline-flex; }
+    .platform-badge.youtube { background: rgba(255,0,0,0.1); border: 1px solid rgba(255,0,0,0.3); color: #ff4444; }
+    .platform-badge.spotify { background: rgba(30,215,96,0.1); border: 1px solid rgba(30,215,96,0.3); color: #1ed760; }
+    .platform-badge.soundcloud { background: rgba(255,136,0,0.1); border: 1px solid rgba(255,136,0,0.3); color: #ff8800; }
+    .platform-badge.invalid { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: #f87171; }
+    
+    /* Preview */
+    .preview-container {
+      margin-top: 16px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      display: none;
+    }
+    .preview-container.show { display: block; }
+    .preview-container iframe { width: 100%; border: none; }
+    .preview-yt { height: 0; padding-bottom: 56.25%; position: relative; }
+    .preview-yt iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    
     .submit-btn {
       background: var(--accent);
       color: #0a0a0f;
@@ -86,15 +123,8 @@
       width: 100%;
       margin-top: 16px;
     }
-    
-    .submit-btn:hover {
-      opacity: 0.9;
-    }
-    
-    .submit-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+    .submit-btn:hover { opacity: 0.9; }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
     
     .back-link {
       display: block;
@@ -104,24 +134,44 @@
       text-decoration: none;
       font-size: 0.85rem;
     }
+    .back-link:hover { color: var(--text); }
     
     .message {
       padding: 12px;
       border-radius: 6px;
       margin-bottom: 24px;
       text-align: center;
+      display: none;
     }
+    .success { background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.3); color: #4ade80; }
+    .error { background: rgba(248, 113, 113, 0.1); border: 1px solid rgba(248, 113, 113, 0.3); color: #f87171; }
     
-    .success {
-      background: rgba(74, 222, 128, 0.1);
-      border: 1px solid rgba(74, 222, 128, 0.3);
-      color: #4ade80;
+    .login-prompt {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 40px;
+      text-align: center;
     }
+    .login-prompt p { color: var(--muted); margin-bottom: 20px; font-size: 1rem; }
+    .login-prompt .login-btn {
+      background: var(--accent);
+      color: #0a0a0f;
+      border: none;
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .login-prompt .login-btn:hover { opacity: 0.9; }
     
-    .error {
-      background: rgba(248, 113, 113, 0.1);
-      border: 1px solid rgba(248, 113, 113, 0.3);
-      color: #f87171;
+    @media (max-width: 680px) {
+      body { padding: 20px 12px; }
     }
   </style>
 </head>
@@ -130,70 +180,178 @@
 <div class="container">
   <h1>Submit Your Track</h1>
   
-  <div id="message"></div>
+  <div id="message" class="message"></div>
   
-  <form id="submitForm">
-    <div class="form-group">
-      <label>YouTube URL</label>
-      <input type="url" id="ytUrl" placeholder="https://www.youtube.com/watch?v=..." required>
-    </div>
-    
-    <div class="form-group">
-      <label>Track Title</label>
-      <input type="text" id="title" placeholder="My Awesome AI Track" required>
-    </div>
-    
-    <div class="form-group">
-      <label>AI Tool Used</label>
-      <select id="tool" required>
-        <option value="">Select tool...</option>
-        <option value="Suno">Suno</option>
-        <option value="Udio">Udio</option>
-        <option value="ElevenLabs">ElevenLabs</option>
-        <option value="Other">Other</option>
-      </select>
-    </div>
-    
-    <div class="form-group">
-      <label>Genre</label>
-      <select id="genre" required>
-        <option value="">Select genre...</option>
-        <option value="Electronic">Electronic</option>
-        <option value="Hip-Hop">Hip-Hop</option>
-        <option value="Pop">Pop</option>
-        <option value="Rock">Rock</option>
-        <option value="Cinematic">Cinematic</option>
-        <option value="Other">Other</option>
-      </select>
-    </div>
-    
-    <button type="submit" class="submit-btn" id="submitBtn">Submit Track</button>
-  </form>
+  <div id="loginPrompt" class="login-prompt" style="display: none;">
+    <p>You need to be logged in to submit a track.</p>
+    <a href="/login.html?redirect=/submit.html" class="login-btn">Log In to Submit</a>
+    <a href="/" class="back-link">← Back to home</a>
+  </div>
   
-  <a href="/" class="back-link">← Back to home</a>
+  <div id="formContainer" style="display: none;">
+    <form id="submitForm">
+      <div class="form-group">
+        <label>Track URL <span class="label-hint">— YouTube, Spotify, or SoundCloud</span></label>
+        <input type="url" id="trackUrl" placeholder="Paste a YouTube, Spotify, or SoundCloud link..." required>
+        <div class="platform-badge" id="platformBadge"></div>
+        <div class="preview-container" id="previewContainer"></div>
+      </div>
+      
+      <div class="form-group">
+        <label>Track Title</label>
+        <input type="text" id="title" placeholder="My Awesome AI Track" required maxlength="100">
+      </div>
+      
+      <div class="form-group">
+        <label>AI Tool Used</label>
+        <select id="tool" required>
+          <option value="">Select tool...</option>
+          <option value="Suno">Suno</option>
+          <option value="Udio">Udio</option>
+          <option value="ElevenLabs">ElevenLabs</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label>Genre</label>
+        <select id="genre" required>
+          <option value="">Select genre...</option>
+          <option value="Electronic">Electronic</option>
+          <option value="Hip-Hop">Hip-Hop</option>
+          <option value="Pop">Pop</option>
+          <option value="Rock">Rock</option>
+          <option value="Cinematic">Cinematic</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      
+      <button type="submit" class="submit-btn" id="submitBtn">Submit Track</button>
+    </form>
+    
+    <a href="/" class="back-link">← Back to home</a>
+  </div>
 </div>
 
 <script type="module">
   const SUPABASE_URL = 'https://gezijezmsecbtzytotax.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_hOOMtCz7gYsu_-CVD6lW9Q_SxtFlNhw';
   
-  // Check if user is logged in on page load
-  window.addEventListener('DOMContentLoaded', async () => {
+  let currentUser = null;
+  let accessToken = null;
+  let detectedPlatform = null;
+  let detectedId = null;
+  
+  // ── Auth ──
+  async function initAuth() {
     const hash = window.location.hash.substring(1);
     const params = new URLSearchParams(hash);
-    let accessToken = params.get('access_token');
+    const hashToken = params.get('access_token');
+    
+    if (hashToken) {
+      accessToken = hashToken;
+      localStorage.setItem('sb_token', accessToken);
+      window.history.replaceState(null, '', window.location.pathname);
+    } else {
+      accessToken = localStorage.getItem('sb_token');
+    }
     
     if (accessToken) {
-      localStorage.setItem('sb_token', accessToken);
-      window.location.hash = '';
+      try {
+        const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+          headers: { 'Authorization': `Bearer ${accessToken}`, 'apikey': SUPABASE_KEY }
+        });
+        if (res.ok) {
+          currentUser = await res.json();
+        } else {
+          accessToken = null;
+          localStorage.removeItem('sb_token');
+        }
+      } catch (e) {
+        accessToken = null;
+        localStorage.removeItem('sb_token');
+      }
     }
-  });
-  
-  function extractYtId(url) {
-    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/))([^&\?\/]+)/);
-    return match ? match[1] : null;
+    
+    if (currentUser) {
+      document.getElementById('formContainer').style.display = 'block';
+      document.getElementById('loginPrompt').style.display = 'none';
+    } else {
+      document.getElementById('formContainer').style.display = 'none';
+      document.getElementById('loginPrompt').style.display = 'block';
+    }
   }
   
+  // ── Platform detection ──
+  function parseTrackUrl(url) {
+    // YouTube
+    const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([^&\?\/\s]+)/);
+    if (ytMatch) return { platform: 'youtube', id: ytMatch[1] };
+    
+    // Spotify
+    const spMatch = url.match(/spotify\.com\/(?:intl-[a-z]+\/)?track\/([a-zA-Z0-9]+)/);
+    if (spMatch) return { platform: 'spotify', id: spMatch[1] };
+    
+    // SoundCloud — we store the full URL since SC embed uses URLs
+    if (url.includes('soundcloud.com/') && url.split('/').length >= 4) {
+      return { platform: 'soundcloud', id: url.split('?')[0] };
+    }
+    
+    return null;
+  }
+  
+  function showPreview(platform, id) {
+    const container = document.getElementById('previewContainer');
+    
+    if (platform === 'youtube') {
+      container.innerHTML = `<div class="preview-yt"><iframe src="https://www.youtube.com/embed/${encodeURIComponent(id)}" allowfullscreen loading="lazy"></iframe></div>`;
+    } else if (platform === 'spotify') {
+      container.innerHTML = `<iframe src="https://open.spotify.com/embed/track/${encodeURIComponent(id)}?theme=0" height="152" allow="encrypted-media" loading="lazy"></iframe>`;
+    } else if (platform === 'soundcloud') {
+      container.innerHTML = `<iframe height="166" scrolling="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=${encodeURIComponent(id)}&color=%23e8ff47&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false" loading="lazy"></iframe>`;
+    }
+    
+    container.classList.add('show');
+  }
+  
+  // Live URL detection
+  let debounceTimer;
+  document.getElementById('trackUrl').addEventListener('input', (e) => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      const url = e.target.value.trim();
+      const badge = document.getElementById('platformBadge');
+      const preview = document.getElementById('previewContainer');
+      
+      if (!url) {
+        badge.className = 'platform-badge';
+        preview.classList.remove('show');
+        detectedPlatform = null;
+        detectedId = null;
+        return;
+      }
+      
+      const result = parseTrackUrl(url);
+      
+      if (result) {
+        detectedPlatform = result.platform;
+        detectedId = result.id;
+        
+        const labels = { youtube: '▶ YouTube', spotify: '♫ Spotify', soundcloud: '☁ SoundCloud' };
+        badge.textContent = labels[result.platform] + ' detected';
+        badge.className = `platform-badge show ${result.platform}`;
+        showPreview(result.platform, result.id);
+      } else {
+        detectedPlatform = null;
+        detectedId = null;
+        badge.textContent = '✗ Unsupported URL — use YouTube, Spotify, or SoundCloud';
+        badge.className = 'platform-badge show invalid';
+        preview.classList.remove('show');
+      }
+    }, 400);
+  });
+  
+  // ── Helpers ──
   function showMessage(text, type) {
     const msg = document.getElementById('message');
     msg.className = `message ${type}`;
@@ -201,6 +359,7 @@
     msg.style.display = 'block';
   }
   
+  // ── Form submit ──
   document.getElementById('submitForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
@@ -208,47 +367,29 @@
     btn.disabled = true;
     btn.textContent = 'Submitting...';
     
-    const ytUrl = document.getElementById('ytUrl').value;
-    const title = document.getElementById('title').value;
+    const title = document.getElementById('title').value.trim();
     const tool = document.getElementById('tool').value;
     const genre = document.getElementById('genre').value;
     
-    const ytId = extractYtId(ytUrl);
-    if (!ytId) {
-      showMessage('Invalid YouTube URL', 'error');
+    if (!detectedPlatform || !detectedId) {
+      showMessage('Please enter a valid YouTube, Spotify, or SoundCloud URL', 'error');
       btn.disabled = false;
       btn.textContent = 'Submit Track';
       return;
     }
     
     try {
-      // Get access token from URL hash or localStorage
-      const hash = window.location.hash.substring(1);
-      const params = new URLSearchParams(hash);
-      let accessToken = params.get('access_token');
-      
-      if (!accessToken) {
-        accessToken = localStorage.getItem('sb_token');
-      }
-      
-      if (!accessToken) {
-        showMessage('Not authenticated. Please log in first.', 'error');
-        setTimeout(() => window.location.href = '/login.html', 2000);
-        return;
-      }
-      
-      // Get current user
-      const userRes = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-        headers: { 'Authorization': `Bearer ${accessToken}`, 'apikey': SUPABASE_KEY }
-      });
-      
-      if (!userRes.ok) {
-        showMessage('Session expired. Please log in again.', 'error');
-        setTimeout(() => window.location.href = '/login.html', 2000);
-        return;
-      }
-      
-      const user = await userRes.json();
+      // We store: platform, embed_id (yt_id kept for backward compat with YouTube tracks)
+      const trackData = {
+        title,
+        yt_id: detectedPlatform === 'youtube' ? detectedId : '',
+        platform: detectedPlatform,
+        embed_id: detectedId,
+        tool,
+        genre,
+        votes: 0,
+        user_id: currentUser.id
+      };
       
       const res = await fetch(`${SUPABASE_URL}/rest/v1/tracks`, {
         method: 'POST',
@@ -258,30 +399,32 @@
           'Content-Type': 'application/json',
           'Prefer': 'return=minimal'
         },
-        body: JSON.stringify({
-          title,
-          yt_id: ytId,
-          tool,
-          genre,
-          votes: 0,
-          user_id: user.id
-        })
+        body: JSON.stringify(trackData)
       });
       
       if (res.ok) {
         showMessage('✅ Track submitted successfully!', 'success');
         document.getElementById('submitForm').reset();
+        document.getElementById('platformBadge').className = 'platform-badge';
+        document.getElementById('previewContainer').classList.remove('show');
+        detectedPlatform = null;
+        detectedId = null;
         setTimeout(() => window.location.href = '/', 2000);
       } else {
+        const err = await res.text();
+        console.error('Submit error:', err);
         showMessage('Failed to submit track. Please try again.', 'error');
       }
     } catch (err) {
+      console.error('Network error:', err);
       showMessage('Network error. Please try again.', 'error');
     }
     
     btn.disabled = false;
     btn.textContent = 'Submit Track';
   });
+  
+  initAuth();
 </script>
 
 </body>
