@@ -152,7 +152,7 @@
     const loginLink = document.querySelector('.nav-links a[href="/login.html"]');
     if (currentUser && loginLink) {
       loginLink.textContent = currentUser.user_metadata?.name || 'Profile';
-      loginLink.href = '#';
+      loginLink.href = '/profile.html';
     }
   }
   
