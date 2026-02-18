@@ -90,7 +90,6 @@
   </style>
 </head>
 <body>
-
 <div class="login-box">
   <h1>Welcome Back</h1>
   <p>Sign in to submit tracks and vote</p>
@@ -107,17 +106,39 @@
   
   <a href="/" class="back-link">← Back to home</a>
 </div>
-
 <script type="module">
   const SUPABASE_URL = 'https://gezijezmsecbtzytotax.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_hOOMtCz7gYsu_-CVD6lW9Q_SxtFlNhw';
   
+  // If user is already logged in, redirect them
+  (async function checkExistingSession() {
+    const token = localStorage.getItem('sb_token');
+    if (token) {
+      try {
+        const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+          headers: { 'Authorization': `Bearer ${token}`, 'apikey': SUPABASE_KEY }
+        });
+        if (res.ok) {
+          // Already logged in — send them where they wanted to go
+          const redirect = localStorage.getItem('login_redirect') || '/';
+          localStorage.removeItem('login_redirect');
+          window.location.href = redirect;
+          return;
+        }
+      } catch (e) {}
+    }
+  })();
+  
   window.loginWithGoogle = async function() {
+    // Save where the user came from so we can redirect back after login
+    const urlParams = new URLSearchParams(window.location.search);
+    const returnTo = urlParams.get('redirect') || document.referrer || '/';
+    localStorage.setItem('login_redirect', returnTo);
+    
     const redirectUrl = 'https://www.votemyai.com/';
     const authUrl = `${SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${redirectUrl}`;
     window.location.href = authUrl;
   };
 </script>
-
 </body>
 </html>
