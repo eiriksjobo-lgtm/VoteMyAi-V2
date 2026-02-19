@@ -791,6 +791,8 @@
   function renderTracks() {
     visibleCount = TRACKS_PER_PAGE;
     currentSorted = getSortedTracks(getFilteredTracks());
+    // Show all tracks to ensure visibleCount covers everything during playback
+    if (activeEmbedTrackId) visibleCount = Math.max(visibleCount, currentSorted.length);
     document.getElementById('trackCount').textContent = `${currentSorted.length} track${currentSorted.length !== 1 ? 's' : ''}`;
     renderVisibleTracks();
   }
@@ -801,36 +803,37 @@
 
     if (!toShow.length) { grid.innerHTML = '<div class="empty-state"><p>No tracks found. Be the first to submit!</p></div>'; setupInfiniteScroll(); return; }
 
-    // If an embed is actively playing, use show/hide approach to preserve iframe
+    const toShowIds = new Set(toShow.map(t => String(t.id)));
+
+    // If an embed is actively playing, use show/hide to preserve the iframe
     if (activeEmbedTrackId) {
-      const toShowIds = new Set(toShow.map(t => t.id));
       const existingIds = new Set();
 
-      // Hide/show existing cards
+      // Show/hide/reorder existing cards
       grid.querySelectorAll('.track-card').forEach(card => {
         const id = card.id.replace('card-', '');
         existingIds.add(id);
-        card.style.display = toShowIds.has(id) ? '' : 'none';
-        // Update order
-        const idx = toShow.findIndex(t => t.id === id);
+        const inView = toShowIds.has(id);
+        card.style.display = inView ? '' : 'none';
+        const idx = toShow.findIndex(t => String(t.id) === id);
         card.style.order = idx >= 0 ? idx : 9999;
       });
 
       // Add new cards that don't exist yet
       toShow.forEach((track, i) => {
-        if (!existingIds.has(track.id)) {
+        if (!existingIds.has(String(track.id))) {
           const html = buildCardHtml(track, i);
           grid.insertAdjacentHTML('beforeend', html);
         }
       });
 
       // If active track got filtered out, stop it
-      if (!toShowIds.has(activeEmbedTrackId)) {
+      if (!toShowIds.has(String(activeEmbedTrackId))) {
         activeEmbedTrackId = null;
         closePlayer();
       }
     } else {
-      // No active playback — full re-render is safe
+      // No active playback — full re-render
       grid.innerHTML = toShow.map((track, i) => buildCardHtml(track, i)).join('');
     }
 
