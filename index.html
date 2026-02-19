@@ -647,6 +647,46 @@
     .footer-tools a:hover { color: var(--accent); }
 
     /* ══════════════════════════════════
+       PERSISTENT PLAYER BAR
+    ══════════════════════════════════ */
+    .player-bar {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
+      background: #0c0c14; border-top: 1px solid var(--border);
+      display: none; align-items: center; gap: 14px;
+      padding: 0 20px; height: 64px;
+    }
+    .player-bar.active { display: flex; }
+    .player-embed {
+      width: 140px; height: 48px; flex-shrink: 0;
+      border-radius: 6px; overflow: hidden; background: var(--surface-2);
+    }
+    .player-embed iframe { width: 100%; height: 100%; border: none; }
+    .player-info { flex: 1; min-width: 0; }
+    .player-title {
+      font-weight: 600; font-size: 0.85rem; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .player-meta { font-size: 0.7rem; color: var(--muted); }
+    .player-close {
+      background: none; border: none; color: var(--muted);
+      cursor: pointer; font-size: 1.1rem; padding: 8px;
+      transition: color 0.2s;
+    }
+    .player-close:hover { color: var(--text); }
+    body.player-active { padding-bottom: 64px; }
+
+    /* Page iframe overlay (for navigating to other pages while player plays) */
+    .page-frame {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 5000; display: none;
+    }
+    .page-frame.active { display: block; }
+    .page-frame iframe {
+      width: 100%; height: 100%; border: none;
+    }
+    body.player-active .page-frame { bottom: 64px; }
+
+    /* ══════════════════════════════════
        RESPONSIVE
     ══════════════════════════════════ */
     @media (max-width: 960px) {
@@ -661,14 +701,12 @@
       .filters { gap: 6px; }
       .filter-sep { display: none; }
       .footer-links { gap: 28px; }
+      .player-embed { width: 100px; height: 40px; }
+      .player-bar { padding: 0 12px; height: 56px; gap: 10px; }
+      body.player-active { padding-bottom: 56px; }
+      body.player-active .page-frame { bottom: 56px; }
     }
   </style>
-  <script>
-    // If not inside the app shell, redirect to it
-    if (window.self === window.top && !window.location.search.includes('noshell')) {
-      window.location.replace('/app.html?p=' + encodeURIComponent(window.location.pathname + window.location.search + window.location.hash));
-    }
-  </script>
 </head>
 <body>
 
@@ -1411,19 +1449,105 @@
     }
   }
 
-  // ─── Play in persistent player (sends message to parent shell) ───
+  // ─── Persistent Player ───
+  let activePlayerTrackId = null;
+
   function playInBar(trackId, embedHtml, title, tool) {
-    if (window.parent !== window) {
-      window.parent.postMessage({
-        type: 'play-track',
-        trackId, embedHtml, title, tool
-      }, '*');
+    if (activePlayerTrackId === trackId) {
+      closePlayer();
+      return;
     }
+    document.getElementById('playerEmbed').innerHTML = embedHtml;
+    document.getElementById('playerTitle').textContent = title;
+    document.getElementById('playerMeta').textContent = tool;
+    document.getElementById('playerBar').classList.add('active');
+    document.body.classList.add('player-active');
+    activePlayerTrackId = trackId;
+  }
+
+  function closePlayer() {
+    document.getElementById('playerEmbed').innerHTML = '';
+    document.getElementById('playerBar').classList.remove('active');
+    document.body.classList.remove('player-active');
+    activePlayerTrackId = null;
+  }
+
+  document.getElementById('playerClose').addEventListener('click', closePlayer);
+
+  // ─── Page Navigation (iframe overlay when player is active) ───
+  function navigateToPage(url) {
+    // If no player active, just navigate normally
+    if (!activePlayerTrackId) {
+      window.location.href = url;
+      return;
+    }
+    // Player is active — open page in iframe overlay
+    const frame = document.getElementById('pageFrame');
+    const frameEl = frame.querySelector('iframe');
+    frameEl.src = url;
+    frame.classList.add('active');
+  }
+
+  function closePageFrame() {
+    const frame = document.getElementById('pageFrame');
+    frame.classList.remove('active');
+    frame.querySelector('iframe').src = '';
+  }
+
+  // Intercept all internal navigation when player is active
+  document.addEventListener('click', (e) => {
+    if (!activePlayerTrackId) return; // No player, let links work normally
+    
+    const link = e.target.closest('a[href]');
+    if (!link) return;
+    
+    const href = link.getAttribute('href');
+    if (!href) return;
+    if (link.target === '_blank') return;
+    if (href.startsWith('http') && !href.includes(window.location.hostname)) return;
+    if (href.startsWith('#')) return;
+    
+    // Internal link while player is active — use iframe overlay
+    e.preventDefault();
+    
+    if (href === '/' || href === '/index.html') {
+      closePageFrame();
+      return;
+    }
+    
+    navigateToPage(href);
+  }, true); // capture phase to intercept before other handlers
+
+  // Also intercept button onclick navigations
+  const origSubmitBtn = document.querySelector('.btn-submit');
+  if (origSubmitBtn) {
+    origSubmitBtn.onclick = (e) => {
+      if (activePlayerTrackId) {
+        e.preventDefault();
+        navigateToPage('/submit.html');
+      } else {
+        window.location.href = '/submit.html';
+      }
+    };
   }
 
   // ─── Init ───
   checkAuth().then(loadTracks);
 </script>
+
+<!-- Player bar and page frame -->
+<div class="page-frame" id="pageFrame">
+  <iframe></iframe>
+</div>
+
+<div class="player-bar" id="playerBar">
+  <div class="player-embed" id="playerEmbed"></div>
+  <div class="player-info">
+    <div class="player-title" id="playerTitle"></div>
+    <div class="player-meta" id="playerMeta"></div>
+  </div>
+  <button class="player-close" id="playerClose" title="Close player">✕</button>
+</div>
 
 </body>
 </html>
