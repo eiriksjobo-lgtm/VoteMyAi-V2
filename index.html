@@ -88,6 +88,7 @@
     }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
     .nav-right { display: flex; align-items: center; gap: 8px; }
+    .hamburger { display: none; }
     .nav-link {
       color: var(--muted); text-decoration: none;
       font-size: 0.72rem; font-weight: 600;
@@ -179,6 +180,7 @@
     .filter-pill:hover { border-color: var(--border-hover); color: var(--text); }
     .filter-pill.active { background: var(--accent-dim); border-color: rgba(232,255,71,0.3); color: var(--accent); }
     .filter-sep { width: 1px; height: 20px; background: var(--border); margin: 0 6px; }
+    .filter-toggle { display: none; }
 
     /* ══════════════════════════════════ TRACK GRID ══════════════════════════════════ */
     .tracks-container { max-width: 1200px; margin: 0 auto; padding: 24px clamp(16px, 4vw, 40px) 80px; }
@@ -515,18 +517,48 @@
 
     /* Mobile */
     @media (max-width: 640px) {
-      /* Nav */
+      /* Nav — hamburger */
       nav { height: 54px; }
       .logo { font-size: 1.2rem; letter-spacing: 2px; }
-      .nav-link { font-size: 0.65rem; padding: 6px 8px; letter-spacing: 1px; }
-      .btn-submit { padding: 7px 12px; font-size: 0.65rem; letter-spacing: 1px; }
+      .hamburger {
+        display: flex; align-items: center; justify-content: center;
+        width: 36px; height: 36px; border: none; background: none;
+        cursor: pointer; order: -1; margin-right: auto;
+        flex-direction: column; gap: 5px; padding: 6px;
+      }
+      .hamburger span {
+        display: block; width: 20px; height: 2px;
+        background: var(--muted); border-radius: 2px; transition: all 0.3s;
+      }
+      .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(2.5px, 2.5px); }
+      .hamburger.open span:nth-child(2) { opacity: 0; }
+      .hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(2.5px, -2.5px); }
+      nav { flex-wrap: wrap; }
+      .nav-right { order: 1; }
+      .nav-links-mobile {
+        display: none; width: 100%; order: 2;
+        flex-direction: column; gap: 0;
+        background: var(--surface); border-top: 1px solid var(--border);
+        margin: 0 -16px; padding: 0; width: calc(100% + 32px);
+      }
+      .nav-links-mobile.open { display: flex; }
+      .nav-links-mobile .nav-link {
+        padding: 14px 20px; font-size: 0.76rem; border-bottom: 1px solid var(--border);
+        display: block; text-align: left;
+      }
+      .nav-links-mobile .nav-link:last-child { border-bottom: none; }
+      .nav-right .nav-link { display: none; }
+      .btn-submit { padding: 7px 14px; font-size: 0.65rem; letter-spacing: 1px; }
 
-      /* Hero */
-      .hero { padding: 40px 16px 28px; }
+      /* Hero — full width CTA */
+      .hero { padding: 36px 20px 24px; }
       .hero::before { width: 300px; height: 150px; }
       .hero h1 { font-size: clamp(1.8rem, 9vw, 2.4rem); letter-spacing: 2px; margin-bottom: 10px; }
       .hero p { font-size: 0.82rem; margin-bottom: 20px; max-width: 300px; }
-      .hero-cta { padding: 10px 22px; font-size: 0.76rem; }
+      .hero-cta {
+        padding: 14px 28px; font-size: 0.8rem; width: 100%;
+        max-width: 300px; justify-content: center; border-radius: 12px;
+      }
       .hero-stats { gap: 28px; margin-top: 24px; }
       .hero-stat-num { font-size: 1.4rem; }
       .hero-stat-label { font-size: 0.6rem; letter-spacing: 1.2px; }
@@ -536,58 +568,76 @@
       .track-count { display: none; }
       .view-tabs { align-self: center; }
       .view-tab { padding: 6px 14px; font-size: 0.7rem; }
-      .filters { gap: 5px; padding-top: 10px; overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-      .filters::-webkit-scrollbar { display: none; }
+
+      /* Collapsible filters */
+      .filter-toggle {
+        display: flex; align-items: center; gap: 6px; justify-content: center;
+        background: none; border: 1px solid var(--border); color: var(--muted);
+        font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 600;
+        letter-spacing: 0.8px; text-transform: uppercase;
+        padding: 8px 16px; border-radius: 8px; cursor: pointer;
+        margin: 8px auto 0; transition: all 0.2s;
+      }
+      .filter-toggle:hover { border-color: var(--border-hover); color: var(--text); }
+      .filter-toggle svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; transition: transform 0.2s; }
+      .filter-toggle.open svg { transform: rotate(180deg); }
+      .filters {
+        max-height: 0; overflow: hidden; transition: max-height 0.3s ease;
+        gap: 5px; padding-top: 0; justify-content: center;
+      }
+      .filters.open { max-height: 120px; padding-top: 10px; }
       .filter-label { font-size: 0.62rem; white-space: nowrap; margin-right: 2px; }
       .filter-pill { padding: 4px 10px; font-size: 0.66rem; flex-shrink: 0; }
       .filter-sep { display: none; }
 
       /* Track grid */
       .tracks-container { padding: 16px 12px 60px; }
-      .tracks-grid { grid-template-columns: 1fr; gap: 12px; }
+      .tracks-grid { grid-template-columns: 1fr; gap: 14px; }
 
       /* Track cards — compact on mobile */
-      .track-card { border-radius: 10px; }
+      .track-card { border-radius: 12px; }
       .track-card:hover { transform: none; box-shadow: none; }
       .track-embed { padding-bottom: 50%; }
       .track-body { padding: 12px 14px 14px; }
-      .track-title { font-size: 0.82rem; margin-bottom: 6px; }
+      .track-title { font-size: 0.84rem; margin-bottom: 6px; }
       .track-badges { margin-bottom: 10px; gap: 4px; }
       .badge { padding: 2px 8px; font-size: 0.6rem; }
-      .star { width: 24px; height: 24px; }
-      .star svg { width: 17px; height: 17px; }
+
+      /* Stars — bigger touch targets */
+      .star { width: 32px; height: 32px; }
+      .star svg { width: 20px; height: 20px; }
       .rating-score { font-size: 0.95rem; }
       .rating-count { font-size: 0.62rem; }
       .card-footer { margin-top: 10px; padding-top: 10px; gap: 12px; }
-      .comments-btn, .share-btn { font-size: 0.68rem; }
-      .comments-btn svg, .share-btn svg { width: 12px; height: 12px; }
+      .comments-btn, .share-btn { font-size: 0.7rem; padding: 6px 0; }
+      .comments-btn svg, .share-btn svg { width: 13px; height: 13px; }
 
       /* Embed thumb (YouTube) */
-      .embed-thumb .play-circle { width: 44px; height: 44px; }
-      .embed-thumb .play-circle svg { width: 20px; height: 20px; }
-      .embed-thumb .thumb-platform { font-size: 0.6rem; }
+      .embed-thumb .play-circle { width: 48px; height: 48px; }
+      .embed-thumb .play-circle svg { width: 22px; height: 22px; }
+      .embed-thumb .thumb-platform { font-size: 0.62rem; }
 
       /* Comments */
       .comments-inner { padding: 10px 14px 12px; }
       .comment-text { font-size: 0.78rem; }
-      .comment-input { padding: 6px 10px; font-size: 0.75rem; }
-      .comment-submit { padding: 6px 12px; font-size: 0.7rem; }
+      .comment-input { padding: 8px 12px; font-size: 0.78rem; }
+      .comment-submit { padding: 8px 14px; font-size: 0.72rem; }
 
       /* Scroll indicator */
       .scroll-indicator { padding: 20px 0 4px; }
       .scroll-indicator .scroll-line { height: 24px; }
       .scroll-indicator .scroll-text { font-size: 0.58rem; }
 
-      /* Leaderboard */
+      /* Leaderboard — taller rows for touch */
       .leaderboard-section { padding: 40px 12px 24px; }
       .section-title { font-size: 1.5rem; }
       .section-sub { font-size: 0.78rem; }
-      .lb-row { padding: 10px 14px; gap: 10px; }
+      .lb-row { padding: 14px 14px; gap: 10px; min-height: 56px; }
       .lb-rank { font-size: 1.1rem; width: 28px; }
-      .lb-title { font-size: 0.8rem; }
-      .lb-meta { font-size: 0.68rem; }
-      .lb-stars { font-size: 0.78rem; }
-      .lb-count { font-size: 0.64rem; }
+      .lb-title { font-size: 0.82rem; }
+      .lb-meta { font-size: 0.7rem; }
+      .lb-stars { font-size: 0.8rem; }
+      .lb-count { font-size: 0.66rem; }
 
       /* How it works */
       .how-section { padding: 40px 16px 16px; }
@@ -621,7 +671,7 @@
       .footer-brand p { font-size: 0.74rem; }
       .footer-links { gap: 24px; }
       .footer-col h4 { font-size: 0.62rem; margin-bottom: 8px; }
-      .footer-col a { font-size: 0.76rem; }
+      .footer-col a { font-size: 0.76rem; padding: 5px 0; }
       .footer-bottom { flex-direction: column; align-items: center; text-align: center; gap: 8px; }
       .footer-copy { font-size: 0.68rem; }
       .footer-tools { gap: 12px; }
@@ -633,7 +683,7 @@
       body.player-active .page-frame { bottom: 56px; }
       .player-title { font-size: 0.78rem; }
       .player-meta { font-size: 0.62rem; }
-      .player-ctrl { width: 32px; height: 32px; }
+      .player-ctrl { width: 34px; height: 34px; }
       .player-ctrl svg { width: 16px; height: 16px; }
       .player-eq span { width: 2px; }
     }
@@ -657,6 +707,15 @@
     <a href="/blog.html" class="nav-link">Blog</a>
     <a href="/login.html" class="nav-link" id="authLink">Login</a>
     <button class="btn-submit" onclick="window.location.href='/submit.html'">Submit</button>
+    <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+  <div class="nav-links-mobile" id="mobileNav">
+    <a href="/blog.html" class="nav-link">Blog</a>
+    <a href="/login.html" class="nav-link" id="authLinkMobile">Login</a>
+    <a href="/submit.html" class="nav-link">Submit a Track</a>
+    <a href="/#leaderboard" class="nav-link">Leaderboard</a>
+    <a href="/#tools" class="nav-link">AI Tools</a>
+    <a href="/faq.html" class="nav-link">FAQ</a>
   </div>
 </nav>
 
@@ -719,6 +778,7 @@
 </div>
 
 <!-- ═══ FILTERS ═══ -->
+<button class="filter-toggle" id="filterToggle">Filters <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button>
 <div class="filters" id="filtersBar">
   <span class="filter-label">Genre</span>
   <button class="filter-pill active" data-filter="genre" data-value="all">All</button>
@@ -867,6 +927,8 @@
       const authLink = document.getElementById('authLink');
       authLink.textContent = currentUser.user_metadata?.name || 'Profile';
       authLink.href = '/profile.html';
+      const ml = document.getElementById('authLinkMobile');
+      if (ml) { ml.textContent = currentUser.user_metadata?.name || 'Profile'; ml.href = '/profile.html'; }
       await loadUserRatings();
     }
   }
@@ -1348,6 +1410,35 @@
     if (href === '/' || href === '/index.html') { closePageFrame(); return; }
     navigateToPage(href);
   }, true);
+
+  // ─── Mobile: Hamburger Menu ───
+  const hamburger = document.getElementById('hamburger');
+  const mobileNav = document.getElementById('mobileNav');
+  hamburger.addEventListener('click', () => {
+    hamburger.classList.toggle('open');
+    mobileNav.classList.toggle('open');
+  });
+  // Close mobile nav when a link is clicked
+  mobileNav.addEventListener('click', (e) => {
+    if (e.target.closest('.nav-link')) {
+      hamburger.classList.remove('open');
+      mobileNav.classList.remove('open');
+    }
+  });
+
+  // ─── Mobile: Filter Toggle ───
+  const filterToggle = document.getElementById('filterToggle');
+  const filtersBar = document.getElementById('filtersBar');
+  filterToggle.addEventListener('click', () => {
+    filterToggle.classList.toggle('open');
+    filtersBar.classList.toggle('open');
+  });
+
+  // ─── Sync mobile auth link ───
+  function updateAuthLinks(user) {
+    const ml = document.getElementById('authLinkMobile');
+    if (ml) ml.textContent = user ? 'Profile' : 'Login';
+  }
 
   // ─── Init ───
   checkAuth().then(loadTracks);
