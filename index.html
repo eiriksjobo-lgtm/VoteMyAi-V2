@@ -422,6 +422,164 @@
     .skeleton-stars { height: 28px; border-radius: 4px; width: 60%; }
 
     /* ══════════════════════════════════
+       HERO STATS
+    ══════════════════════════════════ */
+    .hero-stats {
+      display: flex; gap: 48px; justify-content: center;
+      margin-top: 36px;
+    }
+    .hero-stat { text-align: center; }
+    .hero-stat-num {
+      display: block;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem; letter-spacing: 1px;
+      color: var(--accent); line-height: 1;
+    }
+    .hero-stat-label {
+      font-size: 0.68rem; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 1.5px;
+      font-weight: 600; margin-top: 4px; display: block;
+    }
+
+    /* ══════════════════════════════════
+       SECTION HEADERS
+    ══════════════════════════════════ */
+    .section-header {
+      text-align: center; margin-bottom: 32px;
+    }
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem; letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .section-sub {
+      color: var(--muted); font-size: 0.85rem; margin-top: 6px;
+    }
+
+    /* ══════════════════════════════════
+       LEADERBOARD
+    ══════════════════════════════════ */
+    .leaderboard-section {
+      max-width: 800px; margin: 0 auto;
+      padding: 60px clamp(16px, 4vw, 40px) 40px;
+    }
+    .leaderboard {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .lb-row {
+      display: flex; align-items: center; gap: 16px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.2s;
+    }
+    .lb-row:last-child { border-bottom: none; }
+    .lb-row:hover { background: var(--accent-glow); }
+    .lb-rank {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.3rem; color: var(--accent);
+      width: 36px; text-align: center; flex-shrink: 0;
+    }
+    .lb-info { flex: 1; min-width: 0; }
+    .lb-title {
+      font-weight: 700; font-size: 0.88rem;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .lb-meta { color: var(--muted); font-size: 0.75rem; }
+    .lb-rating {
+      display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+    }
+    .lb-stars {
+      color: var(--accent); font-size: 0.85rem; font-weight: 700;
+    }
+    .lb-count {
+      color: var(--muted); font-size: 0.7rem;
+    }
+
+    /* ══════════════════════════════════
+       AI TOOLS
+    ══════════════════════════════════ */
+    .tools-section {
+      max-width: 1100px; margin: 0 auto;
+      padding: 60px clamp(16px, 4vw, 40px) 40px;
+    }
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+    }
+    .tool-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      text-decoration: none; color: var(--text);
+      position: relative; overflow: hidden;
+      transition: all 0.3s ease;
+      display: block;
+    }
+    .tool-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.35);
+      border-color: var(--border-hover);
+    }
+    .tool-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    }
+    .tool-card.suno::before { background: linear-gradient(90deg, #e8ff47, #a3e635); }
+    .tool-card.udio::before { background: linear-gradient(90deg, #818cf8, #c084fc); }
+    .tool-card.elevenlabs::before { background: linear-gradient(90deg, #38bdf8, #22d3ee); }
+    .tool-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; font-weight: 700; margin-bottom: 16px;
+    }
+    .tool-card.suno .tool-icon { background: rgba(232,255,71,0.1); color: var(--accent); }
+    .tool-card.udio .tool-icon { background: rgba(129,140,248,0.12); color: #818cf8; }
+    .tool-card.elevenlabs .tool-icon { background: rgba(56,189,248,0.12); color: #38bdf8; }
+    .tool-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem; letter-spacing: 1px; margin-bottom: 6px;
+    }
+    .tool-tagline {
+      color: var(--muted); font-size: 0.82rem;
+      line-height: 1.5; margin-bottom: 16px;
+    }
+    .tool-features { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+    .tool-tag {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      padding: 3px 10px; border-radius: 100px;
+      font-size: 0.68rem; color: var(--muted); font-weight: 500;
+    }
+    .tool-cta { font-size: 0.82rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+    .tool-card.suno .tool-cta { color: var(--accent); }
+    .tool-card.udio .tool-cta { color: #818cf8; }
+    .tool-card.elevenlabs .tool-cta { color: #38bdf8; }
+    .tool-card:hover .tool-cta .arrow { transform: translateX(3px); }
+    .tool-cta .arrow { transition: transform 0.2s; }
+
+    /* ══════════════════════════════════
+       SEO SECTION
+    ══════════════════════════════════ */
+    .seo-section {
+      max-width: 800px; margin: 0 auto;
+      padding: 40px clamp(16px, 4vw, 40px) 60px;
+    }
+    .seo-inner { text-align: center; }
+    .seo-inner h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem; letter-spacing: 1.5px;
+      margin-bottom: 12px; color: var(--text-secondary);
+    }
+    .seo-inner p {
+      color: var(--muted); font-size: 0.82rem; line-height: 1.7;
+    }
+
+    /* ══════════════════════════════════
        FOOTER
     ══════════════════════════════════ */
     footer {
@@ -498,6 +656,11 @@
   <h1>DISCOVER & RATE<br><span class="accent">AI MUSIC</span></h1>
   <p>The community rates tracks made with Suno, Udio, ElevenLabs and more. The best rise to the top.</p>
   <a href="/submit.html" class="hero-cta">Submit Your Track <span>→</span></a>
+  <div class="hero-stats" id="heroStats">
+    <div class="hero-stat"><span class="hero-stat-num" id="statTracks">—</span><span class="hero-stat-label">Tracks</span></div>
+    <div class="hero-stat"><span class="hero-stat-num" id="statRatings">—</span><span class="hero-stat-label">Ratings</span></div>
+    <div class="hero-stat"><span class="hero-stat-num" id="statCreators">—</span><span class="hero-stat-label">Creators</span></div>
+  </div>
 </section>
 
 <!-- ═══ VIEW TABS ═══ -->
@@ -541,7 +704,59 @@
   </div>
 </div>
 
-<!-- ═══ FOOTER ═══ -->
+<!-- ═══ LEADERBOARD ═══ -->
+<section class="leaderboard-section" id="leaderboard">
+  <div class="section-header">
+    <h2 class="section-title">Top Rated</h2>
+    <p class="section-sub">Ranked by community ratings using Wilson Score</p>
+  </div>
+  <div class="leaderboard" id="leaderboardList">
+    <div class="skeleton skeleton-lb-row" style="height:56px;margin-bottom:2px;border-radius:0;"></div>
+    <div class="skeleton skeleton-lb-row" style="height:56px;margin-bottom:2px;border-radius:0;"></div>
+    <div class="skeleton skeleton-lb-row" style="height:56px;margin-bottom:2px;border-radius:0;"></div>
+    <div class="skeleton skeleton-lb-row" style="height:56px;margin-bottom:2px;border-radius:0;"></div>
+    <div class="skeleton skeleton-lb-row" style="height:56px;border-radius:0;"></div>
+  </div>
+</section>
+
+<!-- ═══ AI TOOLS ═══ -->
+<section class="tools-section" id="tools">
+  <div class="section-header">
+    <h2 class="section-title">AI Music Tools</h2>
+    <p class="section-sub">The platforms powering the next generation of music</p>
+  </div>
+  <div class="tools-grid">
+    <a href="https://suno.com" target="_blank" rel="noopener" class="tool-card suno" data-tool="suno">
+      <div class="tool-icon">S</div>
+      <div class="tool-name">Suno</div>
+      <div class="tool-tagline">Full songs from a text prompt. The most popular AI music generator — fast, intuitive, and great for beginners.</div>
+      <div class="tool-features"><span class="tool-tag">Text to song</span><span class="tool-tag">Custom lyrics</span><span class="tool-tag">Free tier</span></div>
+      <span class="tool-cta">Try Suno <span class="arrow">→</span></span>
+    </a>
+    <a href="https://www.udio.com" target="_blank" rel="noopener" class="tool-card udio" data-tool="udio">
+      <div class="tool-icon">U</div>
+      <div class="tool-name">Udio</div>
+      <div class="tool-tagline">Hi-fi sound quality and creative control. Best for producers and experimental genres where audio fidelity matters.</div>
+      <div class="tool-features"><span class="tool-tag">Hi-fi audio</span><span class="tool-tag">Genre blending</span><span class="tool-tag">Free tier</span></div>
+      <span class="tool-cta">Try Udio <span class="arrow">→</span></span>
+    </a>
+    <a href="https://try.elevenlabs.io/xj2k88ooae07" target="_blank" rel="noopener" class="tool-card elevenlabs" data-tool="elevenlabs">
+      <div class="tool-icon">XI</div>
+      <div class="tool-name">ElevenLabs</div>
+      <div class="tool-tagline">The world's most realistic AI voices, now making music. Unmatched vocal quality with copyright-cleared output.</div>
+      <div class="tool-features"><span class="tool-tag">Best vocals</span><span class="tool-tag">Copyright-cleared</span><span class="tool-tag">API access</span></div>
+      <span class="tool-cta">Try ElevenLabs <span class="arrow">→</span></span>
+    </a>
+  </div>
+</section>
+
+<!-- ═══ SEO SECTION ═══ -->
+<section class="seo-section">
+  <div class="seo-inner">
+    <h2>The Home of AI-Generated Music</h2>
+    <p>VoteMyAI is the community-driven platform where AI music creators submit tracks made with tools like Suno, Udio, and ElevenLabs — and the community decides what's best. Every track is rated on a 1-5 star scale, and our Wilson Score algorithm ensures fair rankings regardless of when a track was submitted. Whether you're a creator looking for feedback or a listener discovering the future of music, VoteMyAI is where AI music gets its spotlight.</p>
+  </div>
+</section>
 <footer>
   <div class="footer-inner">
     <div class="footer-brand">
@@ -752,9 +967,56 @@
       });
       allTracks = await res.json();
       renderTracks();
+      renderLeaderboard();
+      updateHeroStats();
     } catch(e) {
       console.error('Load error:', e);
     }
+  }
+
+  // ─── Hero Stats ───
+  function updateHeroStats() {
+    const totalTracks = allTracks.length;
+    const totalRatings = allTracks.reduce((sum, t) => sum + (t.rating_count || 0), 0);
+    const creators = new Set(allTracks.map(t => t.user_id).filter(Boolean)).size;
+    document.getElementById('statTracks').textContent = totalTracks;
+    document.getElementById('statRatings').textContent = totalRatings;
+    document.getElementById('statCreators').textContent = creators;
+  }
+
+  // ─── Leaderboard ───
+  function renderLeaderboard() {
+    const lb = document.getElementById('leaderboardList');
+    const sorted = [...allTracks].sort((a, b) => {
+      return wilsonScore(b.avg_rating || 0, b.rating_count || 0) - wilsonScore(a.avg_rating || 0, a.rating_count || 0);
+    }).slice(0, 10);
+
+    if (sorted.length === 0) {
+      lb.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted);font-size:0.88rem;">No tracks yet</div>';
+      return;
+    }
+
+    const medals = ['\u{1F947}', '\u{1F948}', '\u{1F949}'];
+    lb.innerHTML = sorted.map((track, i) => {
+      const rank = i + 1;
+      const displayRank = rank <= 3 ? medals[i] : `#${rank}`;
+      const avg = track.avg_rating || 0;
+      const count = track.rating_count || 0;
+      const starsDisplay = avg > 0 ? avg.toFixed(1) + ' \u2605' : '—';
+      return `
+        <div class="lb-row">
+          <div class="lb-rank">${displayRank}</div>
+          <div class="lb-info">
+            <div class="lb-title">${sanitize(track.title)}</div>
+            <div class="lb-meta">${sanitize(track.tool)} · ${sanitize(track.genre)}</div>
+          </div>
+          <div class="lb-rating">
+            <span class="lb-stars">${starsDisplay}</span>
+            <span class="lb-count">(${count})</span>
+          </div>
+        </div>
+      `;
+    }).join('');
   }
 
   // ─── Sorting ───
@@ -911,6 +1173,12 @@
     if (postBtn) {
       addComment(postBtn.dataset.track);
       return;
+    }
+
+    // Tool card click tracking
+    const toolCard = e.target.closest('.tool-card[data-tool]');
+    if (toolCard) {
+      gtag('event', 'tool_click', { tool: toolCard.dataset.tool, location: 'tools_section' });
     }
 
     // View tabs
