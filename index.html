@@ -820,14 +820,8 @@
       </div>`;
     }).join('');
 
-    // Add sentinel for infinite scroll if there are more tracks
-    const oldSentinel = document.getElementById('loadMoreSentinel');
-    if (oldSentinel) oldSentinel.remove();
-
-    if (visibleCount < currentSorted.length) {
-      grid.insertAdjacentHTML('beforeend', '<div class="load-more-sentinel" id="loadMoreSentinel"></div>');
-      observeLoadMore();
-    }
+    // Setup infinite scroll if there are more tracks
+    setupInfiniteScroll();
   }
 
   // ─── Lazy Thumbnails (YouTube only) ───
@@ -936,23 +930,24 @@
   }, 500);
 
   // ─── Infinite Scroll ───
-  let scrollObserver = null;
-  function observeLoadMore() {
-    if (scrollObserver) scrollObserver.disconnect();
-    const sentinel = document.getElementById('loadMoreSentinel');
-    if (!sentinel) return;
+  let loadingMore = false;
+  let hasMore = false;
 
-    scrollObserver = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) {
-        scrollObserver.disconnect();
-        sentinel.remove();
-        visibleCount += TRACKS_PER_PAGE;
-        renderVisibleTracks();
-      }
-    }, { rootMargin: '200px' });
-
-    scrollObserver.observe(sentinel);
+  function setupInfiniteScroll() {
+    hasMore = visibleCount < currentSorted.length;
   }
+
+  window.addEventListener('scroll', function() {
+    if (!hasMore || loadingMore) return;
+    const scrollBottom = window.innerHeight + window.scrollY;
+    const docHeight = document.documentElement.scrollHeight;
+    if (scrollBottom >= docHeight - 400) {
+      loadingMore = true;
+      visibleCount += TRACKS_PER_PAGE;
+      renderVisibleTracks();
+      loadingMore = false;
+    }
+  });
 
   function sanitize(str) { if (!str) return ''; const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
 
