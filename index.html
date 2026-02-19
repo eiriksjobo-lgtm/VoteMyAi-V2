@@ -261,7 +261,6 @@
       background: var(--surface-hover) !important;
     }
     .track-embed.soundcloud { padding-bottom: 166px; }
-    .track-embed.suno { padding-bottom: 200px; }
 
     /* Card body */
     .track-body {
@@ -905,12 +904,25 @@
       embedHtml: `<iframe src="https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&color=%23e8ff47&auto_play=false&show_artwork=true&show_user=false&show_comments=false" scrolling="no" loading="lazy"></iframe>`
     };
 
-    // Suno
+    // Suno - multiple URL formats
     if (url.includes('suno.com')) {
-      const sunoMatch = url.match(/suno\.com\/(?:song\/)?([a-f0-9-]+)/);
-      if (sunoMatch) return {
+      // Format: suno.com/song/UUID
+      const sunoLong = url.match(/suno\.com\/song\/([a-f0-9-]+)/);
+      if (sunoLong) return {
         platform: 'suno',
-        embedHtml: `<iframe src="https://suno.com/embed/${sunoMatch[1]}" loading="lazy"></iframe>`
+        embedHtml: `<iframe src="https://suno.com/embed/${sunoLong[1]}" loading="lazy" style="border:none;"></iframe>`
+      };
+      // Format: suno.com/s/SHORTCODE (share links)
+      const sunoShort = url.match(/suno\.com\/s\/([a-zA-Z0-9_-]+)/);
+      if (sunoShort) return {
+        platform: 'suno',
+        embedHtml: `<iframe src="https://suno.com/embed/${sunoShort[1]}" loading="lazy" style="border:none;"></iframe>`
+      };
+      // Generic suno link with any ID
+      const sunoGeneric = url.match(/suno\.com\/(?:song|s)\/([^\/?&#]+)/);
+      if (sunoGeneric) return {
+        platform: 'suno',
+        embedHtml: `<iframe src="https://suno.com/embed/${sunoGeneric[1]}" loading="lazy" style="border:none;"></iframe>`
       };
     }
 
@@ -923,15 +935,7 @@
       };
     }
 
-    // TikTok - can't embed, show clickable card
-    if (url.includes('tiktok.com')) {
-      return {
-        platform: 'tiktok',
-        embedHtml: `<a href="${url}" target="_blank" rel="noopener" class="embed-placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;background:var(--surface-2);color:var(--text);text-decoration:none;gap:8px;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg><span style="font-weight:600;font-size:0.82rem;">Play on TikTok</span><span style="font-size:0.7rem;color:var(--muted);">Opens in new tab</span></a>`
-      };
-    }
-
-    // ElevenLabs - can't embed, show clickable card
+    // ElevenLabs - no public embed API, show clean card
     if (url.includes('elevenlabs.io')) return {
       platform: 'elevenlabs',
       embedHtml: `<a href="${url}" target="_blank" rel="noopener" class="embed-placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;background:var(--surface-2);color:var(--text);text-decoration:none;gap:8px;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg><span style="font-weight:600;font-size:0.82rem;">Play on ElevenLabs</span><span style="font-size:0.7rem;color:var(--muted);">Opens in new tab</span></a>`
