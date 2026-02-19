@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
   <title>Admin – VoteMyAI</title>
+  <script>
+    if (window.self === window.top && !window.location.search.includes("noshell")) {
+      window.location.replace("/app.html?p=" + encodeURIComponent(window.location.pathname + window.location.search + window.location.hash));
+    }
+  </script>
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;500;700&display=swap" rel="stylesheet">
