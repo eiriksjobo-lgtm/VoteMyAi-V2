@@ -394,7 +394,7 @@
       // ── Users table ──
       const usersTable = document.getElementById('usersTable');
       usersTable.innerHTML = `
-        <tr><th>User</th><th>User ID</th><th>Tracks</th><th>Votes Given</th><th>Comments</th><th>First Seen</th></tr>
+        <tr><th>User</th><th>User ID</th><th>Tracks</th><th>Votes Given</th><th>Comments</th><th>First Seen</th><th>Actions</th></tr>
         ${users.length ? users.map(u => `
           <tr>
             <td>
@@ -408,8 +408,9 @@
             <td>${u.votes}</td>
             <td>${u.comments}</td>
             <td class="text-muted">${formatDate(u.joined)}</td>
+            <td><button class="btn-delete" onclick="deleteUser('${u.id}')">Delete</button></td>
           </tr>
-        `).join('') : '<tr><td colspan="6" class="empty-state">No users yet</td></tr>'}
+        `).join('') : '<tr><td colspan="7" class="empty-state">No users yet</td></tr>'}
       `;
 
       // ── Tracks table ──
@@ -491,6 +492,29 @@
   window.deleteTrack = (id) => adminDelete('tracks', id, 'Track');
   window.deleteComment = (id) => adminDelete('comments', id, 'Comment');
   window.deleteMessage = (id) => adminDelete('contact_messages', id, 'Message');
+
+  window.deleteUser = async function(userId) {
+    if (!confirm(`Delete this user and ALL their data (tracks, votes, comments)?`)) return;
+    token = localStorage.getItem('sb_token');
+    try {
+      // Delete user's votes, comments, then tracks (order matters for foreign keys)
+      const tables = [
+        { name: 'votes', filter: `user_id=eq.${userId}` },
+        { name: 'comments', filter: `user_id=eq.${userId}` },
+        { name: 'tracks', filter: `user_id=eq.${userId}` }
+      ];
+      for (const t of tables) {
+        await fetch(`${SUPABASE_URL}/rest/v1/${t.name}?${t.filter}`, {
+          method: 'DELETE',
+          headers: authHeaders()
+        });
+      }
+      showStatus('adminStatus', 'User and all their data deleted.', 'success');
+      await loadData();
+    } catch (err) {
+      showStatus('adminStatus', `Error deleting user: ${err.message}`, 'error');
+    }
+  };
 </script>
 
 </body>
