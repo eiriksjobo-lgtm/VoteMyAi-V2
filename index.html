@@ -8,8 +8,8 @@
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-KW4NR9QBWB"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-KW4NR9QBWB');</script>
 
-  <title>VoteMyAI — Rate the Best AI-Generated Music | Suno, Udio, ElevenLabs</title>
-  <meta name="description" content="Discover and rate the best AI-generated music. Tracks made with Suno, Udio, ElevenLabs and more — rated by the community. Submit your own AI track.">
+  <title>VoteMyAI — Rate the Best AI-Generated Music | Suno, Udio & More</title>
+  <meta name="description" content="Discover and rate the best AI-generated music. Tracks made with Suno, Udio and more — rated by the community. Submit your own AI track.">
   <meta name="keywords" content="AI music, vote AI music, AI generated songs, Suno music, Udio music, ElevenLabs music, rate AI music, best AI songs">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
   <link rel="canonical" href="https://www.votemyai.com/">
@@ -18,7 +18,7 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.votemyai.com/">
   <meta property="og:title" content="VoteMyAI — Rate the Best AI-Generated Music">
-  <meta property="og:description" content="Discover and rate AI music made with Suno, Udio, ElevenLabs. The community decides what's best.">
+  <meta property="og:description" content="Discover and rate AI music made with Suno, Udio and more. The community decides what's best.">
   <meta property="og:image" content="https://www.votemyai.com/og-image.png">
   <meta property="og:site_name" content="VoteMyAI">
 
@@ -252,6 +252,10 @@
       position: absolute; top: 0; left: 0;
       width: 100%; height: 100%; border: none;
     }
+    .track-embed.udio iframe {
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%; border: none;
+    }
     .track-embed a.embed-placeholder {
       position: absolute; top: 0; left: 0;
       width: 100%; height: 100%;
@@ -261,7 +265,7 @@
       background: var(--surface-hover) !important;
     }
     .track-embed.soundcloud { padding-bottom: 166px; }
-    .track-embed.udio { padding-bottom: 55%; overflow: hidden; }
+    .track-embed.udio { padding-bottom: 0; height: 160px; overflow: hidden; }
     .track-embed iframe { border: none; }
 
     /* Card body */
@@ -697,7 +701,6 @@
   <button class="filter-pill active" data-filter="tool" data-value="all">All</button>
   <button class="filter-pill" data-filter="tool" data-value="Suno">Suno</button>
   <button class="filter-pill" data-filter="tool" data-value="Udio">Udio</button>
-  <button class="filter-pill" data-filter="tool" data-value="ElevenLabs">ElevenLabs</button>
 </div>
 
 <!-- ═══ TRACKS GRID ═══ -->
@@ -906,15 +909,13 @@
       embedHtml: `<iframe src="https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&color=%23e8ff47&auto_play=false&show_artwork=true&show_user=false&show_comments=false" scrolling="no" loading="lazy"></iframe>`
     };
 
-    // Suno - only UUID format works for embed
+    // Suno
     if (url.includes('suno.com')) {
-      // Full song URL with UUID
       const sunoUUID = url.match(/suno\.com\/(?:song|embed)\/([a-f0-9-]{36})/);
       if (sunoUUID) return {
         platform: 'suno',
         embedHtml: `<iframe src="https://suno.com/embed/${sunoUUID[1]}" loading="lazy" style="border:none;"></iframe>`
       };
-      // Short link or other format — can't embed, link out
       return {
         platform: 'suno',
         embedHtml: `<a href="${url}" target="_blank" rel="noopener" class="embed-placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;background:var(--surface-2);color:var(--text);text-decoration:none;gap:8px;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg><span style="font-weight:600;font-size:0.82rem;">Play on Suno</span><span style="font-size:0.7rem;color:var(--muted);">Opens in new tab</span></a>`
@@ -923,18 +924,19 @@
 
     // Udio
     if (url.includes('udio.com')) {
-      const udioMatch = url.match(/udio\.com\/songs\/([a-zA-Z0-9_-]+)/);
-      if (udioMatch) return {
+      // Extract UUID if present in the URL
+      const udioUuid = url.match(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/);
+      if (udioUuid) return {
         platform: 'udio',
-        embedHtml: `<iframe src="https://www.udio.com/embed/${udioMatch[1]}" loading="lazy" style="border:none;width:100%;height:100%;"></iframe>`
+        embedHtml: `<iframe src="https://www.udio.com/embed/${udioUuid[0]}" loading="lazy" style="border:none;width:100%;height:100%;"></iframe>`
+      };
+      // Slug-based URL - try embed with slug
+      const udioSlug = url.match(/udio\.com\/songs\/([a-zA-Z0-9_-]+)/);
+      if (udioSlug) return {
+        platform: 'udio',
+        embedHtml: `<iframe src="https://www.udio.com/embed/${udioSlug[1]}" loading="lazy" style="border:none;width:100%;height:100%;"></iframe>`
       };
     }
-
-    // ElevenLabs - no public embed API, show clean card
-    if (url.includes('elevenlabs.io')) return {
-      platform: 'elevenlabs',
-      embedHtml: `<a href="${url}" target="_blank" rel="noopener" class="embed-placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;background:var(--surface-2);color:var(--text);text-decoration:none;gap:8px;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg><span style="font-weight:600;font-size:0.82rem;">Play on ElevenLabs</span><span style="font-size:0.7rem;color:var(--muted);">Opens in new tab</span></a>`
-    };
 
     // Fallback: try as YouTube ID (legacy yt_id support)
     return { platform: 'unknown', embedHtml: '' };
