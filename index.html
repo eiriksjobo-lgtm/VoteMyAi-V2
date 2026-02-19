@@ -4,938 +4,603 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <!-- Google Analytics -->
+  <!-- GA4 -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-KW4NR9QBWB"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-KW4NR9QBWB');
-  </script>
-  
-  <title>VoteMyAI – AI Music Voting Platform | Vote for the Best AI-Generated Music</title>
-  
-  <!-- SEO Meta Tags -->
-  <meta name="description" content="Vote for the best AI-generated music. Submit tracks made with Suno, Udio, ElevenLabs and more. Rate AI music, discover trending AI songs, and join the #1 AI music community.">
-  <meta name="keywords" content="vote AI music, AI music voting, AI generated music, best AI songs, AI music leaderboard, AI music community, rate AI music, rate AI songs, AI song rating, AI music generator, Suno AI music, Udio AI music, ElevenLabs music, make AI music, create AI music, best AI music 2026">
-  <meta name="author" content="VoteMyAI">
-  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
-  <meta name="theme-color" content="#e8ff47">
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-KW4NR9QBWB');</script>
+
+  <title>VoteMyAI — Rate the Best AI-Generated Music | Suno, Udio, ElevenLabs</title>
+  <meta name="description" content="Discover and rate the best AI-generated music. Tracks made with Suno, Udio, ElevenLabs and more — rated by the community. Submit your own AI track.">
+  <meta name="keywords" content="AI music, vote AI music, AI generated songs, Suno music, Udio music, ElevenLabs music, rate AI music, best AI songs">
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
   <link rel="canonical" href="https://www.votemyai.com/">
-  
-  <!-- Open Graph / Social Sharing -->
+  <meta name="theme-color" content="#e8ff47">
+
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.votemyai.com/">
-  <meta property="og:title" content="VoteMyAI – Vote for the Best AI-Generated Music">
-  <meta property="og:description" content="Submit your AI-generated tracks. The community votes. The best rise to the top. Discover trending AI music from Suno, Udio, ElevenLabs and more.">
+  <meta property="og:title" content="VoteMyAI — Rate the Best AI-Generated Music">
+  <meta property="og:description" content="Discover and rate AI music made with Suno, Udio, ElevenLabs. The community decides what's best.">
   <meta property="og:image" content="https://www.votemyai.com/og-image.png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="VoteMyAI - AI Music Voting Platform">
   <meta property="og:site_name" content="VoteMyAI">
-  <meta property="og:locale" content="en_US">
-  
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="VoteMyAI – Vote for the Best AI-Generated Music">
-  <meta name="twitter:description" content="Submit your AI-generated tracks. The community votes. The best rise to the top.">
-  <meta name="twitter:image" content="https://www.votemyai.com/og-image.png">
-  
-  <!-- Favicons -->
+
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebSite","name":"VoteMyAI","url":"https://www.votemyai.com/","description":"Rate and discover the best AI-generated music","potentialAction":{"@type":"SearchAction","target":"https://www.votemyai.com/?q={search_term_string}","query-input":"required name=search_term_string"}}
+  </script>
+
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/favicon-180x180.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="/favicon-512x512.png">
-  
-  <!-- JSON-LD Structured Data -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "VoteMyAI",
-    "url": "https://www.votemyai.com",
-    "description": "The #1 platform to vote for and discover AI-generated music from Suno, Udio, ElevenLabs and more.",
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": "https://www.votemyai.com/?q={search_term_string}",
-      "query-input": "required name=search_term_string"
-    }
-  }
-  </script>
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    "name": "VoteMyAI",
-    "url": "https://www.votemyai.com",
-    "logo": "https://www.votemyai.com/favicon-512x512.png",
-    "description": "AI music voting and discovery platform"
-  }
-  </script>
-  
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700&display=swap" rel="stylesheet">
-  
+
   <style>
     :root {
-      --bg: #0a0a0f;
-      --surface: #111118;
-      --surface-2: #16161f;
-      --border: #1e1e2e;
-      --border-hover: #2a2a3e;
+      --bg: #07070b;
+      --surface: #0e0e14;
+      --surface-2: #131319;
+      --surface-hover: #17171f;
+      --border: #1a1a26;
+      --border-hover: #252535;
       --accent: #e8ff47;
-      --accent-dim: rgba(232,255,71,0.15);
-      --accent-glow: rgba(232,255,71,0.08);
-      --text: #f0f0f0;
-      --text-secondary: #b0b0c0;
-      --muted: #666680;
-      --success: #4ade80;
-      --error: #f87171;
+      --accent-dim: rgba(232,255,71,0.12);
+      --accent-glow: rgba(232,255,71,0.06);
+      --text: #f2f2f4;
+      --text-secondary: #a8a8b8;
+      --muted: #5c5c72;
+      --star-empty: #2a2a3a;
+      --radius: 14px;
+      --radius-sm: 8px;
     }
-    
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    
     html { scroll-behavior: smooth; }
-    
     body {
       background: var(--bg);
       color: var(--text);
-      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: 'DM Sans', sans-serif;
       line-height: 1.6;
-      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
     }
-    
-    /* ── Selection ── */
     ::selection { background: var(--accent); color: var(--bg); }
-    
-    /* ── Scrollbar ── */
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-track { background: var(--bg); }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
-    
-    /* ═══════════════ NAV ═══════════════ */
+
+    /* ══════════════════════════════════
+       NAV
+    ══════════════════════════════════ */
     nav {
-      position: sticky; top: 0; z-index: 100;
-      background: rgba(10,10,15,0.92);
-      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border);
-      padding: 0 40px; height: 64px;
+      position: sticky; top: 0; z-index: 200;
+      background: rgba(7,7,11,0.88);
+      backdrop-filter: blur(24px) saturate(1.4);
+      -webkit-backdrop-filter: blur(24px) saturate(1.4);
+      border-bottom: 1px solid rgba(26,26,38,0.6);
+      height: 60px;
       display: flex; align-items: center; justify-content: space-between;
+      padding: 0 clamp(16px, 4vw, 40px);
     }
     .logo {
       font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.6rem; letter-spacing: 3px;
+      font-size: 1.4rem; letter-spacing: 3px;
       color: var(--accent); text-decoration: none;
-      display: flex; align-items: center; gap: 10px;
+      display: flex; align-items: center; gap: 8px;
     }
     .logo-dot {
-      width: 8px; height: 8px; border-radius: 50%;
+      width: 6px; height: 6px; border-radius: 50%;
       background: var(--accent);
-      box-shadow: 0 0 12px var(--accent);
-      animation: pulse-dot 2s ease-in-out infinite;
+      box-shadow: 0 0 10px var(--accent);
+      animation: pulse 2.5s ease-in-out infinite;
     }
-    @keyframes pulse-dot {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(0.8); }
-    }
-    .nav-links { display: flex; gap: 28px; align-items: center; }
-    .nav-links a {
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+    .nav-right { display: flex; align-items: center; gap: 8px; }
+    .nav-link {
       color: var(--muted); text-decoration: none;
-      font-size: 0.78rem; font-weight: 500;
-      letter-spacing: 1.5px; text-transform: uppercase;
-      transition: color 0.2s;
-      position: relative;
+      font-size: 0.72rem; font-weight: 600;
+      letter-spacing: 1.2px; text-transform: uppercase;
+      padding: 8px 14px; border-radius: 8px;
+      transition: all 0.2s;
     }
-    .nav-links a:hover { color: var(--text); }
-    .nav-links a::after {
-      content: ''; position: absolute; bottom: -4px; left: 0;
-      width: 0; height: 1.5px; background: var(--accent);
-      transition: width 0.3s ease;
-    }
-    .nav-links a:hover::after { width: 100%; }
-    
+    .nav-link:hover { color: var(--text); background: rgba(255,255,255,0.04); }
     .btn-submit {
       background: var(--accent); color: var(--bg);
-      padding: 10px 22px; border-radius: 8px; border: none;
-      font-weight: 700; cursor: pointer;
-      font-size: 0.78rem; letter-spacing: 1.5px;
-      text-transform: uppercase;
-      transition: transform 0.2s, box-shadow 0.2s;
+      padding: 8px 18px; border-radius: var(--radius-sm); border: none;
+      font-weight: 700; cursor: pointer; font-size: 0.72rem;
+      letter-spacing: 1.2px; text-transform: uppercase;
       font-family: 'DM Sans', sans-serif;
+      transition: all 0.2s;
     }
-    .btn-submit:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 20px rgba(232,255,71,0.3);
-    }
-    .btn-logout {
-      background: rgba(248,113,113,0.08);
-      border: 1px solid rgba(248,113,113,0.2);
-      color: var(--error); padding: 8px 16px;
-      border-radius: 8px; cursor: pointer;
-      font-size: 0.75rem; font-weight: 600;
-      letter-spacing: 1px; text-transform: uppercase;
-      display: none; transition: all 0.2s;
-      font-family: 'DM Sans', sans-serif;
-    }
-    .btn-logout:hover { background: rgba(248,113,113,0.15); }
+    .btn-submit:hover { box-shadow: 0 4px 20px rgba(232,255,71,0.25); transform: translateY(-1px); }
 
-    /* ═══════════════ HERO ═══════════════ */
+    /* ══════════════════════════════════
+       HERO
+    ══════════════════════════════════ */
     .hero {
-      position: relative;
       text-align: center;
-      padding: 140px 40px 100px;
-      max-width: 1000px; margin: 0 auto;
-      overflow: hidden;
+      padding: 72px 24px 48px;
+      position: relative;
     }
     .hero::before {
       content: '';
-      position: absolute;
-      top: -200px; left: 50%; transform: translateX(-50%);
-      width: 800px; height: 800px;
-      background: radial-gradient(circle, rgba(232,255,71,0.06) 0%, transparent 70%);
+      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 300px;
+      background: radial-gradient(ellipse, rgba(232,255,71,0.06) 0%, transparent 70%);
       pointer-events: none;
-    }
-    .hero-badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: var(--accent-dim);
-      border: 1px solid rgba(232,255,71,0.25);
-      padding: 8px 18px; border-radius: 100px;
-      font-size: 0.78rem; font-weight: 600;
-      color: var(--accent); letter-spacing: 0.5px;
-      margin-bottom: 32px;
-      animation: fadeInUp 0.6s ease-out;
-    }
-    .hero-badge .dot {
-      width: 6px; height: 6px; border-radius: 50%;
-      background: var(--success);
-      animation: pulse-dot 1.5s ease-in-out infinite;
     }
     .hero h1 {
       font-family: 'Bebas Neue', sans-serif;
-      font-size: clamp(3.5rem, 10vw, 6.5rem);
-      letter-spacing: 3px; line-height: 0.95;
-      margin-bottom: 24px;
-      animation: fadeInUp 0.6s ease-out 0.1s both;
+      font-size: clamp(2.4rem, 7vw, 4.2rem);
+      letter-spacing: 4px; line-height: 1.05;
+      margin-bottom: 14px;
     }
-    .hero .accent { color: var(--accent); }
+    .hero h1 .accent { color: var(--accent); }
     .hero p {
-      color: var(--text-secondary);
-      font-size: 1.15rem; line-height: 1.7;
-      margin-bottom: 44px; max-width: 560px;
-      margin-left: auto; margin-right: auto;
-      animation: fadeInUp 0.6s ease-out 0.2s both;
+      color: var(--muted); font-size: 0.92rem;
+      max-width: 400px; margin: 0 auto 28px;
+      line-height: 1.6;
     }
-    .hero-actions {
-      display: flex; gap: 16px;
-      justify-content: center; flex-wrap: wrap;
-      animation: fadeInUp 0.6s ease-out 0.3s both;
-    }
-    .hero-btn-primary {
+    .hero-cta {
+      display: inline-flex; align-items: center; gap: 8px;
       background: var(--accent); color: var(--bg);
-      padding: 14px 32px; border-radius: 10px; border: none;
-      font-weight: 700; cursor: pointer; font-size: 0.9rem;
-      letter-spacing: 1px; text-transform: uppercase;
-      transition: all 0.2s; text-decoration: none;
-      font-family: 'DM Sans', sans-serif;
+      padding: 12px 28px; border-radius: 10px;
+      text-decoration: none; font-weight: 700;
+      font-size: 0.82rem; letter-spacing: 0.5px;
+      transition: all 0.2s;
     }
-    .hero-btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 30px rgba(232,255,71,0.35);
-    }
-    .hero-btn-secondary {
-      background: transparent;
-      border: 1px solid var(--border-hover);
-      color: var(--text-secondary);
-      padding: 14px 32px; border-radius: 10px;
-      font-weight: 600; cursor: pointer; font-size: 0.9rem;
-      letter-spacing: 0.5px;
-      transition: all 0.2s; text-decoration: none;
-      font-family: 'DM Sans', sans-serif;
-    }
-    .hero-btn-secondary:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-    
-    .hero-stats {
-      display: flex; gap: 48px; justify-content: center;
-      margin-top: 64px; padding-top: 40px;
-      border-top: 1px solid var(--border);
-      animation: fadeInUp 0.6s ease-out 0.4s both;
-    }
-    .hero-stat { text-align: center; }
-    .hero-stat-value {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 2rem; color: var(--accent);
-      letter-spacing: 1px;
-    }
-    .hero-stat-label {
-      font-size: 0.75rem; color: var(--muted);
-      text-transform: uppercase; letter-spacing: 1.5px;
-      margin-top: 4px;
-    }
-    
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    .hero-cta:hover { box-shadow: 0 8px 32px rgba(232,255,71,0.25); transform: translateY(-2px); }
 
-    /* ═══════════════ SECTIONS ═══════════════ */
-    .section-header {
+    /* ══════════════════════════════════
+       VIEW TABS (Discover / Top / New)
+    ══════════════════════════════════ */
+    .view-bar {
+      max-width: 1200px; margin: 0 auto;
+      padding: 0 clamp(16px, 4vw, 40px);
       display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 32px; flex-wrap: wrap; gap: 16px;
+      flex-wrap: wrap; gap: 12px;
     }
-    h2.section-title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 2rem; letter-spacing: 2px;
-      text-transform: uppercase; display: flex;
-      align-items: center; gap: 12px;
-    }
-    .section-title .icon {
-      font-size: 1.4rem;
-    }
-
-    /* ═══════════════ TRACKS ═══════════════ */
-    .tracks-section {
-      max-width: 1240px; margin: 0 auto;
-      padding: 80px 40px 60px;
-    }
-    
-    .controls-bar {
-      display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: 16px; margin-bottom: 32px;
-    }
-    .genre-filters {
-      display: flex; gap: 8px; flex-wrap: wrap;
-    }
-    .genre-btn {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid var(--border);
-      color: var(--muted);
-      padding: 8px 18px; border-radius: 100px;
-      cursor: pointer; font-weight: 500;
-      font-size: 0.82rem; transition: all 0.2s;
-      font-family: 'DM Sans', sans-serif;
-    }
-    .genre-btn:hover {
-      border-color: var(--border-hover);
-      color: var(--text-secondary);
-      background: rgba(255,255,255,0.05);
-    }
-    .genre-btn.active {
-      background: var(--accent);
-      color: var(--bg);
-      border-color: var(--accent);
-      font-weight: 700;
-    }
-    
-    .sort-select {
+    .view-tabs {
+      display: flex; gap: 4px;
       background: var(--surface);
       border: 1px solid var(--border);
-      color: var(--text-secondary);
-      padding: 8px 16px; border-radius: 8px;
-      font-size: 0.82rem; cursor: pointer;
-      font-family: 'DM Sans', sans-serif;
+      border-radius: 10px; padding: 3px;
     }
-    
+    .view-tab {
+      padding: 7px 20px; border-radius: 8px; border: none;
+      background: transparent; color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.78rem; font-weight: 600;
+      letter-spacing: 0.8px; text-transform: uppercase;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .view-tab:hover { color: var(--text); }
+    .view-tab.active {
+      background: var(--accent); color: var(--bg);
+    }
+    .track-count {
+      color: var(--muted); font-size: 0.78rem; font-weight: 500;
+    }
+
+    /* ══════════════════════════════════
+       FILTERS
+    ══════════════════════════════════ */
+    .filters {
+      max-width: 1200px; margin: 0 auto;
+      padding: 16px clamp(16px, 4vw, 40px) 0;
+      display: flex; gap: 8px; flex-wrap: wrap;
+      align-items: center;
+    }
+    .filter-label {
+      color: var(--muted); font-size: 0.7rem; font-weight: 600;
+      letter-spacing: 1px; text-transform: uppercase;
+      margin-right: 4px;
+    }
+    .filter-pill {
+      padding: 5px 14px; border-radius: 100px;
+      border: 1px solid var(--border);
+      background: transparent; color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.74rem; font-weight: 500;
+      cursor: pointer; transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .filter-pill:hover { border-color: var(--border-hover); color: var(--text); }
+    .filter-pill.active {
+      background: var(--accent-dim);
+      border-color: rgba(232,255,71,0.3);
+      color: var(--accent);
+    }
+    .filter-sep {
+      width: 1px; height: 20px;
+      background: var(--border); margin: 0 6px;
+    }
+
+    /* ══════════════════════════════════
+       TRACK GRID
+    ══════════════════════════════════ */
+    .tracks-container {
+      max-width: 1200px; margin: 0 auto;
+      padding: 24px clamp(16px, 4vw, 40px) 80px;
+    }
     .tracks-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-      gap: 24px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
     }
-    
-    /* ── Track Card ── */
+
+    /* ══════════════════════════════════
+       TRACK CARD
+    ══════════════════════════════════ */
     .track-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 16px; overflow: hidden;
-      transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: all 0.25s ease;
     }
     .track-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 16px 48px rgba(0,0,0,0.4);
       border-color: var(--border-hover);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.4);
     }
-    .track-video {
-      position: relative; padding-bottom: 56.25%;
+
+    /* Embed container */
+    .track-embed {
+      position: relative;
+      padding-bottom: 56.25%;
       height: 0; overflow: hidden;
-      background: var(--bg);
+      background: var(--surface-2);
+      border-bottom: 1px solid var(--border);
     }
-    .track-video iframe {
+    .track-embed iframe, .track-embed .embed-placeholder {
       position: absolute; top: 0; left: 0;
       width: 100%; height: 100%; border: none;
     }
-    .track-info { padding: 20px; }
+    .track-embed.soundcloud { padding-bottom: 166px; }
+    .track-embed.suno { padding-bottom: 200px; }
+
+    /* Card body */
+    .track-body {
+      padding: 16px 18px 18px;
+    }
     .track-title {
-      font-size: 1.05rem; font-weight: 700;
-      margin-bottom: 6px; line-height: 1.4;
-    }
-    .track-meta {
-      display: flex; align-items: center; gap: 8px;
-      color: var(--muted); font-size: 0.82rem;
-      margin-bottom: 16px;
-    }
-    .track-tool-badge {
-      display: inline-flex; align-items: center;
-      padding: 2px 10px; border-radius: 100px;
-      font-size: 0.72rem; font-weight: 600;
-      letter-spacing: 0.5px;
-    }
-    .badge-suno { background: rgba(232,255,71,0.12); color: var(--accent); }
-    .badge-udio { background: rgba(129,140,248,0.15); color: #818cf8; }
-    .badge-elevenlabs { background: rgba(56,189,248,0.15); color: #38bdf8; }
-    .badge-other { background: rgba(255,255,255,0.06); color: var(--muted); }
-    
-    .track-actions {
-      display: flex; gap: 10px; align-items: stretch;
-    }
-    .vote-btn {
-      flex: 1;
-      background: var(--accent-dim);
-      border: 1px solid rgba(232,255,71,0.25);
-      color: var(--accent);
-      padding: 10px 16px; border-radius: 10px;
-      cursor: pointer; font-weight: 700;
-      font-size: 0.85rem;
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      transition: all 0.2s;
-      font-family: 'DM Sans', sans-serif;
-    }
-    .vote-btn:hover:not(:disabled) {
-      background: rgba(232,255,71,0.25);
-      border-color: rgba(232,255,71,0.5);
-      transform: translateY(-1px);
-    }
-    .vote-btn.voted {
-      background: var(--accent); color: var(--bg);
-      border-color: var(--accent);
-      cursor: default;
-    }
-    .vote-btn:disabled { cursor: not-allowed; }
-    .vote-count {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.3rem; letter-spacing: 1px;
-    }
-    
-    .share-btn {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--border);
-      color: var(--muted);
-      width: 42px; border-radius: 10px;
-      cursor: pointer; font-size: 1rem;
-      display: flex; align-items: center; justify-content: center;
-      transition: all 0.2s;
-    }
-    .share-btn:hover {
-      border-color: var(--border-hover);
-      color: var(--text-secondary);
+      font-size: 0.88rem; font-weight: 700;
+      line-height: 1.35; margin-bottom: 8px;
+      display: -webkit-box; -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical; overflow: hidden;
     }
 
-    .comments-section {
-      margin-top: 14px; padding-top: 14px;
-      border-top: 1px solid rgba(30,30,46,0.6);
+    /* Badges */
+    .track-badges {
+      display: flex; gap: 6px; margin-bottom: 14px;
+      flex-wrap: wrap;
     }
-    .comments-toggle {
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 100px;
+      font-size: 0.66rem; font-weight: 600;
+      letter-spacing: 0.5px; text-transform: uppercase;
+    }
+    .badge-tool {
+      background: var(--accent-dim);
+      color: var(--accent);
+    }
+    .badge-genre {
+      background: rgba(255,255,255,0.05);
+      color: var(--muted);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .badge-platform {
+      background: rgba(56,189,248,0.1);
+      color: #38bdf8;
+    }
+
+    /* Star Rating */
+    .rating-row {
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .stars {
+      display: flex; gap: 3px;
+    }
+    .star {
+      width: 28px; height: 28px;
+      cursor: pointer;
+      transition: transform 0.15s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .star:hover { transform: scale(1.2); }
+    .star svg {
+      width: 20px; height: 20px;
+      fill: var(--star-empty);
+      transition: fill 0.15s;
+    }
+    .star.filled svg { fill: var(--accent); }
+    .star.hover-fill svg { fill: var(--accent); opacity: 0.7; }
+
+    .rating-info {
+      text-align: right;
+    }
+    .rating-score {
+      font-size: 1.1rem; font-weight: 700;
+      color: var(--accent); line-height: 1;
+    }
+    .rating-count {
+      font-size: 0.68rem; color: var(--muted);
+      margin-top: 1px;
+    }
+
+    /* Rated state */
+    .stars.rated .star { cursor: default; }
+    .stars.rated .star:hover { transform: none; }
+
+    /* Comments toggle */
+    .card-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 12px; padding-top: 12px;
+      border-top: 1px solid rgba(26,26,38,0.6);
+    }
+    .comments-btn {
       background: none; border: none;
       color: var(--muted); cursor: pointer;
-      font-size: 0.82rem; padding: 4px 0;
+      font-size: 0.74rem; font-family: 'DM Sans', sans-serif;
+      display: flex; align-items: center; gap: 5px;
       transition: color 0.2s;
-      font-family: 'DM Sans', sans-serif;
     }
-    .comments-toggle:hover { color: var(--text-secondary); }
-    .comments-list { margin-top: 12px; display: none; }
-    .comments-list.show { display: block; }
+    .comments-btn:hover { color: var(--text); }
+    .share-btn {
+      background: none; border: none;
+      color: var(--muted); cursor: pointer;
+      font-size: 0.74rem; font-family: 'DM Sans', sans-serif;
+      display: flex; align-items: center; gap: 4px;
+      transition: color 0.2s;
+    }
+    .share-btn:hover { color: var(--text); }
+
+    /* Comments panel */
+    .comments-panel {
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    .comments-panel.open { max-height: 500px; }
+    .comments-inner {
+      padding: 12px 18px 16px;
+      border-top: 1px solid var(--border);
+    }
     .comment {
-      padding: 10px 0;
-      border-bottom: 1px solid rgba(30,30,46,0.4);
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(26,26,38,0.4);
     }
     .comment:last-child { border-bottom: none; }
-    .comment-text { font-size: 0.85rem; color: var(--text); line-height: 1.5; }
-    .comment-author {
-      font-size: 0.72rem; margin-top: 4px;
-      color: var(--muted); font-style: italic;
+    .comment-text { font-size: 0.82rem; color: var(--text-secondary); }
+    .comment-author { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
+    .comment-form {
+      display: flex; gap: 8px; margin-top: 10px;
     }
     .comment-input {
-      width: 100%; background: rgba(30,30,46,0.4);
+      flex: 1; background: var(--surface-2);
       border: 1px solid var(--border); color: var(--text);
-      padding: 10px 12px; border-radius: 8px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.85rem; margin-top: 10px;
-      transition: border-color 0.2s;
+      padding: 8px 12px; border-radius: var(--radius-sm);
+      font-family: 'DM Sans', sans-serif; font-size: 0.8rem;
+      outline: none;
     }
-    .comment-input:focus {
-      outline: none; border-color: var(--accent);
-    }
-    .comment-btn {
+    .comment-input:focus { border-color: var(--accent); }
+    .comment-submit {
       background: var(--accent); color: var(--bg);
-      border: none; padding: 8px 16px; border-radius: 8px;
-      cursor: pointer; font-size: 0.8rem;
-      font-weight: 700; margin-top: 8px;
-      transition: all 0.2s;
-      font-family: 'DM Sans', sans-serif;
+      border: none; padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      font-weight: 700; font-size: 0.75rem;
+      cursor: pointer; font-family: 'DM Sans', sans-serif;
     }
-    .comment-btn:hover { box-shadow: 0 4px 12px rgba(232,255,71,0.2); }
 
-    /* ── Skeleton Loaders ── */
-    @keyframes shimmer {
-      0% { background-position: -400px 0; }
-      100% { background-position: 400px 0; }
+    /* ══════════════════════════════════
+       EMPTY STATE
+    ══════════════════════════════════ */
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center; padding: 80px 20px;
     }
-    .skeleton {
-      background: linear-gradient(90deg, var(--surface) 25%, rgba(255,255,255,0.04) 50%, var(--surface) 75%);
-      background-size: 800px 100%;
-      animation: shimmer 1.5s infinite ease-in-out;
-      border-radius: 8px;
+    .empty-state p {
+      color: var(--muted); font-size: 0.95rem;
     }
+
+    /* ══════════════════════════════════
+       SKELETON LOADERS
+    ══════════════════════════════════ */
     .skeleton-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 16px; overflow: hidden;
+      border-radius: var(--radius);
+      overflow: hidden;
     }
-    .skeleton-video { padding-bottom: 56.25%; }
-    .skeleton-info { padding: 20px; }
-    .skeleton-title { height: 20px; width: 70%; margin-bottom: 12px; }
-    .skeleton-meta { height: 14px; width: 40%; margin-bottom: 20px; }
-    .skeleton-btn { height: 42px; width: 100%; border-radius: 10px; }
-    .skeleton-lb-row { height: 64px; border-bottom: 1px solid var(--border); }
+    .skeleton {
+      background: linear-gradient(90deg, var(--surface-2) 25%, rgba(255,255,255,0.03) 50%, var(--surface-2) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .skeleton-embed { width: 100%; padding-bottom: 56.25%; }
+    .skeleton-body { padding: 16px 18px 18px; }
+    .skeleton-title { height: 16px; border-radius: 4px; width: 75%; margin-bottom: 10px; }
+    .skeleton-badges { display: flex; gap: 6px; margin-bottom: 14px; }
+    .skeleton-badge { height: 22px; width: 60px; border-radius: 100px; }
+    .skeleton-stars { height: 28px; border-radius: 4px; width: 60%; }
 
-    /* ═══════════════ LEADERBOARD ═══════════════ */
-    .leaderboard-section {
-      max-width: 860px; margin: 0 auto; padding: 60px 40px 80px;
-    }
-    .leaderboard {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px; overflow: hidden;
-    }
-    .lb-row {
-      display: flex; align-items: center; gap: 16px;
-      padding: 16px 24px;
-      border-bottom: 1px solid var(--border);
-      transition: background 0.2s;
-      cursor: pointer;
-    }
-    .lb-row:last-child { border-bottom: none; }
-    .lb-row:hover { background: var(--accent-glow); }
-    .lb-rank {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.4rem; color: var(--muted);
-      width: 44px; text-align: center; flex-shrink: 0;
-    }
-    .lb-rank.gold { color: #fbbf24; }
-    .lb-rank.silver { color: #94a3b8; }
-    .lb-rank.bronze { color: #d97706; }
-    .lb-info { flex: 1; min-width: 0; }
-    .lb-title {
-      font-weight: 700; font-size: 0.95rem;
-      white-space: nowrap; overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .lb-meta { color: var(--muted); font-size: 0.8rem; margin-top: 2px; }
-    .lb-votes {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.3rem; color: var(--accent);
-      letter-spacing: 1px; flex-shrink: 0;
-    }
-    .lb-play {
-      width: 36px; height: 36px; border-radius: 50%;
-      background: var(--accent-dim);
-      border: 1px solid rgba(232,255,71,0.2);
-      color: var(--accent); cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.7rem; flex-shrink: 0;
-      transition: all 0.2s;
-    }
-    .lb-play:hover {
-      background: var(--accent); color: var(--bg);
-      transform: scale(1.1);
-    }
-
-    /* ═══════════════ AI TOOLS ═══════════════ */
-    .tools-section {
-      max-width: 1140px; margin: 0 auto;
-      padding: 80px 40px 60px;
-    }
-    .tools-header {
-      text-align: center; margin-bottom: 48px;
-    }
-    .tools-header p {
-      color: var(--text-secondary);
-      font-size: 1rem; margin-top: 12px;
-      max-width: 500px; margin-left: auto; margin-right: auto;
-    }
-    .tools-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 20px;
-    }
-    .tool-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 32px 28px;
-      position: relative; overflow: hidden;
-      transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-    }
-    .tool-card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 24px 64px rgba(0,0,0,0.35);
-      border-color: var(--border-hover);
-    }
-    .tool-card::before {
-      content: ''; position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 3px;
-    }
-    .tool-card.suno::before { background: linear-gradient(90deg, #e8ff47, #a3e635); }
-    .tool-card.udio::before { background: linear-gradient(90deg, #818cf8, #c084fc); }
-    .tool-card.elevenlabs::before { background: linear-gradient(90deg, #38bdf8, #22d3ee); }
-    
-    .tool-card .tool-icon {
-      width: 52px; height: 52px; border-radius: 14px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.4rem; margin-bottom: 20px;
-      font-weight: 700; letter-spacing: -0.5px;
-    }
-    .tool-card.suno .tool-icon { background: rgba(232,255,71,0.1); color: var(--accent); }
-    .tool-card.udio .tool-icon { background: rgba(129,140,248,0.12); color: #818cf8; }
-    .tool-card.elevenlabs .tool-icon { background: rgba(56,189,248,0.12); color: #38bdf8; }
-    
-    .tool-card .tool-name {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.5rem; letter-spacing: 1px; margin-bottom: 8px;
-    }
-    .tool-card .tool-tagline {
-      color: var(--muted); font-size: 0.85rem;
-      margin-bottom: 20px; line-height: 1.6;
-    }
-    .tool-card .tool-features {
-      display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 24px;
-    }
-    .tool-card .tool-tag {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.06);
-      padding: 4px 12px; border-radius: 100px;
-      font-size: 0.72rem; color: var(--muted); font-weight: 500;
-    }
-    .tool-card .tool-cta {
-      display: inline-flex; align-items: center; gap: 8px;
-      font-size: 0.85rem; font-weight: 700;
-      text-decoration: none; transition: gap 0.2s ease;
-      letter-spacing: 0.3px;
-    }
-    .tool-card.suno .tool-cta { color: var(--accent); }
-    .tool-card.udio .tool-cta { color: #818cf8; }
-    .tool-card.elevenlabs .tool-cta { color: #38bdf8; }
-    .tool-card .tool-cta:hover { gap: 14px; }
-
-    /* ═══════════════ SEO CONTENT ═══════════════ */
-    .seo-section {
-      max-width: 860px; margin: 0 auto;
-      padding: 60px 40px;
-      border-top: 1px solid var(--border);
-    }
-    .seo-section h2 {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.6rem; letter-spacing: 1.5px;
-      margin-bottom: 16px; color: var(--text);
-    }
-    .seo-section p {
-      color: var(--muted); font-size: 0.9rem;
-      line-height: 1.8; margin-bottom: 24px;
-    }
-
-    /* ═══════════════ FOOTER ═══════════════ */
+    /* ══════════════════════════════════
+       FOOTER
+    ══════════════════════════════════ */
     footer {
       background: var(--surface);
       border-top: 1px solid var(--border);
-      padding: 60px 40px 40px;
-      margin-top: 40px;
+      padding: 48px clamp(16px, 4vw, 40px) 32px;
     }
-    .footer-grid {
+    .footer-inner {
       max-width: 1200px; margin: 0 auto;
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr 1fr;
-      gap: 40px;
+      display: flex; justify-content: space-between;
+      align-items: start; flex-wrap: wrap; gap: 32px;
     }
-    .footer-brand .logo {
-      font-size: 1.4rem; margin-bottom: 12px;
-    }
-    .footer-brand p {
-      color: var(--muted); font-size: 0.85rem;
-      line-height: 1.7; max-width: 280px;
-    }
+    .footer-brand .logo { margin-bottom: 8px; }
+    .footer-brand p { color: var(--muted); font-size: 0.8rem; max-width: 260px; }
+    .footer-links { display: flex; gap: 48px; flex-wrap: wrap; }
     .footer-col h4 {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1rem; letter-spacing: 2px;
-      color: var(--text-secondary);
-      margin-bottom: 16px; text-transform: uppercase;
+      font-size: 0.68rem; font-weight: 700;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 12px;
     }
     .footer-col a {
-      display: block; color: var(--muted);
-      text-decoration: none; font-size: 0.85rem;
-      padding: 4px 0; transition: color 0.2s;
+      display: block; color: var(--text-secondary);
+      text-decoration: none; font-size: 0.82rem;
+      padding: 3px 0; transition: color 0.2s;
     }
     .footer-col a:hover { color: var(--accent); }
     .footer-bottom {
-      max-width: 1200px; margin: 40px auto 0;
+      max-width: 1200px; margin: 32px auto 0;
       padding-top: 24px;
       border-top: 1px solid var(--border);
       display: flex; justify-content: space-between;
       align-items: center; flex-wrap: wrap; gap: 12px;
     }
-    .footer-copy { color: var(--muted); font-size: 0.8rem; }
-
-    /* ═══════════════ RESPONSIVE ═══════════════ */
-    @media (max-width: 768px) {
-      nav { padding: 0 16px; }
-      .nav-links { gap: 14px; }
-      .nav-links a { font-size: 0.7rem; letter-spacing: 1px; }
-      .btn-submit { padding: 8px 14px; font-size: 0.72rem; }
-      .hero { padding: 100px 20px 60px; }
-      .hero h1 { font-size: clamp(2.8rem, 12vw, 4rem); }
-      .hero-stats { gap: 24px; flex-wrap: wrap; }
-      .tracks-section { padding: 40px 16px; }
-      .tracks-grid { grid-template-columns: 1fr; }
-      .leaderboard-section { padding: 40px 16px; }
-      .tools-section { padding: 40px 16px; }
-      .tools-grid { grid-template-columns: 1fr; }
-      .seo-section { padding: 40px 16px; }
-      .footer-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 32px;
-      }
-      footer { padding: 40px 16px 24px; }
-      .controls-bar { flex-direction: column; align-items: flex-start; }
+    .footer-copy { color: var(--muted); font-size: 0.75rem; }
+    .footer-tools { display: flex; gap: 16px; }
+    .footer-tools a {
+      color: var(--muted); text-decoration: none;
+      font-size: 0.75rem; transition: color 0.2s;
     }
-    @media (max-width: 480px) {
-      .footer-grid { grid-template-columns: 1fr; gap: 24px; }
-      .hero-actions { flex-direction: column; align-items: center; }
-    }
+    .footer-tools a:hover { color: var(--accent); }
 
-    /* ── Noscript ── */
-    noscript { display: block; padding: 40px; text-align: center; color: var(--muted); }
+    /* ══════════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════════ */
+    @media (max-width: 960px) {
+      .tracks-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .tracks-grid { grid-template-columns: 1fr; gap: 14px; }
+      .hero { padding: 56px 20px 36px; }
+      .hero h1 { font-size: clamp(2rem, 10vw, 2.8rem); }
+      .view-bar { flex-direction: column; align-items: stretch; }
+      .track-count { display: none; }
+      .filters { gap: 6px; }
+      .filter-sep { display: none; }
+      .footer-links { gap: 28px; }
+    }
   </style>
 </head>
 <body>
 
 <!-- ═══ NAV ═══ -->
-<header>
-  <nav role="navigation" aria-label="Main navigation">
-    <a href="/" class="logo"><span class="logo-dot"></span>VOTEMYAI</a>
-    <div class="nav-links">
-      <a href="#tracks">Tracks</a>
-      <a href="#leaderboard">Leaderboard</a>
-      <a href="#tools">AI Tools</a>
-      <a href="/blog.html">Blog</a>
-      <a href="/login.html" id="authLink">Login</a>
-      <button class="btn-logout" id="logoutBtn" onclick="logout()">Logout</button>
-      <button class="btn-submit" onclick="window.location.href='/submit.html'">Submit Track</button>
-    </div>
-  </nav>
-</header>
+<nav>
+  <a href="/" class="logo"><span class="logo-dot"></span>VOTEMYAI</a>
+  <div class="nav-right">
+    <a href="/blog.html" class="nav-link">Blog</a>
+    <a href="/login.html" class="nav-link" id="authLink">Login</a>
+    <button class="btn-submit" onclick="window.location.href='/submit.html'">Submit</button>
+  </div>
+</nav>
 
 <!-- ═══ HERO ═══ -->
-<main>
-  <section class="hero" aria-label="Introduction">
-    <div class="hero-badge"><span class="dot"></span> The #1 AI Music Voting Platform</div>
-    <h1>VOTE<br><span class="accent">THE FUTURE</span><br>OF MUSIC</h1>
-    <p>Submit AI-generated tracks made with Suno, Udio, ElevenLabs and more. The community votes. The best music rises to the top.</p>
-    <div class="hero-actions">
-      <a href="/submit.html" class="hero-btn-primary">Submit Your Track</a>
-      <a href="#tracks" class="hero-btn-secondary">Explore Tracks</a>
-    </div>
-    <div class="hero-stats" id="heroStats">
-      <div class="hero-stat">
-        <div class="hero-stat-value" id="statTracks">—</div>
-        <div class="hero-stat-label">Tracks</div>
-      </div>
-      <div class="hero-stat">
-        <div class="hero-stat-value" id="statVotes">—</div>
-        <div class="hero-stat-label">Votes Cast</div>
-      </div>
-      <div class="hero-stat">
-        <div class="hero-stat-value" id="statTools">3</div>
-        <div class="hero-stat-label">AI Tools</div>
-      </div>
-    </div>
-  </section>
+<section class="hero">
+  <h1>DISCOVER & RATE<br><span class="accent">AI MUSIC</span></h1>
+  <p>The community rates tracks made with Suno, Udio, ElevenLabs and more. The best rise to the top.</p>
+  <a href="/submit.html" class="hero-cta">Submit Your Track <span>→</span></a>
+</section>
 
-  <!-- ═══ TRACKS ═══ -->
-  <section class="tracks-section" id="tracks" aria-label="Trending tracks">
-    <div class="section-header">
-      <h2 class="section-title"><span class="icon">🔥</span> Trending Tracks</h2>
-    </div>
-    
-    <div class="controls-bar">
-      <div class="genre-filters" role="tablist" aria-label="Filter by genre">
-        <button class="genre-btn active" onclick="filterGenre('all')" role="tab" aria-selected="true">All</button>
-        <button class="genre-btn" onclick="filterGenre('Electronic')" role="tab">Electronic</button>
-        <button class="genre-btn" onclick="filterGenre('Hip-Hop')" role="tab">Hip-Hop</button>
-        <button class="genre-btn" onclick="filterGenre('Pop')" role="tab">Pop</button>
-        <button class="genre-btn" onclick="filterGenre('Rock')" role="tab">Rock</button>
-        <button class="genre-btn" onclick="filterGenre('Cinematic')" role="tab">Cinematic</button>
-        <button class="genre-btn" onclick="filterGenre('Other')" role="tab">Other</button>
-      </div>
-      <select class="sort-select" id="sortSelect" onchange="sortTracks(this.value)">
-        <option value="votes">Most Voted</option>
-        <option value="newest">Newest First</option>
-      </select>
-    </div>
-    
-    <div class="tracks-grid" id="tracksGrid">
-      <div class="skeleton-card"><div class="skeleton skeleton-video"></div><div class="skeleton-info"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-meta"></div><div class="skeleton skeleton-btn"></div></div></div>
-      <div class="skeleton-card"><div class="skeleton skeleton-video"></div><div class="skeleton-info"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-meta"></div><div class="skeleton skeleton-btn"></div></div></div>
-      <div class="skeleton-card"><div class="skeleton skeleton-video"></div><div class="skeleton-info"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-meta"></div><div class="skeleton skeleton-btn"></div></div></div>
-    </div>
-  </section>
+<!-- ═══ VIEW TABS ═══ -->
+<div class="view-bar">
+  <div class="view-tabs">
+    <button class="view-tab active" onclick="setView('discover')">Discover</button>
+    <button class="view-tab" onclick="setView('top')">Top Rated</button>
+    <button class="view-tab" onclick="setView('new')">New</button>
+  </div>
+  <div class="track-count" id="trackCount"></div>
+</div>
 
-  <!-- ═══ LEADERBOARD ═══ -->
-  <section class="leaderboard-section" id="leaderboard" aria-label="Top 10 leaderboard">
-    <div class="section-header">
-      <h2 class="section-title"><span class="icon">🏆</span> Top 10 Leaderboard</h2>
-    </div>
-    <div class="leaderboard" id="leaderboardList">
-      <div class="skeleton skeleton-lb-row"></div>
-      <div class="skeleton skeleton-lb-row"></div>
-      <div class="skeleton skeleton-lb-row"></div>
-      <div class="skeleton skeleton-lb-row"></div>
-      <div class="skeleton skeleton-lb-row"></div>
-    </div>
-  </section>
+<!-- ═══ FILTERS ═══ -->
+<div class="filters" id="filtersBar">
+  <span class="filter-label">Genre</span>
+  <button class="filter-pill active" data-filter="genre" data-value="all" onclick="setFilter('genre','all',this)">All</button>
+  <button class="filter-pill" data-filter="genre" data-value="Electronic" onclick="setFilter('genre','Electronic',this)">Electronic</button>
+  <button class="filter-pill" data-filter="genre" data-value="Hip-Hop" onclick="setFilter('genre','Hip-Hop',this)">Hip-Hop</button>
+  <button class="filter-pill" data-filter="genre" data-value="Pop" onclick="setFilter('genre','Pop',this)">Pop</button>
+  <button class="filter-pill" data-filter="genre" data-value="Rock" onclick="setFilter('genre','Rock',this)">Rock</button>
+  <button class="filter-pill" data-filter="genre" data-value="Cinematic" onclick="setFilter('genre','Cinematic',this)">Cinematic</button>
+  <button class="filter-pill" data-filter="genre" data-value="Other" onclick="setFilter('genre','Other',this)">Other</button>
+  <div class="filter-sep"></div>
+  <span class="filter-label">Tool</span>
+  <button class="filter-pill active" data-filter="tool" data-value="all" onclick="setFilter('tool','all',this)">All</button>
+  <button class="filter-pill" data-filter="tool" data-value="Suno" onclick="setFilter('tool','Suno',this)">Suno</button>
+  <button class="filter-pill" data-filter="tool" data-value="Udio" onclick="setFilter('tool','Udio',this)">Udio</button>
+  <button class="filter-pill" data-filter="tool" data-value="ElevenLabs" onclick="setFilter('tool','ElevenLabs',this)">ElevenLabs</button>
+</div>
 
-  <!-- ═══ AI MUSIC TOOLS ═══ -->
-  <section class="tools-section" id="tools" aria-label="AI music creation tools">
-    <div class="tools-header">
-      <h2 class="section-title" style="justify-content:center;"><span class="icon">🎧</span> Create AI Music</h2>
-      <p>The most powerful platforms for generating AI music. Create a track, then submit it to VoteMyAI.</p>
-    </div>
-    
-    <div class="tools-grid">
-      <div class="tool-card suno">
-        <div class="tool-icon">S</div>
-        <div class="tool-name">Suno</div>
-        <div class="tool-tagline">Full songs from a text prompt — lyrics, vocals, and production in seconds. The most popular choice for AI music creators.</div>
-        <div class="tool-features">
-          <span class="tool-tag">Text to Song</span>
-          <span class="tool-tag">Vocals & Lyrics</span>
-          <span class="tool-tag">All Genres</span>
-          <span class="tool-tag">Free Tier</span>
-        </div>
-        <a href="https://suno.com" class="tool-cta" target="_blank" rel="noopener" onclick="gtag('event','tool_click',{tool:'suno'})">Try Suno →</a>
-      </div>
-      
-      <div class="tool-card udio">
-        <div class="tool-icon">U</div>
-        <div class="tool-name">Udio</div>
-        <div class="tool-tagline">High-fidelity music generation with realistic instrumentation. Known for creative experimentation and genre-blending.</div>
-        <div class="tool-features">
-          <span class="tool-tag">Hi-Fi Audio</span>
-          <span class="tool-tag">Genre Blending</span>
-          <span class="tool-tag">Voice Styles</span>
-          <span class="tool-tag">Free Tier</span>
-        </div>
-        <a href="https://www.udio.com" class="tool-cta" target="_blank" rel="noopener" onclick="gtag('event','tool_click',{tool:'udio'})">Try Udio →</a>
-      </div>
-      
-      <div class="tool-card elevenlabs">
-        <div class="tool-icon">XI</div>
-        <div class="tool-name">ElevenLabs</div>
-        <div class="tool-tagline">From the leaders in AI voice technology. Copyright-cleared music generation with studio-grade vocal quality and API access.</div>
-        <div class="tool-features">
-          <span class="tool-tag">Copyright Cleared</span>
-          <span class="tool-tag">Pro Vocals</span>
-          <span class="tool-tag">Studio Quality</span>
-          <span class="tool-tag">API Access</span>
-        </div>
-        <a href="https://try.elevenlabs.io/xj2k88ooae07" class="tool-cta" target="_blank" rel="noopener" onclick="gtag('event','tool_click',{tool:'elevenlabs'})">Try ElevenLabs →</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- ═══ SEO CONTENT ═══ -->
-  <section class="seo-section" aria-label="About VoteMyAI">
-    <h2>What is VoteMyAI?</h2>
-    <p>VoteMyAI is the #1 platform to vote for, rate, and discover AI-generated music. Whether you create AI songs with Suno, Udio, ElevenLabs, or any other AI music generator — submit your tracks and let the community decide what's best. Our leaderboard ranks the top AI music based on real votes from real listeners.</p>
-    
-    <h2>Rate AI Music & Discover the Best AI Songs</h2>
-    <p>Looking for the best AI-generated music? Browse our curated collection of AI songs across every genre — from electronic and hip-hop to cinematic scores and pop hits. Every track is community-rated, so you'll always find the highest quality AI music. Rate AI songs yourself by voting for your favorites.</p>
-    
-    <h2>For AI Music Creators</h2>
-    <p>Made a song with an AI music generator? Submit it to VoteMyAI and get real feedback from the community. We support tracks created with all major AI music tools including Suno AI, Udio, ElevenLabs, and more. Whether you're experimenting with AI vocals, instrumentals, or full song production — there's a place for your music here.</p>
-  </section>
-</main>
+<!-- ═══ TRACKS GRID ═══ -->
+<div class="tracks-container">
+  <div class="tracks-grid" id="tracksGrid">
+    <!-- Skeleton loaders -->
+    <div class="skeleton-card"><div class="skeleton skeleton-embed"></div><div class="skeleton-body"><div class="skeleton skeleton-title"></div><div class="skeleton-badges"><div class="skeleton skeleton-badge"></div><div class="skeleton skeleton-badge"></div></div><div class="skeleton skeleton-stars"></div></div></div>
+    <div class="skeleton-card"><div class="skeleton skeleton-embed"></div><div class="skeleton-body"><div class="skeleton skeleton-title"></div><div class="skeleton-badges"><div class="skeleton skeleton-badge"></div><div class="skeleton skeleton-badge"></div></div><div class="skeleton skeleton-stars"></div></div></div>
+    <div class="skeleton-card"><div class="skeleton skeleton-embed"></div><div class="skeleton-body"><div class="skeleton skeleton-title"></div><div class="skeleton-badges"><div class="skeleton skeleton-badge"></div><div class="skeleton skeleton-badge"></div></div><div class="skeleton skeleton-stars"></div></div></div>
+    <div class="skeleton-card"><div class="skeleton skeleton-embed"></div><div class="skeleton-body"><div class="skeleton skeleton-title"></div><div class="skeleton-badges"><div class="skeleton skeleton-badge"></div><div class="skeleton skeleton-badge"></div></div><div class="skeleton skeleton-stars"></div></div></div>
+    <div class="skeleton-card"><div class="skeleton skeleton-embed"></div><div class="skeleton-body"><div class="skeleton skeleton-title"></div><div class="skeleton-badges"><div class="skeleton skeleton-badge"></div><div class="skeleton skeleton-badge"></div></div><div class="skeleton skeleton-stars"></div></div></div>
+    <div class="skeleton-card"><div class="skeleton skeleton-embed"></div><div class="skeleton-body"><div class="skeleton skeleton-title"></div><div class="skeleton-badges"><div class="skeleton skeleton-badge"></div><div class="skeleton skeleton-badge"></div></div><div class="skeleton skeleton-stars"></div></div></div>
+  </div>
+</div>
 
 <!-- ═══ FOOTER ═══ -->
-<footer role="contentinfo">
-  <div class="footer-grid">
+<footer>
+  <div class="footer-inner">
     <div class="footer-brand">
-      <div class="logo">VOTEMYAI</div>
-      <p>The community-driven platform for discovering and voting on the best AI-generated music.</p>
+      <a href="/" class="logo"><span class="logo-dot"></span>VOTEMYAI</a>
+      <p>The community-driven platform for discovering and rating AI-generated music.</p>
     </div>
-    <div class="footer-col">
-      <h4>Platform</h4>
-      <a href="#tracks">Browse Tracks</a>
-      <a href="#leaderboard">Leaderboard</a>
-      <a href="/blog.html">Blog</a>
-      <a href="/submit.html">Submit a Track</a>
-      <a href="/login.html">Login / Sign Up</a>
+    <div class="footer-links">
+      <div class="footer-col">
+        <h4>Platform</h4>
+        <a href="/#tracks">Browse Tracks</a>
+        <a href="/blog.html">Blog</a>
+        <a href="/submit.html">Submit a Track</a>
+        <a href="/login.html">Login / Sign Up</a>
+      </div>
+      <div class="footer-col">
+        <h4>AI Tools</h4>
+        <a href="https://suno.com" target="_blank" rel="noopener" onclick="gtag('event','tool_click',{tool:'suno',location:'footer'})">Suno</a>
+        <a href="https://www.udio.com" target="_blank" rel="noopener" onclick="gtag('event','tool_click',{tool:'udio',location:'footer'})">Udio</a>
+        <a href="https://try.elevenlabs.io/xj2k88ooae07" target="_blank" rel="noopener" onclick="gtag('event','tool_click',{tool:'elevenlabs',location:'footer'})">ElevenLabs</a>
+      </div>
+      <div class="footer-col">
+        <h4>Info</h4>
+        <a href="/faq.html">FAQ</a>
+        <a href="/contact.html">Contact</a>
+        <a href="/terms.html">Terms</a>
+        <a href="/privacy.html">Privacy</a>
+      </div>
     </div>
-    <div class="footer-col">
-      <h4>AI Tools</h4>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy">© 2026 VoteMyAI. All rights reserved.</span>
+    <div class="footer-tools">
       <a href="https://suno.com" target="_blank" rel="noopener">Suno</a>
       <a href="https://www.udio.com" target="_blank" rel="noopener">Udio</a>
       <a href="https://try.elevenlabs.io/xj2k88ooae07" target="_blank" rel="noopener" onclick="gtag('event','tool_click',{tool:'elevenlabs',location:'footer'})">ElevenLabs</a>
     </div>
-    <div class="footer-col">
-      <h4>Info</h4>
-      <a href="/faq.html">FAQ</a>
-      <a href="/contact.html">Contact</a>
-      <a href="/terms.html">Terms of Service</a>
-      <a href="/privacy.html">Privacy Policy</a>
-    </div>
-  </div>
-  <div class="footer-bottom">
-    <div class="footer-copy">© 2026 VoteMyAI. All rights reserved.</div>
-    <div class="footer-copy">Made for the AI music community</div>
   </div>
 </footer>
 
-<!-- ═══ NOSCRIPT ═══ -->
-<noscript>
-  <p>VoteMyAI requires JavaScript to load tracks and enable voting. Please enable JavaScript to use this site.</p>
-  <p>VoteMyAI is the #1 AI music voting platform. Discover and vote for the best AI-generated music from Suno, Udio, ElevenLabs and more.</p>
-</noscript>
-
-<!-- ═══ SCRIPT ═══ -->
-<script type="module">
+<!-- ═══ JAVASCRIPT ═══ -->
+<script>
   const SUPABASE_URL = 'https://gezijezmsecbtzytotax.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_hOOMtCz7gYsu_-CVD6lW9Q_SxtFlNhw';
-  
+
   let currentUser = null;
-  let userVotes = [];
   let allTracks = [];
-  let currentGenre = 'all';
-  let currentSort = 'votes';
-  
-  // ── Sanitize ──
-  function sanitize(str) {
-    if (!str) return '';
-    const d = document.createElement('div');
-    d.textContent = str;
-    return d.innerHTML;
-  }
-  
-  // ── Auth ──
+  let userRatings = {}; // { trackId: score }
+  let currentView = 'discover';
+  let filters = { genre: 'all', tool: 'all' };
+
+  // ─── Star SVG ───
+  const starSVG = `<svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>`;
+
+  // ─── Auth ───
   async function checkAuth() {
     const hash = window.location.hash.substring(1);
     const params = new URLSearchParams(hash);
     const accessToken = params.get('access_token');
-    
+
     if (accessToken) {
       const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
         headers: { 'Authorization': `Bearer ${accessToken}`, 'apikey': SUPABASE_KEY }
@@ -965,281 +630,435 @@
         }
       }
     }
-    
+
     if (currentUser) {
-      await loadUserVotes();
-      updateNavAuth();
-    }
-  }
-  
-  function updateNavAuth() {
-    const authLink = document.getElementById('authLink');
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (currentUser && authLink) {
+      const authLink = document.getElementById('authLink');
       authLink.textContent = currentUser.user_metadata?.name || 'Profile';
       authLink.href = '/profile.html';
-      logoutBtn.style.display = 'inline-block';
+      await loadUserRatings();
     }
   }
-  
-  window.logout = function() {
-    localStorage.removeItem('sb_token');
-    localStorage.removeItem('anon_votes');
-    window.location.href = '/';
-  };
-  
-  async function loadUserVotes() {
+
+  async function loadUserRatings() {
     if (!currentUser) return;
     const token = localStorage.getItem('sb_token');
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/ratings?user_id=eq.${currentUser.id}&select=track_id,score`, {
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const ratings = await res.json();
+        ratings.forEach(r => { userRatings[r.track_id] = r.score; });
+      }
+    } catch(e) {}
+    // Also load legacy votes as ratings
     try {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/votes?user_id=eq.${currentUser.id}&select=track_id`, {
         headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
         const votes = await res.json();
-        userVotes = votes.map(v => v.track_id);
+        votes.forEach(v => {
+          if (!userRatings[v.track_id]) userRatings[v.track_id] = 5;
+        });
       }
-    } catch(e) { console.error(e); }
+    } catch(e) {}
   }
-  
-  // ── Tracks ──
+
+  // ─── Embed Detection ───
+  function detectPlatform(url) {
+    if (!url) return { platform: 'unknown', embedHtml: '' };
+    
+    // YouTube
+    const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([^&?\/#]+)/);
+    if (ytMatch) return {
+      platform: 'youtube',
+      embedHtml: `<iframe src="https://www.youtube.com/embed/${ytMatch[1]}?rel=0" allowfullscreen loading="lazy"></iframe>`
+    };
+
+    // SoundCloud
+    if (url.includes('soundcloud.com')) return {
+      platform: 'soundcloud',
+      embedHtml: `<iframe src="https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&color=%23e8ff47&auto_play=false&show_artwork=true&show_user=false&show_comments=false" scrolling="no" loading="lazy"></iframe>`
+    };
+
+    // Suno
+    if (url.includes('suno.com')) {
+      const sunoMatch = url.match(/suno\.com\/(?:song\/)?([a-f0-9-]+)/);
+      if (sunoMatch) return {
+        platform: 'suno',
+        embedHtml: `<iframe src="https://suno.com/embed/${sunoMatch[1]}" loading="lazy"></iframe>`
+      };
+    }
+
+    // Udio
+    if (url.includes('udio.com')) {
+      const udioMatch = url.match(/udio\.com\/songs\/([a-zA-Z0-9_-]+)/);
+      if (udioMatch) return {
+        platform: 'udio',
+        embedHtml: `<iframe src="https://www.udio.com/embed/${udioMatch[1]}" loading="lazy"></iframe>`
+      };
+    }
+
+    // TikTok
+    if (url.includes('tiktok.com')) {
+      const tiktokMatch = url.match(/video\/(\d+)/);
+      if (tiktokMatch) return {
+        platform: 'tiktok',
+        embedHtml: `<iframe src="https://www.tiktok.com/embed/v2/${tiktokMatch[1]}" loading="lazy"></iframe>`
+      };
+    }
+
+    // ElevenLabs
+    if (url.includes('elevenlabs.io')) return {
+      platform: 'elevenlabs',
+      embedHtml: `<a href="${url}" target="_blank" class="embed-placeholder" style="display:flex;align-items:center;justify-content:center;background:var(--surface-2);color:var(--accent);font-weight:700;text-decoration:none;font-size:0.85rem;">▶ Listen on ElevenLabs</a>`
+    };
+
+    // Fallback: try as YouTube ID (legacy yt_id support)
+    return { platform: 'unknown', embedHtml: '' };
+  }
+
+  function getEmbedHtml(track) {
+    // Try embed_url first (new field), fall back to yt_id
+    if (track.embed_url) {
+      return detectPlatform(track.embed_url);
+    }
+    if (track.yt_id) {
+      return {
+        platform: 'youtube',
+        embedHtml: `<iframe src="https://www.youtube.com/embed/${track.yt_id}?rel=0" allowfullscreen loading="lazy"></iframe>`
+      };
+    }
+    return { platform: 'unknown', embedHtml: '<div class="embed-placeholder" style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:0.8rem;">No preview available</div>' };
+  }
+
+  // ─── Wilson Score ───
+  function wilsonScore(avg, n) {
+    if (n === 0) return 0;
+    // Normalize 1-5 to 0-1
+    const p = (avg - 1) / 4;
+    const z = 1.96; // 95% confidence
+    const z2 = z * z;
+    const score = (p + z2 / (2 * n) - z * Math.sqrt((p * (1 - p) + z2 / (4 * n)) / n)) / (1 + z2 / n);
+    return score;
+  }
+
+  // ─── Load Tracks ───
   async function loadTracks() {
     try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/tracks?select=*&order=votes.desc`, {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/tracks?select=*&order=created_at.desc`, {
         headers: { 'apikey': SUPABASE_KEY }
       });
       allTracks = await res.json();
-      updateStats();
       renderTracks();
-      renderLeaderboard();
-    } catch (err) {
-      console.error('Error:', err);
-      document.getElementById('tracksGrid').innerHTML = '<p style="color:var(--muted);grid-column:1/-1;text-align:center;padding:60px;">Failed to load tracks. Please refresh.</p>';
+    } catch(e) {
+      console.error('Load error:', e);
     }
   }
-  
-  function updateStats() {
-    document.getElementById('statTracks').textContent = allTracks.length;
-    const totalVotes = allTracks.reduce((sum, t) => sum + (parseInt(t.votes) || 0), 0);
-    document.getElementById('statVotes').textContent = totalVotes;
-  }
-  
-  function getToolBadgeClass(tool) {
-    const t = (tool || '').toLowerCase();
-    if (t.includes('suno')) return 'badge-suno';
-    if (t.includes('udio')) return 'badge-udio';
-    if (t.includes('eleven')) return 'badge-elevenlabs';
-    return 'badge-other';
-  }
-  
+
+  // ─── Sorting ───
   function getSortedTracks(tracks) {
-    if (currentSort === 'newest') {
-      return [...tracks].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    switch (currentView) {
+      case 'top':
+        return [...tracks].sort((a, b) => {
+          const scoreA = wilsonScore(a.avg_rating || 0, a.rating_count || 0);
+          const scoreB = wilsonScore(b.avg_rating || 0, b.rating_count || 0);
+          return scoreB - scoreA;
+        });
+      case 'new':
+        return [...tracks].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      case 'discover':
+      default:
+        // Prioritize tracks with fewer ratings (help them get discovered)
+        return [...tracks].sort((a, b) => {
+          const countA = a.rating_count || 0;
+          const countB = b.rating_count || 0;
+          // Tracks with 0-5 ratings first, then by newest
+          if (countA <= 5 && countB > 5) return -1;
+          if (countB <= 5 && countA > 5) return 1;
+          return new Date(b.created_at) - new Date(a.created_at);
+        });
     }
-    return [...tracks].sort((a, b) => (b.votes || 0) - (a.votes || 0));
   }
-  
+
+  // ─── Filter ───
+  function getFilteredTracks() {
+    return allTracks.filter(t => {
+      if (filters.genre !== 'all' && t.genre !== filters.genre) return false;
+      if (filters.tool !== 'all' && t.tool !== filters.tool) return false;
+      return true;
+    });
+  }
+
+  // ─── Render ───
   function renderTracks() {
     const grid = document.getElementById('tracksGrid');
-    let filtered = currentGenre === 'all' ? allTracks : allTracks.filter(t => t.genre === currentGenre);
-    filtered = getSortedTracks(filtered);
-    
-    if (!filtered.length) {
-      grid.innerHTML = '<p style="color:var(--muted);grid-column:1/-1;text-align:center;padding:60px;">No tracks in this genre yet. Be the first to submit!</p>';
+    const filtered = getFilteredTracks();
+    const sorted = getSortedTracks(filtered);
+
+    document.getElementById('trackCount').textContent = `${sorted.length} track${sorted.length !== 1 ? 's' : ''}`;
+
+    if (sorted.length === 0) {
+      grid.innerHTML = '<div class="empty-state"><p>No tracks found. Be the first to submit!</p></div>';
       return;
     }
-    
-    grid.innerHTML = filtered.map(track => {
-      const anonVotes = JSON.parse(localStorage.getItem('anon_votes') || '[]');
-      const hasVoted = userVotes.includes(track.id) || anonVotes.includes(track.id);
-      const btnClass = hasVoted ? 'vote-btn voted' : 'vote-btn';
-      const btnText = hasVoted ? '✓ Voted' : '▲ Vote';
-      const btnDisabled = hasVoted ? 'disabled' : '';
-      const safeTitle = sanitize(track.title);
-      const safeTool = sanitize(track.tool);
-      const safeGenre = sanitize(track.genre);
-      const safeYtId = encodeURIComponent(track.yt_id || '');
-      const badgeClass = getToolBadgeClass(track.tool);
-      
+
+    grid.innerHTML = sorted.map(track => {
+      const embed = getEmbedHtml(track);
+      const avgRating = track.avg_rating || 0;
+      const ratingCount = track.rating_count || 0;
+      const userScore = userRatings[track.id] || 0;
+      const isRated = userScore > 0;
+
+      // Determine embed class for sizing
+      let embedClass = 'track-embed';
+      if (embed.platform === 'soundcloud') embedClass += ' soundcloud';
+      if (embed.platform === 'suno') embedClass += ' suno';
+
+      // Build stars
+      let starsHtml = '';
+      for (let i = 1; i <= 5; i++) {
+        const filled = isRated ? (i <= userScore ? 'filled' : '') : '';
+        starsHtml += `<div class="star ${filled}" data-track="${track.id}" data-score="${i}" onmouseenter="hoverStar(this)" onmouseleave="unhoverStar(this)" onclick="rateStar(this)">${starSVG}</div>`;
+      }
+
+      // Platform badge
+      const platformName = embed.platform !== 'unknown' ? embed.platform.charAt(0).toUpperCase() + embed.platform.slice(1) : '';
+
       return `
-        <div class="track-card" id="track-${track.id}">
-          <div class="track-video">
-            <iframe src="https://www.youtube.com/embed/${safeYtId}" allowfullscreen loading="lazy" title="${safeTitle}"></iframe>
-          </div>
-          <div class="track-info">
-            <div class="track-title">${safeTitle}</div>
-            <div class="track-meta">
-              <span class="track-tool-badge ${badgeClass}">${safeTool}</span>
-              <span>•</span>
-              <span>${safeGenre}</span>
+        <div class="track-card" id="card-${track.id}">
+          <div class="${embedClass}">${embed.embedHtml}</div>
+          <div class="track-body">
+            <div class="track-title">${sanitize(track.title)}</div>
+            <div class="track-badges">
+              <span class="badge badge-tool">${sanitize(track.tool)}</span>
+              <span class="badge badge-genre">${sanitize(track.genre)}</span>
+              ${platformName ? `<span class="badge badge-platform">${platformName}</span>` : ''}
             </div>
-            <div class="track-actions">
-              <button class="${btnClass}" onclick="vote('${track.id}')" ${btnDisabled}>
-                <span>${btnText}</span>
-                <span class="vote-count">${parseInt(track.votes) || 0}</span>
-              </button>
-              <button class="share-btn" onclick="shareTrack('${track.id}', '${safeTitle}')" title="Share">↗</button>
-            </div>
-            <div class="comments-section">
-              <button class="comments-toggle" onclick="toggleComments('${track.id}')">💬 Comments</button>
-              <div class="comments-list" id="comments-${track.id}">
-                <div id="comments-content-${track.id}"><p style="font-size:0.8rem;color:var(--muted);">Loading...</p></div>
-                ${currentUser ? `
-                  <input type="text" class="comment-input" id="comment-input-${track.id}" placeholder="Add a comment..." maxlength="500">
-                  <button class="comment-btn" onclick="addComment('${track.id}')">Post</button>
-                ` : '<p style="font-size:0.78rem;color:var(--muted);margin-top:8px;">Log in to comment</p>'}
+            <div class="rating-row">
+              <div class="stars ${isRated ? 'rated' : ''}" id="stars-${track.id}">${starsHtml}</div>
+              <div class="rating-info">
+                <div class="rating-score">${avgRating > 0 ? avgRating.toFixed(1) : '—'}</div>
+                <div class="rating-count">${ratingCount} rating${ratingCount !== 1 ? 's' : ''}</div>
               </div>
             </div>
+            <div class="card-footer">
+              <button class="comments-btn" onclick="toggleComments('${track.id}')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Comments
+              </button>
+              <button class="share-btn" onclick="shareTrack('${track.id}','${sanitize(track.title)}')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                Share
+              </button>
+            </div>
+          </div>
+          <div class="comments-panel" id="comments-${track.id}">
+            <div class="comments-inner">
+              <div id="comments-content-${track.id}"><span style="color:var(--muted);font-size:0.8rem;">Loading comments...</span></div>
+              ${currentUser ? `
+                <div class="comment-form">
+                  <input type="text" class="comment-input" id="comment-input-${track.id}" placeholder="Add a comment...">
+                  <button class="comment-submit" onclick="addComment('${track.id}')">Post</button>
+                </div>
+              ` : '<p style="font-size:0.75rem;color:var(--muted);margin-top:8px;">Log in to comment</p>'}
+            </div>
           </div>
         </div>
       `;
     }).join('');
   }
-  
-  function renderLeaderboard() {
-    const lb = document.getElementById('leaderboardList');
-    const top10 = [...allTracks].sort((a, b) => (b.votes || 0) - (a.votes || 0)).slice(0, 10);
-    
-    if (!top10.length) {
-      lb.innerHTML = '<p style="color:var(--muted);text-align:center;padding:48px;">No tracks yet. Submit the first one!</p>';
-      return;
-    }
-    
-    lb.innerHTML = top10.map((track, i) => {
-      const rank = i + 1;
-      const rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
-      const medals = ['🥇', '🥈', '🥉'];
-      const displayRank = rank <= 3 ? medals[i] : `#${rank}`;
-      
-      return `
-        <div class="lb-row" onclick="scrollToTrack('${track.id}')">
-          <div class="lb-rank ${rankClass}">${displayRank}</div>
-          <div class="lb-info">
-            <div class="lb-title">${sanitize(track.title)}</div>
-            <div class="lb-meta">${sanitize(track.tool)} • ${sanitize(track.genre)}</div>
-          </div>
-          <div class="lb-votes">${parseInt(track.votes) || 0}</div>
-          <button class="lb-play" onclick="event.stopPropagation(); scrollToTrack('${track.id}')" title="Go to track">▶</button>
-        </div>
-      `;
-    }).join('');
+
+  // ─── Sanitize ───
+  function sanitize(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
   }
-  
-  // ── Interactions ──
-  window.filterGenre = function(genre) {
-    currentGenre = genre;
-    document.querySelectorAll('.genre-btn').forEach(btn => {
-      btn.classList.remove('active');
-      btn.setAttribute('aria-selected', 'false');
+
+  // ─── Star Hover ───
+  window.hoverStar = function(el) {
+    const container = el.parentElement;
+    if (container.classList.contains('rated')) return;
+    const score = parseInt(el.dataset.score);
+    container.querySelectorAll('.star').forEach(s => {
+      s.classList.toggle('hover-fill', parseInt(s.dataset.score) <= score);
     });
-    event.target.classList.add('active');
-    event.target.setAttribute('aria-selected', 'true');
-    renderTracks();
   };
-  
-  window.sortTracks = function(sort) {
-    currentSort = sort;
-    renderTracks();
+
+  window.unhoverStar = function(el) {
+    const container = el.parentElement;
+    if (container.classList.contains('rated')) return;
+    container.querySelectorAll('.star').forEach(s => s.classList.remove('hover-fill'));
   };
-  
-  window.scrollToTrack = function(trackId) {
-    const el = document.getElementById(`track-${trackId}`);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      el.style.boxShadow = '0 0 0 2px var(--accent), 0 16px 48px rgba(232,255,71,0.15)';
-      setTimeout(() => { el.style.boxShadow = ''; }, 2000);
+
+  // ─── Rate ───
+  window.rateStar = async function(el) {
+    const trackId = el.dataset.track;
+    const score = parseInt(el.dataset.score);
+    const container = el.parentElement;
+
+    if (container.classList.contains('rated')) return;
+
+    if (!currentUser) {
+      // Allow anonymous rating via localStorage
+      const anonRatings = JSON.parse(localStorage.getItem('anon_ratings') || '{}');
+      if (anonRatings[trackId]) return;
+      anonRatings[trackId] = score;
+      localStorage.setItem('anon_ratings', JSON.stringify(anonRatings));
     }
-  };
-  
-  window.shareTrack = function(trackId, title) {
-    const url = `${window.location.origin}/#track-${trackId}`;
-    gtag('event', 'share', { track_id: trackId, method: navigator.share ? 'native' : 'clipboard' });
-    if (navigator.share) {
-      navigator.share({ title: `${title} on VoteMyAI`, url });
-    } else {
-      navigator.clipboard.writeText(url).then(() => {
-        const btn = event.target;
-        btn.textContent = '✓';
-        setTimeout(() => { btn.textContent = '↗'; }, 1500);
+
+    // Visual update immediately
+    container.classList.add('rated');
+    container.querySelectorAll('.star').forEach(s => {
+      s.classList.remove('hover-fill');
+      s.classList.toggle('filled', parseInt(s.dataset.score) <= score);
+    });
+    userRatings[trackId] = score;
+
+    // GA4 event
+    gtag('event', 'rate', { track_id: trackId, score: score });
+
+    // Send to Supabase
+    try {
+      const token = localStorage.getItem('sb_token');
+      const headers = {
+        'apikey': SUPABASE_KEY,
+        'Content-Type': 'application/json'
+      };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      await fetch(`${SUPABASE_URL}/rest/v1/ratings`, {
+        method: 'POST',
+        headers: { ...headers, 'Prefer': 'return=minimal' },
+        body: JSON.stringify({
+          track_id: trackId,
+          user_id: currentUser ? currentUser.id : null,
+          score: score
+        })
       });
+
+      // Also call RPC to recalculate avg (we'll create this)
+      await fetch(`${SUPABASE_URL}/rest/v1/rpc/update_track_rating`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ tid: trackId })
+      });
+
+      // Refresh track data
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/tracks?id=eq.${trackId}&select=avg_rating,rating_count`, {
+        headers: { 'apikey': SUPABASE_KEY }
+      });
+      if (res.ok) {
+        const [updated] = await res.json();
+        if (updated) {
+          const track = allTracks.find(t => t.id === trackId);
+          if (track) {
+            track.avg_rating = updated.avg_rating;
+            track.rating_count = updated.rating_count;
+          }
+          // Update the rating display
+          const card = document.getElementById(`card-${trackId}`);
+          if (card) {
+            const scoreEl = card.querySelector('.rating-score');
+            const countEl = card.querySelector('.rating-count');
+            if (scoreEl) scoreEl.textContent = updated.avg_rating ? updated.avg_rating.toFixed(1) : '—';
+            if (countEl) countEl.textContent = `${updated.rating_count || 0} rating${(updated.rating_count || 0) !== 1 ? 's' : ''}`;
+          }
+        }
+      }
+    } catch(e) {
+      console.error('Rate error:', e);
     }
   };
-  
+
+  // ─── View Tabs ───
+  window.setView = function(view) {
+    currentView = view;
+    document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+    renderTracks();
+  };
+
+  // ─── Filters ───
+  window.setFilter = function(type, value, el) {
+    filters[type] = value;
+    document.querySelectorAll(`.filter-pill[data-filter="${type}"]`).forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    renderTracks();
+  };
+
+  // ─── Comments ───
   window.toggleComments = async function(trackId) {
-    const list = document.getElementById(`comments-${trackId}`);
-    if (!list.classList.contains('show')) {
-      list.classList.add('show');
+    const panel = document.getElementById(`comments-${trackId}`);
+    const isOpen = panel.classList.contains('open');
+    
+    // Close all others
+    document.querySelectorAll('.comments-panel.open').forEach(p => p.classList.remove('open'));
+    
+    if (!isOpen) {
+      panel.classList.add('open');
       await loadComments(trackId);
-    } else {
-      list.classList.remove('show');
     }
   };
-  
+
   async function loadComments(trackId) {
     try {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/comments?track_id=eq.${trackId}&select=*&order=created_at.desc`, {
         headers: { 'apikey': SUPABASE_KEY }
       });
       const comments = await res.json();
-      const content = document.getElementById(`comments-content-${trackId}`);
-      content.innerHTML = comments.length ? comments.map(c => `
-        <div class="comment">
-          <div class="comment-text">${sanitize(c.content)}</div>
-          <div class="comment-author">— ${sanitize(c.author_name || 'Anonymous')}</div>
-        </div>
-      `).join('') : '<p style="font-size:0.8rem;color:var(--muted);">No comments yet. Be the first!</p>';
-    } catch (err) { console.error('Comments error:', err); }
+      const el = document.getElementById(`comments-content-${trackId}`);
+      el.innerHTML = comments.length
+        ? comments.map(c => `<div class="comment"><div class="comment-text">${sanitize(c.content)}</div><div class="comment-author">— ${sanitize(c.author_name || 'Anonymous')}</div></div>`).join('')
+        : '<p style="font-size:0.8rem;color:var(--muted);">No comments yet</p>';
+    } catch(e) {}
   }
-  
+
   window.addComment = async function(trackId) {
     const input = document.getElementById(`comment-input-${trackId}`);
     const content = input.value.trim();
-    if (!content) return;
-    if (content.length > 500) { alert('Comment too long (max 500 characters)'); return; }
+    if (!content || !currentUser) return;
+
     const token = localStorage.getItem('sb_token');
-    if (!token || !currentUser) { alert('Please log in to comment'); return; }
     const authorName = currentUser.user_metadata?.name || currentUser.email?.split('@')[0] || 'Anonymous';
+
     try {
       await fetch(`${SUPABASE_URL}/rest/v1/comments`, {
         method: 'POST',
-        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({ track_id: trackId, user_id: currentUser.id, content, author_name: authorName })
       });
+      gtag('event', 'comment', { track_id: trackId });
       input.value = '';
       await loadComments(trackId);
-      gtag('event', 'comment', { track_id: trackId });
-    } catch (err) { console.error('Comment error:', err); }
+    } catch(e) {}
   };
-  
-  window.vote = async function(trackId) {
-    const anonVotes = JSON.parse(localStorage.getItem('anon_votes') || '[]');
-    if (anonVotes.includes(trackId)) { return; }
-    try {
-      await fetch(`${SUPABASE_URL}/rest/v1/rpc/increment_votes`, {
-        method: 'POST',
-        headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ track_id: trackId })
-      });
-      anonVotes.push(trackId);
-      localStorage.setItem('anon_votes', JSON.stringify(anonVotes));
-      gtag('event', 'vote', { track_id: trackId });
-      if (currentUser) {
-        const token = localStorage.getItem('sb_token');
-        await fetch(`${SUPABASE_URL}/rest/v1/votes`, {
-          method: 'POST',
-          headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-          body: JSON.stringify({ user_id: currentUser.id, track_id: trackId })
-        });
-        userVotes.push(trackId);
-      }
-      await loadTracks();
-    } catch (err) {
-      console.error('Vote error:', err);
-      alert('Failed to vote. Please try again.');
+
+  // ─── Share ───
+  window.shareTrack = function(trackId, title) {
+    const url = `${window.location.origin}/?track=${trackId}`;
+    if (navigator.share) {
+      navigator.share({ title: `${title} — VoteMyAI`, url });
+      gtag('event', 'share', { track_id: trackId, method: 'native' });
+    } else {
+      navigator.clipboard.writeText(url);
+      gtag('event', 'share', { track_id: trackId, method: 'clipboard' });
+      // Brief visual feedback
+      const btn = event.target.closest('.share-btn');
+      const orig = btn.innerHTML;
+      btn.innerHTML = '<span style="color:var(--accent);">✓ Copied</span>';
+      setTimeout(() => { btn.innerHTML = orig; }, 1500);
     }
   };
-  
-  // ── Init ──
+
+  // ─── Init ───
   checkAuth().then(loadTracks);
 </script>
 
