@@ -1226,8 +1226,8 @@
     }
     finalHtml = finalHtml.replace(/<iframe /, '<iframe allow="autoplay" ');
 
-    if (platform === 'youtube') {
-      // YouTube: replace thumbnail with video player (looks good in card)
+    if (platform === 'youtube' || platform === 'udio') {
+      // YouTube & Udio: replace thumbnail with player (Udio needs visible iframe to play)
       container.innerHTML = finalHtml;
     } else {
       // All other platforms: keep thumbnail visible, load iframe hidden behind it
@@ -1259,7 +1259,7 @@
     const card = container.closest('.track-card');
     if (card) card.classList.remove('playing');
 
-    if (platform === 'youtube') {
+    if (platform === 'youtube' || platform === 'udio') {
       container.innerHTML = getLazyThumbById(trackId);
     } else {
       // Remove hidden iframe and restore thumb to clickable state
