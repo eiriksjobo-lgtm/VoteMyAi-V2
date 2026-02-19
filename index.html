@@ -3,6 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-KW4NR9QBWB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-KW4NR9QBWB');
+  </script>
+  
   <title>VoteMyAI – AI Music Voting Platform | Vote for the Best AI-Generated Music</title>
   
   <!-- SEO Meta Tags -->
@@ -815,7 +825,7 @@
           <span class="tool-tag">All Genres</span>
           <span class="tool-tag">Free Tier</span>
         </div>
-        <a href="https://suno.com" class="tool-cta" target="_blank" rel="noopener">Try Suno →</a>
+        <a href="https://suno.com" class="tool-cta" target="_blank" rel="noopener" onclick="gtag('event','tool_click',{tool:'suno'})">Try Suno →</a>
       </div>
       
       <div class="tool-card udio">
@@ -828,7 +838,7 @@
           <span class="tool-tag">Voice Styles</span>
           <span class="tool-tag">Free Tier</span>
         </div>
-        <a href="https://www.udio.com" class="tool-cta" target="_blank" rel="noopener">Try Udio →</a>
+        <a href="https://www.udio.com" class="tool-cta" target="_blank" rel="noopener" onclick="gtag('event','tool_click',{tool:'udio'})">Try Udio →</a>
       </div>
       
       <div class="tool-card elevenlabs">
@@ -841,7 +851,7 @@
           <span class="tool-tag">Studio Quality</span>
           <span class="tool-tag">API Access</span>
         </div>
-        <a href="https://try.elevenlabs.io/xj2k88ooae07" class="tool-cta" target="_blank" rel="noopener">Try ElevenLabs →</a>
+        <a href="https://try.elevenlabs.io/xj2k88ooae07" class="tool-cta" target="_blank" rel="noopener" onclick="gtag('event','tool_click',{tool:'elevenlabs'})">Try ElevenLabs →</a>
       </div>
     </div>
   </section>
@@ -877,7 +887,7 @@
       <h4>AI Tools</h4>
       <a href="https://suno.com" target="_blank" rel="noopener">Suno</a>
       <a href="https://www.udio.com" target="_blank" rel="noopener">Udio</a>
-      <a href="https://try.elevenlabs.io/xj2k88ooae07" target="_blank" rel="noopener">ElevenLabs</a>
+      <a href="https://try.elevenlabs.io/xj2k88ooae07" target="_blank" rel="noopener" onclick="gtag('event','tool_click',{tool:'elevenlabs',location:'footer'})">ElevenLabs</a>
     </div>
     <div class="footer-col">
       <h4>Info</h4>
@@ -1141,6 +1151,7 @@
   
   window.shareTrack = function(trackId, title) {
     const url = `${window.location.origin}/#track-${trackId}`;
+    gtag('event', 'share', { track_id: trackId, method: navigator.share ? 'native' : 'clipboard' });
     if (navigator.share) {
       navigator.share({ title: `${title} on VoteMyAI`, url });
     } else {
@@ -1194,6 +1205,7 @@
       });
       input.value = '';
       await loadComments(trackId);
+      gtag('event', 'comment', { track_id: trackId });
     } catch (err) { console.error('Comment error:', err); }
   };
   
@@ -1208,6 +1220,7 @@
       });
       anonVotes.push(trackId);
       localStorage.setItem('anon_votes', JSON.stringify(anonVotes));
+      gtag('event', 'vote', { track_id: trackId });
       if (currentUser) {
         const token = localStorage.getItem('sb_token');
         await fetch(`${SUPABASE_URL}/rest/v1/votes`, {
