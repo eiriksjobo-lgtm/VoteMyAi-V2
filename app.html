@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VoteMyAI — Rate the Best AI-Generated Music</title>
+  <meta name="theme-color" content="#e8ff47">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;500;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; overflow: hidden; background: #07070b; }
+    
+    #mainFrame {
+      width: 100%; border: none;
+      height: 100%;
+      transition: height 0.3s ease;
+    }
+    body.player-active #mainFrame {
+      height: calc(100% - 64px);
+    }
+
+    /* ── Player Bar ── */
+    .player-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      height: 64px; background: #0c0c14;
+      border-top: 1px solid #1a1a26;
+      display: none; align-items: center;
+      padding: 0 20px; gap: 14px;
+      font-family: 'DM Sans', sans-serif;
+      z-index: 9999;
+    }
+    .player-bar.active { display: flex; }
+
+    .player-embed {
+      width: 140px; height: 48px; flex-shrink: 0;
+      border-radius: 6px; overflow: hidden;
+      position: relative; background: #131319;
+    }
+    .player-embed iframe {
+      width: 100%; height: 100%; border: none;
+    }
+
+    .player-info {
+      flex: 1; min-width: 0;
+    }
+    .player-title {
+      font-weight: 600; font-size: 0.85rem; color: #f2f2f4;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .player-meta {
+      font-size: 0.7rem; color: #5c5c72;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    .player-close {
+      background: none; border: none;
+      color: #5c5c72; cursor: pointer;
+      font-size: 1.1rem; padding: 8px;
+      transition: color 0.2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .player-close:hover { color: #f2f2f4; }
+
+    @media (max-width: 640px) {
+      .player-embed { width: 100px; height: 40px; }
+      .player-bar { padding: 0 12px; height: 56px; gap: 10px; }
+      body.player-active #mainFrame {
+        height: calc(100% - 56px);
+      }
+    }
+  </style>
+</head>
+<body>
+
+<iframe id="mainFrame"></iframe>
+
+<div class="player-bar" id="playerBar">
+  <div class="player-embed" id="playerEmbed"></div>
+  <div class="player-info">
+    <div class="player-title" id="playerTitle"></div>
+    <div class="player-meta" id="playerMeta"></div>
+  </div>
+  <button class="player-close" id="playerClose" title="Close player">✕</button>
+</div>
+
+<script>
+  let activeTrackId = null;
+
+  // Determine which page to load in the iframe
+  const params = new URLSearchParams(window.location.search);
+  const targetPage = params.get('p') || '/index.html';
+  document.getElementById('mainFrame').src = targetPage;
+
+  // Listen for play messages from child pages
+  window.addEventListener('message', (e) => {
+    if (!e.data || e.data.type !== 'play-track') return;
+    
+    const { trackId, embedHtml, title, tool } = e.data;
+    
+    // Toggle off if same track
+    if (activeTrackId === trackId) {
+      closePlayer();
+      return;
+    }
+
+    const bar = document.getElementById('playerBar');
+    const embed = document.getElementById('playerEmbed');
+    const titleEl = document.getElementById('playerTitle');
+    const metaEl = document.getElementById('playerMeta');
+
+    embed.innerHTML = embedHtml;
+    titleEl.textContent = title;
+    metaEl.textContent = tool;
+    bar.classList.add('active');
+    document.body.classList.add('player-active');
+    activeTrackId = trackId;
+  });
+
+  function closePlayer() {
+    const bar = document.getElementById('playerBar');
+    const embed = document.getElementById('playerEmbed');
+    embed.innerHTML = '';
+    bar.classList.remove('active');
+    document.body.classList.remove('player-active');
+    activeTrackId = null;
+  }
+
+  document.getElementById('playerClose').addEventListener('click', closePlayer);
+
+  // Sync the page title with the iframe
+  const mainFrame = document.getElementById('mainFrame');
+  mainFrame.addEventListener('load', () => {
+    try {
+      document.title = mainFrame.contentDocument.title || 'VoteMyAI';
+    } catch(e) {}
+    
+    // Update URL to match iframe (for bookmarkability)
+    try {
+      const framePath = new URL(mainFrame.contentWindow.location.href).pathname;
+      if (framePath && framePath !== '/app.html') {
+        history.replaceState(null, '', framePath);
+      }
+    } catch(e) {}
+  });
+
+  // Intercept navigation inside iframe to update parent URL
+  mainFrame.addEventListener('load', () => {
+    try {
+      const frameDoc = mainFrame.contentDocument;
+      
+      // Override link clicks inside the iframe
+      frameDoc.addEventListener('click', (e) => {
+        const link = e.target.closest('a[href]');
+        if (!link) return;
+        
+        const href = link.getAttribute('href');
+        if (!href) return;
+        if (link.target === '_blank') return;
+        if (href.startsWith('http') && !href.includes(window.location.hostname)) return;
+        if (href.startsWith('#')) return;
+        
+        // Internal navigation — load in the same iframe
+        e.preventDefault();
+        mainFrame.src = href;
+      });
+    } catch(e) {}
+  });
+</script>
+
+</body>
+</html>
