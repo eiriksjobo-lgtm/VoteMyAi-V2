@@ -481,22 +481,170 @@
     .page-frame iframe { width: 100%; height: 100%; border: none; }
     body.player-active .page-frame { bottom: 68px; }
 
+    /* ══════════════════════════════════ HOW IT WORKS ══════════════════════════════════ */
+    .how-section { max-width: 900px; margin: 0 auto; padding: 60px clamp(16px, 4vw, 40px) 20px; }
+    .how-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 32px; }
+    .how-step { text-align: center; padding: 28px 20px; position: relative; }
+    .how-num {
+      font-family: 'Bebas Neue', sans-serif; font-size: 3rem; line-height: 1;
+      color: var(--accent); opacity: 0.15; margin-bottom: 4px;
+    }
+    .how-icon {
+      width: 52px; height: 52px; border-radius: 14px; margin: 0 auto 14px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--accent-dim); border: 1px solid rgba(232,255,71,0.1);
+    }
+    .how-icon svg { width: 24px; height: 24px; stroke: var(--accent); fill: none; stroke-width: 1.8; }
+    .how-label {
+      font-family: 'Bebas Neue', sans-serif; font-size: 1.15rem;
+      letter-spacing: 1px; margin-bottom: 6px;
+    }
+    .how-desc { color: var(--muted); font-size: 0.8rem; line-height: 1.55; }
+    .how-connector {
+      position: absolute; top: 80px; right: -14px;
+      color: var(--border); font-size: 1.2rem; font-weight: 300;
+    }
+
     /* ══════════════════════════════════ RESPONSIVE ══════════════════════════════════ */
-    @media (max-width: 960px) { .tracks-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    /* Tablet */
+    @media (max-width: 960px) {
+      .tracks-grid { grid-template-columns: repeat(2, 1fr); }
+      .how-steps { gap: 16px; }
+    }
+
+    /* Mobile */
     @media (max-width: 640px) {
-      .tracks-grid { grid-template-columns: 1fr; gap: 14px; }
-      .hero { padding: 56px 20px 36px; }
-      .hero h1 { font-size: clamp(2rem, 10vw, 2.8rem); }
-      .view-bar { flex-direction: column; align-items: stretch; }
+      /* Nav */
+      nav { height: 54px; }
+      .logo { font-size: 1.2rem; letter-spacing: 2px; }
+      .nav-link { font-size: 0.65rem; padding: 6px 8px; letter-spacing: 1px; }
+      .btn-submit { padding: 7px 12px; font-size: 0.65rem; letter-spacing: 1px; }
+
+      /* Hero */
+      .hero { padding: 40px 16px 28px; }
+      .hero::before { width: 300px; height: 150px; }
+      .hero h1 { font-size: clamp(1.8rem, 9vw, 2.4rem); letter-spacing: 2px; margin-bottom: 10px; }
+      .hero p { font-size: 0.82rem; margin-bottom: 20px; max-width: 300px; }
+      .hero-cta { padding: 10px 22px; font-size: 0.76rem; }
+      .hero-stats { gap: 28px; margin-top: 24px; }
+      .hero-stat-num { font-size: 1.4rem; }
+      .hero-stat-label { font-size: 0.6rem; letter-spacing: 1.2px; }
+
+      /* View tabs + filters */
+      .view-bar { flex-direction: column; align-items: stretch; gap: 8px; }
       .track-count { display: none; }
-      .filters { gap: 6px; }
+      .view-tabs { align-self: center; }
+      .view-tab { padding: 6px 14px; font-size: 0.7rem; }
+      .filters { gap: 5px; padding-top: 10px; overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+      .filters::-webkit-scrollbar { display: none; }
+      .filter-label { font-size: 0.62rem; white-space: nowrap; margin-right: 2px; }
+      .filter-pill { padding: 4px 10px; font-size: 0.66rem; flex-shrink: 0; }
       .filter-sep { display: none; }
-      .footer-links { gap: 28px; }
-      .player-bar { padding: 0 12px; height: 60px; gap: 10px; }
-      body.player-active { padding-bottom: 60px; }
-      body.player-active .page-frame { bottom: 60px; }
+
+      /* Track grid */
+      .tracks-container { padding: 16px 12px 60px; }
+      .tracks-grid { grid-template-columns: 1fr; gap: 12px; }
+
+      /* Track cards — compact on mobile */
+      .track-card { border-radius: 10px; }
+      .track-card:hover { transform: none; box-shadow: none; }
+      .track-embed { padding-bottom: 50%; }
+      .track-body { padding: 12px 14px 14px; }
+      .track-title { font-size: 0.82rem; margin-bottom: 6px; }
+      .track-badges { margin-bottom: 10px; gap: 4px; }
+      .badge { padding: 2px 8px; font-size: 0.6rem; }
+      .star { width: 24px; height: 24px; }
+      .star svg { width: 17px; height: 17px; }
+      .rating-score { font-size: 0.95rem; }
+      .rating-count { font-size: 0.62rem; }
+      .card-footer { margin-top: 10px; padding-top: 10px; gap: 12px; }
+      .comments-btn, .share-btn { font-size: 0.68rem; }
+      .comments-btn svg, .share-btn svg { width: 12px; height: 12px; }
+
+      /* Embed thumb (YouTube) */
+      .embed-thumb .play-circle { width: 44px; height: 44px; }
+      .embed-thumb .play-circle svg { width: 20px; height: 20px; }
+      .embed-thumb .thumb-platform { font-size: 0.6rem; }
+
+      /* Comments */
+      .comments-inner { padding: 10px 14px 12px; }
+      .comment-text { font-size: 0.78rem; }
+      .comment-input { padding: 6px 10px; font-size: 0.75rem; }
+      .comment-submit { padding: 6px 12px; font-size: 0.7rem; }
+
+      /* Scroll indicator */
+      .scroll-indicator { padding: 20px 0 4px; }
+      .scroll-indicator .scroll-line { height: 24px; }
+      .scroll-indicator .scroll-text { font-size: 0.58rem; }
+
+      /* Leaderboard */
+      .leaderboard-section { padding: 40px 12px 24px; }
+      .section-title { font-size: 1.5rem; }
+      .section-sub { font-size: 0.78rem; }
+      .lb-row { padding: 10px 14px; gap: 10px; }
+      .lb-rank { font-size: 1.1rem; width: 28px; }
+      .lb-title { font-size: 0.8rem; }
+      .lb-meta { font-size: 0.68rem; }
+      .lb-stars { font-size: 0.78rem; }
+      .lb-count { font-size: 0.64rem; }
+
+      /* How it works */
+      .how-section { padding: 40px 16px 16px; }
+      .how-steps { grid-template-columns: 1fr; gap: 8px; }
+      .how-step { padding: 20px 16px; display: flex; align-items: center; gap: 16px; text-align: left; }
+      .how-num { display: none; }
+      .how-icon { width: 44px; height: 44px; flex-shrink: 0; margin: 0; border-radius: 12px; }
+      .how-icon svg { width: 20px; height: 20px; }
+      .how-label { font-size: 1rem; margin-bottom: 2px; }
+      .how-desc { font-size: 0.74rem; }
+      .how-connector { display: none; }
+
+      /* Tools section */
+      .tools-section { padding: 40px 12px 24px; }
+      .tools-grid { grid-template-columns: 1fr; gap: 12px; }
+      .tool-card { padding: 20px 18px; }
+      .tool-icon { width: 40px; height: 40px; margin-bottom: 12px; font-size: 1.1rem; }
+      .tool-name { font-size: 1.2rem; }
+      .tool-tagline { font-size: 0.76rem; margin-bottom: 12px; }
+      .tool-tag { font-size: 0.62rem; }
+      .tool-cta { font-size: 0.76rem; }
+
+      /* SEO section */
+      .seo-section { padding: 24px 16px 40px; }
+      .seo-inner h2 { font-size: 1.2rem; }
+      .seo-inner p { font-size: 0.76rem; }
+
+      /* Footer */
+      footer { padding: 32px 16px 20px; }
+      .footer-inner { flex-direction: column; gap: 24px; }
+      .footer-brand p { font-size: 0.74rem; }
+      .footer-links { gap: 24px; }
+      .footer-col h4 { font-size: 0.62rem; margin-bottom: 8px; }
+      .footer-col a { font-size: 0.76rem; }
+      .footer-bottom { flex-direction: column; align-items: center; text-align: center; gap: 8px; }
+      .footer-copy { font-size: 0.68rem; }
+      .footer-tools { gap: 12px; }
+      .footer-tools a { font-size: 0.68rem; }
+
+      /* Player bar */
+      .player-bar { padding: 0 12px; height: 56px; gap: 10px; }
+      body.player-active { padding-bottom: 56px; }
+      body.player-active .page-frame { bottom: 56px; }
+      .player-title { font-size: 0.78rem; }
+      .player-meta { font-size: 0.62rem; }
       .player-ctrl { width: 32px; height: 32px; }
-      .player-ctrl.pp { width: 36px; height: 36px; }
+      .player-ctrl svg { width: 16px; height: 16px; }
+      .player-eq span { width: 2px; }
+    }
+
+    /* Small phones */
+    @media (max-width: 380px) {
+      .hero h1 { font-size: 1.7rem; letter-spacing: 1px; }
+      .hero-stats { gap: 20px; }
+      .hero-stat-num { font-size: 1.2rem; }
+      .nav-link { padding: 6px 6px; font-size: 0.6rem; }
+      .btn-submit { padding: 6px 10px; font-size: 0.6rem; }
     }
   </style>
 </head>
@@ -521,6 +669,42 @@
     <div class="hero-stat"><span class="hero-stat-num" id="statTracks">—</span><span class="hero-stat-label">Tracks</span></div>
     <div class="hero-stat"><span class="hero-stat-num" id="statRatings">—</span><span class="hero-stat-label">Ratings</span></div>
     <div class="hero-stat"><span class="hero-stat-num" id="statCreators">—</span><span class="hero-stat-label">Creators</span></div>
+  </div>
+</section>
+
+<!-- ═══ HOW IT WORKS ═══ -->
+<section class="how-section">
+  <div class="section-header">
+    <h2 class="section-title">How It Works</h2>
+    <p class="section-sub">Three steps to AI music fame</p>
+  </div>
+  <div class="how-steps">
+    <div class="how-step">
+      <div class="how-num">01</div>
+      <div class="how-icon"><svg viewBox="0 0 24 24"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21h14.878a2 2 0 0 0 1.94-1.515L22 17"/></svg></div>
+      <div>
+        <div class="how-label">Submit</div>
+        <div class="how-desc">Upload your AI-generated track from Suno, Udio, or any platform</div>
+      </div>
+      <span class="how-connector">→</span>
+    </div>
+    <div class="how-step">
+      <div class="how-num">02</div>
+      <div class="how-icon"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg></div>
+      <div>
+        <div class="how-label">Get Rated</div>
+        <div class="how-desc">The community listens and rates your track from 1 to 5 stars</div>
+      </div>
+      <span class="how-connector">→</span>
+    </div>
+    <div class="how-step">
+      <div class="how-num">03</div>
+      <div class="how-icon"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></div>
+      <div>
+        <div class="how-label">Climb the Board</div>
+        <div class="how-desc">Top-rated tracks rise to the leaderboard for everyone to discover</div>
+      </div>
+    </div>
   </div>
 </section>
 
