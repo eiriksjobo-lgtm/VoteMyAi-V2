@@ -231,6 +231,36 @@
       font-size: 0.7rem; font-weight: 600; color: rgba(255,255,255,0.85);
       letter-spacing: 0.5px; text-transform: uppercase;
     }
+
+    /* Hidden iframe — plays audio invisibly behind thumbnail */
+    .hidden-embed-frame {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      z-index: 1; overflow: hidden;
+    }
+    .hidden-embed-frame iframe { width: 100%; height: 100%; border: none; }
+
+    /* Playing state — show EQ animation on play button */
+    .embed-thumb.is-playing { cursor: default; pointer-events: none; }
+    .embed-thumb.is-playing .play-circle { background: var(--accent); animation: none; }
+    .embed-thumb.is-playing .play-circle svg { display: none; }
+    .embed-thumb.is-playing .play-circle::after {
+      content: '';
+      display: block; width: 20px; height: 16px;
+      background:
+        linear-gradient(var(--bg), var(--bg)) 0px 100% / 3px 60% no-repeat,
+        linear-gradient(var(--bg), var(--bg)) 5px 100% / 3px 100% no-repeat,
+        linear-gradient(var(--bg), var(--bg)) 10px 100% / 3px 40% no-repeat,
+        linear-gradient(var(--bg), var(--bg)) 15px 100% / 3px 80% no-repeat;
+      animation: eqBars 0.8s ease-in-out infinite alternate;
+    }
+    @keyframes eqBars {
+      0%   { background-size: 3px 60%, 3px 100%, 3px 40%, 3px 80%; }
+      25%  { background-size: 3px 80%, 3px 50%,  3px 90%, 3px 60%; }
+      50%  { background-size: 3px 40%, 3px 70%, 3px 100%, 3px 30%; }
+      75%  { background-size: 3px 90%, 3px 40%,  3px 60%, 3px 100%; }
+      100% { background-size: 3px 60%, 3px 100%, 3px 40%, 3px 80%; }
+    }
+    .embed-thumb.is-playing .embed-thumb-overlay { background: rgba(0,0,0,0.35); }
     .track-embed.udio { padding-bottom: 56.25%; height: 0; overflow: hidden; }
     .track-embed.udio iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
     .track-embed a.embed-placeholder {
@@ -632,22 +662,6 @@
 
       /* Comments panel spans full width under horizontal card */
       .comments-panel { flex-basis: 100%; }
-
-      /* ── Playing state: card expands to vertical so embed has room ── */
-      .track-card.playing { flex-direction: column; }
-      .track-card.playing .track-embed {
-        width: 100%; min-height: 160px; height: auto;
-        border-right: none; border-bottom: 1px solid var(--border);
-        border-radius: 10px 10px 0 0; padding-bottom: 0;
-      }
-      .track-card.playing .track-embed iframe {
-        border-radius: 10px 10px 0 0;
-        height: 160px; width: 100%;
-      }
-      .track-card.playing .track-embed.soundcloud { min-height: 120px; }
-      .track-card.playing .track-embed.soundcloud iframe { height: 120px; }
-      .track-card.playing .embed-thumb { border-radius: 10px 10px 0 0; }
-      .track-card.playing .embed-thumb img { border-radius: 10px 10px 0 0; }
       .comments-inner { padding: 8px 12px 10px; }
       .comment-text { font-size: 0.76rem; }
       .comment-input { padding: 6px 10px; font-size: 0.74rem; }
@@ -981,7 +995,7 @@
     if (!url) return { platform: 'unknown', embedHtml: '' };
     const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([^&?\/#]+)/);
     if (ytMatch) return { platform: 'youtube', embedHtml: `<iframe src="https://www.youtube.com/embed/${ytMatch[1]}?rel=0&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}" allowfullscreen loading="lazy"></iframe>` };
-    if (url.includes('soundcloud.com')) return { platform: 'soundcloud', embedHtml: `<iframe src="https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&color=%23e8ff47&auto_play=false&show_artwork=true&show_user=false&show_comments=false" scrolling="no" loading="lazy"></iframe>` };
+    if (url.includes('soundcloud.com')) return { platform: 'soundcloud', embedHtml: `<iframe src="https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&color=%23e8ff47&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false&visual=true" scrolling="no" loading="lazy"></iframe>` };
     if (url.includes('suno.com')) {
       const sunoUUID = url.match(/suno\.com\/(?:song|embed)\/([a-f0-9-]{36})/);
       if (sunoUUID) return { platform: 'suno', embedHtml: `<iframe src="https://suno.com/embed/${sunoUUID[1]}" loading="lazy" style="border:none;"></iframe>` };
@@ -1196,7 +1210,6 @@
 
     const embedHtml = decodeURIComponent(container.dataset.trackEmbed);
     const platform = container.dataset.trackPlatform;
-    const card = container.closest('.track-card');
 
     // Add autoplay
     let finalHtml = embedHtml;
@@ -1211,19 +1224,34 @@
     } else if (platform === 'soundcloud') {
       finalHtml = embedHtml.replace('auto_play=false', 'auto_play=true');
     }
-
     finalHtml = finalHtml.replace(/<iframe /, '<iframe allow="autoplay" ');
 
-    // On mobile: expand card to vertical layout so embed has full width
-    if (card) card.classList.add('playing');
+    if (platform === 'youtube') {
+      // YouTube: replace thumbnail with video player (looks good in card)
+      container.innerHTML = finalHtml;
+    } else {
+      // All other platforms: keep thumbnail visible, load iframe hidden behind it
+      const existingThumb = container.querySelector('.embed-thumb');
+      if (existingThumb) {
+        // Mark thumb as playing (show EQ animation instead of play button)
+        existingThumb.classList.add('is-playing');
+        existingThumb.removeAttribute('data-action');
+        // Add hidden iframe behind the thumbnail
+        const hiddenFrame = document.createElement('div');
+        hiddenFrame.className = 'hidden-embed-frame';
+        hiddenFrame.innerHTML = finalHtml;
+        container.appendChild(hiddenFrame);
+      } else {
+        // No thumbnail — just show the embed directly
+        container.innerHTML = finalHtml;
+      }
+    }
 
-    container.innerHTML = finalHtml;
     activeEmbedTrackId = trackId;
-
     activatePlayerBar(trackId, container, platform);
   }
 
-  // Stop an embed — revert YouTube to thumbnail, remove iframe for others
+  // Stop an embed — revert to thumbnail state
   function stopEmbed(trackId) {
     const container = document.querySelector(`.track-embed[data-track-id="${trackId}"]`);
     if (!container) return;
@@ -1232,16 +1260,18 @@
     if (card) card.classList.remove('playing');
 
     if (platform === 'youtube') {
-      // Revert to thumbnail
       container.innerHTML = getLazyThumbById(trackId);
     } else {
-      // Revert to thumbnail if available, otherwise reload embed without autoplay
-      const thumbHtml = getLazyThumbById(trackId);
-      if (thumbHtml && thumbHtml.includes('embed-thumb')) {
-        container.innerHTML = thumbHtml;
+      // Remove hidden iframe and restore thumb to clickable state
+      const hiddenFrame = container.querySelector('.hidden-embed-frame');
+      if (hiddenFrame) hiddenFrame.remove();
+      const thumb = container.querySelector('.embed-thumb');
+      if (thumb) {
+        thumb.classList.remove('is-playing');
+        thumb.setAttribute('data-action', 'load-embed');
       } else {
-        const embedHtml = decodeURIComponent(container.dataset.trackEmbed);
-        container.innerHTML = embedHtml;
+        // Fallback: full re-render
+        container.innerHTML = getLazyThumbById(trackId) || decodeURIComponent(container.dataset.trackEmbed);
       }
     }
   }
