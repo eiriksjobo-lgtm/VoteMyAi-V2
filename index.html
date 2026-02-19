@@ -235,17 +235,10 @@
 
     /* Card footer */
     .card-footer {
-      display: flex; align-items: center; justify-content: space-between;
+      display: flex; align-items: center; justify-content: flex-start;
       margin-top: 12px; padding-top: 12px;
-      border-top: 1px solid rgba(26,26,38,0.6); gap: 4px;
+      border-top: 1px solid rgba(26,26,38,0.6); gap: 16px;
     }
-    .play-bar-btn {
-      background: none; border: none; color: var(--accent); cursor: pointer;
-      font-size: 0.74rem; font-family: 'DM Sans', sans-serif;
-      display: flex; align-items: center; gap: 4px; transition: color 0.2s; font-weight: 600;
-    }
-    .play-bar-btn:hover { color: var(--text); }
-    .play-bar-btn svg { stroke: var(--accent); fill: var(--accent); }
     .comments-btn {
       background: none; border: none; color: var(--muted); cursor: pointer;
       font-size: 0.74rem; font-family: 'DM Sans', sans-serif;
@@ -677,7 +670,7 @@
   function detectPlatform(url) {
     if (!url) return { platform: 'unknown', embedHtml: '' };
     const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([^&?\/#]+)/);
-    if (ytMatch) return { platform: 'youtube', embedHtml: `<iframe src="https://www.youtube.com/embed/${ytMatch[1]}?rel=0" allowfullscreen loading="lazy"></iframe>` };
+    if (ytMatch) return { platform: 'youtube', embedHtml: `<iframe src="https://www.youtube.com/embed/${ytMatch[1]}?rel=0&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}" allowfullscreen loading="lazy"></iframe>` };
     if (url.includes('soundcloud.com')) return { platform: 'soundcloud', embedHtml: `<iframe src="https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&color=%23e8ff47&auto_play=false&show_artwork=true&show_user=false&show_comments=false" scrolling="no" loading="lazy"></iframe>` };
     if (url.includes('suno.com')) {
       const sunoUUID = url.match(/suno\.com\/(?:song|embed)\/([a-f0-9-]{36})/);
@@ -695,7 +688,7 @@
 
   function getEmbedHtml(track) {
     if (track.embed_url) return detectPlatform(track.embed_url);
-    if (track.yt_id) return { platform: 'youtube', embedHtml: `<iframe src="https://www.youtube.com/embed/${track.yt_id}?rel=0" allowfullscreen loading="lazy"></iframe>` };
+    if (track.yt_id) return { platform: 'youtube', embedHtml: `<iframe src="https://www.youtube.com/embed/${track.yt_id}?rel=0&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}" allowfullscreen loading="lazy"></iframe>` };
     return { platform: 'unknown', embedHtml: '<div class="embed-placeholder" style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:0.8rem;">No preview available</div>' };
   }
 
@@ -775,7 +768,7 @@
       const plat = embed.platform !== 'unknown' ? embed.platform.charAt(0).toUpperCase() + embed.platform.slice(1) : '';
 
       return `<div class="track-card" id="card-${track.id}">
-        <div class="${embedClass}">${embed.embedHtml}</div>
+        <div class="${embedClass}" data-track-id="${track.id}" data-track-title="${sanitize(track.title)}" data-track-tool="${sanitize(track.tool)}" data-track-platform="${embed.platform}" data-track-embed="${encodeURIComponent(embed.embedHtml)}">${embed.embedHtml}</div>
         <div class="track-body">
           <div class="track-title">${sanitize(track.title)}</div>
           <div class="track-badges"><span class="badge badge-tool">${sanitize(track.tool)}</span><span class="badge badge-genre">${sanitize(track.genre)}</span>${plat ? `<span class="badge badge-platform">${plat}</span>` : ''}</div>
@@ -784,9 +777,6 @@
             <div class="rating-info"><div class="rating-score">${avg > 0 ? avg.toFixed(1) : '—'}</div><div class="rating-count">${cnt} rating${cnt !== 1 ? 's' : ''}</div></div>
           </div>
           <div class="card-footer">
-            <button class="play-bar-btn" data-action="play-bar" data-track="${track.id}" data-title="${sanitize(track.title)}" data-tool="${sanitize(track.tool)}" data-embed="${encodeURIComponent(embed.embedHtml)}" data-platform="${embed.platform}">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg> Play
-            </button>
             <button class="comments-btn" data-action="comments" data-track="${track.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Comments</button>
             <button class="share-btn" data-action="share" data-track="${track.id}" data-title="${sanitize(track.title)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Share</button>
           </div>
@@ -802,8 +792,6 @@
   document.addEventListener('click', function(e) {
     const star = e.target.closest('.star');
     if (star) { rateStar(star.dataset.track, parseInt(star.dataset.score), star.parentElement); return; }
-    const playBarBtn = e.target.closest('[data-action="play-bar"]');
-    if (playBarBtn) { playInBar(playBarBtn.dataset.track, decodeURIComponent(playBarBtn.dataset.embed), playBarBtn.dataset.title, playBarBtn.dataset.tool, playBarBtn.dataset.platform); return; }
     const commentsBtn = e.target.closest('[data-action="comments"]');
     if (commentsBtn) { toggleComments(commentsBtn.dataset.track); return; }
     const shareBtn = e.target.closest('[data-action="share"]');
@@ -872,7 +860,7 @@
   function shareTrack(id, title, btn) { const url = `${window.location.origin}/?track=${id}`; if (navigator.share) { navigator.share({title:`${title} — VoteMyAI`,url}); gtag('event','share',{track_id:id,method:'native'}); } else { navigator.clipboard.writeText(url); gtag('event','share',{track_id:id,method:'clipboard'}); const o=btn.innerHTML; btn.innerHTML='<span style="color:var(--accent);">✓ Copied</span>'; setTimeout(()=>{btn.innerHTML=o;},1500); } }
 
   // ══════════════════════════════════════════════
-  // PERSISTENT PLAYER — upgraded with YT API + controls
+  // PERSISTENT PLAYER — auto-detects when user plays an embed
   // ══════════════════════════════════════════════
   let activePlayerTrackId = null;
   let ytPlayer = null;
@@ -886,7 +874,7 @@
     tag.src = 'https://www.youtube.com/iframe_api';
     document.head.appendChild(tag);
   })();
-  window.onYouTubeIframeAPIReady = function() { ytApiReady = true; };
+  window.onYouTubeIframeAPIReady = function() { ytApiReady = true; initYouTubePlayers(); };
 
   const playerBar = document.getElementById('playerBar');
   const playerEmbed = document.getElementById('playerEmbed');
@@ -896,44 +884,126 @@
   const ppPlay = document.getElementById('ppPlay');
   const ppPause = document.getElementById('ppPause');
 
-  function playInBar(trackId, embedHtml, title, tool, platform) {
-    if (activePlayerTrackId === trackId) { closePlayer(); return; }
+  // ─── YouTube: Replace all YT iframes with API players to detect play ───
+  let ytCardPlayers = {}; // trackId -> YT.Player
+
+  function initYouTubePlayers() {
+    document.querySelectorAll('.track-embed[data-track-platform="youtube"]').forEach(container => {
+      const trackId = container.dataset.trackId;
+      const iframe = container.querySelector('iframe');
+      if (!iframe || ytCardPlayers[trackId]) return;
+
+      // Extract video ID from iframe src
+      const match = iframe.src.match(/youtube\.com\/embed\/([^?&"]+)/);
+      if (!match) return;
+
+      // Replace iframe with a div for YT API
+      iframe.id = `yt-card-${trackId}`;
+      try {
+        ytCardPlayers[trackId] = new YT.Player(`yt-card-${trackId}`, {
+          events: {
+            onStateChange: function(e) {
+              if (e.data === YT.PlayerState.PLAYING) {
+                activatePlayerBar(trackId, container, 'youtube');
+              }
+            }
+          }
+        });
+      } catch(err) {}
+    });
+  }
+
+  // ─── Non-YouTube embeds: detect click on embed container ───
+  document.addEventListener('click', function(e) {
+    const embedContainer = e.target.closest('.track-embed[data-track-platform]');
+    if (!embedContainer) return;
+    const platform = embedContainer.dataset.trackPlatform;
+    if (platform === 'youtube') return; // YT handled by API
+    if (platform === 'unknown') return;
+
+    const trackId = embedContainer.dataset.trackId;
+    // Small delay to let the iframe start playing
+    setTimeout(() => {
+      activatePlayerBar(trackId, embedContainer, platform);
+    }, 300);
+  }, true);
+
+  // Also detect focus on embed iframes (user clicked into iframe)
+  setInterval(() => {
+    if (document.activeElement && document.activeElement.tagName === 'IFRAME') {
+      const container = document.activeElement.closest('.track-embed[data-track-platform]');
+      if (container && container.dataset.trackId !== activePlayerTrackId) {
+        const platform = container.dataset.trackPlatform;
+        if (platform !== 'youtube' && platform !== 'unknown') {
+          activatePlayerBar(container.dataset.trackId, container, platform);
+        }
+      }
+    }
+  }, 500);
+
+  // ─── Activate player bar from any source ───
+  function activatePlayerBar(trackId, container, platform) {
+    if (activePlayerTrackId === trackId) return; // already active
+
+    const title = container.dataset.trackTitle || 'Now Playing';
+    const tool = container.dataset.trackTool || '';
 
     activePlayerTrackId = trackId;
     playerTitle.textContent = title;
     playerMeta.textContent = tool;
     playerBar.classList.add('active');
     document.body.classList.add('player-active');
+    setPlaying(true);
 
-    // Clean up previous
+    // For YouTube, set up progress tracking with the card player
+    if (platform === 'youtube' && ytCardPlayers[trackId]) {
+      // Clean up any previous persistent player
+      if (ytPlayer) { try { ytPlayer.destroy(); } catch(e) {} ytPlayer = null; }
+      playerEmbed.innerHTML = '';
+      // Use the card's YT player for controls
+      ytPlayer = ytCardPlayers[trackId];
+      startProgress();
+    } else {
+      // Non-YT: no direct control, but show the bar
+      if (ytPlayer) { try { ytPlayer.destroy(); } catch(e) {} ytPlayer = null; }
+      playerEmbed.innerHTML = '';
+      progressFill.style.width = '0%';
+    }
+
+    gtag('event', 'play_bar', { track_id: trackId, platform });
+  }
+
+  // ─── playInBar fallback (for iframe overlay pages) ───
+  function playInBar(trackId, embedHtml, title, tool, platform) {
+    activePlayerTrackId = trackId;
+    playerTitle.textContent = title;
+    playerMeta.textContent = tool;
+    playerBar.classList.add('active');
+    document.body.classList.add('player-active');
+
     if (ytPlayer) { try { ytPlayer.destroy(); } catch(e) {} ytPlayer = null; }
     playerEmbed.innerHTML = '';
     progressFill.style.width = '0%';
     stopProgress();
 
     if (platform === 'youtube') {
-      // Extract video ID
       const match = embedHtml.match(/youtube\.com\/embed\/([^"?&]+)/);
       if (match) {
         playerEmbed.innerHTML = '<div id="yt-persistent-player"></div>';
         createYTPlayer(match[1]);
       }
     } else {
-      // Suno / Udio / SoundCloud — play via hidden iframe
       playerEmbed.innerHTML = embedHtml;
       const iframe = playerEmbed.querySelector('iframe');
       if (iframe) {
-        // Force autoplay
         let src = iframe.src;
-        if (src.includes('suno.com')) src = src.replace('/embed/', '/embed/') + (src.includes('?') ? '&' : '?') + 'autoplay=true';
+        if (src.includes('suno.com')) src += (src.includes('?') ? '&' : '?') + 'autoplay=true';
         if (src.includes('soundcloud.com')) src = src.replace('auto_play=false', 'auto_play=true');
         iframe.src = src;
         iframe.allow = 'autoplay';
       }
       setPlaying(true);
     }
-
-    gtag('event', 'play_bar', { track_id: trackId, platform });
   }
 
   function createYTPlayer(videoId) {
@@ -974,7 +1044,6 @@
   });
   document.getElementById('btnClose').addEventListener('click', closePlayer);
 
-  // Progress bar click to seek
   document.getElementById('playerProgress').addEventListener('click', function(e) {
     if (ytPlayer && ytPlayer.getDuration) {
       const pct = (e.clientX - this.getBoundingClientRect().left) / this.offsetWidth;
@@ -994,7 +1063,15 @@
   function stopProgress() { if (progressInterval) { clearInterval(progressInterval); progressInterval = null; } }
 
   function closePlayer() {
-    if (ytPlayer) { try { ytPlayer.destroy(); } catch(e) {} ytPlayer = null; }
+    // Don't destroy card players, only persistent ones
+    if (ytPlayer && !ytCardPlayers[activePlayerTrackId]) {
+      try { ytPlayer.destroy(); } catch(e) {}
+    }
+    // Pause the card YT player if it's playing
+    if (ytPlayer && ytCardPlayers[activePlayerTrackId]) {
+      try { ytPlayer.pauseVideo(); } catch(e) {}
+    }
+    ytPlayer = null;
     playerEmbed.innerHTML = '';
     playerBar.classList.remove('active', 'playing');
     document.body.classList.remove('player-active');
@@ -1004,6 +1081,13 @@
     stopProgress();
     closePageFrame();
   }
+
+  // Re-init YT players after tracks render
+  const origRender = renderTracks;
+  renderTracks = function() {
+    origRender();
+    if (ytApiReady) setTimeout(initYouTubePlayers, 500);
+  };
 
   // ─── Page Navigation (iframe overlay when player is active) ───
   function navigateToPage(url) {
