@@ -188,7 +188,9 @@
     .track-card {
       background: var(--surface); border: 1px solid var(--border);
       border-radius: var(--radius); overflow: hidden; transition: all 0.25s ease;
+      opacity: 0; animation: cardFadeIn 0.4s ease forwards;
     }
+    @keyframes cardFadeIn { to { opacity: 1; } }
     .track-card:hover { border-color: var(--border-hover); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
     .track-embed {
       position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;
@@ -197,6 +199,36 @@
     .track-embed iframe, .track-embed .embed-placeholder {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;
     }
+
+    /* Lazy thumbnail */
+    .embed-thumb {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      background: var(--surface-2); z-index: 2;
+    }
+    .embed-thumb img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    .embed-thumb-overlay {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.3);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 6px; transition: background 0.2s;
+    }
+    .embed-thumb:hover .embed-thumb-overlay { background: rgba(0,0,0,0.15); }
+    .embed-thumb .play-circle {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: rgba(232,255,71,0.9); color: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .embed-thumb:hover .play-circle { transform: scale(1.1); box-shadow: 0 6px 28px rgba(232,255,71,0.35); }
+    .embed-thumb .play-circle svg { width: 24px; height: 24px; fill: var(--bg); margin-left: 2px; }
+    .embed-thumb .thumb-platform {
+      font-size: 0.7rem; font-weight: 600; color: rgba(255,255,255,0.85);
+      letter-spacing: 0.5px; text-transform: uppercase;
+    }
     .track-embed.udio { padding-bottom: 56.25%; height: 0; overflow: hidden; }
     .track-embed.udio iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
     .track-embed a.embed-placeholder {
@@ -204,6 +236,16 @@
     }
     .track-embed a.embed-placeholder:hover { background: var(--surface-hover) !important; }
     .track-embed.soundcloud { padding-bottom: 166px; }
+
+    /* Load more sentinel */
+    .load-more-sentinel { height: 1px; width: 100%; }
+    .loading-more {
+      text-align: center; padding: 32px; color: var(--muted);
+      font-size: 0.8rem; font-weight: 500; letter-spacing: 1px;
+    }
+    .loading-more .dots::after { content: ''; animation: loadDots 1.2s infinite; }
+    @keyframes loadDots { 0%{content:'.'} 33%{content:'..'} 66%{content:'...'} }
+
     .track-body { padding: 16px 18px 18px; }
     .track-title {
       font-size: 0.88rem; font-weight: 700; line-height: 1.35; margin-bottom: 8px;
@@ -728,13 +770,24 @@
     });
   }
 
-  function renderTracks() {
-    const grid = document.getElementById('tracksGrid');
-    const sorted = getSortedTracks(getFilteredTracks());
-    document.getElementById('trackCount').textContent = `${sorted.length} track${sorted.length !== 1 ? 's' : ''}`;
-    if (!sorted.length) { grid.innerHTML = '<div class="empty-state"><p>No tracks found. Be the first to submit!</p></div>'; return; }
+  const TRACKS_PER_PAGE = 9;
+  let visibleCount = TRACKS_PER_PAGE;
+  let currentSorted = [];
+  let activeEmbedTrackId = null; // tracks which embed is currently loaded (for single playback)
 
-    grid.innerHTML = sorted.map(track => {
+  function renderTracks() {
+    visibleCount = TRACKS_PER_PAGE;
+    currentSorted = getSortedTracks(getFilteredTracks());
+    document.getElementById('trackCount').textContent = `${currentSorted.length} track${currentSorted.length !== 1 ? 's' : ''}`;
+    renderVisibleTracks();
+  }
+
+  function renderVisibleTracks() {
+    const grid = document.getElementById('tracksGrid');
+    const toShow = currentSorted.slice(0, visibleCount);
+    if (!toShow.length) { grid.innerHTML = '<div class="empty-state"><p>No tracks found. Be the first to submit!</p></div>'; return; }
+
+    grid.innerHTML = toShow.map((track, i) => {
       const embed = getEmbedHtml(track);
       const avg = track.avg_rating||0, cnt = track.rating_count||0;
       const userScore = userRatings[track.id]||0;
@@ -743,11 +796,14 @@
       if (embed.platform === 'soundcloud') embedClass += ' soundcloud';
       if (embed.platform === 'udio') embedClass += ' udio';
       let starsHtml = '';
-      for (let i = 1; i <= 5; i++) starsHtml += `<div class="star ${isRated && i <= userScore ? 'filled' : ''}" data-track="${track.id}" data-score="${i}">${starSVG}</div>`;
+      for (let s = 1; s <= 5; s++) starsHtml += `<div class="star ${isRated && s <= userScore ? 'filled' : ''}" data-track="${track.id}" data-score="${s}">${starSVG}</div>`;
       const plat = embed.platform !== 'unknown' ? embed.platform.charAt(0).toUpperCase() + embed.platform.slice(1) : '';
 
-      return `<div class="track-card" id="card-${track.id}">
-        <div class="${embedClass}" data-track-id="${track.id}" data-track-title="${sanitize(track.title)}" data-track-tool="${sanitize(track.tool)}" data-track-platform="${embed.platform}" data-track-embed="${encodeURIComponent(embed.embedHtml)}">${embed.embedHtml}</div>
+      // Build lazy thumbnail
+      const thumb = getLazyThumb(track, embed);
+
+      return `<div class="track-card" id="card-${track.id}" style="animation-delay:${(i % TRACKS_PER_PAGE) * 0.05}s">
+        <div class="${embedClass}" data-track-id="${track.id}" data-track-title="${sanitize(track.title)}" data-track-tool="${sanitize(track.tool)}" data-track-platform="${embed.platform}" data-track-embed="${encodeURIComponent(embed.embedHtml)}">${thumb}</div>
         <div class="track-body">
           <div class="track-title">${sanitize(track.title)}</div>
           <div class="track-badges"><span class="badge badge-tool">${sanitize(track.tool)}</span><span class="badge badge-genre">${sanitize(track.genre)}</span>${plat ? `<span class="badge badge-platform">${plat}</span>` : ''}</div>
@@ -763,6 +819,124 @@
         <div class="comments-panel" id="comments-${track.id}"><div class="comments-inner"><div id="comments-content-${track.id}"><span style="color:var(--muted);font-size:0.8rem;">Loading comments...</span></div>${currentUser ? `<div class="comment-form"><input type="text" class="comment-input" id="comment-input-${track.id}" placeholder="Add a comment..."><button class="comment-submit" data-action="post-comment" data-track="${track.id}">Post</button></div>` : '<p style="font-size:0.75rem;color:var(--muted);margin-top:8px;">Log in to comment</p>'}</div></div>
       </div>`;
     }).join('');
+
+    // Add sentinel for infinite scroll if there are more tracks
+    if (visibleCount < currentSorted.length) {
+      grid.insertAdjacentHTML('afterend', '<div class="load-more-sentinel" id="loadMoreSentinel"></div>');
+      observeLoadMore();
+    } else {
+      const old = document.getElementById('loadMoreSentinel');
+      if (old) old.remove();
+    }
+  }
+
+  // ─── Lazy Thumbnails ───
+  function getLazyThumb(track, embed) {
+    const playSVG = '<svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
+
+    if (embed.platform === 'youtube') {
+      // Extract video ID
+      const match = (track.embed_url || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([^&?\/#]+)/) || [null, track.yt_id];
+      const videoId = match[1] || track.yt_id;
+      if (videoId) {
+        return `<div class="embed-thumb" data-action="load-embed" data-track-id="${track.id}">
+          <img src="https://img.youtube.com/vi/${videoId}/hqdefault.jpg" alt="" loading="lazy">
+          <div class="embed-thumb-overlay">
+            <div class="play-circle">${playSVG}</div>
+            <span class="thumb-platform">YouTube</span>
+          </div>
+        </div>`;
+      }
+    }
+
+    // Suno / Udio / SoundCloud — no thumbnail available, stylized placeholder
+    const colors = { suno: '#e8ff47', udio: '#818cf8', soundcloud: '#ff5500' };
+    const color = colors[embed.platform] || '#888';
+    const label = embed.platform.charAt(0).toUpperCase() + embed.platform.slice(1);
+
+    return `<div class="embed-thumb" data-action="load-embed" data-track-id="${track.id}" style="background:linear-gradient(135deg, var(--surface-2), rgba(${embed.platform === 'suno' ? '232,255,71' : embed.platform === 'udio' ? '129,140,248' : '255,85,0'},0.08));">
+      <div class="embed-thumb-overlay">
+        <div class="play-circle">${playSVG}</div>
+        <span class="thumb-platform">${label}</span>
+      </div>
+    </div>`;
+  }
+
+  // ─── Load Embed on Click (single playback) ───
+  function loadEmbed(trackId) {
+    // Stop previous embed (single playback)
+    if (activeEmbedTrackId && activeEmbedTrackId !== trackId) {
+      const prevContainer = document.querySelector(`.track-embed[data-track-id="${activeEmbedTrackId}"]`);
+      if (prevContainer) {
+        const prevEmbed = getEmbedHtmlById(activeEmbedTrackId);
+        if (prevEmbed) {
+          prevContainer.innerHTML = getLazyThumbById(activeEmbedTrackId);
+        }
+      }
+    }
+
+    const container = document.querySelector(`.track-embed[data-track-id="${trackId}"]`);
+    if (!container) return;
+
+    const embedHtml = decodeURIComponent(container.dataset.trackEmbed);
+    const platform = container.dataset.trackPlatform;
+
+    // Add autoplay
+    let finalHtml = embedHtml;
+    if (platform === 'youtube') {
+      finalHtml = embedHtml.replace(/src="([^"]+)"/, (m, src) => {
+        return `src="${src}${src.includes('?') ? '&' : '?'}autoplay=1"`;
+      });
+    } else if (platform === 'suno') {
+      finalHtml = embedHtml.replace(/src="([^"]+)"/, (m, src) => {
+        return `src="${src}${src.includes('?') ? '&' : '?'}autoplay=true"`;
+      });
+    } else if (platform === 'soundcloud') {
+      finalHtml = embedHtml.replace('auto_play=false', 'auto_play=true');
+    }
+
+    // Allow attribute for autoplay
+    finalHtml = finalHtml.replace(/<iframe /, '<iframe allow="autoplay" ');
+
+    container.innerHTML = finalHtml;
+    activeEmbedTrackId = trackId;
+
+    // Activate player bar
+    activatePlayerBar(trackId, container, platform);
+  }
+
+  // Helper: get embed html by track id from current sorted list
+  function getEmbedHtmlById(trackId) {
+    const track = currentSorted.find(t => t.id === trackId);
+    if (!track) return null;
+    return getEmbedHtml(track);
+  }
+
+  // Helper: get lazy thumb by track id
+  function getLazyThumbById(trackId) {
+    const track = currentSorted.find(t => t.id === trackId);
+    if (!track) return '';
+    const embed = getEmbedHtml(track);
+    return getLazyThumb(track, embed);
+  }
+
+  // ─── Infinite Scroll ───
+  let scrollObserver = null;
+  function observeLoadMore() {
+    if (scrollObserver) scrollObserver.disconnect();
+    const sentinel = document.getElementById('loadMoreSentinel');
+    if (!sentinel) return;
+
+    scrollObserver = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        scrollObserver.disconnect();
+        sentinel.remove();
+        visibleCount += TRACKS_PER_PAGE;
+        renderVisibleTracks();
+      }
+    }, { rootMargin: '200px' });
+
+    scrollObserver.observe(sentinel);
   }
 
   function sanitize(str) { if (!str) return ''; const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
@@ -771,6 +945,8 @@
   document.addEventListener('click', function(e) {
     const star = e.target.closest('.star');
     if (star) { rateStar(star.dataset.track, parseInt(star.dataset.score), star.parentElement); return; }
+    const thumbBtn = e.target.closest('[data-action="load-embed"]');
+    if (thumbBtn) { loadEmbed(thumbBtn.dataset.trackId); return; }
     const commentsBtn = e.target.closest('[data-action="comments"]');
     if (commentsBtn) { toggleComments(commentsBtn.dataset.track); return; }
     const shareBtn = e.target.closest('[data-action="share"]');
@@ -839,127 +1015,45 @@
   function shareTrack(id, title, btn) { const url = `${window.location.origin}/?track=${id}`; if (navigator.share) { navigator.share({title:`${title} — VoteMyAI`,url}); gtag('event','share',{track_id:id,method:'native'}); } else { navigator.clipboard.writeText(url); gtag('event','share',{track_id:id,method:'clipboard'}); const o=btn.innerHTML; btn.innerHTML='<span style="color:var(--accent);">✓ Copied</span>'; setTimeout(()=>{btn.innerHTML=o;},1500); } }
 
   // ══════════════════════════════════════════════
-  // PERSISTENT PLAYER — auto-detects when user plays an embed
+  // PERSISTENT PLAYER BAR — title + EQ + close
   // ══════════════════════════════════════════════
   let activePlayerTrackId = null;
-  let ytApiReady = false;
-
-  // Load YouTube IFrame API
-  (function() {
-    const tag = document.createElement('script');
-    tag.src = 'https://www.youtube.com/iframe_api';
-    document.head.appendChild(tag);
-  })();
-  window.onYouTubeIframeAPIReady = function() { ytApiReady = true; initYouTubePlayers(); };
 
   const playerBar = document.getElementById('playerBar');
   const playerEmbed = document.getElementById('playerEmbed');
   const playerTitle = document.getElementById('playerTitle');
   const playerMeta = document.getElementById('playerMeta');
 
-  // ─── YouTube: Replace all YT iframes with API players to detect play ───
-  let ytCardPlayers = {}; // trackId -> YT.Player
-
-  function initYouTubePlayers() {
-    document.querySelectorAll('.track-embed[data-track-platform="youtube"]').forEach(container => {
-      const trackId = container.dataset.trackId;
-      const iframe = container.querySelector('iframe');
-      if (!iframe || ytCardPlayers[trackId]) return;
-
-      const match = iframe.src.match(/youtube\.com\/embed\/([^?&"]+)/);
-      if (!match) return;
-
-      iframe.id = `yt-card-${trackId}`;
-      try {
-        ytCardPlayers[trackId] = new YT.Player(`yt-card-${trackId}`, {
-          events: {
-            onReady: function(e) {
-              ytCardPlayers[trackId] = e.target;
-            },
-            onStateChange: function(e) {
-              if (e.data === YT.PlayerState.PLAYING) {
-                activatePlayerBar(trackId, container, 'youtube');
-              }
-            }
-          }
-        });
-      } catch(err) { console.error('YT init error:', err); }
-    });
-  }
-
-  // ─── Non-YouTube embeds: detect click on embed container ───
-  document.addEventListener('click', function(e) {
-    const embedContainer = e.target.closest('.track-embed[data-track-platform]');
-    if (!embedContainer) return;
-    const platform = embedContainer.dataset.trackPlatform;
-    if (platform === 'youtube') return; // YT handled by API
-    if (platform === 'unknown') return;
-
-    const trackId = embedContainer.dataset.trackId;
-    // Small delay to let the iframe start playing
-    setTimeout(() => {
-      activatePlayerBar(trackId, embedContainer, platform);
-    }, 300);
-  }, true);
-
-  // Also detect focus on embed iframes (user clicked into iframe)
-  setInterval(() => {
-    if (document.activeElement && document.activeElement.tagName === 'IFRAME') {
-      const container = document.activeElement.closest('.track-embed[data-track-platform]');
-      if (container && container.dataset.trackId !== activePlayerTrackId) {
-        const platform = container.dataset.trackPlatform;
-        if (platform !== 'youtube' && platform !== 'unknown') {
-          activatePlayerBar(container.dataset.trackId, container, platform);
-        }
-      }
-    }
-  }, 500);
-
-  // ─── Activate player bar from any source ───
+  // ─── Activate player bar ───
   let activePlayerPlatform = null;
 
   function activatePlayerBar(trackId, container, platform) {
-    if (activePlayerTrackId === trackId) return;
-
-    const title = container.dataset.trackTitle || 'Now Playing';
-    const tool = container.dataset.trackTool || '';
-
     activePlayerTrackId = trackId;
     activePlayerPlatform = platform;
-    playerTitle.textContent = title;
-    playerMeta.textContent = tool;
+    playerTitle.textContent = container.dataset.trackTitle || 'Now Playing';
+    playerMeta.textContent = container.dataset.trackTool || '';
     playerBar.classList.add('active', 'playing');
     document.body.classList.add('player-active');
-
     gtag('event', 'play_bar', { track_id: trackId, platform });
-  }
-
-  // ─── playInBar fallback (for iframe overlay pages) ───
-  function playInBar(trackId, embedHtml, title, tool, platform) {
-    activePlayerTrackId = trackId;
-    activePlayerPlatform = platform;
-    playerTitle.textContent = title;
-    playerMeta.textContent = tool;
-    playerBar.classList.add('active', 'playing');
-    document.body.classList.add('player-active');
   }
 
   document.getElementById('btnClose').addEventListener('click', closePlayer);
 
   function closePlayer() {
+    // Also stop the active embed
+    if (activeEmbedTrackId) {
+      const container = document.querySelector(`.track-embed[data-track-id="${activeEmbedTrackId}"]`);
+      if (container) {
+        container.innerHTML = getLazyThumbById(activeEmbedTrackId);
+      }
+      activeEmbedTrackId = null;
+    }
     playerBar.classList.remove('active', 'playing');
     document.body.classList.remove('player-active');
     activePlayerTrackId = null;
     activePlayerPlatform = null;
     closePageFrame();
   }
-
-  // Re-init YT players after tracks render
-  const origRender = renderTracks;
-  renderTracks = function() {
-    origRender();
-    if (ytApiReady) setTimeout(initYouTubePlayers, 500);
-  };
 
   // ─── Page Navigation (iframe overlay when player is active) ───
   function navigateToPage(url) {
