@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-KW4NR9QBWB"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-KW4NR9QBWB');</script>
+  <title>How to Write Better AI Music Prompts — 10 Tips | VoteMyAI</title>
+  <script>
+    if (window.self === window.top && !window.location.search.includes("noshell")) {
+      window.location.replace("/app.html?p=" + encodeURIComponent(window.location.pathname + window.location.search + window.location.hash));
+    }
+  </script>
+  <meta name="description" content="Write better prompts for AI music generators like Suno, Udio, and ElevenLabs. 10 proven tips to create higher quality AI songs from your text descriptions.">
+  <meta name="keywords" content="AI music prompts, Suno prompts, Udio prompts, how to prompt AI music, AI song prompts tips, better AI music, AI music prompt examples">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://www.votemyai.com/blog/ai-music-prompt-tips.html">
+  <meta name="theme-color" content="#e8ff47">
+  <meta property="og:type" content="article"><meta property="og:url" content="https://www.votemyai.com/blog/ai-music-prompt-tips.html"><meta property="og:title" content="10 Tips for Better AI Music Prompts"><meta property="og:description" content="Write prompts that produce incredible AI music."><meta property="og:image" content="https://www.votemyai.com/og-image.png"><meta property="og:site_name" content="VoteMyAI"><meta property="article:published_time" content="2026-02-19">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"How to Write Better AI Music Prompts — 10 Tips","datePublished":"2026-02-19","author":{"@type":"Organization","name":"VoteMyAI"},"publisher":{"@type":"Organization","name":"VoteMyAI","logo":{"@type":"ImageObject","url":"https://www.votemyai.com/favicon-512x512.png"}}}</script>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#0a0a0f;--surface:#111118;--surface-2:#16161f;--border:#1e1e2e;--accent:#e8ff47;--accent-dim:rgba(232,255,71,0.15);--text:#f0f0f0;--text-secondary:#b0b0c0;--muted:#666680}
+    *{margin:0;padding:0;box-sizing:border-box}body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;line-height:1.7}::selection{background:var(--accent);color:var(--bg)}
+    nav{position:sticky;top:0;z-index:100;background:rgba(10,10,15,0.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 40px;height:64px;display:flex;align-items:center;justify-content:space-between}
+    .logo{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:3px;color:var(--accent);text-decoration:none;display:flex;align-items:center;gap:10px}.logo-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent)}
+    .nav-links{display:flex;gap:28px;align-items:center}.nav-links a{color:var(--muted);text-decoration:none;font-size:.78rem;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;transition:color .2s}.nav-links a:hover{color:var(--text)}.nav-links a.active{color:var(--accent)}
+    .btn-submit{background:var(--accent);color:var(--bg);padding:10px 22px;border-radius:8px;border:none;font-weight:700;cursor:pointer;font-size:.78rem;letter-spacing:1.5px;text-transform:uppercase;font-family:'DM Sans',sans-serif}
+    .article-header{max-width:760px;margin:0 auto;padding:80px 24px 40px;text-align:center}
+    .article-tag{display:inline-block;background:var(--accent-dim);color:var(--accent);padding:4px 14px;border-radius:100px;font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:20px}
+    .article-header h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(2rem,5vw,3rem);letter-spacing:2px;line-height:1.1;margin-bottom:16px}.article-header h1 .accent{color:var(--accent)}.article-meta{color:var(--muted);font-size:.85rem}
+    .article-content{max-width:720px;margin:0 auto;padding:0 24px 80px}
+    .article-content h2{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:1.5px;margin:48px 0 16px;color:var(--text)}
+    .article-content p{color:var(--text-secondary);font-size:1rem;margin-bottom:20px;line-height:1.8}
+    .article-content a{color:var(--accent);text-decoration:underline;text-underline-offset:3px}.article-content a:hover{text-decoration-color:transparent}
+    .tip-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px 28px;margin:24px 0}
+    .tip-box .tip-num{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--accent);margin-bottom:4px;letter-spacing:1px}
+    .tip-box .tip-title{font-weight:700;font-size:1.05rem;margin-bottom:8px;color:var(--text)}
+    .tip-box p{color:var(--muted);font-size:.9rem;margin-bottom:0}
+    .prompt-example{background:var(--surface-2);border-left:3px solid var(--accent);padding:16px 20px;margin:12px 0;border-radius:0 8px 8px 0;font-size:.88rem;color:var(--text-secondary);font-style:italic}
+    .cta-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;text-align:center;margin:48px 0}
+    .cta-box h3{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:1px;margin-bottom:10px;color:var(--text)}.cta-box p{color:var(--muted);font-size:.9rem;margin-bottom:20px}
+    .cta-btn{display:inline-block;background:var(--accent);color:var(--bg);padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:.9rem;transition:transform .2s,box-shadow .2s}.cta-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(232,255,71,0.3);color:var(--bg)}
+    footer{background:var(--surface);border-top:1px solid var(--border);padding:40px;text-align:center}footer a{color:var(--muted);text-decoration:none;font-size:.85rem;margin:0 12px}footer a:hover{color:var(--accent)}.footer-copy{color:var(--muted);font-size:.8rem;margin-top:16px}
+    @media(max-width:768px){nav{padding:0 16px}.nav-links{gap:14px}.article-header{padding:60px 16px 32px}.article-content{padding:0 16px 60px}}
+  </style>
+</head>
+<body>
+<nav><a href="/" class="logo"><span class="logo-dot"></span>VOTEMYAI</a><div class="nav-links"><a href="/#tracks">Tracks</a><a href="/blog.html" class="active">Blog</a><button class="btn-submit" onclick="window.location.href='/submit.html'">Submit Track</button></div></nav>
+
+<article>
+  <header class="article-header">
+    <span class="article-tag">Tips</span>
+    <h1>10 TIPS FOR BETTER <span class="accent">AI MUSIC PROMPTS</span></h1>
+    <p class="article-meta">February 19, 2026 · 5 min read</p>
+  </header>
+
+  <div class="article-content">
+    <p>The prompt is everything. Two people can use the same AI music generator and get wildly different results — the difference is how they describe what they want. Here are 10 tips that will immediately improve your AI-generated music.</p>
+
+    <div class="tip-box">
+      <div class="tip-num">TIP 01</div>
+      <div class="tip-title">Be specific about genre and sub-genre</div>
+      <p>Don't just say "electronic." Say "deep house with a rolling bassline" or "atmospheric drum and bass with ambient pads." The more specific your genre description, the more focused the output.</p>
+      <div class="prompt-example">"Dark ambient techno with deep sub-bass, minimal percussion, and eerie atmospheric textures. 125 BPM."</div>
+    </div>
+
+    <div class="tip-box">
+      <div class="tip-num">TIP 02</div>
+      <div class="tip-title">Describe the mood and emotion</div>
+      <p>Music is about feeling. Include emotional descriptors: melancholic, euphoric, aggressive, dreamy, nostalgic, uplifting, haunting. This shapes the melody, harmony, and arrangement more than any other factor.</p>
+      <div class="prompt-example">"Nostalgic, bittersweet indie folk song about growing up in a small town. Warm acoustic guitar, soft male vocals, wistful."</div>
+    </div>
+
+    <div class="tip-box">
+      <div class="tip-num">TIP 03</div>
+      <div class="tip-title">Specify instruments</div>
+      <p>Name the instruments you want to hear. "Piano, strings, and a subtle beat" gives completely different results than "distorted guitar, heavy drums, and screaming vocals."</p>
+    </div>
+
+    <div class="tip-box">
+      <div class="tip-num">TIP 04</div>
+      <div class="tip-title">Include tempo and energy level</div>
+      <p>BPM matters. "Slow" vs "fast" is too vague. Try "80 BPM, laid-back groove" or "170 BPM, high energy." This directly controls the pace of the entire track.</p>
+    </div>
+
+    <div class="tip-box">
+      <div class="tip-num">TIP 05</div>
+      <div class="tip-title">Describe the vocal style</div>
+      <p>If your track has vocals, be specific: "breathy female vocals," "deep raspy male voice," "choir harmonies," "spoken word poetry." The vocal description has a huge impact on the result.</p>
+      <div class="prompt-example">"R&B ballad with smooth, soulful female vocals, falsetto harmonies, minimal piano accompaniment. Slow, intimate, emotional."</div>
+    </div>
+
+    <div class="tip-box">
+      <div class="tip-num">TIP 06</div>
+      <div class="tip-title">Reference eras and decades</div>
+      <p>"80s synth-pop" sounds very different from "modern synth-pop." Adding a time period gives the AI a reference point for production style, instrument choices, and mixing approach.</p>
+    </div>
+
+    <div class="tip-box">
+      <div class="tip-num">TIP 07</div>
+      <div class="tip-title">Describe the production quality</div>
+      <p>Want it lo-fi or polished? "Bedroom recording quality, tape hiss, warm" vs "crisp, modern, studio-polished production." This changes the entire texture of the output.</p>
+    </div>
+
+    <div class="tip-box">
+      <div class="tip-num">TIP 08</div>
+      <div class="tip-title">Use "no" to exclude things</div>
+      <p>Sometimes what you don't want is as important as what you do. "No drums," "no vocals," "no guitar solo" can help refine the output when previous generations included unwanted elements.</p>
+    </div>
+
+    <div class="tip-box">
+      <div class="tip-num">TIP 09</div>
+      <div class="tip-title">Structure your prompt logically</div>
+      <p>Put the most important elements first: genre, then mood, then instruments, then vocals, then extra details. This helps the AI prioritize what matters most to you.</p>
+      <div class="prompt-example">"Genre: cinematic orchestral. Mood: epic, triumphant. Instruments: full orchestra, brass fanfare, timpani. No vocals. Building from quiet to massive crescendo."</div>
+    </div>
+
+    <div class="tip-box">
+      <div class="tip-num">TIP 10</div>
+      <div class="tip-title">Iterate relentlessly</div>
+      <p>Your first prompt won't be perfect. Generate, listen, adjust, repeat. Every generation teaches you what the AI responds to. Keep a note of prompts that worked well — they're reusable templates for future tracks.</p>
+    </div>
+
+    <h2>PUT YOUR PROMPTS TO THE TEST</h2>
+
+    <p>The best way to improve is practice. Try these tips on <a href="https://suno.com" target="_blank" rel="noopener">Suno</a>, <a href="https://www.udio.com" target="_blank" rel="noopener">Udio</a>, or <a href="https://try.elevenlabs.io/xj2k88ooae07" target="_blank" rel="noopener" onclick="gtag('event','tool_click',{tool:'elevenlabs',location:'blog'})">ElevenLabs</a>. Compare results across platforms — read our <a href="/blog/suno-vs-udio-vs-elevenlabs.html">full comparison</a> to know which tool handles which genres best.</p>
+
+    <div class="cta-box">
+      <h3>MADE SOMETHING AMAZING?</h3>
+      <p>Submit your best AI track to VoteMyAI and see how it stacks up against the community.</p>
+      <a href="/submit.html" class="cta-btn">Submit Your Track →</a>
+    </div>
+  </div>
+</article>
+
+<footer><div><a href="/">Home</a><a href="/blog.html">Blog</a><a href="/submit.html">Submit</a><a href="/faq.html">FAQ</a><a href="/contact.html">Contact</a></div><p class="footer-copy">© 2026 VoteMyAI. All rights reserved.</p></footer>
+</body>
+</html>
