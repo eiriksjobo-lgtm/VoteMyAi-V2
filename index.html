@@ -830,12 +830,11 @@
     }
   }
 
-  // ─── Lazy Thumbnails ───
+  // ─── Lazy Thumbnails (YouTube only) ───
   function getLazyThumb(track, embed) {
     const playSVG = '<svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
 
     if (embed.platform === 'youtube') {
-      // Extract video ID
       const match = (track.embed_url || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([^&?\/#]+)/) || [null, track.yt_id];
       const videoId = match[1] || track.yt_id;
       if (videoId) {
@@ -849,30 +848,15 @@
       }
     }
 
-    // Suno / Udio / SoundCloud — no thumbnail available, stylized placeholder
-    const colors = { suno: '#e8ff47', udio: '#818cf8', soundcloud: '#ff5500' };
-    const color = colors[embed.platform] || '#888';
-    const label = embed.platform.charAt(0).toUpperCase() + embed.platform.slice(1);
-
-    return `<div class="embed-thumb" data-action="load-embed" data-track-id="${track.id}" style="background:linear-gradient(135deg, var(--surface-2), rgba(${embed.platform === 'suno' ? '232,255,71' : embed.platform === 'udio' ? '129,140,248' : '255,85,0'},0.08));">
-      <div class="embed-thumb-overlay">
-        <div class="play-circle">${playSVG}</div>
-        <span class="thumb-platform">${label}</span>
-      </div>
-    </div>`;
+    // All other platforms: render iframe directly (with loading="lazy")
+    return embed.embedHtml;
   }
 
   // ─── Load Embed on Click (single playback) ───
   function loadEmbed(trackId) {
-    // Stop previous embed (single playback)
+    // Stop previous embed (single playback) — revert to thumbnail/empty
     if (activeEmbedTrackId && activeEmbedTrackId !== trackId) {
-      const prevContainer = document.querySelector(`.track-embed[data-track-id="${activeEmbedTrackId}"]`);
-      if (prevContainer) {
-        const prevEmbed = getEmbedHtmlById(activeEmbedTrackId);
-        if (prevEmbed) {
-          prevContainer.innerHTML = getLazyThumbById(activeEmbedTrackId);
-        }
-      }
+      stopEmbed(activeEmbedTrackId);
     }
 
     const container = document.querySelector(`.track-embed[data-track-id="${trackId}"]`);
@@ -895,14 +879,28 @@
       finalHtml = embedHtml.replace('auto_play=false', 'auto_play=true');
     }
 
-    // Allow attribute for autoplay
     finalHtml = finalHtml.replace(/<iframe /, '<iframe allow="autoplay" ');
 
     container.innerHTML = finalHtml;
     activeEmbedTrackId = trackId;
 
-    // Activate player bar
     activatePlayerBar(trackId, container, platform);
+  }
+
+  // Stop an embed — revert YouTube to thumbnail, remove iframe for others
+  function stopEmbed(trackId) {
+    const container = document.querySelector(`.track-embed[data-track-id="${trackId}"]`);
+    if (!container) return;
+    const platform = container.dataset.trackPlatform;
+
+    if (platform === 'youtube') {
+      // Revert to thumbnail
+      container.innerHTML = getLazyThumbById(trackId);
+    } else {
+      // Reload the iframe without autoplay to stop audio
+      const embedHtml = decodeURIComponent(container.dataset.trackEmbed);
+      container.innerHTML = embedHtml;
+    }
   }
 
   // Helper: get embed html by track id from current sorted list
@@ -919,6 +917,23 @@
     const embed = getEmbedHtml(track);
     return getLazyThumb(track, embed);
   }
+
+  // ─── Detect when user plays a non-YouTube embed (iframe focus) ───
+  setInterval(() => {
+    if (document.activeElement && document.activeElement.tagName === 'IFRAME') {
+      const container = document.activeElement.closest('.track-embed[data-track-platform]');
+      if (container) {
+        const trackId = container.dataset.trackId;
+        const platform = container.dataset.trackPlatform;
+        if (platform !== 'youtube' && platform !== 'unknown' && activeEmbedTrackId !== trackId) {
+          // Stop previous embed
+          if (activeEmbedTrackId) { stopEmbed(activeEmbedTrackId); }
+          activeEmbedTrackId = trackId;
+          activatePlayerBar(trackId, container, platform);
+        }
+      }
+    }
+  }, 500);
 
   // ─── Infinite Scroll ───
   let scrollObserver = null;
@@ -1040,12 +1055,8 @@
   document.getElementById('btnClose').addEventListener('click', closePlayer);
 
   function closePlayer() {
-    // Also stop the active embed
     if (activeEmbedTrackId) {
-      const container = document.querySelector(`.track-embed[data-track-id="${activeEmbedTrackId}"]`);
-      if (container) {
-        container.innerHTML = getLazyThumbById(activeEmbedTrackId);
-      }
+      stopEmbed(activeEmbedTrackId);
       activeEmbedTrackId = null;
     }
     playerBar.classList.remove('active', 'playing');
