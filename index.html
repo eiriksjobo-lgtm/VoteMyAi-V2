@@ -864,6 +864,21 @@
   </div>
 </footer>
 
+<!-- ═══ PAGE FRAME (for navigation while player is active) ═══ -->
+<div class="page-frame" id="pageFrame">
+  <iframe></iframe>
+</div>
+
+<!-- ═══ PERSISTENT PLAYER BAR ═══ -->
+<div class="player-bar" id="playerBar">
+  <div class="player-embed" id="playerEmbed"></div>
+  <div class="player-info">
+    <div class="player-title" id="playerTitle"></div>
+    <div class="player-meta" id="playerMeta"></div>
+  </div>
+  <button class="player-close" id="playerClose" title="Close player">✕</button>
+</div>
+
 <!-- ═══ JAVASCRIPT ═══ -->
 <script>
   const SUPABASE_URL = 'https://gezijezmsecbtzytotax.supabase.co';
@@ -1534,20 +1549,6 @@
   // ─── Init ───
   checkAuth().then(loadTracks);
 </script>
-
-<!-- Player bar and page frame -->
-<div class="page-frame" id="pageFrame">
-  <iframe></iframe>
-</div>
-
-<div class="player-bar" id="playerBar">
-  <div class="player-embed" id="playerEmbed"></div>
-  <div class="player-info">
-    <div class="player-title" id="playerTitle"></div>
-    <div class="player-meta" id="playerMeta"></div>
-  </div>
-  <button class="player-close" id="playerClose" title="Close player">✕</button>
-</div>
 
 </body>
 </html>
