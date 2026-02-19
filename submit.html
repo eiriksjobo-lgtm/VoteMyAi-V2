@@ -204,8 +204,8 @@
   <div id="formContainer" style="display: none;">
     <form id="submitForm">
       <div class="form-group">
-        <label>Track URL <span class="label-hint">— YouTube or SoundCloud</span></label>
-        <input type="url" id="trackUrl" placeholder="Paste a YouTube or SoundCloud link..." required>
+        <label>Track URL <span class="label-hint">— YouTube, SoundCloud, Suno, Udio, ElevenLabs or TikTok</span></label>
+        <input type="url" id="trackUrl" placeholder="Paste a link from any supported platform..." required>
         <div class="platform-badge" id="platformBadge"></div>
         <div class="preview-container" id="previewContainer"></div>
       </div>
@@ -254,6 +254,7 @@
   let accessToken = null;
   let detectedPlatform = null;
   let detectedId = null;
+  let detectedUrl = null;
   
   // ── Auth ──
   async function initAuth() {
@@ -299,11 +300,30 @@
   function parseTrackUrl(url) {
     // YouTube
     const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([^&\?\/\s]+)/);
-    if (ytMatch) return { platform: 'youtube', id: ytMatch[1] };
+    if (ytMatch) return { platform: 'youtube', id: ytMatch[1], url: url };
     
-    // SoundCloud — we store the full URL since SC embed uses URLs
+    // SoundCloud
     if (url.includes('soundcloud.com/') && url.split('/').length >= 4) {
-      return { platform: 'soundcloud', id: url.split('?')[0] };
+      return { platform: 'soundcloud', id: url.split('?')[0], url: url };
+    }
+    
+    // Suno
+    const sunoMatch = url.match(/suno\.com\/(?:song\/)?([a-f0-9-]+)/);
+    if (sunoMatch) return { platform: 'suno', id: sunoMatch[1], url: url };
+    
+    // Udio
+    const udioMatch = url.match(/udio\.com\/songs\/([a-zA-Z0-9_-]+)/);
+    if (udioMatch) return { platform: 'udio', id: udioMatch[1], url: url };
+    
+    // ElevenLabs
+    if (url.includes('elevenlabs.io')) return { platform: 'elevenlabs', id: url, url: url };
+    
+    // TikTok
+    const tiktokMatch = url.match(/tiktok\.com\/.+\/video\/(\d+)/);
+    if (tiktokMatch) return { platform: 'tiktok', id: tiktokMatch[1], url: url };
+    // Short TikTok links
+    if (url.includes('tiktok.com/') && url.includes('/video/')) {
+      return { platform: 'tiktok', id: url, url: url };
     }
     
     return null;
@@ -316,6 +336,14 @@
       container.innerHTML = `<div class="preview-yt"><iframe src="https://www.youtube.com/embed/${encodeURIComponent(id)}" allowfullscreen loading="lazy"></iframe></div>`;
     } else if (platform === 'soundcloud') {
       container.innerHTML = `<iframe height="166" scrolling="no" allow="autoplay" src="https://w.soundcloud.com/player/?url=${encodeURIComponent(id)}&color=%23e8ff47&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false" loading="lazy"></iframe>`;
+    } else if (platform === 'suno') {
+      container.innerHTML = `<iframe height="200" src="https://suno.com/embed/${encodeURIComponent(id)}" loading="lazy" style="border:none;width:100%;border-radius:8px;"></iframe>`;
+    } else if (platform === 'udio') {
+      container.innerHTML = `<iframe height="200" src="https://www.udio.com/embed/${encodeURIComponent(id)}" loading="lazy" style="border:none;width:100%;border-radius:8px;"></iframe>`;
+    } else if (platform === 'tiktok') {
+      container.innerHTML = `<div style="padding:20px;background:var(--surface);border-radius:8px;text-align:center;color:var(--muted);font-size:0.85rem;">✓ TikTok link detected — preview not available but track will be linked</div>`;
+    } else if (platform === 'elevenlabs') {
+      container.innerHTML = `<div style="padding:20px;background:var(--surface);border-radius:8px;text-align:center;color:var(--muted);font-size:0.85rem;">✓ ElevenLabs link detected — preview not available but track will be linked</div>`;
     }
     
     container.classList.add('show');
@@ -343,15 +371,24 @@
       if (result) {
         detectedPlatform = result.platform;
         detectedId = result.id;
+        detectedUrl = result.url;
         
-        const labels = { youtube: '▶ YouTube', soundcloud: '☁ SoundCloud' };
+        const labels = {
+          youtube: '▶ YouTube',
+          soundcloud: '☁ SoundCloud',
+          suno: '♪ Suno',
+          udio: '♪ Udio',
+          elevenlabs: '🎤 ElevenLabs',
+          tiktok: '♫ TikTok'
+        };
         badge.textContent = labels[result.platform] + ' detected';
         badge.className = `platform-badge show ${result.platform}`;
         showPreview(result.platform, result.id);
       } else {
         detectedPlatform = null;
         detectedId = null;
-        badge.textContent = '✗ Unsupported URL — use YouTube or SoundCloud';
+        detectedUrl = null;
+        badge.textContent = '✗ Unsupported URL — use YouTube, SoundCloud, Suno, Udio, ElevenLabs or TikTok';
         badge.className = 'platform-badge show invalid';
         preview.classList.remove('show');
       }
@@ -379,21 +416,19 @@
     const genre = document.getElementById('genre').value;
     
     if (!detectedPlatform || !detectedId) {
-      showMessage('Please enter a valid YouTube or SoundCloud URL', 'error');
+      showMessage('Please enter a valid URL from YouTube, SoundCloud, Suno, Udio, ElevenLabs or TikTok', 'error');
       btn.disabled = false;
       btn.textContent = 'Submit Track';
       return;
     }
     
     try {
-      // Store platform as prefix in yt_id: "spotify:ID", "soundcloud:URL", or plain YouTube ID
-      const ytIdValue = detectedPlatform === 'youtube' 
-        ? detectedId 
-        : `${detectedPlatform}:${detectedId}`;
-      
+      // For YouTube, store in yt_id for backwards compatibility
+      // For all platforms, store full URL in embed_url
       const trackData = {
         title,
-        yt_id: ytIdValue,
+        yt_id: detectedPlatform === 'youtube' ? detectedId : null,
+        embed_url: detectedUrl || null,
         tool,
         genre,
         votes: 0,
@@ -419,6 +454,7 @@
         document.getElementById('previewContainer').classList.remove('show');
         detectedPlatform = null;
         detectedId = null;
+        detectedUrl = null;
         setTimeout(() => window.location.href = '/', 2000);
       } else {
         const err = await res.text();
