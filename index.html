@@ -798,7 +798,20 @@
   function renderVisibleTracks() {
     const grid = document.getElementById('tracksGrid');
     const toShow = currentSorted.slice(0, visibleCount);
-    if (!toShow.length) { grid.innerHTML = '<div class="empty-state"><p>No tracks found. Be the first to submit!</p></div>'; return; }
+    if (!toShow.length) { grid.innerHTML = '<div class="empty-state"><p>No tracks found. Be the first to submit!</p></div>'; setupInfiniteScroll(); return; }
+
+    // Save active embed DOM node before re-render
+    let savedEmbed = null;
+    let savedTrackId = null;
+    if (activeEmbedTrackId) {
+      const activeContainer = grid.querySelector(`.track-embed[data-track-id="${activeEmbedTrackId}"]`);
+      if (activeContainer) {
+        savedEmbed = activeContainer;
+        savedTrackId = activeEmbedTrackId;
+        // Detach from DOM before innerHTML wipes the grid
+        savedEmbed.remove();
+      }
+    }
 
     grid.innerHTML = toShow.map((track, i) => {
       const embed = getEmbedHtml(track);
@@ -812,11 +825,12 @@
       for (let s = 1; s <= 5; s++) starsHtml += `<div class="star ${isRated && s <= userScore ? 'filled' : ''}" data-track="${track.id}" data-score="${s}">${starSVG}</div>`;
       const plat = embed.platform !== 'unknown' ? embed.platform.charAt(0).toUpperCase() + embed.platform.slice(1) : '';
 
-      // Build lazy thumbnail
       const thumb = getLazyThumb(track, embed);
+      // Use placeholder for active embed — we'll swap the real node back in
+      const embedContent = (savedTrackId === track.id) ? `<div class="embed-restore-placeholder" data-restore="${track.id}"></div>` : thumb;
 
       return `<div class="track-card" id="card-${track.id}" style="animation-delay:${(i % TRACKS_PER_PAGE) * 0.05}s">
-        <div class="${embedClass}" data-track-id="${track.id}" data-track-title="${sanitize(track.title)}" data-track-tool="${sanitize(track.tool)}" data-track-platform="${embed.platform}" data-track-embed="${encodeURIComponent(embed.embedHtml)}">${thumb}</div>
+        <div class="${embedClass}" data-track-id="${track.id}" data-track-title="${sanitize(track.title)}" data-track-tool="${sanitize(track.tool)}" data-track-platform="${embed.platform}" data-track-embed="${encodeURIComponent(embed.embedHtml)}">${embedContent}</div>
         <div class="track-body">
           <div class="track-title">${sanitize(track.title)}</div>
           <div class="track-badges"><span class="badge badge-tool">${sanitize(track.tool)}</span><span class="badge badge-genre">${sanitize(track.genre)}</span>${plat ? `<span class="badge badge-platform">${plat}</span>` : ''}</div>
@@ -832,6 +846,21 @@
         <div class="comments-panel" id="comments-${track.id}"><div class="comments-inner"><div id="comments-content-${track.id}"><span style="color:var(--muted);font-size:0.8rem;">Loading comments...</span></div>${currentUser ? `<div class="comment-form"><input type="text" class="comment-input" id="comment-input-${track.id}" placeholder="Add a comment..."><button class="comment-submit" data-action="post-comment" data-track="${track.id}">Post</button></div>` : '<p style="font-size:0.75rem;color:var(--muted);margin-top:8px;">Log in to comment</p>'}</div></div>
       </div>`;
     }).join('');
+
+    // Restore active embed DOM node (if track is still in view)
+    if (savedEmbed && savedTrackId) {
+      const placeholder = grid.querySelector(`.track-embed[data-track-id="${savedTrackId}"]`);
+      if (placeholder) {
+        for (const attr of placeholder.attributes) {
+          savedEmbed.setAttribute(attr.name, attr.value);
+        }
+        placeholder.replaceWith(savedEmbed);
+      } else {
+        // Track was filtered out — stop playback
+        activeEmbedTrackId = null;
+        closePlayer();
+      }
+    }
 
     // Setup infinite scroll if there are more tracks
     setupInfiniteScroll();
