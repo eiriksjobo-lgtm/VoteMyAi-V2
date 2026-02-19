@@ -308,10 +308,12 @@
     }
     
     // Suno - multiple URL formats
-    const sunoLong = url.match(/suno\.com\/song\/([a-f0-9-]+)/);
+    // Full song URL: suno.com/song/UUID
+    const sunoLong = url.match(/suno\.com\/song\/([a-f0-9-]{36})/);
     if (sunoLong) return { platform: 'suno', id: sunoLong[1], url: url };
+    // Short link: suno.com/s/SHORTCODE — needs resolution
     const sunoShort = url.match(/suno\.com\/s\/([a-zA-Z0-9_-]+)/);
-    if (sunoShort) return { platform: 'suno', id: sunoShort[1], url: url };
+    if (sunoShort) return { platform: 'suno-short', id: sunoShort[1], url: url };
     
     // Udio
     const udioMatch = url.match(/udio\.com\/songs\/([a-zA-Z0-9_-]+)/);
@@ -361,6 +363,25 @@
       const result = parseTrackUrl(url);
       
       if (result) {
+        // Handle Suno short links - need full song URL
+        if (result.platform === 'suno-short') {
+          detectedPlatform = null;
+          detectedId = null;
+          detectedUrl = null;
+          badge.textContent = '⚠ Suno short link — use the full song URL instead (suno.com/song/...)';
+          badge.className = 'platform-badge show invalid';
+          
+          // Try to show helpful message
+          preview.innerHTML = `<div style="padding:16px;background:var(--surface);border-radius:8px;color:var(--muted);font-size:0.82rem;line-height:1.6;">
+            <strong style="color:var(--text);">How to get the full Suno URL:</strong><br>
+            1. Open your song on suno.com<br>
+            2. The URL in your browser should look like: <code style="color:var(--accent);">suno.com/song/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</code><br>
+            3. Copy that full URL and paste it here
+          </div>`;
+          preview.classList.add('show');
+          return;
+        }
+        
         detectedPlatform = result.platform;
         detectedId = result.id;
         detectedUrl = result.url;
