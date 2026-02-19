@@ -349,7 +349,17 @@
       display: flex; align-items: center; justify-content: space-between;
       margin-top: 12px; padding-top: 12px;
       border-top: 1px solid rgba(26,26,38,0.6);
+      gap: 4px;
     }
+    .play-bar-btn {
+      background: none; border: none;
+      color: var(--accent); cursor: pointer;
+      font-size: 0.74rem; font-family: 'DM Sans', sans-serif;
+      display: flex; align-items: center; gap: 4px;
+      transition: color 0.2s; font-weight: 600;
+    }
+    .play-bar-btn:hover { color: var(--text); }
+    .play-bar-btn svg { stroke: var(--accent); fill: var(--accent); }
     .comments-btn {
       background: none; border: none;
       color: var(--muted); cursor: pointer;
@@ -637,6 +647,45 @@
     .footer-tools a:hover { color: var(--accent); }
 
     /* ══════════════════════════════════
+       PERSISTENT PLAYER BAR
+    ══════════════════════════════════ */
+    .player-bar {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
+      background: #0a0a10; border-top: 1px solid var(--border);
+      display: none; align-items: center; gap: 12px;
+      padding: 0 20px; height: 72px;
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    }
+    .player-bar.active { display: flex; }
+    .player-bar .player-iframe-wrap {
+      width: 120px; height: 56px; flex-shrink: 0;
+      border-radius: 6px; overflow: hidden; position: relative;
+      background: var(--surface-2);
+    }
+    .player-bar .player-iframe-wrap iframe {
+      width: 100%; height: 100%; border: none;
+    }
+    .player-bar .player-info {
+      flex: 1; min-width: 0;
+    }
+    .player-bar .player-title {
+      font-weight: 600; font-size: 0.85rem; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .player-bar .player-meta {
+      font-size: 0.72rem; color: var(--muted);
+    }
+    .player-bar .player-close {
+      background: none; border: none; color: var(--muted);
+      cursor: pointer; font-size: 1.2rem; padding: 8px;
+      transition: color 0.2s;
+    }
+    .player-bar .player-close:hover { color: var(--text); }
+    
+    /* Add bottom padding to body when player is active */
+    body.player-active { padding-bottom: 72px; }
+
+    /* ══════════════════════════════════
        RESPONSIVE
     ══════════════════════════════════ */
     @media (max-width: 960px) {
@@ -651,6 +700,8 @@
       .filters { gap: 6px; }
       .filter-sep { display: none; }
       .footer-links { gap: 28px; }
+      .player-bar .player-iframe-wrap { width: 80px; height: 45px; }
+      .player-bar { padding: 0 12px; height: 64px; }
     }
   </style>
 </head>
@@ -662,7 +713,7 @@
   <div class="nav-right">
     <a href="/blog.html" class="nav-link">Blog</a>
     <a href="/login.html" class="nav-link" id="authLink">Login</a>
-    <button class="btn-submit" onclick="window.location.href='/submit.html'">Submit</button>
+    <button class="btn-submit" onclick="window.spaNav?window.spaNav('/submit.html'):window.location.href='/submit.html'">Submit</button>
   </div>
 </nav>
 
@@ -771,6 +822,16 @@
     <p>VoteMyAI is the community-driven platform where AI music creators submit tracks made with tools like Suno, Udio, and ElevenLabs — and the community decides what's best. Every track is rated on a 1-5 star scale, and our Wilson Score algorithm ensures fair rankings regardless of when a track was submitted. Whether you're a creator looking for feedback or a listener discovering the future of music, VoteMyAI is where AI music gets its spotlight.</p>
   </div>
 </section>
+<!-- ═══ PERSISTENT PLAYER BAR ═══ -->
+<div class="player-bar" id="playerBar">
+  <div class="player-iframe-wrap" id="playerIframe"></div>
+  <div class="player-info">
+    <div class="player-title" id="playerTitle">—</div>
+    <div class="player-meta" id="playerMeta">—</div>
+  </div>
+  <button class="player-close" id="playerClose" title="Close player">✕</button>
+</div>
+
 <footer>
   <div class="footer-inner">
     <div class="footer-brand">
@@ -1116,6 +1177,10 @@
               </div>
             </div>
             <div class="card-footer">
+              <button class="play-bar-btn" data-action="play-bar" data-track="${track.id}" data-title="${sanitize(track.title)}" data-tool="${sanitize(track.tool)}" data-embed="${encodeURIComponent(embed.embedHtml)}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                Play
+              </button>
               <button class="comments-btn" data-action="comments" data-track="${track.id}">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                 Comments
@@ -1161,6 +1226,14 @@
       const container = star.parentElement;
       if (container.classList.contains('rated')) return;
       rateStar(trackId, score, container);
+      return;
+    }
+
+    // Play in bar
+    const playBarBtn = e.target.closest('[data-action="play-bar"]');
+    if (playBarBtn) {
+      const embedHtml = decodeURIComponent(playBarBtn.dataset.embed);
+      playInBar(playBarBtn.dataset.track, embedHtml, playBarBtn.dataset.title, playBarBtn.dataset.tool);
       return;
     }
 
@@ -1383,7 +1456,142 @@
     }
   }
 
+  // ─── Persistent Player ───
+  let activePlayerTrackId = null;
+
+  function playInBar(trackId, embedHtml, title, tool) {
+    const bar = document.getElementById('playerBar');
+    const wrap = document.getElementById('playerIframe');
+    const titleEl = document.getElementById('playerTitle');
+    const metaEl = document.getElementById('playerMeta');
+
+    // If same track, just toggle visibility
+    if (activePlayerTrackId === trackId && bar.classList.contains('active')) {
+      closePlayer();
+      return;
+    }
+
+    wrap.innerHTML = embedHtml;
+    titleEl.textContent = title;
+    metaEl.textContent = tool;
+    bar.classList.add('active');
+    document.body.classList.add('player-active');
+    activePlayerTrackId = trackId;
+  }
+
+  function closePlayer() {
+    const bar = document.getElementById('playerBar');
+    const wrap = document.getElementById('playerIframe');
+    wrap.innerHTML = '';
+    bar.classList.remove('active');
+    document.body.classList.remove('player-active');
+    activePlayerTrackId = null;
+  }
+
+  document.getElementById('playerClose').addEventListener('click', closePlayer);
+
+  // ─── SPA Navigation ───
+  function initSPALinks() {
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('a[href]');
+      if (!link) return;
+      
+      const href = link.getAttribute('href');
+      // Only intercept internal .html links (not external, not hash, not submit form actions)
+      if (!href) return;
+      if (link.target === '_blank') return;
+      if (href.startsWith('http') && !href.includes('votemyai.com')) return;
+      if (href.startsWith('#')) return;
+      if (!href.endsWith('.html') && href !== '/') return;
+      
+      e.preventDefault();
+      navigateTo(href);
+    });
+
+    // Handle browser back/forward
+    window.addEventListener('popstate', () => {
+      loadPage(window.location.pathname, false);
+    });
+  }
+
+  function navigateTo(url) {
+    window.history.pushState({}, '', url);
+    loadPage(url, false);
+  }
+  window.spaNav = navigateTo;
+
+  async function loadPage(url, pushState = true) {
+    // If navigating to home, just reload the main content
+    if (url === '/' || url === '/index.html') {
+      // Instead of fetching, just show the existing content
+      window.scrollTo(0, 0);
+      return;
+    }
+
+    try {
+      const res = await fetch(url);
+      if (!res.ok) return;
+      const html = await res.text();
+      
+      // Parse the fetched page and extract just the body content
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      
+      // Get content between nav and footer (the main content)
+      const body = doc.body;
+      
+      // Find the container/main content (skip nav-like elements)
+      const container = body.querySelector('.container') || body.querySelector('main') || body;
+      
+      // Create overlay for the page content
+      let overlay = document.getElementById('spaOverlay');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'spaOverlay';
+        overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:5000;background:var(--bg);overflow-y:auto;padding:0;';
+        document.body.appendChild(overlay);
+      }
+      
+      // Build the overlay content with nav and back button
+      overlay.innerHTML = `
+        <nav style="display:flex;align-items:center;justify-content:space-between;padding:16px 32px;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:100;">
+          <a href="/" class="logo" style="text-decoration:none;font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:2px;color:var(--text);display:flex;align-items:center;gap:8px;"><span class="logo-dot" style="width:8px;height:8px;background:var(--accent);border-radius:50%;display:inline-block;"></span>VOTEMYAI</a>
+          <button onclick="closeSpaOverlay()" style="background:none;border:1px solid var(--border);color:var(--text);padding:8px 16px;border-radius:6px;cursor:pointer;font-size:0.85rem;">← Back</button>
+        </nav>
+        <div style="max-width:700px;margin:0 auto;padding:40px 20px ${activePlayerTrackId ? '92px' : '40px'};">
+          ${container.innerHTML}
+        </div>
+      `;
+      
+      // Run any inline scripts from the fetched page
+      const scripts = overlay.querySelectorAll('script');
+      scripts.forEach(oldScript => {
+        if (oldScript.type === 'module' || oldScript.src) {
+          const newScript = document.createElement('script');
+          if (oldScript.src) newScript.src = oldScript.src;
+          else { newScript.type = oldScript.type; newScript.textContent = oldScript.textContent; }
+          oldScript.replaceWith(newScript);
+        }
+      });
+      
+      overlay.style.display = 'block';
+      overlay.scrollTop = 0;
+      
+    } catch(e) {
+      // Fallback: just navigate normally
+      window.location.href = url;
+    }
+  }
+
+  function closeSpaOverlay() {
+    const overlay = document.getElementById('spaOverlay');
+    if (overlay) overlay.style.display = 'none';
+    window.history.pushState({}, '', '/');
+  }
+  window.closeSpaOverlay = closeSpaOverlay;
+
   // ─── Init ───
+  initSPALinks();
   checkAuth().then(loadTracks);
 </script>
 
