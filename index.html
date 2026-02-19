@@ -261,6 +261,8 @@
       background: var(--surface-hover) !important;
     }
     .track-embed.soundcloud { padding-bottom: 166px; }
+    .track-embed.udio { padding-bottom: 45%; }
+    .track-embed iframe { border: none; }
 
     /* Card body */
     .track-body {
@@ -931,7 +933,7 @@
       const udioMatch = url.match(/udio\.com\/songs\/([a-zA-Z0-9_-]+)/);
       if (udioMatch) return {
         platform: 'udio',
-        embedHtml: `<iframe src="https://www.udio.com/embed/${udioMatch[1]}" loading="lazy"></iframe>`
+        embedHtml: `<iframe src="https://www.udio.com/embed/${udioMatch[1]}" loading="lazy" style="border:none;width:100%;height:100%;"></iframe>`
       };
     }
 
@@ -1087,7 +1089,7 @@
       // Determine embed class for sizing
       let embedClass = 'track-embed';
       if (embed.platform === 'soundcloud') embedClass += ' soundcloud';
-      if (embed.platform === 'suno') embedClass += ' suno';
+      if (embed.platform === 'udio') embedClass += ' udio';
 
       // Build stars
       let starsHtml = '';
