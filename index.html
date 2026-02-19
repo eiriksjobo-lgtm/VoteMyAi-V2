@@ -1133,16 +1133,29 @@
     </div>`;
   }
 
-  // ─── Lazy Thumbnails (YouTube only) ───
+  // ─── Lazy Thumbnails ───
   function getLazyThumb(track, embed) {
     const playSVG = '<svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
+    const platformLabel = embed.platform !== 'unknown' ? embed.platform.charAt(0).toUpperCase() + embed.platform.slice(1) : '';
 
+    // If track has a stored thumbnail_url, use it (works for all platforms)
+    if (track.thumbnail_url) {
+      return `<div class="embed-thumb" data-action="load-embed" data-track-id="${track.id}">
+        <img src="${sanitize(track.thumbnail_url)}" alt="${sanitize(track.title)}" loading="lazy">
+        <div class="embed-thumb-overlay">
+          <div class="play-circle">${playSVG}</div>
+          ${platformLabel ? `<span class="thumb-platform">${platformLabel}</span>` : ''}
+        </div>
+      </div>`;
+    }
+
+    // YouTube fallback — extract video ID for thumbnail
     if (embed.platform === 'youtube') {
       const match = (track.embed_url || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([^&?\/#]+)/) || [null, track.yt_id];
       const videoId = match[1] || track.yt_id;
       if (videoId) {
         return `<div class="embed-thumb" data-action="load-embed" data-track-id="${track.id}">
-          <img src="https://img.youtube.com/vi/${videoId}/hqdefault.jpg" alt="" loading="lazy">
+          <img src="https://img.youtube.com/vi/${videoId}/hqdefault.jpg" alt="${sanitize(track.title)}" loading="lazy">
           <div class="embed-thumb-overlay">
             <div class="play-circle">${playSVG}</div>
             <span class="thumb-platform">YouTube</span>
@@ -1151,7 +1164,7 @@
       }
     }
 
-    // All other platforms: render iframe directly (with loading="lazy")
+    // No thumbnail available — render iframe directly
     return embed.embedHtml;
   }
 
