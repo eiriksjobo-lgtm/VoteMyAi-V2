@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login – VoteMyAI</title>
+  <script>
+    if (window.self === window.top && !window.location.search.includes("noshell")) {
+      window.location.replace("/app.html?p=" + encodeURIComponent(window.location.pathname + window.location.search + window.location.hash));
+    }
+  </script>
   
   <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-KW4NR9QBWB"></script>
