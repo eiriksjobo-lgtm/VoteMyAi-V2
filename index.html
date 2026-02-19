@@ -939,9 +939,12 @@
 
   window.addEventListener('scroll', function() {
     if (!hasMore || loadingMore) return;
-    const scrollBottom = window.innerHeight + window.scrollY;
-    const docHeight = document.documentElement.scrollHeight;
-    if (scrollBottom >= docHeight - 400) {
+    const grid = document.getElementById('tracksGrid');
+    if (!grid) return;
+    const gridBottom = grid.getBoundingClientRect().bottom;
+    const windowHeight = window.innerHeight;
+    // Trigger when the bottom of the grid is within 300px of the viewport
+    if (gridBottom <= windowHeight + 300) {
       loadingMore = true;
       visibleCount += TRACKS_PER_PAGE;
       renderVisibleTracks();
