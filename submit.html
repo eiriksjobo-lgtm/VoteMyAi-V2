@@ -333,7 +333,9 @@
     } else if (platform === 'suno') {
       container.innerHTML = `<iframe height="200" src="https://suno.com/embed/${encodeURIComponent(id)}" loading="lazy" style="border:none;width:100%;border-radius:8px;"></iframe>`;
     } else if (platform === 'udio') {
-      container.innerHTML = `<iframe height="200" src="https://www.udio.com/embed/${encodeURIComponent(id)}" loading="lazy" style="border:none;width:100%;border-radius:8px;"></iframe>`;
+      container.innerHTML = `<iframe height="200" src="https://www.udio.com/embed/${encodeURIComponent(id)}" scrolling="no" loading="lazy" style="border:none;width:100%;border-radius:8px;"></iframe>`;
+    }
+    
     container.classList.add('show');
   }
   
