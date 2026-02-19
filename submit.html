@@ -15,7 +15,7 @@
   
   <title>Submit Your AI Music Track – VoteMyAI</title>
   
-  <meta name="description" content="Submit your AI-generated music track to VoteMyAI. Share songs made with Suno, Udio, ElevenLabs via YouTube or SoundCloud and let the community vote.">
+  <meta name="description" content="Submit your AI-generated music track to VoteMyAI. Share songs made with Suno, Udio or other AI tools via YouTube, SoundCloud or directly and let the community rate.">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://www.votemyai.com/submit.html">
   <meta name="theme-color" content="#e8ff47">
@@ -204,7 +204,7 @@
   <div id="formContainer" style="display: none;">
     <form id="submitForm">
       <div class="form-group">
-        <label>Track URL <span class="label-hint">— YouTube, SoundCloud, Suno, Udio or ElevenLabs</span></label>
+        <label>Track URL <span class="label-hint">— YouTube, SoundCloud, Suno or Udio</span></label>
         <input type="url" id="trackUrl" placeholder="Paste a link from any supported platform..." required>
         <div class="platform-badge" id="platformBadge"></div>
         <div class="preview-container" id="previewContainer"></div>
@@ -221,7 +221,6 @@
           <option value="">Select tool...</option>
           <option value="Suno">Suno</option>
           <option value="Udio">Udio</option>
-          <option value="ElevenLabs">ElevenLabs</option>
           <option value="Other">Other</option>
         </select>
       </div>
@@ -315,12 +314,11 @@
     const sunoShort = url.match(/suno\.com\/s\/([a-zA-Z0-9_-]+)/);
     if (sunoShort) return { platform: 'suno-short', id: sunoShort[1], url: url };
     
-    // Udio
-    const udioMatch = url.match(/udio\.com\/songs\/([a-zA-Z0-9_-]+)/);
-    if (udioMatch) return { platform: 'udio', id: udioMatch[1], url: url };
-    
-    // ElevenLabs
-    if (url.includes('elevenlabs.io')) return { platform: 'elevenlabs', id: url, url: url };
+    // Udio - needs UUID resolution for embed
+    if (url.includes('udio.com/songs/')) {
+      const udioSlug = url.match(/udio\.com\/songs\/([a-zA-Z0-9_-]+)/);
+      if (udioSlug) return { platform: 'udio-resolve', id: udioSlug[1], url: url };
+    }
     
     return null;
   }
@@ -336,10 +334,6 @@
       container.innerHTML = `<iframe height="200" src="https://suno.com/embed/${encodeURIComponent(id)}" loading="lazy" style="border:none;width:100%;border-radius:8px;"></iframe>`;
     } else if (platform === 'udio') {
       container.innerHTML = `<iframe height="200" src="https://www.udio.com/embed/${encodeURIComponent(id)}" loading="lazy" style="border:none;width:100%;border-radius:8px;"></iframe>`;
-    } else if (platform === 'elevenlabs') {
-      container.innerHTML = `<div style="padding:20px;background:var(--surface);border-radius:8px;text-align:center;color:var(--muted);font-size:0.85rem;">✓ ElevenLabs link detected — will open in new tab for listeners</div>`;
-    }
-    
     container.classList.add('show');
   }
   
@@ -403,6 +397,49 @@
           }
           return;
         }
+
+        // Handle Udio slugs - auto-resolve to UUID for embed
+        if (result.platform === 'udio-resolve') {
+          badge.textContent = '♪ Resolving Udio link...';
+          badge.className = 'platform-badge show udio';
+          preview.innerHTML = `<div style="padding:24px;text-align:center;color:var(--muted);font-size:0.85rem;">Resolving Udio link...</div>`;
+          preview.classList.add('show');
+          
+          try {
+            const res = await fetch(`${SUPABASE_URL}/functions/v1/resolve-suno`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
+              body: JSON.stringify({ url: result.url })
+            });
+            const data = await res.json();
+            
+            if (data.uuid) {
+              detectedPlatform = 'udio';
+              detectedId = data.uuid;
+              detectedUrl = `https://www.udio.com/songs/${result.id}`;
+              badge.textContent = '♪ Udio detected';
+              badge.className = 'platform-badge show udio';
+              showPreview('udio', data.uuid);
+            } else {
+              // Fallback: use slug as embed ID
+              detectedPlatform = 'udio';
+              detectedId = result.id;
+              detectedUrl = result.url;
+              badge.textContent = '♪ Udio detected';
+              badge.className = 'platform-badge show udio';
+              showPreview('udio', result.id);
+            }
+          } catch (err) {
+            // Fallback: use slug
+            detectedPlatform = 'udio';
+            detectedId = result.id;
+            detectedUrl = result.url;
+            badge.textContent = '♪ Udio detected';
+            badge.className = 'platform-badge show udio';
+            showPreview('udio', result.id);
+          }
+          return;
+        }
         
         detectedPlatform = result.platform;
         detectedId = result.id;
@@ -412,8 +449,7 @@
           youtube: '▶ YouTube',
           soundcloud: '☁ SoundCloud',
           suno: '♪ Suno',
-          udio: '♪ Udio',
-          elevenlabs: '🎤 ElevenLabs'
+          udio: '♪ Udio'
         };
         badge.textContent = labels[result.platform] + ' detected';
         badge.className = `platform-badge show ${result.platform}`;
@@ -422,7 +458,7 @@
         detectedPlatform = null;
         detectedId = null;
         detectedUrl = null;
-        badge.textContent = '✗ Unsupported URL — use YouTube, SoundCloud, Suno, Udio or ElevenLabs';
+        badge.textContent = '✗ Unsupported URL — use YouTube, SoundCloud, Suno or Udio';
         badge.className = 'platform-badge show invalid';
         preview.classList.remove('show');
       }
@@ -450,7 +486,7 @@
     const genre = document.getElementById('genre').value;
     
     if (!detectedPlatform || !detectedId) {
-      showMessage('Please enter a valid URL from YouTube, SoundCloud, Suno, Udio or ElevenLabs', 'error');
+      showMessage('Please enter a valid URL from YouTube, SoundCloud, Suno or Udio', 'error');
       btn.disabled = false;
       btn.textContent = 'Submit Track';
       return;
