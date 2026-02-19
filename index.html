@@ -791,8 +791,10 @@
   function renderTracks() {
     visibleCount = TRACKS_PER_PAGE;
     currentSorted = getSortedTracks(getFilteredTracks());
-    // Show all tracks to ensure visibleCount covers everything during playback
-    if (activeEmbedTrackId) visibleCount = Math.max(visibleCount, currentSorted.length);
+    const grid = document.getElementById('tracksGrid');
+    const hasActiveIframe = grid && grid.querySelector('.track-embed iframe') !== null;
+    const isPlaying = activeEmbedTrackId || activePlayerTrackId || (playerBar && playerBar.classList.contains('active')) || hasActiveIframe;
+    if (isPlaying) visibleCount = Math.max(visibleCount, currentSorted.length);
     document.getElementById('trackCount').textContent = `${currentSorted.length} track${currentSorted.length !== 1 ? 's' : ''}`;
     renderVisibleTracks();
   }
@@ -803,13 +805,13 @@
 
     if (!toShow.length) { grid.innerHTML = '<div class="empty-state"><p>No tracks found. Be the first to submit!</p></div>'; setupInfiniteScroll(); return; }
 
+    // If anything is playing (player bar active, embed loaded, or any iframe in grid), preserve DOM
+    const hasActiveIframe = grid.querySelector('.track-embed iframe') !== null;
+    const isPlaying = activeEmbedTrackId || activePlayerTrackId || playerBar.classList.contains('active') || hasActiveIframe;
     const toShowIds = new Set(toShow.map(t => String(t.id)));
-
-    // If an embed is actively playing, use show/hide to preserve the iframe
-    if (activeEmbedTrackId) {
+    if (isPlaying) {
       const existingIds = new Set();
 
-      // Show/hide/reorder existing cards
       grid.querySelectorAll('.track-card').forEach(card => {
         const id = card.id.replace('card-', '');
         existingIds.add(id);
@@ -819,7 +821,6 @@
         card.style.order = idx >= 0 ? idx : 9999;
       });
 
-      // Add new cards that don't exist yet
       toShow.forEach((track, i) => {
         if (!existingIds.has(String(track.id))) {
           const html = buildCardHtml(track, i);
@@ -828,7 +829,8 @@
       });
 
       // If active track got filtered out, stop it
-      if (!toShowIds.has(String(activeEmbedTrackId))) {
+      const playingId = String(activeEmbedTrackId || activePlayerTrackId);
+      if (!toShowIds.has(playingId)) {
         activeEmbedTrackId = null;
         closePlayer();
       }
