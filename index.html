@@ -1069,8 +1069,29 @@
     } catch(e) { console.error('Rate error:', e); }
   }
 
-  function setView(v, el) { currentView = v; document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active')); el.classList.add('active'); renderTracks(); }
-  function setFilter(type, val, el) { filters[type] = val; document.querySelectorAll(`.filter-pill[data-filter="${type}"]`).forEach(p => p.classList.remove('active')); el.classList.add('active'); renderTracks(); }
+  function setView(v, el) { currentView = v; document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active')); el.classList.add('active'); applyFiltersAndSort(); }
+  function setFilter(type, val, el) { filters[type] = val; document.querySelectorAll(`.filter-pill[data-filter="${type}"]`).forEach(p => p.classList.remove('active')); el.classList.add('active'); applyFiltersAndSort(); }
+
+  function applyFiltersAndSort() {
+    const grid = document.getElementById('tracksGrid');
+    // If any iframe is loaded, just show/hide cards via CSS — never touch innerHTML
+    if (grid.querySelector('iframe')) {
+      const filtered = getFilteredTracks();
+      const sorted = getSortedTracks(filtered);
+      const visibleIds = new Set(sorted.map(t => String(t.id)));
+
+      document.getElementById('trackCount').textContent = `${sorted.length} track${sorted.length !== 1 ? 's' : ''}`;
+
+      grid.querySelectorAll('.track-card').forEach(card => {
+        const id = card.id.replace('card-', '');
+        card.style.display = visibleIds.has(id) ? '' : 'none';
+        const idx = sorted.findIndex(t => String(t.id) === id);
+        card.style.order = idx >= 0 ? idx : 9999;
+      });
+    } else {
+      renderTracks();
+    }
+  }
 
   // ─── Comments ───
   async function toggleComments(id) { const p = document.getElementById(`comments-${id}`); const o = p.classList.contains('open'); document.querySelectorAll('.comments-panel.open').forEach(x => x.classList.remove('open')); if (!o) { p.classList.add('open'); await loadComments(id); } }
