@@ -387,17 +387,6 @@
     .player-bar.active { display: flex; }
     .player-bar.playing .player-eq span { animation-play-state: running; }
 
-    .player-progress {
-      position: absolute; top: -3px; left: 0; right: 0;
-      height: 3px; background: rgba(255,255,255,0.06); cursor: pointer; z-index: 2;
-    }
-    .player-progress:hover { height: 5px; top: -5px; }
-    .player-progress-fill {
-      height: 100%; width: 0%; background: var(--accent);
-      border-radius: 0 2px 2px 0; transition: width 0.3s linear;
-    }
-    .player-progress:hover .player-progress-fill { box-shadow: 0 0 8px rgba(232,255,71,0.5); }
-
     .player-eq { display: flex; align-items: flex-end; gap: 2px; height: 18px; flex-shrink: 0; }
     .player-eq span {
       width: 3px; background: var(--accent); border-radius: 2px;
@@ -414,7 +403,6 @@
       position: absolute; left: -9999px; top: -9999px;
       width: 320px; height: 180px; overflow: hidden;
     }
-    .player-embed-hidden iframe { width: 100%; height: 100%; border: none; }
 
     .player-info { flex: 1; min-width: 0; }
     .player-title { font-weight: 600; font-size: 0.85rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -423,17 +411,12 @@
     .player-controls { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
     .player-ctrl {
       width: 36px; height: 36px; border-radius: 50%; border: none;
-      background: transparent; color: var(--text); cursor: pointer;
+      background: transparent; color: var(--muted); cursor: pointer;
       display: flex; align-items: center; justify-content: center;
-      transition: transform 0.15s, background 0.15s;
+      transition: transform 0.15s, color 0.15s;
     }
-    .player-ctrl:hover { transform: scale(1.1); background: rgba(255,255,255,0.06); }
-    .player-ctrl svg { width: 16px; height: 16px; fill: currentColor; }
-    .player-ctrl.pp { width: 40px; height: 40px; background: var(--accent); color: var(--bg); }
-    .player-ctrl.pp:hover { box-shadow: 0 0 16px rgba(232,255,71,0.3); }
-    .player-ctrl.pp svg { width: 18px; height: 18px; }
-    .player-ctrl.cl { color: var(--muted); }
-    .player-ctrl.cl:hover { color: var(--text); }
+    .player-ctrl:hover { transform: scale(1.1); color: var(--text); }
+    .player-ctrl svg { width: 18px; height: 18px; fill: currentColor; }
 
     body.player-active { padding-bottom: 68px; }
 
@@ -597,7 +580,6 @@
 
 <!-- ═══ PERSISTENT PLAYER BAR ═══ -->
 <div class="player-bar" id="playerBar">
-  <div class="player-progress" id="playerProgress"><div class="player-progress-fill" id="progressFill"></div></div>
   <div class="player-eq"><span></span><span></span><span></span><span></span></div>
   <div class="player-embed-hidden" id="playerEmbed"></div>
   <div class="player-info">
@@ -605,11 +587,6 @@
     <div class="player-meta" id="playerMeta"></div>
   </div>
   <div class="player-controls">
-    <div id="ytControls" style="display:flex;align-items:center;gap:4px;">
-      <button class="player-ctrl" id="btnRew" title="Rewind 10s"><svg viewBox="0 0 24 24"><path d="M12.5 3C7.53 3 3.5 7.03 3.5 12s4.03 9 9 9 9-4.03 9-9h-2c0 3.87-3.13 7-7 7s-7-3.13-7-7 3.13-7 7-7v4l5-5-5-5v4z"/></svg></button>
-      <button class="player-ctrl pp" id="btnPP" title="Play / Pause"><svg id="ppPlay" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg><svg id="ppPause" viewBox="0 0 24 24" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg></button>
-      <button class="player-ctrl" id="btnFwd" title="Forward 10s"><svg viewBox="0 0 24 24"><path d="M11.5 3v4l-5-5 5-5v4c4.97 0 9 4.03 9 9s-4.03 9-9 9-9-4.03-9-9h2c0 3.87 3.13 7 7 7s7-3.13 7-7-3.13-7-7-7z"/></svg></button>
-    </div>
     <button class="player-ctrl cl" id="btnClose" title="Close player"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
   </div>
 </div>
@@ -865,10 +842,7 @@
   // PERSISTENT PLAYER — auto-detects when user plays an embed
   // ══════════════════════════════════════════════
   let activePlayerTrackId = null;
-  let ytPlayer = null;
   let ytApiReady = false;
-  let playerIsPlaying = false;
-  let progressInterval = null;
 
   // Load YouTube IFrame API
   (function() {
@@ -882,9 +856,6 @@
   const playerEmbed = document.getElementById('playerEmbed');
   const playerTitle = document.getElementById('playerTitle');
   const playerMeta = document.getElementById('playerMeta');
-  const progressFill = document.getElementById('progressFill');
-  const ppPlay = document.getElementById('ppPlay');
-  const ppPause = document.getElementById('ppPause');
 
   // ─── YouTube: Replace all YT iframes with API players to detect play ───
   let ytCardPlayers = {}; // trackId -> YT.Player
@@ -968,26 +939,8 @@
     activePlayerPlatform = platform;
     playerTitle.textContent = title;
     playerMeta.textContent = tool;
-    playerBar.classList.add('active');
+    playerBar.classList.add('active', 'playing');
     document.body.classList.add('player-active');
-    setPlaying(true);
-
-    // YouTube: full controls
-    if (platform === 'youtube' && ytCardPlayers[trackId]) {
-      if (ytPlayer) { try { ytPlayer.destroy(); } catch(e) {} ytPlayer = null; }
-      playerEmbed.innerHTML = '';
-      ytPlayer = ytCardPlayers[trackId];
-      document.getElementById('ytControls').style.display = 'flex';
-      document.getElementById('playerProgress').style.display = 'block';
-      startProgress();
-    } else {
-      // Suno/Udio/SoundCloud: no controls, just title + EQ + close
-      if (ytPlayer) { try { ytPlayer.destroy(); } catch(e) {} ytPlayer = null; }
-      playerEmbed.innerHTML = '';
-      progressFill.style.width = '0%';
-      document.getElementById('ytControls').style.display = 'none';
-      document.getElementById('playerProgress').style.display = 'none';
-    }
 
     gtag('event', 'play_bar', { track_id: trackId, platform });
   }
@@ -995,131 +948,21 @@
   // ─── playInBar fallback (for iframe overlay pages) ───
   function playInBar(trackId, embedHtml, title, tool, platform) {
     activePlayerTrackId = trackId;
+    activePlayerPlatform = platform;
     playerTitle.textContent = title;
     playerMeta.textContent = tool;
-    playerBar.classList.add('active');
+    playerBar.classList.add('active', 'playing');
     document.body.classList.add('player-active');
-
-    if (ytPlayer) { try { ytPlayer.destroy(); } catch(e) {} ytPlayer = null; }
-    playerEmbed.innerHTML = '';
-    progressFill.style.width = '0%';
-    stopProgress();
-
-    if (platform === 'youtube') {
-      const match = embedHtml.match(/youtube\.com\/embed\/([^"?&]+)/);
-      if (match) {
-        playerEmbed.innerHTML = '<div id="yt-persistent-player"></div>';
-        createYTPlayer(match[1]);
-      }
-    } else {
-      playerEmbed.innerHTML = embedHtml;
-      const iframe = playerEmbed.querySelector('iframe');
-      if (iframe) {
-        let src = iframe.src;
-        if (src.includes('suno.com')) src += (src.includes('?') ? '&' : '?') + 'autoplay=true';
-        if (src.includes('soundcloud.com')) src = src.replace('auto_play=false', 'auto_play=true');
-        iframe.src = src;
-        iframe.allow = 'autoplay';
-      }
-      setPlaying(true);
-    }
   }
 
-  function createYTPlayer(videoId) {
-    function create() {
-      ytPlayer = new YT.Player('yt-persistent-player', {
-        width: 320, height: 180, videoId,
-        playerVars: { autoplay: 1, controls: 0, modestbranding: 1, rel: 0 },
-        events: {
-          onStateChange: function(e) {
-            if (e.data === YT.PlayerState.PLAYING) { setPlaying(true); startProgress(); }
-            else if (e.data === YT.PlayerState.PAUSED) { setPlaying(false); }
-            else if (e.data === YT.PlayerState.ENDED) { setPlaying(false); progressFill.style.width = '100%'; stopProgress(); }
-          }
-        }
-      });
-    }
-    if (ytApiReady) create();
-    else { const c = setInterval(() => { if (ytApiReady) { clearInterval(c); create(); } }, 100); }
-  }
-
-  function setPlaying(playing) {
-    playerIsPlaying = playing;
-    ppPlay.style.display = playing ? 'none' : 'block';
-    ppPause.style.display = playing ? 'block' : 'none';
-    playerBar.classList.toggle('playing', playing);
-  }
-
-  // Controls
-  document.getElementById('btnPP').addEventListener('click', function() {
-    if (!ytPlayer) return;
-    try {
-      if (playerIsPlaying) {
-        if (typeof ytPlayer.pauseVideo === 'function') ytPlayer.pauseVideo();
-      } else {
-        if (typeof ytPlayer.playVideo === 'function') ytPlayer.playVideo();
-      }
-    } catch(e) { console.error('PP error:', e); }
-  });
-  document.getElementById('btnRew').addEventListener('click', function() {
-    if (!ytPlayer) return;
-    try {
-      if (typeof ytPlayer.getCurrentTime === 'function' && typeof ytPlayer.seekTo === 'function') {
-        ytPlayer.seekTo(Math.max(0, ytPlayer.getCurrentTime() - 10), true);
-      }
-    } catch(e) {}
-  });
-  document.getElementById('btnFwd').addEventListener('click', function() {
-    if (!ytPlayer) return;
-    try {
-      if (typeof ytPlayer.getCurrentTime === 'function' && typeof ytPlayer.seekTo === 'function') {
-        ytPlayer.seekTo(ytPlayer.getCurrentTime() + 10, true);
-      }
-    } catch(e) {}
-  });
   document.getElementById('btnClose').addEventListener('click', closePlayer);
 
-  document.getElementById('playerProgress').addEventListener('click', function(e) {
-    if (!ytPlayer) return;
-    try {
-      if (typeof ytPlayer.getDuration === 'function' && typeof ytPlayer.seekTo === 'function') {
-        const pct = (e.clientX - this.getBoundingClientRect().left) / this.offsetWidth;
-        ytPlayer.seekTo(pct * ytPlayer.getDuration(), true);
-      }
-    } catch(e2) {}
-  });
-
-  function startProgress() {
-    stopProgress();
-    progressInterval = setInterval(() => {
-      if (ytPlayer && ytPlayer.getDuration && ytPlayer.getCurrentTime) {
-        const d = ytPlayer.getDuration(), c = ytPlayer.getCurrentTime();
-        if (d > 0) progressFill.style.width = (c / d * 100) + '%';
-      }
-    }, 500);
-  }
-  function stopProgress() { if (progressInterval) { clearInterval(progressInterval); progressInterval = null; } }
-
   function closePlayer() {
-    if (ytPlayer && !ytCardPlayers[activePlayerTrackId]) {
-      try { ytPlayer.destroy(); } catch(e) {}
-    }
-    if (ytPlayer && ytCardPlayers[activePlayerTrackId]) {
-      try { ytPlayer.pauseVideo(); } catch(e) {}
-    }
-    ytPlayer = null;
-    playerEmbed.innerHTML = '';
     playerBar.classList.remove('active', 'playing');
     document.body.classList.remove('player-active');
     activePlayerTrackId = null;
     activePlayerPlatform = null;
-    playerIsPlaying = false;
-    progressFill.style.width = '0%';
-    stopProgress();
     closePageFrame();
-    // Reset controls visibility
-    document.getElementById('ytControls').style.display = 'flex';
-    document.getElementById('playerProgress').style.display = 'block';
   }
 
   // Re-init YT players after tracks render
