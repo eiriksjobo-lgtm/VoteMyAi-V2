@@ -254,7 +254,10 @@
     }
     .track-embed.udio iframe {
       position: absolute; top: 0; left: 0;
-      width: 100%; height: 100%; border: none;
+      width: 200%; height: 200%;
+      transform: scale(0.5);
+      transform-origin: top left;
+      border: none;
     }
     .track-embed a.embed-placeholder {
       position: absolute; top: 0; left: 0;
@@ -265,7 +268,7 @@
       background: var(--surface-hover) !important;
     }
     .track-embed.soundcloud { padding-bottom: 166px; }
-    .track-embed.udio { padding-bottom: 0; height: 160px; overflow: hidden; }
+    .track-embed.udio { padding-bottom: 56.25%; height: 0; overflow: hidden; }
     .track-embed iframe { border: none; }
 
     /* Card body */
