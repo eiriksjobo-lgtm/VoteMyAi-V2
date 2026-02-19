@@ -1168,8 +1168,8 @@
     const playSVG = '<svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
     const platformLabel = embed.platform !== 'unknown' ? embed.platform.charAt(0).toUpperCase() + embed.platform.slice(1) : '';
 
-    // If track has a stored thumbnail_url, use it (works for all platforms)
-    if (track.thumbnail_url) {
+    // If track has a stored thumbnail_url, use it (works for all platforms except Udio)
+    if (track.thumbnail_url && embed.platform !== 'udio') {
       return `<div class="embed-thumb" data-action="load-embed" data-track-id="${track.id}">
         <img src="${sanitize(track.thumbnail_url)}" alt="${sanitize(track.title)}" loading="lazy">
         <div class="embed-thumb-overlay">
@@ -1226,8 +1226,8 @@
     }
     finalHtml = finalHtml.replace(/<iframe /, '<iframe allow="autoplay" ');
 
-    if (platform === 'youtube' || platform === 'udio') {
-      // YouTube & Udio: replace thumbnail with player (Udio needs visible iframe to play)
+    if (platform === 'youtube') {
+      // YouTube: replace thumbnail with video player
       container.innerHTML = finalHtml;
     } else {
       // All other platforms: keep thumbnail visible, load iframe hidden behind it
@@ -1259,7 +1259,7 @@
     const card = container.closest('.track-card');
     if (card) card.classList.remove('playing');
 
-    if (platform === 'youtube' || platform === 'udio') {
+    if (platform === 'youtube') {
       container.innerHTML = getLazyThumbById(trackId);
     } else {
       // Remove hidden iframe and restore thumb to clickable state
