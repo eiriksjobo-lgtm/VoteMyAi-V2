@@ -821,12 +821,12 @@
     }).join('');
 
     // Add sentinel for infinite scroll if there are more tracks
+    const oldSentinel = document.getElementById('loadMoreSentinel');
+    if (oldSentinel) oldSentinel.remove();
+
     if (visibleCount < currentSorted.length) {
-      grid.insertAdjacentHTML('afterend', '<div class="load-more-sentinel" id="loadMoreSentinel"></div>');
+      grid.insertAdjacentHTML('beforeend', '<div class="load-more-sentinel" id="loadMoreSentinel"></div>');
       observeLoadMore();
-    } else {
-      const old = document.getElementById('loadMoreSentinel');
-      if (old) old.remove();
     }
   }
 
