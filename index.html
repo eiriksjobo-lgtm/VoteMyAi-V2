@@ -63,9 +63,7 @@
     }
     ::selection { background: var(--accent); color: var(--bg); }
 
-    /* ══════════════════════════════════
-       NAV
-    ══════════════════════════════════ */
+    /* ══════════════════════════════════ NAV ══════════════════════════════════ */
     nav {
       position: sticky; top: 0; z-index: 200;
       background: rgba(7,7,11,0.88);
@@ -89,7 +87,6 @@
       animation: pulse 2.5s ease-in-out infinite;
     }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
-
     .nav-right { display: flex; align-items: center; gap: 8px; }
     .nav-link {
       color: var(--muted); text-decoration: none;
@@ -104,22 +101,14 @@
       padding: 8px 18px; border-radius: var(--radius-sm); border: none;
       font-weight: 700; cursor: pointer; font-size: 0.72rem;
       letter-spacing: 1.2px; text-transform: uppercase;
-      font-family: 'DM Sans', sans-serif;
-      transition: all 0.2s;
+      font-family: 'DM Sans', sans-serif; transition: all 0.2s;
     }
     .btn-submit:hover { box-shadow: 0 4px 20px rgba(232,255,71,0.25); transform: translateY(-1px); }
 
-    /* ══════════════════════════════════
-       HERO
-    ══════════════════════════════════ */
-    .hero {
-      text-align: center;
-      padding: 72px 24px 48px;
-      position: relative;
-    }
+    /* ══════════════════════════════════ HERO ══════════════════════════════════ */
+    .hero { text-align: center; padding: 72px 24px 48px; position: relative; }
     .hero::before {
-      content: '';
-      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
       width: 600px; height: 300px;
       background: radial-gradient(ellipse, rgba(232,255,71,0.06) 0%, transparent 70%);
       pointer-events: none;
@@ -127,28 +116,31 @@
     .hero h1 {
       font-family: 'Bebas Neue', sans-serif;
       font-size: clamp(2.4rem, 7vw, 4.2rem);
-      letter-spacing: 4px; line-height: 1.05;
-      margin-bottom: 14px;
+      letter-spacing: 4px; line-height: 1.05; margin-bottom: 14px;
     }
     .hero h1 .accent { color: var(--accent); }
-    .hero p {
-      color: var(--muted); font-size: 0.92rem;
-      max-width: 400px; margin: 0 auto 28px;
-      line-height: 1.6;
-    }
+    .hero p { color: var(--muted); font-size: 0.92rem; max-width: 400px; margin: 0 auto 28px; line-height: 1.6; }
     .hero-cta {
       display: inline-flex; align-items: center; gap: 8px;
       background: var(--accent); color: var(--bg);
       padding: 12px 28px; border-radius: 10px;
       text-decoration: none; font-weight: 700;
-      font-size: 0.82rem; letter-spacing: 0.5px;
-      transition: all 0.2s;
+      font-size: 0.82rem; letter-spacing: 0.5px; transition: all 0.2s;
     }
     .hero-cta:hover { box-shadow: 0 8px 32px rgba(232,255,71,0.25); transform: translateY(-2px); }
+    .hero-stats { display: flex; gap: 48px; justify-content: center; margin-top: 36px; }
+    .hero-stat { text-align: center; }
+    .hero-stat-num {
+      display: block; font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.8rem; letter-spacing: 1px; color: var(--accent); line-height: 1;
+    }
+    .hero-stat-label {
+      font-size: 0.68rem; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 1.5px;
+      font-weight: 600; margin-top: 4px; display: block;
+    }
 
-    /* ══════════════════════════════════
-       VIEW TABS (Discover / Top / New)
-    ══════════════════════════════════ */
+    /* ══════════════════════════════════ VIEW TABS ══════════════════════════════════ */
     .view-bar {
       max-width: 1200px; margin: 0 auto;
       padding: 0 clamp(16px, 4vw, 40px);
@@ -156,10 +148,8 @@
       flex-wrap: wrap; gap: 12px;
     }
     .view-tabs {
-      display: flex; gap: 4px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px; padding: 3px;
+      display: flex; gap: 4px; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 10px; padding: 3px;
     }
     .view-tab {
       padding: 7px 20px; border-radius: 8px; border: none;
@@ -170,273 +160,133 @@
       cursor: pointer; transition: all 0.2s;
     }
     .view-tab:hover { color: var(--text); }
-    .view-tab.active {
-      background: var(--accent); color: var(--bg);
-    }
-    .track-count {
-      color: var(--muted); font-size: 0.78rem; font-weight: 500;
-    }
+    .view-tab.active { background: var(--accent); color: var(--bg); }
+    .track-count { color: var(--muted); font-size: 0.78rem; font-weight: 500; }
 
-    /* ══════════════════════════════════
-       FILTERS
-    ══════════════════════════════════ */
+    /* ══════════════════════════════════ FILTERS ══════════════════════════════════ */
     .filters {
       max-width: 1200px; margin: 0 auto;
       padding: 16px clamp(16px, 4vw, 40px) 0;
-      display: flex; gap: 8px; flex-wrap: wrap;
-      align-items: center;
+      display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
     }
-    .filter-label {
-      color: var(--muted); font-size: 0.7rem; font-weight: 600;
-      letter-spacing: 1px; text-transform: uppercase;
-      margin-right: 4px;
-    }
+    .filter-label { color: var(--muted); font-size: 0.7rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-right: 4px; }
     .filter-pill {
       padding: 5px 14px; border-radius: 100px;
-      border: 1px solid var(--border);
-      background: transparent; color: var(--muted);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.74rem; font-weight: 500;
-      cursor: pointer; transition: all 0.2s;
-      white-space: nowrap;
+      border: 1px solid var(--border); background: transparent; color: var(--muted);
+      font-family: 'DM Sans', sans-serif; font-size: 0.74rem; font-weight: 500;
+      cursor: pointer; transition: all 0.2s; white-space: nowrap;
     }
     .filter-pill:hover { border-color: var(--border-hover); color: var(--text); }
-    .filter-pill.active {
-      background: var(--accent-dim);
-      border-color: rgba(232,255,71,0.3);
-      color: var(--accent);
-    }
-    .filter-sep {
-      width: 1px; height: 20px;
-      background: var(--border); margin: 0 6px;
-    }
+    .filter-pill.active { background: var(--accent-dim); border-color: rgba(232,255,71,0.3); color: var(--accent); }
+    .filter-sep { width: 1px; height: 20px; background: var(--border); margin: 0 6px; }
 
-    /* ══════════════════════════════════
-       TRACK GRID
-    ══════════════════════════════════ */
-    .tracks-container {
-      max-width: 1200px; margin: 0 auto;
-      padding: 24px clamp(16px, 4vw, 40px) 80px;
-    }
-    .tracks-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
-    }
+    /* ══════════════════════════════════ TRACK GRID ══════════════════════════════════ */
+    .tracks-container { max-width: 1200px; margin: 0 auto; padding: 24px clamp(16px, 4vw, 40px) 80px; }
+    .tracks-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
 
-    /* ══════════════════════════════════
-       TRACK CARD
-    ══════════════════════════════════ */
+    /* ══════════════════════════════════ TRACK CARD ══════════════════════════════════ */
     .track-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
-      transition: all 0.25s ease;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden; transition: all 0.25s ease;
     }
-    .track-card:hover {
-      border-color: var(--border-hover);
-      transform: translateY(-3px);
-      box-shadow: 0 12px 40px rgba(0,0,0,0.4);
-    }
-
-    /* Embed container */
+    .track-card:hover { border-color: var(--border-hover); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
     .track-embed {
-      position: relative;
-      padding-bottom: 56.25%;
-      height: 0; overflow: hidden;
-      background: var(--surface-2);
-      border-bottom: 1px solid var(--border);
+      position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;
+      background: var(--surface-2); border-bottom: 1px solid var(--border);
     }
     .track-embed iframe, .track-embed .embed-placeholder {
-      position: absolute; top: 0; left: 0;
-      width: 100%; height: 100%; border: none;
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;
     }
-    .track-embed.udio {
-      padding-bottom: 56.25%; height: 0; overflow: hidden;
-    }
-    .track-embed.udio iframe {
-      position: absolute; top: 0; left: 0;
-      width: 100%; height: 100%; border: none;
-    }
+    .track-embed.udio { padding-bottom: 56.25%; height: 0; overflow: hidden; }
+    .track-embed.udio iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
     .track-embed a.embed-placeholder {
-      position: absolute; top: 0; left: 0;
-      width: 100%; height: 100%;
-      transition: background 0.2s;
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%; transition: background 0.2s;
     }
-    .track-embed a.embed-placeholder:hover {
-      background: var(--surface-hover) !important;
-    }
+    .track-embed a.embed-placeholder:hover { background: var(--surface-hover) !important; }
     .track-embed.soundcloud { padding-bottom: 166px; }
-    .track-embed iframe { border: none; }
-
-    /* Card body */
-    .track-body {
-      padding: 16px 18px 18px;
-    }
+    .track-body { padding: 16px 18px 18px; }
     .track-title {
-      font-size: 0.88rem; font-weight: 700;
-      line-height: 1.35; margin-bottom: 8px;
-      display: -webkit-box; -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical; overflow: hidden;
+      font-size: 0.88rem; font-weight: 700; line-height: 1.35; margin-bottom: 8px;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
-
-    /* Badges */
-    .track-badges {
-      display: flex; gap: 6px; margin-bottom: 14px;
-      flex-wrap: wrap;
-    }
+    .track-badges { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
     .badge {
       display: inline-flex; align-items: center; gap: 4px;
       padding: 3px 10px; border-radius: 100px;
-      font-size: 0.66rem; font-weight: 600;
-      letter-spacing: 0.5px; text-transform: uppercase;
+      font-size: 0.66rem; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;
     }
-    .badge-tool {
-      background: var(--accent-dim);
-      color: var(--accent);
-    }
-    .badge-genre {
-      background: rgba(255,255,255,0.05);
-      color: var(--muted);
-      border: 1px solid rgba(255,255,255,0.06);
-    }
-    .badge-platform {
-      background: rgba(56,189,248,0.1);
-      color: #38bdf8;
-    }
+    .badge-tool { background: var(--accent-dim); color: var(--accent); }
+    .badge-genre { background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid rgba(255,255,255,0.06); }
+    .badge-platform { background: rgba(56,189,248,0.1); color: #38bdf8; }
 
     /* Star Rating */
-    .rating-row {
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .stars {
-      display: flex; gap: 3px;
-    }
-    .star {
-      width: 28px; height: 28px;
-      cursor: pointer;
-      transition: transform 0.15s;
-      display: flex; align-items: center; justify-content: center;
-    }
+    .rating-row { display: flex; align-items: center; justify-content: space-between; }
+    .stars { display: flex; gap: 3px; }
+    .star { width: 28px; height: 28px; cursor: pointer; transition: transform 0.15s; display: flex; align-items: center; justify-content: center; }
     .star:hover { transform: scale(1.2); }
-    .star svg {
-      width: 20px; height: 20px;
-      fill: var(--star-empty);
-      transition: fill 0.15s;
-    }
+    .star svg { width: 20px; height: 20px; fill: var(--star-empty); transition: fill 0.15s; }
     .star.filled svg { fill: var(--accent); }
     .star.hover-fill svg { fill: var(--accent); opacity: 0.7; }
-
-    .rating-info {
-      text-align: right;
-    }
-    .rating-score {
-      font-size: 1.1rem; font-weight: 700;
-      color: var(--accent); line-height: 1;
-    }
-    .rating-count {
-      font-size: 0.68rem; color: var(--muted);
-      margin-top: 1px;
-    }
-
-    /* Rated state */
+    .rating-info { text-align: right; }
+    .rating-score { font-size: 1.1rem; font-weight: 700; color: var(--accent); line-height: 1; }
+    .rating-count { font-size: 0.68rem; color: var(--muted); margin-top: 1px; }
     .stars.rated .star { cursor: default; }
     .stars.rated .star:hover { transform: none; }
 
-    /* Comments toggle */
+    /* Card footer */
     .card-footer {
       display: flex; align-items: center; justify-content: space-between;
       margin-top: 12px; padding-top: 12px;
-      border-top: 1px solid rgba(26,26,38,0.6);
-      gap: 4px;
+      border-top: 1px solid rgba(26,26,38,0.6); gap: 4px;
     }
     .play-bar-btn {
-      background: none; border: none;
-      color: var(--accent); cursor: pointer;
+      background: none; border: none; color: var(--accent); cursor: pointer;
       font-size: 0.74rem; font-family: 'DM Sans', sans-serif;
-      display: flex; align-items: center; gap: 4px;
-      transition: color 0.2s; font-weight: 600;
+      display: flex; align-items: center; gap: 4px; transition: color 0.2s; font-weight: 600;
     }
     .play-bar-btn:hover { color: var(--text); }
     .play-bar-btn svg { stroke: var(--accent); fill: var(--accent); }
     .comments-btn {
-      background: none; border: none;
-      color: var(--muted); cursor: pointer;
+      background: none; border: none; color: var(--muted); cursor: pointer;
       font-size: 0.74rem; font-family: 'DM Sans', sans-serif;
-      display: flex; align-items: center; gap: 5px;
-      transition: color 0.2s;
+      display: flex; align-items: center; gap: 5px; transition: color 0.2s;
     }
     .comments-btn:hover { color: var(--text); }
     .share-btn {
-      background: none; border: none;
-      color: var(--muted); cursor: pointer;
+      background: none; border: none; color: var(--muted); cursor: pointer;
       font-size: 0.74rem; font-family: 'DM Sans', sans-serif;
-      display: flex; align-items: center; gap: 4px;
-      transition: color 0.2s;
+      display: flex; align-items: center; gap: 4px; transition: color 0.2s;
     }
     .share-btn:hover { color: var(--text); }
 
     /* Comments panel */
-    .comments-panel {
-      max-height: 0; overflow: hidden;
-      transition: max-height 0.3s ease;
-    }
+    .comments-panel { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
     .comments-panel.open { max-height: 500px; }
-    .comments-inner {
-      padding: 12px 18px 16px;
-      border-top: 1px solid var(--border);
-    }
-    .comment {
-      padding: 8px 0;
-      border-bottom: 1px solid rgba(26,26,38,0.4);
-    }
+    .comments-inner { padding: 12px 18px 16px; border-top: 1px solid var(--border); }
+    .comment { padding: 8px 0; border-bottom: 1px solid rgba(26,26,38,0.4); }
     .comment:last-child { border-bottom: none; }
     .comment-text { font-size: 0.82rem; color: var(--text-secondary); }
     .comment-author { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
-    .comment-form {
-      display: flex; gap: 8px; margin-top: 10px;
-    }
+    .comment-form { display: flex; gap: 8px; margin-top: 10px; }
     .comment-input {
-      flex: 1; background: var(--surface-2);
-      border: 1px solid var(--border); color: var(--text);
+      flex: 1; background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
       padding: 8px 12px; border-radius: var(--radius-sm);
-      font-family: 'DM Sans', sans-serif; font-size: 0.8rem;
-      outline: none;
+      font-family: 'DM Sans', sans-serif; font-size: 0.8rem; outline: none;
     }
     .comment-input:focus { border-color: var(--accent); }
     .comment-submit {
-      background: var(--accent); color: var(--bg);
-      border: none; padding: 8px 14px;
-      border-radius: var(--radius-sm);
-      font-weight: 700; font-size: 0.75rem;
+      background: var(--accent); color: var(--bg); border: none; padding: 8px 14px;
+      border-radius: var(--radius-sm); font-weight: 700; font-size: 0.75rem;
       cursor: pointer; font-family: 'DM Sans', sans-serif;
     }
 
-    /* ══════════════════════════════════
-       EMPTY STATE
-    ══════════════════════════════════ */
-    .empty-state {
-      grid-column: 1 / -1;
-      text-align: center; padding: 80px 20px;
-    }
-    .empty-state p {
-      color: var(--muted); font-size: 0.95rem;
-    }
-
-    /* ══════════════════════════════════
-       SKELETON LOADERS
-    ══════════════════════════════════ */
-    .skeleton-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
-    }
+    /* ══════════════════════════════════ EMPTY / SKELETON ══════════════════════════════════ */
+    .empty-state { grid-column: 1 / -1; text-align: center; padding: 80px 20px; }
+    .empty-state p { color: var(--muted); font-size: 0.95rem; }
+    .skeleton-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
     .skeleton {
       background: linear-gradient(90deg, var(--surface-2) 25%, rgba(255,255,255,0.03) 50%, var(--surface-2) 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
+      background-size: 200% 100%; animation: shimmer 1.5s infinite;
     }
     @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
     .skeleton-embed { width: 100%; padding-bottom: 56.25%; }
@@ -446,114 +296,36 @@
     .skeleton-badge { height: 22px; width: 60px; border-radius: 100px; }
     .skeleton-stars { height: 28px; border-radius: 4px; width: 60%; }
 
-    /* ══════════════════════════════════
-       HERO STATS
-    ══════════════════════════════════ */
-    .hero-stats {
-      display: flex; gap: 48px; justify-content: center;
-      margin-top: 36px;
-    }
-    .hero-stat { text-align: center; }
-    .hero-stat-num {
-      display: block;
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.8rem; letter-spacing: 1px;
-      color: var(--accent); line-height: 1;
-    }
-    .hero-stat-label {
-      font-size: 0.68rem; color: var(--muted);
-      text-transform: uppercase; letter-spacing: 1.5px;
-      font-weight: 600; margin-top: 4px; display: block;
-    }
-
-    /* ══════════════════════════════════
-       SECTION HEADERS
-    ══════════════════════════════════ */
-    .section-header {
-      text-align: center; margin-bottom: 32px;
-    }
-    .section-title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.8rem; letter-spacing: 2px;
-      text-transform: uppercase;
-    }
-    .section-sub {
-      color: var(--muted); font-size: 0.85rem; margin-top: 6px;
-    }
-
-    /* ══════════════════════════════════
-       LEADERBOARD
-    ══════════════════════════════════ */
-    .leaderboard-section {
-      max-width: 800px; margin: 0 auto;
-      padding: 60px clamp(16px, 4vw, 40px) 40px;
-    }
-    .leaderboard {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
-    }
+    /* ══════════════════════════════════ LEADERBOARD ══════════════════════════════════ */
+    .leaderboard-section { max-width: 800px; margin: 0 auto; padding: 60px clamp(16px, 4vw, 40px) 40px; }
+    .section-header { text-align: center; margin-bottom: 32px; }
+    .section-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 2px; text-transform: uppercase; }
+    .section-sub { color: var(--muted); font-size: 0.85rem; margin-top: 6px; }
+    .leaderboard { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
     .lb-row {
-      display: flex; align-items: center; gap: 16px;
-      padding: 14px 20px;
-      border-bottom: 1px solid var(--border);
-      transition: background 0.2s;
+      display: flex; align-items: center; gap: 16px; padding: 14px 20px;
+      border-bottom: 1px solid var(--border); transition: background 0.2s;
     }
     .lb-row:last-child { border-bottom: none; }
     .lb-row:hover { background: var(--accent-glow); }
-    .lb-rank {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.3rem; color: var(--accent);
-      width: 36px; text-align: center; flex-shrink: 0;
-    }
+    .lb-rank { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; color: var(--accent); width: 36px; text-align: center; flex-shrink: 0; }
     .lb-info { flex: 1; min-width: 0; }
-    .lb-title {
-      font-weight: 700; font-size: 0.88rem;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
+    .lb-title { font-weight: 700; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .lb-meta { color: var(--muted); font-size: 0.75rem; }
-    .lb-rating {
-      display: flex; align-items: center; gap: 6px; flex-shrink: 0;
-    }
-    .lb-stars {
-      color: var(--accent); font-size: 0.85rem; font-weight: 700;
-    }
-    .lb-count {
-      color: var(--muted); font-size: 0.7rem;
-    }
+    .lb-rating { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .lb-stars { color: var(--accent); font-size: 0.85rem; font-weight: 700; }
+    .lb-count { color: var(--muted); font-size: 0.7rem; }
 
-    /* ══════════════════════════════════
-       AI TOOLS
-    ══════════════════════════════════ */
-    .tools-section {
-      max-width: 1100px; margin: 0 auto;
-      padding: 60px clamp(16px, 4vw, 40px) 40px;
-    }
-    .tools-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 18px;
-    }
+    /* ══════════════════════════════════ AI TOOLS ══════════════════════════════════ */
+    .tools-section { max-width: 1100px; margin: 0 auto; padding: 60px clamp(16px, 4vw, 40px) 40px; }
+    .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
     .tool-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 28px 24px;
-      text-decoration: none; color: var(--text);
-      position: relative; overflow: hidden;
-      transition: all 0.3s ease;
-      display: block;
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 28px 24px; text-decoration: none; color: var(--text);
+      position: relative; overflow: hidden; transition: all 0.3s ease; display: block;
     }
-    .tool-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 16px 48px rgba(0,0,0,0.35);
-      border-color: var(--border-hover);
-    }
-    .tool-card::before {
-      content: '';
-      position: absolute; top: 0; left: 0; right: 0; height: 3px;
-    }
+    .tool-card:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(0,0,0,0.35); border-color: var(--border-hover); }
+    .tool-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
     .tool-card.suno::before { background: linear-gradient(90deg, #e8ff47, #a3e635); }
     .tool-card.udio::before { background: linear-gradient(90deg, #818cf8, #c084fc); }
     .tool-card.elevenlabs::before { background: linear-gradient(90deg, #38bdf8, #22d3ee); }
@@ -565,20 +337,12 @@
     .tool-card.suno .tool-icon { background: rgba(232,255,71,0.1); color: var(--accent); }
     .tool-card.udio .tool-icon { background: rgba(129,140,248,0.12); color: #818cf8; }
     .tool-card.elevenlabs .tool-icon { background: rgba(56,189,248,0.12); color: #38bdf8; }
-    .tool-name {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.4rem; letter-spacing: 1px; margin-bottom: 6px;
-    }
-    .tool-tagline {
-      color: var(--muted); font-size: 0.82rem;
-      line-height: 1.5; margin-bottom: 16px;
-    }
+    .tool-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 1px; margin-bottom: 6px; }
+    .tool-tagline { color: var(--muted); font-size: 0.82rem; line-height: 1.5; margin-bottom: 16px; }
     .tool-features { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
     .tool-tag {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.06);
-      padding: 3px 10px; border-radius: 100px;
-      font-size: 0.68rem; color: var(--muted); font-weight: 500;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+      padding: 3px 10px; border-radius: 100px; font-size: 0.68rem; color: var(--muted); font-weight: 500;
     }
     .tool-cta { font-size: 0.82rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
     .tool-card.suno .tool-cta { color: var(--accent); }
@@ -587,111 +351,106 @@
     .tool-card:hover .tool-cta .arrow { transform: translateX(3px); }
     .tool-cta .arrow { transition: transform 0.2s; }
 
-    /* ══════════════════════════════════
-       SEO SECTION
-    ══════════════════════════════════ */
-    .seo-section {
-      max-width: 800px; margin: 0 auto;
-      padding: 40px clamp(16px, 4vw, 40px) 60px;
-    }
+    /* ══════════════════════════════════ SEO ══════════════════════════════════ */
+    .seo-section { max-width: 800px; margin: 0 auto; padding: 40px clamp(16px, 4vw, 40px) 60px; }
     .seo-inner { text-align: center; }
-    .seo-inner h2 {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.4rem; letter-spacing: 1.5px;
-      margin-bottom: 12px; color: var(--text-secondary);
-    }
-    .seo-inner p {
-      color: var(--muted); font-size: 0.82rem; line-height: 1.7;
-    }
+    .seo-inner h2 { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 1.5px; margin-bottom: 12px; color: var(--text-secondary); }
+    .seo-inner p { color: var(--muted); font-size: 0.82rem; line-height: 1.7; }
 
-    /* ══════════════════════════════════
-       FOOTER
-    ══════════════════════════════════ */
+    /* ══════════════════════════════════ FOOTER ══════════════════════════════════ */
     footer {
-      background: var(--surface);
-      border-top: 1px solid var(--border);
+      background: var(--surface); border-top: 1px solid var(--border);
       padding: 48px clamp(16px, 4vw, 40px) 32px;
     }
     .footer-inner {
       max-width: 1200px; margin: 0 auto;
-      display: flex; justify-content: space-between;
-      align-items: start; flex-wrap: wrap; gap: 32px;
+      display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 32px;
     }
     .footer-brand .logo { margin-bottom: 8px; }
     .footer-brand p { color: var(--muted); font-size: 0.8rem; max-width: 260px; }
     .footer-links { display: flex; gap: 48px; flex-wrap: wrap; }
-    .footer-col h4 {
-      font-size: 0.68rem; font-weight: 700;
-      letter-spacing: 1.5px; text-transform: uppercase;
-      color: var(--muted); margin-bottom: 12px;
-    }
-    .footer-col a {
-      display: block; color: var(--text-secondary);
-      text-decoration: none; font-size: 0.82rem;
-      padding: 3px 0; transition: color 0.2s;
-    }
+    .footer-col h4 { font-size: 0.68rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+    .footer-col a { display: block; color: var(--text-secondary); text-decoration: none; font-size: 0.82rem; padding: 3px 0; transition: color 0.2s; }
     .footer-col a:hover { color: var(--accent); }
     .footer-bottom {
-      max-width: 1200px; margin: 32px auto 0;
-      padding-top: 24px;
+      max-width: 1200px; margin: 32px auto 0; padding-top: 24px;
       border-top: 1px solid var(--border);
-      display: flex; justify-content: space-between;
-      align-items: center; flex-wrap: wrap; gap: 12px;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
     }
     .footer-copy { color: var(--muted); font-size: 0.75rem; }
     .footer-tools { display: flex; gap: 16px; }
-    .footer-tools a {
-      color: var(--muted); text-decoration: none;
-      font-size: 0.75rem; transition: color 0.2s;
-    }
+    .footer-tools a { color: var(--muted); text-decoration: none; font-size: 0.75rem; transition: color 0.2s; }
     .footer-tools a:hover { color: var(--accent); }
 
-    /* ══════════════════════════════════
-       PERSISTENT PLAYER BAR
-    ══════════════════════════════════ */
+    /* ══════════════════════════════════ PERSISTENT PLAYER BAR ══════════════════════════════════ */
     .player-bar {
       position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
-      background: #0c0c14; border-top: 1px solid var(--border);
+      background: rgba(10,10,18,0.97);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
       display: none; align-items: center; gap: 14px;
-      padding: 0 20px; height: 64px;
+      padding: 0 20px; height: 68px;
     }
     .player-bar.active { display: flex; }
-    .player-embed {
-      width: 140px; height: 48px; flex-shrink: 0;
-      border-radius: 6px; overflow: hidden; background: var(--surface-2);
+    .player-bar.playing .player-eq span { animation-play-state: running; }
+
+    .player-progress {
+      position: absolute; top: -3px; left: 0; right: 0;
+      height: 3px; background: rgba(255,255,255,0.06); cursor: pointer; z-index: 2;
     }
-    .player-embed iframe { width: 100%; height: 100%; border: none; }
+    .player-progress:hover { height: 5px; top: -5px; }
+    .player-progress-fill {
+      height: 100%; width: 0%; background: var(--accent);
+      border-radius: 0 2px 2px 0; transition: width 0.3s linear;
+    }
+    .player-progress:hover .player-progress-fill { box-shadow: 0 0 8px rgba(232,255,71,0.5); }
+
+    .player-eq { display: flex; align-items: flex-end; gap: 2px; height: 18px; flex-shrink: 0; }
+    .player-eq span {
+      width: 3px; background: var(--accent); border-radius: 2px;
+      animation: eqBounce 0.8s ease-in-out infinite alternate;
+      animation-play-state: paused;
+    }
+    .player-eq span:nth-child(1) { height: 8px; animation-delay: 0s; }
+    .player-eq span:nth-child(2) { height: 14px; animation-delay: 0.15s; }
+    .player-eq span:nth-child(3) { height: 6px; animation-delay: 0.3s; }
+    .player-eq span:nth-child(4) { height: 12px; animation-delay: 0.45s; }
+    @keyframes eqBounce { 0%{height:4px} 100%{height:18px} }
+
+    .player-embed-hidden {
+      position: absolute; left: -9999px; top: -9999px;
+      width: 320px; height: 180px; overflow: hidden;
+    }
+    .player-embed-hidden iframe { width: 100%; height: 100%; border: none; }
+
     .player-info { flex: 1; min-width: 0; }
-    .player-title {
-      font-weight: 600; font-size: 0.85rem; color: var(--text);
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
+    .player-title { font-weight: 600; font-size: 0.85rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .player-meta { font-size: 0.7rem; color: var(--muted); }
-    .player-close {
-      background: none; border: none; color: var(--muted);
-      cursor: pointer; font-size: 1.1rem; padding: 8px;
-      transition: color 0.2s;
-    }
-    .player-close:hover { color: var(--text); }
-    body.player-active { padding-bottom: 64px; }
 
-    /* Page iframe overlay (for navigating to other pages while player plays) */
-    .page-frame {
-      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      z-index: 5000; display: none;
+    .player-controls { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+    .player-ctrl {
+      width: 36px; height: 36px; border-radius: 50%; border: none;
+      background: transparent; color: var(--text); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.15s, background 0.15s;
     }
+    .player-ctrl:hover { transform: scale(1.1); background: rgba(255,255,255,0.06); }
+    .player-ctrl svg { width: 16px; height: 16px; fill: currentColor; }
+    .player-ctrl.pp { width: 40px; height: 40px; background: var(--accent); color: var(--bg); }
+    .player-ctrl.pp:hover { box-shadow: 0 0 16px rgba(232,255,71,0.3); }
+    .player-ctrl.pp svg { width: 18px; height: 18px; }
+    .player-ctrl.cl { color: var(--muted); }
+    .player-ctrl.cl:hover { color: var(--text); }
+
+    body.player-active { padding-bottom: 68px; }
+
+    .page-frame { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 5000; display: none; }
     .page-frame.active { display: block; }
-    .page-frame iframe {
-      width: 100%; height: 100%; border: none;
-    }
-    body.player-active .page-frame { bottom: 64px; }
+    .page-frame iframe { width: 100%; height: 100%; border: none; }
+    body.player-active .page-frame { bottom: 68px; }
 
-    /* ══════════════════════════════════
-       RESPONSIVE
-    ══════════════════════════════════ */
-    @media (max-width: 960px) {
-      .tracks-grid { grid-template-columns: repeat(2, 1fr); }
-    }
+    /* ══════════════════════════════════ RESPONSIVE ══════════════════════════════════ */
+    @media (max-width: 960px) { .tracks-grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 640px) {
       .tracks-grid { grid-template-columns: 1fr; gap: 14px; }
       .hero { padding: 56px 20px 36px; }
@@ -701,10 +460,11 @@
       .filters { gap: 6px; }
       .filter-sep { display: none; }
       .footer-links { gap: 28px; }
-      .player-embed { width: 100px; height: 40px; }
-      .player-bar { padding: 0 12px; height: 56px; gap: 10px; }
-      body.player-active { padding-bottom: 56px; }
-      body.player-active .page-frame { bottom: 56px; }
+      .player-bar { padding: 0 12px; height: 60px; gap: 10px; }
+      body.player-active { padding-bottom: 60px; }
+      body.player-active .page-frame { bottom: 60px; }
+      .player-ctrl { width: 32px; height: 32px; }
+      .player-ctrl.pp { width: 36px; height: 36px; }
     }
   </style>
 </head>
@@ -762,7 +522,6 @@
 <!-- ═══ TRACKS GRID ═══ -->
 <div class="tracks-container">
   <div class="tracks-grid" id="tracksGrid">
-    <!-- Skeleton loaders -->
     <div class="skeleton-card"><div class="skeleton skeleton-embed"></div><div class="skeleton-body"><div class="skeleton skeleton-title"></div><div class="skeleton-badges"><div class="skeleton skeleton-badge"></div><div class="skeleton skeleton-badge"></div></div><div class="skeleton skeleton-stars"></div></div></div>
     <div class="skeleton-card"><div class="skeleton skeleton-embed"></div><div class="skeleton-body"><div class="skeleton skeleton-title"></div><div class="skeleton-badges"><div class="skeleton skeleton-badge"></div><div class="skeleton skeleton-badge"></div></div><div class="skeleton skeleton-stars"></div></div></div>
     <div class="skeleton-card"><div class="skeleton skeleton-embed"></div><div class="skeleton-body"><div class="skeleton skeleton-title"></div><div class="skeleton-badges"><div class="skeleton skeleton-badge"></div><div class="skeleton skeleton-badge"></div></div><div class="skeleton skeleton-stars"></div></div></div>
@@ -782,8 +541,6 @@
     <div class="skeleton skeleton-lb-row" style="height:56px;margin-bottom:2px;border-radius:0;"></div>
     <div class="skeleton skeleton-lb-row" style="height:56px;margin-bottom:2px;border-radius:0;"></div>
     <div class="skeleton skeleton-lb-row" style="height:56px;margin-bottom:2px;border-radius:0;"></div>
-    <div class="skeleton skeleton-lb-row" style="height:56px;margin-bottom:2px;border-radius:0;"></div>
-    <div class="skeleton skeleton-lb-row" style="height:56px;border-radius:0;"></div>
   </div>
 </section>
 
@@ -795,22 +552,19 @@
   </div>
   <div class="tools-grid">
     <a href="https://suno.com" target="_blank" rel="noopener" class="tool-card suno" data-tool="suno">
-      <div class="tool-icon">S</div>
-      <div class="tool-name">Suno</div>
+      <div class="tool-icon">S</div><div class="tool-name">Suno</div>
       <div class="tool-tagline">Full songs from a text prompt. The most popular AI music generator — fast, intuitive, and great for beginners.</div>
       <div class="tool-features"><span class="tool-tag">Text to song</span><span class="tool-tag">Custom lyrics</span><span class="tool-tag">Free tier</span></div>
       <span class="tool-cta">Try Suno <span class="arrow">→</span></span>
     </a>
     <a href="https://www.udio.com" target="_blank" rel="noopener" class="tool-card udio" data-tool="udio">
-      <div class="tool-icon">U</div>
-      <div class="tool-name">Udio</div>
+      <div class="tool-icon">U</div><div class="tool-name">Udio</div>
       <div class="tool-tagline">Hi-fi sound quality and creative control. Best for producers and experimental genres where audio fidelity matters.</div>
       <div class="tool-features"><span class="tool-tag">Hi-fi audio</span><span class="tool-tag">Genre blending</span><span class="tool-tag">Free tier</span></div>
       <span class="tool-cta">Try Udio <span class="arrow">→</span></span>
     </a>
     <a href="https://try.elevenlabs.io/xj2k88ooae07" target="_blank" rel="noopener" class="tool-card elevenlabs" data-tool="elevenlabs">
-      <div class="tool-icon">XI</div>
-      <div class="tool-name">ElevenLabs</div>
+      <div class="tool-icon">XI</div><div class="tool-name">ElevenLabs</div>
       <div class="tool-tagline">The world's most realistic AI voices, now making music. Unmatched vocal quality with copyright-cleared output.</div>
       <div class="tool-features"><span class="tool-tag">Best vocals</span><span class="tool-tag">Copyright-cleared</span><span class="tool-tag">API access</span></div>
       <span class="tool-cta">Try ElevenLabs <span class="arrow">→</span></span>
@@ -818,13 +572,15 @@
   </div>
 </section>
 
-<!-- ═══ SEO SECTION ═══ -->
+<!-- ═══ SEO ═══ -->
 <section class="seo-section">
   <div class="seo-inner">
     <h2>The Home of AI-Generated Music</h2>
     <p>VoteMyAI is the community-driven platform where AI music creators submit tracks made with tools like Suno, Udio, and ElevenLabs — and the community decides what's best. Every track is rated on a 1-5 star scale, and our Wilson Score algorithm ensures fair rankings regardless of when a track was submitted. Whether you're a creator looking for feedback or a listener discovering the future of music, VoteMyAI is where AI music gets its spotlight.</p>
   </div>
 </section>
+
+<!-- ═══ FOOTER ═══ -->
 <footer>
   <div class="footer-inner">
     <div class="footer-brand">
@@ -832,65 +588,46 @@
       <p>The community-driven platform for discovering and rating AI-generated music.</p>
     </div>
     <div class="footer-links">
-      <div class="footer-col">
-        <h4>Platform</h4>
-        <a href="/#tracks">Browse Tracks</a>
-        <a href="/blog.html">Blog</a>
-        <a href="/submit.html">Submit a Track</a>
-        <a href="/login.html">Login / Sign Up</a>
-      </div>
-      <div class="footer-col">
-        <h4>AI Tools</h4>
-        <a href="https://suno.com" target="_blank" rel="noopener" onclick="gtag('event','tool_click',{tool:'suno',location:'footer'})">Suno</a>
-        <a href="https://www.udio.com" target="_blank" rel="noopener" onclick="gtag('event','tool_click',{tool:'udio',location:'footer'})">Udio</a>
-        <a href="https://try.elevenlabs.io/xj2k88ooae07" target="_blank" rel="noopener" onclick="gtag('event','tool_click',{tool:'elevenlabs',location:'footer'})">ElevenLabs</a>
-      </div>
-      <div class="footer-col">
-        <h4>Info</h4>
-        <a href="/faq.html">FAQ</a>
-        <a href="/contact.html">Contact</a>
-        <a href="/terms.html">Terms</a>
-        <a href="/privacy.html">Privacy</a>
-      </div>
+      <div class="footer-col"><h4>Platform</h4><a href="/#tracks">Browse Tracks</a><a href="/blog.html">Blog</a><a href="/submit.html">Submit a Track</a><a href="/login.html">Login / Sign Up</a></div>
+      <div class="footer-col"><h4>AI Tools</h4><a href="https://suno.com" target="_blank" rel="noopener">Suno</a><a href="https://www.udio.com" target="_blank" rel="noopener">Udio</a><a href="https://try.elevenlabs.io/xj2k88ooae07" target="_blank" rel="noopener">ElevenLabs</a></div>
+      <div class="footer-col"><h4>Info</h4><a href="/faq.html">FAQ</a><a href="/contact.html">Contact</a><a href="/terms.html">Terms</a><a href="/privacy.html">Privacy</a></div>
     </div>
   </div>
   <div class="footer-bottom">
     <span class="footer-copy">© 2026 VoteMyAI. All rights reserved.</span>
-    <div class="footer-tools">
-      <a href="https://suno.com" target="_blank" rel="noopener">Suno</a>
-      <a href="https://www.udio.com" target="_blank" rel="noopener">Udio</a>
-      <a href="https://try.elevenlabs.io/xj2k88ooae07" target="_blank" rel="noopener" onclick="gtag('event','tool_click',{tool:'elevenlabs',location:'footer'})">ElevenLabs</a>
-    </div>
+    <div class="footer-tools"><a href="https://suno.com" target="_blank" rel="noopener">Suno</a><a href="https://www.udio.com" target="_blank" rel="noopener">Udio</a><a href="https://try.elevenlabs.io/xj2k88ooae07" target="_blank" rel="noopener">ElevenLabs</a></div>
   </div>
 </footer>
 
-<!-- ═══ PAGE FRAME (for navigation while player is active) ═══ -->
-<div class="page-frame" id="pageFrame">
-  <iframe></iframe>
-</div>
+<!-- ═══ PAGE FRAME ═══ -->
+<div class="page-frame" id="pageFrame"><iframe></iframe></div>
 
 <!-- ═══ PERSISTENT PLAYER BAR ═══ -->
 <div class="player-bar" id="playerBar">
-  <div class="player-embed" id="playerEmbed"></div>
+  <div class="player-progress" id="playerProgress"><div class="player-progress-fill" id="progressFill"></div></div>
+  <div class="player-eq"><span></span><span></span><span></span><span></span></div>
+  <div class="player-embed-hidden" id="playerEmbed"></div>
   <div class="player-info">
     <div class="player-title" id="playerTitle"></div>
     <div class="player-meta" id="playerMeta"></div>
   </div>
-  <button class="player-close" id="playerClose" title="Close player">✕</button>
+  <div class="player-controls">
+    <button class="player-ctrl" id="btnRew" title="Rewind 10s"><svg viewBox="0 0 24 24"><path d="M12.5 3C7.53 3 3.5 7.03 3.5 12s4.03 9 9 9 9-4.03 9-9h-2c0 3.87-3.13 7-7 7s-7-3.13-7-7 3.13-7 7-7v4l5-5-5-5v4z"/></svg></button>
+    <button class="player-ctrl pp" id="btnPP" title="Play / Pause"><svg id="ppPlay" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg><svg id="ppPause" viewBox="0 0 24 24" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg></button>
+    <button class="player-ctrl" id="btnFwd" title="Forward 10s"><svg viewBox="0 0 24 24"><path d="M11.5 3v4l-5-5 5-5v4c4.97 0 9 4.03 9 9s-4.03 9-9 9-9-4.03-9-9h2c0 3.87 3.13 7 7 7s7-3.13 7-7-3.13-7-7-7z"/></svg></button>
+    <button class="player-ctrl cl" id="btnClose" title="Close player"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+  </div>
 </div>
 
 <!-- ═══ JAVASCRIPT ═══ -->
 <script>
   const SUPABASE_URL = 'https://gezijezmsecbtzytotax.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_hOOMtCz7gYsu_-CVD6lW9Q_SxtFlNhw';
-
   let currentUser = null;
   let allTracks = [];
-  let userRatings = {}; // { trackId: score }
+  let userRatings = {};
   let currentView = 'discover';
   let filters = { genre: 'all', tool: 'all' };
-
-  // ─── Star SVG ───
   const starSVG = `<svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>`;
 
   // ─── Auth ───
@@ -898,37 +635,23 @@
     const hash = window.location.hash.substring(1);
     const params = new URLSearchParams(hash);
     const accessToken = params.get('access_token');
-
     if (accessToken) {
-      const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-        headers: { 'Authorization': `Bearer ${accessToken}`, 'apikey': SUPABASE_KEY }
-      });
+      const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, { headers: { 'Authorization': `Bearer ${accessToken}`, 'apikey': SUPABASE_KEY } });
       if (res.ok) {
         currentUser = await res.json();
         localStorage.setItem('sb_token', accessToken);
         window.history.replaceState(null, '', window.location.pathname);
         const redirect = localStorage.getItem('login_redirect');
-        if (redirect && redirect !== '/' && redirect !== window.location.pathname) {
-          localStorage.removeItem('login_redirect');
-          window.location.href = redirect;
-          return;
-        }
+        if (redirect && redirect !== '/' && redirect !== window.location.pathname) { localStorage.removeItem('login_redirect'); window.location.href = redirect; return; }
         localStorage.removeItem('login_redirect');
       }
     } else {
       const token = localStorage.getItem('sb_token');
       if (token) {
-        const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-          headers: { 'Authorization': `Bearer ${token}`, 'apikey': SUPABASE_KEY }
-        });
-        if (res.ok) {
-          currentUser = await res.json();
-        } else {
-          localStorage.removeItem('sb_token');
-        }
+        const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, { headers: { 'Authorization': `Bearer ${token}`, 'apikey': SUPABASE_KEY } });
+        if (res.ok) { currentUser = await res.json(); } else { localStorage.removeItem('sb_token'); }
       }
     }
-
     if (currentUser) {
       const authLink = document.getElementById('authLink');
       authLink.textContent = currentUser.user_metadata?.name || 'Profile';
@@ -941,189 +664,90 @@
     if (!currentUser) return;
     const token = localStorage.getItem('sb_token');
     try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/ratings?user_id=eq.${currentUser.id}&select=track_id,score`, {
-        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const ratings = await res.json();
-        ratings.forEach(r => { userRatings[r.track_id] = r.score; });
-      }
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/ratings?user_id=eq.${currentUser.id}&select=track_id,score`, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${token}` } });
+      if (res.ok) { (await res.json()).forEach(r => { userRatings[r.track_id] = r.score; }); }
     } catch(e) {}
-    // Also load legacy votes as ratings
     try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/votes?user_id=eq.${currentUser.id}&select=track_id`, {
-        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const votes = await res.json();
-        votes.forEach(v => {
-          if (!userRatings[v.track_id]) userRatings[v.track_id] = 5;
-        });
-      }
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/votes?user_id=eq.${currentUser.id}&select=track_id`, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${token}` } });
+      if (res.ok) { (await res.json()).forEach(v => { if (!userRatings[v.track_id]) userRatings[v.track_id] = 5; }); }
     } catch(e) {}
   }
 
   // ─── Embed Detection ───
   function detectPlatform(url) {
     if (!url) return { platform: 'unknown', embedHtml: '' };
-    
-    // YouTube
     const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([^&?\/#]+)/);
-    if (ytMatch) return {
-      platform: 'youtube',
-      embedHtml: `<iframe src="https://www.youtube.com/embed/${ytMatch[1]}?rel=0" allowfullscreen loading="lazy"></iframe>`
-    };
-
-    // SoundCloud
-    if (url.includes('soundcloud.com')) return {
-      platform: 'soundcloud',
-      embedHtml: `<iframe src="https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&color=%23e8ff47&auto_play=false&show_artwork=true&show_user=false&show_comments=false" scrolling="no" loading="lazy"></iframe>`
-    };
-
-    // Suno
+    if (ytMatch) return { platform: 'youtube', embedHtml: `<iframe src="https://www.youtube.com/embed/${ytMatch[1]}?rel=0" allowfullscreen loading="lazy"></iframe>` };
+    if (url.includes('soundcloud.com')) return { platform: 'soundcloud', embedHtml: `<iframe src="https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&color=%23e8ff47&auto_play=false&show_artwork=true&show_user=false&show_comments=false" scrolling="no" loading="lazy"></iframe>` };
     if (url.includes('suno.com')) {
       const sunoUUID = url.match(/suno\.com\/(?:song|embed)\/([a-f0-9-]{36})/);
-      if (sunoUUID) return {
-        platform: 'suno',
-        embedHtml: `<iframe src="https://suno.com/embed/${sunoUUID[1]}" loading="lazy" style="border:none;"></iframe>`
-      };
-      return {
-        platform: 'suno',
-        embedHtml: `<a href="${url}" target="_blank" rel="noopener" class="embed-placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;background:var(--surface-2);color:var(--text);text-decoration:none;gap:8px;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg><span style="font-weight:600;font-size:0.82rem;">Play on Suno</span><span style="font-size:0.7rem;color:var(--muted);">Opens in new tab</span></a>`
-      };
+      if (sunoUUID) return { platform: 'suno', embedHtml: `<iframe src="https://suno.com/embed/${sunoUUID[1]}" loading="lazy" style="border:none;"></iframe>` };
+      return { platform: 'suno', embedHtml: `<a href="${url}" target="_blank" rel="noopener" class="embed-placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;background:var(--surface-2);color:var(--text);text-decoration:none;gap:8px;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg><span style="font-weight:600;font-size:0.82rem;">Play on Suno</span><span style="font-size:0.7rem;color:var(--muted);">Opens in new tab</span></a>` };
     }
-
-    // Udio
     if (url.includes('udio.com')) {
-      // Extract UUID if present in the URL
       const udioUuid = url.match(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/);
-      if (udioUuid) return {
-        platform: 'udio',
-        embedHtml: `<iframe src="https://www.udio.com/embed/${udioUuid[0]}" scrolling="no" loading="lazy"></iframe>`
-      };
-      // Slug-based URL - try embed with slug
+      if (udioUuid) return { platform: 'udio', embedHtml: `<iframe src="https://www.udio.com/embed/${udioUuid[0]}" scrolling="no" loading="lazy"></iframe>` };
       const udioSlug = url.match(/udio\.com\/songs\/([a-zA-Z0-9_-]+)/);
-      if (udioSlug) return {
-        platform: 'udio',
-        embedHtml: `<iframe src="https://www.udio.com/embed/${udioSlug[1]}" scrolling="no" loading="lazy"></iframe>`
-      };
+      if (udioSlug) return { platform: 'udio', embedHtml: `<iframe src="https://www.udio.com/embed/${udioSlug[1]}" scrolling="no" loading="lazy"></iframe>` };
     }
-
-    // Fallback: try as YouTube ID (legacy yt_id support)
     return { platform: 'unknown', embedHtml: '' };
   }
 
   function getEmbedHtml(track) {
-    // Try embed_url first (new field), fall back to yt_id
-    if (track.embed_url) {
-      return detectPlatform(track.embed_url);
-    }
-    if (track.yt_id) {
-      return {
-        platform: 'youtube',
-        embedHtml: `<iframe src="https://www.youtube.com/embed/${track.yt_id}?rel=0" allowfullscreen loading="lazy"></iframe>`
-      };
-    }
+    if (track.embed_url) return detectPlatform(track.embed_url);
+    if (track.yt_id) return { platform: 'youtube', embedHtml: `<iframe src="https://www.youtube.com/embed/${track.yt_id}?rel=0" allowfullscreen loading="lazy"></iframe>` };
     return { platform: 'unknown', embedHtml: '<div class="embed-placeholder" style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:0.8rem;">No preview available</div>' };
   }
 
   // ─── Wilson Score ───
   function wilsonScore(avg, n) {
     if (n === 0) return 0;
-    // Normalize 1-5 to 0-1
     const p = (avg - 1) / 4;
-    const z = 1.96; // 95% confidence
+    const z = 1.96;
     const z2 = z * z;
-    const score = (p + z2 / (2 * n) - z * Math.sqrt((p * (1 - p) + z2 / (4 * n)) / n)) / (1 + z2 / n);
-    return score;
+    return (p + z2 / (2 * n) - z * Math.sqrt((p * (1 - p) + z2 / (4 * n)) / n)) / (1 + z2 / n);
   }
 
   // ─── Load Tracks ───
   async function loadTracks() {
     try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/tracks?select=*&order=created_at.desc`, {
-        headers: { 'apikey': SUPABASE_KEY }
-      });
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/tracks?select=*&order=created_at.desc`, { headers: { 'apikey': SUPABASE_KEY } });
       allTracks = await res.json();
-      renderTracks();
-      renderLeaderboard();
-      updateHeroStats();
-    } catch(e) {
-      console.error('Load error:', e);
-    }
+      renderTracks(); renderLeaderboard(); updateHeroStats();
+    } catch(e) { console.error('Load error:', e); }
   }
 
-  // ─── Hero Stats ───
   function updateHeroStats() {
-    const totalTracks = allTracks.length;
-    const totalRatings = allTracks.reduce((sum, t) => sum + (t.rating_count || 0), 0);
-    const creators = new Set(allTracks.map(t => t.user_id).filter(Boolean)).size;
-    document.getElementById('statTracks').textContent = totalTracks;
-    document.getElementById('statRatings').textContent = totalRatings;
-    document.getElementById('statCreators').textContent = creators;
+    document.getElementById('statTracks').textContent = allTracks.length;
+    document.getElementById('statRatings').textContent = allTracks.reduce((s, t) => s + (t.rating_count || 0), 0);
+    document.getElementById('statCreators').textContent = new Set(allTracks.map(t => t.user_id).filter(Boolean)).size;
   }
 
-  // ─── Leaderboard ───
   function renderLeaderboard() {
     const lb = document.getElementById('leaderboardList');
-    const sorted = [...allTracks].sort((a, b) => {
-      return wilsonScore(b.avg_rating || 0, b.rating_count || 0) - wilsonScore(a.avg_rating || 0, a.rating_count || 0);
-    }).slice(0, 10);
-
-    if (sorted.length === 0) {
-      lb.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted);font-size:0.88rem;">No tracks yet</div>';
-      return;
-    }
-
+    const sorted = [...allTracks].sort((a, b) => wilsonScore(b.avg_rating||0, b.rating_count||0) - wilsonScore(a.avg_rating||0, a.rating_count||0)).slice(0, 10);
+    if (!sorted.length) { lb.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted);">No tracks yet</div>'; return; }
     const medals = ['\u{1F947}', '\u{1F948}', '\u{1F949}'];
-    lb.innerHTML = sorted.map((track, i) => {
-      const rank = i + 1;
-      const displayRank = rank <= 3 ? medals[i] : `#${rank}`;
-      const avg = track.avg_rating || 0;
-      const count = track.rating_count || 0;
-      const starsDisplay = avg > 0 ? avg.toFixed(1) + ' \u2605' : '—';
-      return `
-        <div class="lb-row">
-          <div class="lb-rank">${displayRank}</div>
-          <div class="lb-info">
-            <div class="lb-title">${sanitize(track.title)}</div>
-            <div class="lb-meta">${sanitize(track.tool)} · ${sanitize(track.genre)}</div>
-          </div>
-          <div class="lb-rating">
-            <span class="lb-stars">${starsDisplay}</span>
-            <span class="lb-count">(${count})</span>
-          </div>
-        </div>
-      `;
+    lb.innerHTML = sorted.map((t, i) => {
+      const rank = i < 3 ? medals[i] : `#${i+1}`;
+      const stars = (t.avg_rating||0) > 0 ? (t.avg_rating).toFixed(1)+' \u2605' : '—';
+      return `<div class="lb-row"><div class="lb-rank">${rank}</div><div class="lb-info"><div class="lb-title">${sanitize(t.title)}</div><div class="lb-meta">${sanitize(t.tool)} · ${sanitize(t.genre)}</div></div><div class="lb-rating"><span class="lb-stars">${stars}</span><span class="lb-count">(${t.rating_count||0})</span></div></div>`;
     }).join('');
   }
 
-  // ─── Sorting ───
   function getSortedTracks(tracks) {
     switch (currentView) {
-      case 'top':
-        return [...tracks].sort((a, b) => {
-          const scoreA = wilsonScore(a.avg_rating || 0, a.rating_count || 0);
-          const scoreB = wilsonScore(b.avg_rating || 0, b.rating_count || 0);
-          return scoreB - scoreA;
-        });
-      case 'new':
-        return [...tracks].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      case 'discover':
-      default:
-        // Prioritize tracks with fewer ratings (help them get discovered)
-        return [...tracks].sort((a, b) => {
-          const countA = a.rating_count || 0;
-          const countB = b.rating_count || 0;
-          // Tracks with 0-5 ratings first, then by newest
-          if (countA <= 5 && countB > 5) return -1;
-          if (countB <= 5 && countA > 5) return 1;
-          return new Date(b.created_at) - new Date(a.created_at);
-        });
+      case 'top': return [...tracks].sort((a, b) => wilsonScore(b.avg_rating||0, b.rating_count||0) - wilsonScore(a.avg_rating||0, a.rating_count||0));
+      case 'new': return [...tracks].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      default: return [...tracks].sort((a, b) => {
+        const ca = a.rating_count||0, cb = b.rating_count||0;
+        if (ca <= 5 && cb > 5) return -1;
+        if (cb <= 5 && ca > 5) return 1;
+        return new Date(b.created_at) - new Date(a.created_at);
+      });
     }
   }
 
-  // ─── Filter ───
   function getFilteredTracks() {
     return allTracks.filter(t => {
       if (filters.genre !== 'all' && t.genre !== filters.genre) return false;
@@ -1132,423 +756,284 @@
     });
   }
 
-  // ─── Render ───
   function renderTracks() {
     const grid = document.getElementById('tracksGrid');
-    const filtered = getFilteredTracks();
-    const sorted = getSortedTracks(filtered);
-
+    const sorted = getSortedTracks(getFilteredTracks());
     document.getElementById('trackCount').textContent = `${sorted.length} track${sorted.length !== 1 ? 's' : ''}`;
-
-    if (sorted.length === 0) {
-      grid.innerHTML = '<div class="empty-state"><p>No tracks found. Be the first to submit!</p></div>';
-      return;
-    }
+    if (!sorted.length) { grid.innerHTML = '<div class="empty-state"><p>No tracks found. Be the first to submit!</p></div>'; return; }
 
     grid.innerHTML = sorted.map(track => {
       const embed = getEmbedHtml(track);
-      const avgRating = track.avg_rating || 0;
-      const ratingCount = track.rating_count || 0;
-      const userScore = userRatings[track.id] || 0;
+      const avg = track.avg_rating||0, cnt = track.rating_count||0;
+      const userScore = userRatings[track.id]||0;
       const isRated = userScore > 0;
-
-      // Determine embed class for sizing
       let embedClass = 'track-embed';
       if (embed.platform === 'soundcloud') embedClass += ' soundcloud';
       if (embed.platform === 'udio') embedClass += ' udio';
-
-      // Build stars
       let starsHtml = '';
-      for (let i = 1; i <= 5; i++) {
-        const filled = isRated ? (i <= userScore ? 'filled' : '') : '';
-        starsHtml += `<div class="star ${filled}" data-track="${track.id}" data-score="${i}">${starSVG}</div>`;
-      }
+      for (let i = 1; i <= 5; i++) starsHtml += `<div class="star ${isRated && i <= userScore ? 'filled' : ''}" data-track="${track.id}" data-score="${i}">${starSVG}</div>`;
+      const plat = embed.platform !== 'unknown' ? embed.platform.charAt(0).toUpperCase() + embed.platform.slice(1) : '';
 
-      // Platform badge
-      const platformName = embed.platform !== 'unknown' ? embed.platform.charAt(0).toUpperCase() + embed.platform.slice(1) : '';
-
-      return `
-        <div class="track-card" id="card-${track.id}">
-          <div class="${embedClass}">${embed.embedHtml}</div>
-          <div class="track-body">
-            <div class="track-title">${sanitize(track.title)}</div>
-            <div class="track-badges">
-              <span class="badge badge-tool">${sanitize(track.tool)}</span>
-              <span class="badge badge-genre">${sanitize(track.genre)}</span>
-              ${platformName ? `<span class="badge badge-platform">${platformName}</span>` : ''}
-            </div>
-            <div class="rating-row">
-              <div class="stars ${isRated ? 'rated' : ''}" id="stars-${track.id}">${starsHtml}</div>
-              <div class="rating-info">
-                <div class="rating-score">${avgRating > 0 ? avgRating.toFixed(1) : '—'}</div>
-                <div class="rating-count">${ratingCount} rating${ratingCount !== 1 ? 's' : ''}</div>
-              </div>
-            </div>
-            <div class="card-footer">
-              <button class="play-bar-btn" data-action="play-bar" data-track="${track.id}" data-title="${sanitize(track.title)}" data-tool="${sanitize(track.tool)}" data-embed="${encodeURIComponent(embed.embedHtml)}">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                Play
-              </button>
-              <button class="comments-btn" data-action="comments" data-track="${track.id}">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                Comments
-              </button>
-              <button class="share-btn" data-action="share" data-track="${track.id}" data-title="${sanitize(track.title)}">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-                Share
-              </button>
-            </div>
+      return `<div class="track-card" id="card-${track.id}">
+        <div class="${embedClass}">${embed.embedHtml}</div>
+        <div class="track-body">
+          <div class="track-title">${sanitize(track.title)}</div>
+          <div class="track-badges"><span class="badge badge-tool">${sanitize(track.tool)}</span><span class="badge badge-genre">${sanitize(track.genre)}</span>${plat ? `<span class="badge badge-platform">${plat}</span>` : ''}</div>
+          <div class="rating-row">
+            <div class="stars ${isRated ? 'rated' : ''}" id="stars-${track.id}">${starsHtml}</div>
+            <div class="rating-info"><div class="rating-score">${avg > 0 ? avg.toFixed(1) : '—'}</div><div class="rating-count">${cnt} rating${cnt !== 1 ? 's' : ''}</div></div>
           </div>
-          <div class="comments-panel" id="comments-${track.id}">
-            <div class="comments-inner">
-              <div id="comments-content-${track.id}"><span style="color:var(--muted);font-size:0.8rem;">Loading comments...</span></div>
-              ${currentUser ? `
-                <div class="comment-form">
-                  <input type="text" class="comment-input" id="comment-input-${track.id}" placeholder="Add a comment...">
-                  <button class="comment-submit" data-action="post-comment" data-track="${track.id}">Post</button>
-                </div>
-              ` : '<p style="font-size:0.75rem;color:var(--muted);margin-top:8px;">Log in to comment</p>'}
-            </div>
+          <div class="card-footer">
+            <button class="play-bar-btn" data-action="play-bar" data-track="${track.id}" data-title="${sanitize(track.title)}" data-tool="${sanitize(track.tool)}" data-embed="${encodeURIComponent(embed.embedHtml)}" data-platform="${embed.platform}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg> Play
+            </button>
+            <button class="comments-btn" data-action="comments" data-track="${track.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Comments</button>
+            <button class="share-btn" data-action="share" data-track="${track.id}" data-title="${sanitize(track.title)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Share</button>
           </div>
         </div>
-      `;
+        <div class="comments-panel" id="comments-${track.id}"><div class="comments-inner"><div id="comments-content-${track.id}"><span style="color:var(--muted);font-size:0.8rem;">Loading comments...</span></div>${currentUser ? `<div class="comment-form"><input type="text" class="comment-input" id="comment-input-${track.id}" placeholder="Add a comment..."><button class="comment-submit" data-action="post-comment" data-track="${track.id}">Post</button></div>` : '<p style="font-size:0.75rem;color:var(--muted);margin-top:8px;">Log in to comment</p>'}</div></div>
+      </div>`;
     }).join('');
   }
 
-  // ─── Sanitize ───
-  function sanitize(str) {
-    if (!str) return '';
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-  }
+  function sanitize(str) { if (!str) return ''; const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
 
   // ─── Event Delegation ───
-  // All interactions handled here instead of inline onclick
   document.addEventListener('click', function(e) {
-    // Star rating click
     const star = e.target.closest('.star');
-    if (star) {
-      const trackId = star.dataset.track;
-      const score = parseInt(star.dataset.score);
-      const container = star.parentElement;
-      if (container.classList.contains('rated')) return;
-      rateStar(trackId, score, container);
-      return;
-    }
-
-    // Play in bar
+    if (star) { rateStar(star.dataset.track, parseInt(star.dataset.score), star.parentElement); return; }
     const playBarBtn = e.target.closest('[data-action="play-bar"]');
-    if (playBarBtn) {
-      const embedHtml = decodeURIComponent(playBarBtn.dataset.embed);
-      playInBar(playBarBtn.dataset.track, embedHtml, playBarBtn.dataset.title, playBarBtn.dataset.tool);
-      return;
-    }
-
-    // Comments toggle
+    if (playBarBtn) { playInBar(playBarBtn.dataset.track, decodeURIComponent(playBarBtn.dataset.embed), playBarBtn.dataset.title, playBarBtn.dataset.tool, playBarBtn.dataset.platform); return; }
     const commentsBtn = e.target.closest('[data-action="comments"]');
-    if (commentsBtn) {
-      toggleComments(commentsBtn.dataset.track);
-      return;
-    }
-
-    // Share
+    if (commentsBtn) { toggleComments(commentsBtn.dataset.track); return; }
     const shareBtn = e.target.closest('[data-action="share"]');
-    if (shareBtn) {
-      shareTrack(shareBtn.dataset.track, shareBtn.dataset.title, shareBtn);
-      return;
-    }
-
-    // Post comment
+    if (shareBtn) { shareTrack(shareBtn.dataset.track, shareBtn.dataset.title, shareBtn); return; }
     const postBtn = e.target.closest('[data-action="post-comment"]');
-    if (postBtn) {
-      addComment(postBtn.dataset.track);
-      return;
-    }
-
-    // Tool card click tracking
+    if (postBtn) { addComment(postBtn.dataset.track); return; }
     const toolCard = e.target.closest('.tool-card[data-tool]');
-    if (toolCard) {
-      gtag('event', 'tool_click', { tool: toolCard.dataset.tool, location: 'tools_section' });
-    }
-
-    // View tabs
+    if (toolCard) { gtag('event', 'tool_click', { tool: toolCard.dataset.tool, location: 'tools_section' }); }
     const viewTab = e.target.closest('.view-tab');
-    if (viewTab) {
-      const text = viewTab.textContent.trim().toLowerCase();
-      const viewMap = { 'discover': 'discover', 'top rated': 'top', 'new': 'new' };
-      setView(viewMap[text] || 'discover', viewTab);
-      return;
-    }
-
-    // Filter pills
+    if (viewTab) { const m = { 'discover':'discover', 'top rated':'top', 'new':'new' }; setView(m[viewTab.textContent.trim().toLowerCase()]||'discover', viewTab); return; }
     const pill = e.target.closest('.filter-pill');
-    if (pill) {
-      setFilter(pill.dataset.filter, pill.dataset.value, pill);
-      return;
-    }
+    if (pill) { setFilter(pill.dataset.filter, pill.dataset.value, pill); return; }
   });
 
-  // Star hover via delegation
   document.addEventListener('mouseover', function(e) {
     const star = e.target.closest('.star');
     if (!star) return;
-    const container = star.parentElement;
-    if (container.classList.contains('rated')) return;
-    const score = parseInt(star.dataset.score);
-    container.querySelectorAll('.star').forEach(s => {
-      s.classList.toggle('hover-fill', parseInt(s.dataset.score) <= score);
-    });
+    const c = star.parentElement;
+    if (c.classList.contains('rated')) return;
+    const s = parseInt(star.dataset.score);
+    c.querySelectorAll('.star').forEach(x => x.classList.toggle('hover-fill', parseInt(x.dataset.score) <= s));
   });
-
   document.addEventListener('mouseout', function(e) {
     const star = e.target.closest('.star');
     if (!star) return;
-    const container = star.parentElement;
-    if (container.classList.contains('rated')) return;
-    container.querySelectorAll('.star').forEach(s => s.classList.remove('hover-fill'));
+    const c = star.parentElement;
+    if (c.classList.contains('rated')) return;
+    c.querySelectorAll('.star').forEach(x => x.classList.remove('hover-fill'));
   });
 
   // ─── Rate ───
   async function rateStar(trackId, score, container) {
-    if (!currentUser) {
-      const anonRatings = JSON.parse(localStorage.getItem('anon_ratings') || '{}');
-      if (anonRatings[trackId]) return;
-      anonRatings[trackId] = score;
-      localStorage.setItem('anon_ratings', JSON.stringify(anonRatings));
-    }
-
-    // Visual update immediately
+    if (!currentUser) { const a = JSON.parse(localStorage.getItem('anon_ratings')||'{}'); if (a[trackId]) return; a[trackId] = score; localStorage.setItem('anon_ratings', JSON.stringify(a)); }
     container.classList.add('rated');
-    container.querySelectorAll('.star').forEach(s => {
-      s.classList.remove('hover-fill');
-      s.classList.toggle('filled', parseInt(s.dataset.score) <= score);
-    });
+    container.querySelectorAll('.star').forEach(s => { s.classList.remove('hover-fill'); s.classList.toggle('filled', parseInt(s.dataset.score) <= score); });
     userRatings[trackId] = score;
-
-    // GA4 event
-    gtag('event', 'rate', { track_id: trackId, score: score });
-
-    // Send to Supabase
+    gtag('event', 'rate', { track_id: trackId, score });
     try {
       const token = localStorage.getItem('sb_token');
-      const headers = {
-        'apikey': SUPABASE_KEY,
-        'Content-Type': 'application/json'
-      };
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-
-      await fetch(`${SUPABASE_URL}/rest/v1/ratings`, {
-        method: 'POST',
-        headers: { ...headers, 'Prefer': 'return=minimal' },
-        body: JSON.stringify({
-          track_id: trackId,
-          user_id: currentUser ? currentUser.id : null,
-          score: score
-        })
-      });
-
-      // Also call RPC to recalculate avg (we'll create this)
-      await fetch(`${SUPABASE_URL}/rest/v1/rpc/update_track_rating`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ tid: trackId })
-      });
-
-      // Refresh track data
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/tracks?id=eq.${trackId}&select=avg_rating,rating_count`, {
-        headers: { 'apikey': SUPABASE_KEY }
-      });
+      const h = { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' };
+      if (token) h['Authorization'] = `Bearer ${token}`;
+      await fetch(`${SUPABASE_URL}/rest/v1/ratings`, { method:'POST', headers:{...h,'Prefer':'return=minimal'}, body: JSON.stringify({ track_id: trackId, user_id: currentUser ? currentUser.id : null, score }) });
+      await fetch(`${SUPABASE_URL}/rest/v1/rpc/update_track_rating`, { method:'POST', headers: h, body: JSON.stringify({ tid: trackId }) });
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/tracks?id=eq.${trackId}&select=avg_rating,rating_count`, { headers: { 'apikey': SUPABASE_KEY } });
       if (res.ok) {
-        const [updated] = await res.json();
-        if (updated) {
-          const track = allTracks.find(t => t.id === trackId);
-          if (track) {
-            track.avg_rating = updated.avg_rating;
-            track.rating_count = updated.rating_count;
-          }
-          // Update the rating display
+        const [u] = await res.json();
+        if (u) {
+          const t = allTracks.find(x => x.id === trackId);
+          if (t) { t.avg_rating = u.avg_rating; t.rating_count = u.rating_count; }
           const card = document.getElementById(`card-${trackId}`);
-          if (card) {
-            const scoreEl = card.querySelector('.rating-score');
-            const countEl = card.querySelector('.rating-count');
-            if (scoreEl) scoreEl.textContent = updated.avg_rating ? updated.avg_rating.toFixed(1) : '—';
-            if (countEl) countEl.textContent = `${updated.rating_count || 0} rating${(updated.rating_count || 0) !== 1 ? 's' : ''}`;
-          }
+          if (card) { const se = card.querySelector('.rating-score'); const ce = card.querySelector('.rating-count'); if (se) se.textContent = u.avg_rating ? u.avg_rating.toFixed(1) : '—'; if (ce) ce.textContent = `${u.rating_count||0} rating${(u.rating_count||0)!==1?'s':''}`; }
         }
       }
-    } catch(e) {
-      console.error('Rate error:', e);
-    }
+    } catch(e) { console.error('Rate error:', e); }
   }
 
-  // ─── View Tabs ───
-  function setView(view, tabEl) {
-    currentView = view;
-    document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
-    tabEl.classList.add('active');
-    renderTracks();
-  }
-
-  // ─── Filters ───
-  function setFilter(type, value, el) {
-    filters[type] = value;
-    document.querySelectorAll(`.filter-pill[data-filter="${type}"]`).forEach(p => p.classList.remove('active'));
-    el.classList.add('active');
-    renderTracks();
-  }
+  function setView(v, el) { currentView = v; document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active')); el.classList.add('active'); renderTracks(); }
+  function setFilter(type, val, el) { filters[type] = val; document.querySelectorAll(`.filter-pill[data-filter="${type}"]`).forEach(p => p.classList.remove('active')); el.classList.add('active'); renderTracks(); }
 
   // ─── Comments ───
-  async function toggleComments(trackId) {
-    const panel = document.getElementById(`comments-${trackId}`);
-    const isOpen = panel.classList.contains('open');
-    
-    // Close all others
-    document.querySelectorAll('.comments-panel.open').forEach(p => p.classList.remove('open'));
-    
-    if (!isOpen) {
-      panel.classList.add('open');
-      await loadComments(trackId);
-    }
-  }
-
-  async function loadComments(trackId) {
-    try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/comments?track_id=eq.${trackId}&select=*&order=created_at.desc`, {
-        headers: { 'apikey': SUPABASE_KEY }
-      });
-      const comments = await res.json();
-      const el = document.getElementById(`comments-content-${trackId}`);
-      el.innerHTML = comments.length
-        ? comments.map(c => `<div class="comment"><div class="comment-text">${sanitize(c.content)}</div><div class="comment-author">— ${sanitize(c.author_name || 'Anonymous')}</div></div>`).join('')
-        : '<p style="font-size:0.8rem;color:var(--muted);">No comments yet</p>';
-    } catch(e) {}
-  }
-
-  async function addComment(trackId) {
-    const input = document.getElementById(`comment-input-${trackId}`);
-    const content = input.value.trim();
-    if (!content || !currentUser) return;
-
-    const token = localStorage.getItem('sb_token');
-    const authorName = currentUser.user_metadata?.name || currentUser.email?.split('@')[0] || 'Anonymous';
-
-    try {
-      await fetch(`${SUPABASE_URL}/rest/v1/comments`, {
-        method: 'POST',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ track_id: trackId, user_id: currentUser.id, content, author_name: authorName })
-      });
-      gtag('event', 'comment', { track_id: trackId });
-      input.value = '';
-      await loadComments(trackId);
-    } catch(e) {}
-  }
+  async function toggleComments(id) { const p = document.getElementById(`comments-${id}`); const o = p.classList.contains('open'); document.querySelectorAll('.comments-panel.open').forEach(x => x.classList.remove('open')); if (!o) { p.classList.add('open'); await loadComments(id); } }
+  async function loadComments(id) { try { const res = await fetch(`${SUPABASE_URL}/rest/v1/comments?track_id=eq.${id}&select=*&order=created_at.desc`, { headers: { 'apikey': SUPABASE_KEY } }); const c = await res.json(); document.getElementById(`comments-content-${id}`).innerHTML = c.length ? c.map(x => `<div class="comment"><div class="comment-text">${sanitize(x.content)}</div><div class="comment-author">— ${sanitize(x.author_name||'Anonymous')}</div></div>`).join('') : '<p style="font-size:0.8rem;color:var(--muted);">No comments yet</p>'; } catch(e) {} }
+  async function addComment(id) { const input = document.getElementById(`comment-input-${id}`); const c = input.value.trim(); if (!c || !currentUser) return; const token = localStorage.getItem('sb_token'); const name = currentUser.user_metadata?.name || currentUser.email?.split('@')[0] || 'Anonymous'; try { await fetch(`${SUPABASE_URL}/rest/v1/comments`, { method:'POST', headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${token}`,'Content-Type':'application/json'}, body: JSON.stringify({track_id:id,user_id:currentUser.id,content:c,author_name:name}) }); gtag('event','comment',{track_id:id}); input.value=''; await loadComments(id); } catch(e) {} }
 
   // ─── Share ───
-  function shareTrack(trackId, title, btnEl) {
-    const url = `${window.location.origin}/?track=${trackId}`;
-    if (navigator.share) {
-      navigator.share({ title: `${title} — VoteMyAI`, url });
-      gtag('event', 'share', { track_id: trackId, method: 'native' });
-    } else {
-      navigator.clipboard.writeText(url);
-      gtag('event', 'share', { track_id: trackId, method: 'clipboard' });
-      const orig = btnEl.innerHTML;
-      btnEl.innerHTML = '<span style="color:var(--accent);">✓ Copied</span>';
-      setTimeout(() => { btnEl.innerHTML = orig; }, 1500);
-    }
-  }
+  function shareTrack(id, title, btn) { const url = `${window.location.origin}/?track=${id}`; if (navigator.share) { navigator.share({title:`${title} — VoteMyAI`,url}); gtag('event','share',{track_id:id,method:'native'}); } else { navigator.clipboard.writeText(url); gtag('event','share',{track_id:id,method:'clipboard'}); const o=btn.innerHTML; btn.innerHTML='<span style="color:var(--accent);">✓ Copied</span>'; setTimeout(()=>{btn.innerHTML=o;},1500); } }
 
-  // ─── Persistent Player ───
+  // ══════════════════════════════════════════════
+  // PERSISTENT PLAYER — upgraded with YT API + controls
+  // ══════════════════════════════════════════════
   let activePlayerTrackId = null;
+  let ytPlayer = null;
+  let ytApiReady = false;
+  let playerIsPlaying = false;
+  let progressInterval = null;
 
-  function playInBar(trackId, embedHtml, title, tool) {
-    if (activePlayerTrackId === trackId) {
-      closePlayer();
-      return;
-    }
-    document.getElementById('playerEmbed').innerHTML = embedHtml;
-    document.getElementById('playerTitle').textContent = title;
-    document.getElementById('playerMeta').textContent = tool;
-    document.getElementById('playerBar').classList.add('active');
-    document.body.classList.add('player-active');
+  // Load YouTube IFrame API
+  (function() {
+    const tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(tag);
+  })();
+  window.onYouTubeIframeAPIReady = function() { ytApiReady = true; };
+
+  const playerBar = document.getElementById('playerBar');
+  const playerEmbed = document.getElementById('playerEmbed');
+  const playerTitle = document.getElementById('playerTitle');
+  const playerMeta = document.getElementById('playerMeta');
+  const progressFill = document.getElementById('progressFill');
+  const ppPlay = document.getElementById('ppPlay');
+  const ppPause = document.getElementById('ppPause');
+
+  function playInBar(trackId, embedHtml, title, tool, platform) {
+    if (activePlayerTrackId === trackId) { closePlayer(); return; }
+
     activePlayerTrackId = trackId;
+    playerTitle.textContent = title;
+    playerMeta.textContent = tool;
+    playerBar.classList.add('active');
+    document.body.classList.add('player-active');
+
+    // Clean up previous
+    if (ytPlayer) { try { ytPlayer.destroy(); } catch(e) {} ytPlayer = null; }
+    playerEmbed.innerHTML = '';
+    progressFill.style.width = '0%';
+    stopProgress();
+
+    if (platform === 'youtube') {
+      // Extract video ID
+      const match = embedHtml.match(/youtube\.com\/embed\/([^"?&]+)/);
+      if (match) {
+        playerEmbed.innerHTML = '<div id="yt-persistent-player"></div>';
+        createYTPlayer(match[1]);
+      }
+    } else {
+      // Suno / Udio / SoundCloud — play via hidden iframe
+      playerEmbed.innerHTML = embedHtml;
+      const iframe = playerEmbed.querySelector('iframe');
+      if (iframe) {
+        // Force autoplay
+        let src = iframe.src;
+        if (src.includes('suno.com')) src = src.replace('/embed/', '/embed/') + (src.includes('?') ? '&' : '?') + 'autoplay=true';
+        if (src.includes('soundcloud.com')) src = src.replace('auto_play=false', 'auto_play=true');
+        iframe.src = src;
+        iframe.allow = 'autoplay';
+      }
+      setPlaying(true);
+    }
+
+    gtag('event', 'play_bar', { track_id: trackId, platform });
   }
+
+  function createYTPlayer(videoId) {
+    function create() {
+      ytPlayer = new YT.Player('yt-persistent-player', {
+        width: 320, height: 180, videoId,
+        playerVars: { autoplay: 1, controls: 0, modestbranding: 1, rel: 0 },
+        events: {
+          onStateChange: function(e) {
+            if (e.data === YT.PlayerState.PLAYING) { setPlaying(true); startProgress(); }
+            else if (e.data === YT.PlayerState.PAUSED) { setPlaying(false); }
+            else if (e.data === YT.PlayerState.ENDED) { setPlaying(false); progressFill.style.width = '100%'; stopProgress(); }
+          }
+        }
+      });
+    }
+    if (ytApiReady) create();
+    else { const c = setInterval(() => { if (ytApiReady) { clearInterval(c); create(); } }, 100); }
+  }
+
+  function setPlaying(playing) {
+    playerIsPlaying = playing;
+    ppPlay.style.display = playing ? 'none' : 'block';
+    ppPause.style.display = playing ? 'block' : 'none';
+    playerBar.classList.toggle('playing', playing);
+  }
+
+  // Controls
+  document.getElementById('btnPP').addEventListener('click', function() {
+    if (!ytPlayer || !ytPlayer.getPlayerState) return;
+    if (playerIsPlaying) ytPlayer.pauseVideo(); else ytPlayer.playVideo();
+  });
+  document.getElementById('btnRew').addEventListener('click', function() {
+    if (ytPlayer && ytPlayer.getCurrentTime) ytPlayer.seekTo(Math.max(0, ytPlayer.getCurrentTime() - 10), true);
+  });
+  document.getElementById('btnFwd').addEventListener('click', function() {
+    if (ytPlayer && ytPlayer.getCurrentTime) ytPlayer.seekTo(ytPlayer.getCurrentTime() + 10, true);
+  });
+  document.getElementById('btnClose').addEventListener('click', closePlayer);
+
+  // Progress bar click to seek
+  document.getElementById('playerProgress').addEventListener('click', function(e) {
+    if (ytPlayer && ytPlayer.getDuration) {
+      const pct = (e.clientX - this.getBoundingClientRect().left) / this.offsetWidth;
+      ytPlayer.seekTo(pct * ytPlayer.getDuration(), true);
+    }
+  });
+
+  function startProgress() {
+    stopProgress();
+    progressInterval = setInterval(() => {
+      if (ytPlayer && ytPlayer.getDuration && ytPlayer.getCurrentTime) {
+        const d = ytPlayer.getDuration(), c = ytPlayer.getCurrentTime();
+        if (d > 0) progressFill.style.width = (c / d * 100) + '%';
+      }
+    }, 500);
+  }
+  function stopProgress() { if (progressInterval) { clearInterval(progressInterval); progressInterval = null; } }
 
   function closePlayer() {
-    document.getElementById('playerEmbed').innerHTML = '';
-    document.getElementById('playerBar').classList.remove('active');
+    if (ytPlayer) { try { ytPlayer.destroy(); } catch(e) {} ytPlayer = null; }
+    playerEmbed.innerHTML = '';
+    playerBar.classList.remove('active', 'playing');
     document.body.classList.remove('player-active');
     activePlayerTrackId = null;
+    playerIsPlaying = false;
+    progressFill.style.width = '0%';
+    stopProgress();
+    closePageFrame();
   }
-
-  document.getElementById('playerClose').addEventListener('click', closePlayer);
 
   // ─── Page Navigation (iframe overlay when player is active) ───
   function navigateToPage(url) {
-    // If no player active, just navigate normally
-    if (!activePlayerTrackId) {
-      window.location.href = url;
-      return;
-    }
-    // Player is active — open page in iframe overlay
+    if (!activePlayerTrackId) { window.location.href = url; return; }
     const frame = document.getElementById('pageFrame');
-    const frameEl = frame.querySelector('iframe');
-    frameEl.src = url;
+    frame.querySelector('iframe').src = url;
     frame.classList.add('active');
   }
-
   function closePageFrame() {
     const frame = document.getElementById('pageFrame');
     frame.classList.remove('active');
     frame.querySelector('iframe').src = '';
   }
 
-  // Intercept all internal navigation when player is active
+  // Intercept internal nav when player is active
   document.addEventListener('click', (e) => {
-    if (!activePlayerTrackId) return; // No player, let links work normally
-    
+    if (!activePlayerTrackId) return;
     const link = e.target.closest('a[href]');
     if (!link) return;
-    
     const href = link.getAttribute('href');
-    if (!href) return;
-    if (link.target === '_blank') return;
+    if (!href || link.target === '_blank') return;
     if (href.startsWith('http') && !href.includes(window.location.hostname)) return;
     if (href.startsWith('#')) return;
-    
-    // Internal link while player is active — use iframe overlay
     e.preventDefault();
-    
-    if (href === '/' || href === '/index.html') {
-      closePageFrame();
-      return;
-    }
-    
+    if (href === '/' || href === '/index.html') { closePageFrame(); return; }
     navigateToPage(href);
-  }, true); // capture phase to intercept before other handlers
-
-  // Also intercept button onclick navigations
-  const origSubmitBtn = document.querySelector('.btn-submit');
-  if (origSubmitBtn) {
-    origSubmitBtn.onclick = (e) => {
-      if (activePlayerTrackId) {
-        e.preventDefault();
-        navigateToPage('/submit.html');
-      } else {
-        window.location.href = '/submit.html';
-      }
-    };
-  }
+  }, true);
 
   // ─── Init ───
   checkAuth().then(loadTracks);
 </script>
-
 </body>
 </html>
