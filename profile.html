@@ -14,6 +14,11 @@
   </script>
   
   <title>My Profile – VoteMyAI</title>
+  <script>
+    if (window.self === window.top && !window.location.search.includes("noshell")) {
+      window.location.replace("/app.html?p=" + encodeURIComponent(window.location.pathname + window.location.search + window.location.hash));
+    }
+  </script>
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   
   <meta name="description" content="Manage your VoteMyAI profile – view and manage your submitted AI music tracks.">
