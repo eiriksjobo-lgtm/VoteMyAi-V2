@@ -866,30 +866,19 @@
       const iframe = container.querySelector('iframe');
       if (!iframe || ytCardPlayers[trackId]) return;
 
-      // Extract video ID from iframe src
       const match = iframe.src.match(/youtube\.com\/embed\/([^?&"]+)/);
       if (!match) return;
 
-      // Replace iframe with a div for YT API
       iframe.id = `yt-card-${trackId}`;
       try {
         ytCardPlayers[trackId] = new YT.Player(`yt-card-${trackId}`, {
           events: {
             onReady: function(e) {
-              // Player is ready, store reference
               ytCardPlayers[trackId] = e.target;
             },
             onStateChange: function(e) {
               if (e.data === YT.PlayerState.PLAYING) {
                 activatePlayerBar(trackId, container, 'youtube');
-                setPlaying(true);
-                startProgress();
-              } else if (e.data === YT.PlayerState.PAUSED) {
-                setPlaying(false);
-              } else if (e.data === YT.PlayerState.ENDED) {
-                setPlaying(false);
-                progressFill.style.width = '100%';
-                stopProgress();
               }
             }
           }
