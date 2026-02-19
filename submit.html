@@ -204,7 +204,7 @@
   <div id="formContainer" style="display: none;">
     <form id="submitForm">
       <div class="form-group">
-        <label>Track URL <span class="label-hint">— YouTube, SoundCloud, Suno, Udio, ElevenLabs or TikTok</span></label>
+        <label>Track URL <span class="label-hint">— YouTube, SoundCloud, Suno, Udio or ElevenLabs</span></label>
         <input type="url" id="trackUrl" placeholder="Paste a link from any supported platform..." required>
         <div class="platform-badge" id="platformBadge"></div>
         <div class="preview-container" id="previewContainer"></div>
@@ -307,9 +307,11 @@
       return { platform: 'soundcloud', id: url.split('?')[0], url: url };
     }
     
-    // Suno
-    const sunoMatch = url.match(/suno\.com\/(?:song\/)?([a-f0-9-]+)/);
-    if (sunoMatch) return { platform: 'suno', id: sunoMatch[1], url: url };
+    // Suno - multiple URL formats
+    const sunoLong = url.match(/suno\.com\/song\/([a-f0-9-]+)/);
+    if (sunoLong) return { platform: 'suno', id: sunoLong[1], url: url };
+    const sunoShort = url.match(/suno\.com\/s\/([a-zA-Z0-9_-]+)/);
+    if (sunoShort) return { platform: 'suno', id: sunoShort[1], url: url };
     
     // Udio
     const udioMatch = url.match(/udio\.com\/songs\/([a-zA-Z0-9_-]+)/);
@@ -317,14 +319,6 @@
     
     // ElevenLabs
     if (url.includes('elevenlabs.io')) return { platform: 'elevenlabs', id: url, url: url };
-    
-    // TikTok
-    const tiktokMatch = url.match(/tiktok\.com\/.+\/video\/(\d+)/);
-    if (tiktokMatch) return { platform: 'tiktok', id: tiktokMatch[1], url: url };
-    // Short TikTok links
-    if (url.includes('tiktok.com/') && url.includes('/video/')) {
-      return { platform: 'tiktok', id: url, url: url };
-    }
     
     return null;
   }
@@ -340,10 +334,8 @@
       container.innerHTML = `<iframe height="200" src="https://suno.com/embed/${encodeURIComponent(id)}" loading="lazy" style="border:none;width:100%;border-radius:8px;"></iframe>`;
     } else if (platform === 'udio') {
       container.innerHTML = `<iframe height="200" src="https://www.udio.com/embed/${encodeURIComponent(id)}" loading="lazy" style="border:none;width:100%;border-radius:8px;"></iframe>`;
-    } else if (platform === 'tiktok') {
-      container.innerHTML = `<div style="padding:20px;background:var(--surface);border-radius:8px;text-align:center;color:var(--muted);font-size:0.85rem;">✓ TikTok link detected — preview not available but track will be linked</div>`;
     } else if (platform === 'elevenlabs') {
-      container.innerHTML = `<div style="padding:20px;background:var(--surface);border-radius:8px;text-align:center;color:var(--muted);font-size:0.85rem;">✓ ElevenLabs link detected — preview not available but track will be linked</div>`;
+      container.innerHTML = `<div style="padding:20px;background:var(--surface);border-radius:8px;text-align:center;color:var(--muted);font-size:0.85rem;">✓ ElevenLabs link detected — will open in new tab for listeners</div>`;
     }
     
     container.classList.add('show');
@@ -378,8 +370,7 @@
           soundcloud: '☁ SoundCloud',
           suno: '♪ Suno',
           udio: '♪ Udio',
-          elevenlabs: '🎤 ElevenLabs',
-          tiktok: '♫ TikTok'
+          elevenlabs: '🎤 ElevenLabs'
         };
         badge.textContent = labels[result.platform] + ' detected';
         badge.className = `platform-badge show ${result.platform}`;
@@ -388,7 +379,7 @@
         detectedPlatform = null;
         detectedId = null;
         detectedUrl = null;
-        badge.textContent = '✗ Unsupported URL — use YouTube, SoundCloud, Suno, Udio, ElevenLabs or TikTok';
+        badge.textContent = '✗ Unsupported URL — use YouTube, SoundCloud, Suno, Udio or ElevenLabs';
         badge.className = 'platform-badge show invalid';
         preview.classList.remove('show');
       }
@@ -416,7 +407,7 @@
     const genre = document.getElementById('genre').value;
     
     if (!detectedPlatform || !detectedId) {
-      showMessage('Please enter a valid URL from YouTube, SoundCloud, Suno, Udio, ElevenLabs or TikTok', 'error');
+      showMessage('Please enter a valid URL from YouTube, SoundCloud, Suno, Udio or ElevenLabs', 'error');
       btn.disabled = false;
       btn.textContent = 'Submit Track';
       return;
