@@ -204,7 +204,7 @@
   <div id="formContainer" style="display: none;">
     <form id="submitForm">
       <div class="form-group">
-        <label>Track URL <span class="label-hint">— YouTube, SoundCloud, Suno or Udio</span></label>
+        <label>Track URL <span class="label-hint">\u2014 YouTube, SoundCloud, Suno or Udio</span></label>
         <input type="url" id="trackUrl" placeholder="Paste a link from any supported platform..." required>
         <div class="platform-badge" id="platformBadge"></div>
         <div class="preview-container" id="previewContainer"></div>
@@ -310,7 +310,7 @@
     // Full song URL: suno.com/song/UUID
     const sunoLong = url.match(/suno\.com\/song\/([a-f0-9-]{36})/);
     if (sunoLong) return { platform: 'suno', id: sunoLong[1], url: url };
-    // Short link: suno.com/s/SHORTCODE — needs resolution
+    // Short link: suno.com/s/SHORTCODE \u2014 needs resolution
     const sunoShort = url.match(/suno\.com\/s\/([a-zA-Z0-9_-]+)/);
     if (sunoShort) return { platform: 'suno-short', id: sunoShort[1], url: url };
     
@@ -460,7 +460,7 @@
         detectedPlatform = null;
         detectedId = null;
         detectedUrl = null;
-        badge.textContent = '✗ Unsupported URL — use YouTube, SoundCloud, Suno or Udio';
+        badge.textContent = '✗ Unsupported URL \u2014 use YouTube, SoundCloud, Suno or Udio';
         badge.className = 'platform-badge show invalid';
         preview.classList.remove('show');
       }
@@ -495,12 +495,30 @@
     }
     
     try {
+      // Fetch thumbnail before saving
+      let thumbnailUrl = null;
+      try {
+        btn.textContent = 'Fetching cover art...';
+        const thumbRes = await fetch(`${SUPABASE_URL}/functions/v1/fetch-thumbnail`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_KEY}` },
+          body: JSON.stringify({ url: detectedUrl || `https://www.youtube.com/watch?v=${detectedId}` })
+        });
+        const thumbData = await thumbRes.json();
+        if (thumbData.thumbnail_url) thumbnailUrl = thumbData.thumbnail_url;
+      } catch (e) {
+        console.warn('Thumbnail fetch failed, continuing without:', e);
+      }
+
+      btn.textContent = 'Submitting...';
+
       // For YouTube, store in yt_id for backwards compatibility
       // For all platforms, store full URL in embed_url
       const trackData = {
         title,
         yt_id: detectedPlatform === 'youtube' ? detectedId : null,
         embed_url: detectedUrl || null,
+        thumbnail_url: thumbnailUrl,
         tool,
         genre,
         votes: 0,
