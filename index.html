@@ -1521,66 +1521,39 @@
   window.spaNav = navigateTo;
 
   async function loadPage(url, pushState = true) {
-    // If navigating to home, just reload the main content
+    // If navigating to home, close overlay and show main content
     if (url === '/' || url === '/index.html') {
-      // Instead of fetching, just show the existing content
-      window.scrollTo(0, 0);
+      closeSpaOverlay();
       return;
     }
 
-    try {
-      const res = await fetch(url);
-      if (!res.ok) return;
-      const html = await res.text();
-      
-      // Parse the fetched page and extract just the body content
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
-      
-      // Get content between nav and footer (the main content)
-      const body = doc.body;
-      
-      // Find the container/main content (skip nav-like elements)
-      const container = body.querySelector('.container') || body.querySelector('main') || body;
-      
-      // Create overlay for the page content
-      let overlay = document.getElementById('spaOverlay');
-      if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.id = 'spaOverlay';
-        overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:5000;background:var(--bg);overflow-y:auto;padding:0;';
-        document.body.appendChild(overlay);
-      }
-      
-      // Build the overlay content with nav and back button
+    // Use iframe approach so pages work with their own CSS/JS
+    let overlay = document.getElementById('spaOverlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'spaOverlay';
+      overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:5000;background:var(--bg,#07070b);display:flex;flex-direction:column;';
       overlay.innerHTML = `
-        <nav style="display:flex;align-items:center;justify-content:space-between;padding:16px 32px;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:100;">
-          <a href="/" class="logo" style="text-decoration:none;font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:2px;color:var(--text);display:flex;align-items:center;gap:8px;"><span class="logo-dot" style="width:8px;height:8px;background:var(--accent);border-radius:50%;display:inline-block;"></span>VOTEMYAI</a>
-          <button onclick="closeSpaOverlay()" style="background:none;border:1px solid var(--border);color:var(--text);padding:8px 16px;border-radius:6px;cursor:pointer;font-size:0.85rem;">← Back</button>
-        </nav>
-        <div style="max-width:700px;margin:0 auto;padding:40px 20px ${activePlayerTrackId ? '92px' : '40px'};">
-          ${container.innerHTML}
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 24px;border-bottom:1px solid #1a1a26;background:#07070b;flex-shrink:0;">
+          <a href="/" class="logo" style="text-decoration:none;font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:2px;color:#f2f2f4;display:flex;align-items:center;gap:8px;" onclick="event.preventDefault();window.closeSpaOverlay()"><span style="width:8px;height:8px;background:#e8ff47;border-radius:50%;display:inline-block;"></span>VOTEMYAI</a>
+          <button onclick="window.closeSpaOverlay()" style="background:none;border:1px solid #1a1a26;color:#f2f2f4;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:0.82rem;font-family:'DM Sans',sans-serif;">← Back</button>
         </div>
+        <iframe id="spaFrame" style="flex:1;border:none;width:100%;"></iframe>
       `;
-      
-      // Run any inline scripts from the fetched page
-      const scripts = overlay.querySelectorAll('script');
-      scripts.forEach(oldScript => {
-        if (oldScript.type === 'module' || oldScript.src) {
-          const newScript = document.createElement('script');
-          if (oldScript.src) newScript.src = oldScript.src;
-          else { newScript.type = oldScript.type; newScript.textContent = oldScript.textContent; }
-          oldScript.replaceWith(newScript);
-        }
-      });
-      
-      overlay.style.display = 'block';
-      overlay.scrollTop = 0;
-      
-    } catch(e) {
-      // Fallback: just navigate normally
-      window.location.href = url;
+      document.body.appendChild(overlay);
     }
+    
+    const frame = overlay.querySelector('#spaFrame');
+    frame.src = url;
+    
+    // Adjust iframe bottom padding if player is active
+    if (activePlayerTrackId) {
+      overlay.style.bottom = '72px';
+    } else {
+      overlay.style.bottom = '0';
+    }
+    
+    overlay.style.display = 'flex';
   }
 
   function closeSpaOverlay() {
