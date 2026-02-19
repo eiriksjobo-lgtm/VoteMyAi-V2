@@ -347,7 +347,7 @@
   let debounceTimer;
   document.getElementById('trackUrl').addEventListener('input', (e) => {
     clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
+    debounceTimer = setTimeout(async () => {
       const url = e.target.value.trim();
       const badge = document.getElementById('platformBadge');
       const preview = document.getElementById('previewContainer');
@@ -363,22 +363,44 @@
       const result = parseTrackUrl(url);
       
       if (result) {
-        // Handle Suno short links - need full song URL
+        // Handle Suno short links - auto-resolve to UUID
         if (result.platform === 'suno-short') {
-          detectedPlatform = null;
-          detectedId = null;
-          detectedUrl = null;
-          badge.textContent = '⚠ Suno short link — use the full song URL instead (suno.com/song/...)';
-          badge.className = 'platform-badge show invalid';
-          
-          // Try to show helpful message
-          preview.innerHTML = `<div style="padding:16px;background:var(--surface);border-radius:8px;color:var(--muted);font-size:0.82rem;line-height:1.6;">
-            <strong style="color:var(--text);">How to get the full Suno URL:</strong><br>
-            1. Open your song on suno.com<br>
-            2. The URL in your browser should look like: <code style="color:var(--accent);">suno.com/song/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</code><br>
-            3. Copy that full URL and paste it here
-          </div>`;
+          badge.textContent = '♪ Resolving Suno link...';
+          badge.className = 'platform-badge show suno';
+          preview.innerHTML = `<div style="padding:24px;text-align:center;color:var(--muted);font-size:0.85rem;">Resolving Suno link...</div>`;
           preview.classList.add('show');
+          
+          try {
+            const res = await fetch(`${SUPABASE_URL}/functions/v1/resolve-suno`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
+              body: JSON.stringify({ url: result.url })
+            });
+            const data = await res.json();
+            
+            if (data.uuid) {
+              detectedPlatform = 'suno';
+              detectedId = data.uuid;
+              detectedUrl = `https://suno.com/song/${data.uuid}`;
+              badge.textContent = '♪ Suno detected';
+              badge.className = 'platform-badge show suno';
+              showPreview('suno', data.uuid);
+            } else {
+              detectedPlatform = null;
+              detectedId = null;
+              detectedUrl = null;
+              badge.textContent = '✗ Could not resolve Suno link';
+              badge.className = 'platform-badge show invalid';
+              preview.classList.remove('show');
+            }
+          } catch (err) {
+            detectedPlatform = null;
+            detectedId = null;
+            detectedUrl = null;
+            badge.textContent = '✗ Could not resolve Suno link';
+            badge.className = 'platform-badge show invalid';
+            preview.classList.remove('show');
+          }
           return;
         }
         
