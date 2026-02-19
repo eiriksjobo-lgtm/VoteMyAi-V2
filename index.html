@@ -257,7 +257,7 @@
     }
     .track-embed.udio iframe {
       position: absolute; top: 0; left: 0;
-      width: 100%; height: calc(100% + 50px); border: none;
+      width: 100%; height: 100%; border: none;
     }
     .track-embed a.embed-placeholder {
       position: absolute; top: 0; left: 0;
@@ -930,13 +930,13 @@
       const udioUuid = url.match(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/);
       if (udioUuid) return {
         platform: 'udio',
-        embedHtml: `<iframe src="https://www.udio.com/embed/${udioUuid[0]}" loading="lazy" style="border:none;width:100%;height:100%;"></iframe>`
+        embedHtml: `<iframe src="https://www.udio.com/embed/${udioUuid[0]}" scrolling="no" loading="lazy"></iframe>`
       };
       // Slug-based URL - try embed with slug
       const udioSlug = url.match(/udio\.com\/songs\/([a-zA-Z0-9_-]+)/);
       if (udioSlug) return {
         platform: 'udio',
-        embedHtml: `<iframe src="https://www.udio.com/embed/${udioSlug[1]}" loading="lazy" style="border:none;width:100%;height:100%;"></iframe>`
+        embedHtml: `<iframe src="https://www.udio.com/embed/${udioSlug[1]}" scrolling="no" loading="lazy"></iframe>`
       };
     }
 
