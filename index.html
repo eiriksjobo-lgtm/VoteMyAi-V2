@@ -590,38 +590,52 @@
       .filter-pill { padding: 4px 10px; font-size: 0.66rem; flex-shrink: 0; }
       .filter-sep { display: none; }
 
-      /* Track grid */
-      .tracks-container { padding: 16px 12px 60px; }
-      .tracks-grid { grid-template-columns: 1fr; gap: 14px; }
+      /* Track grid — compact list layout */
+      .tracks-container { padding: 12px 12px 60px; }
+      .tracks-grid { grid-template-columns: 1fr; gap: 8px; }
 
-      /* Track cards — compact on mobile */
-      .track-card { border-radius: 12px; }
+      /* Track cards — horizontal compact layout */
+      .track-card { border-radius: 10px; display: flex; flex-direction: row; flex-wrap: wrap; }
       .track-card:hover { transform: none; box-shadow: none; }
-      .track-embed { padding-bottom: 50%; }
-      .track-body { padding: 12px 14px 14px; }
-      .track-title { font-size: 0.84rem; margin-bottom: 6px; }
-      .track-badges { margin-bottom: 10px; gap: 4px; }
-      .badge { padding: 2px 8px; font-size: 0.6rem; }
 
-      /* Stars — bigger touch targets */
-      .star { width: 32px; height: 32px; }
-      .star svg { width: 20px; height: 20px; }
-      .rating-score { font-size: 0.95rem; }
-      .rating-count { font-size: 0.62rem; }
-      .card-footer { margin-top: 10px; padding-top: 10px; gap: 12px; }
-      .comments-btn, .share-btn { font-size: 0.7rem; padding: 6px 0; }
-      .comments-btn svg, .share-btn svg { width: 13px; height: 13px; }
+      .track-embed {
+        padding-bottom: 0; height: auto; width: 100px; min-height: 100px;
+        flex-shrink: 0; border-bottom: none; border-right: 1px solid var(--border);
+        border-radius: 10px 0 0 10px;
+      }
+      .track-embed iframe { border-radius: 10px 0 0 10px; }
+      .track-embed.soundcloud { padding-bottom: 0; height: auto; min-height: 100px; }
 
-      /* Embed thumb (YouTube) */
-      .embed-thumb .play-circle { width: 48px; height: 48px; }
-      .embed-thumb .play-circle svg { width: 22px; height: 22px; }
-      .embed-thumb .thumb-platform { font-size: 0.62rem; }
+      .track-body { padding: 10px 12px; flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
+      .track-title { font-size: 0.82rem; margin-bottom: 4px; -webkit-line-clamp: 1; }
+      .track-badges { margin-bottom: 6px; gap: 4px; }
+      .badge { padding: 1px 7px; font-size: 0.56rem; }
 
-      /* Comments */
-      .comments-inner { padding: 10px 14px 12px; }
-      .comment-text { font-size: 0.78rem; }
-      .comment-input { padding: 8px 12px; font-size: 0.78rem; }
-      .comment-submit { padding: 8px 14px; font-size: 0.72rem; }
+      /* Rating row — tighter */
+      .rating-row { gap: 6px; }
+      .star { width: 26px; height: 26px; }
+      .star svg { width: 17px; height: 17px; }
+      .rating-score { font-size: 0.88rem; }
+      .rating-count { font-size: 0.58rem; }
+
+      /* Hide card footer on compact view — show on tap via comments panel */
+      .card-footer { margin-top: 6px; padding-top: 6px; gap: 10px; }
+      .comments-btn, .share-btn { font-size: 0.66rem; padding: 4px 0; }
+      .comments-btn svg, .share-btn svg { width: 12px; height: 12px; }
+
+      /* Embed thumb (YouTube) — square on mobile */
+      .embed-thumb { border-radius: 10px 0 0 10px; }
+      .embed-thumb img { border-radius: 10px 0 0 10px; }
+      .embed-thumb .play-circle { width: 36px; height: 36px; }
+      .embed-thumb .play-circle svg { width: 16px; height: 16px; }
+      .embed-thumb .thumb-platform { font-size: 0.55rem; }
+
+      /* Comments panel spans full width under horizontal card */
+      .comments-panel { flex-basis: 100%; }
+      .comments-inner { padding: 8px 12px 10px; }
+      .comment-text { font-size: 0.76rem; }
+      .comment-input { padding: 6px 10px; font-size: 0.74rem; }
+      .comment-submit { padding: 6px 10px; font-size: 0.68rem; }
 
       /* Scroll indicator */
       .scroll-indicator { padding: 20px 0 4px; }
