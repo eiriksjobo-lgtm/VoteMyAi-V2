@@ -481,7 +481,8 @@
     }
     .mobile-embed-content iframe {
       width: 100%;
-      max-width: 500px;
+      max-width: 700px;
+      min-height: 200px;
       border: none;
       border-radius: 12px;
     }
@@ -1255,11 +1256,15 @@
 
     // Set height based on platform
     if (platform === 'youtube') {
-      finalHtml = finalHtml.replace(/<iframe /, '<iframe style="aspect-ratio:16/9;height:auto;width:100%;max-width:500px;" ');
-    } else if (platform === 'suno' || platform === 'udio') {
-      finalHtml = finalHtml.replace(/<iframe /, '<iframe style="height:200px;width:100%;max-width:500px;" ');
+      finalHtml = finalHtml.replace(/<iframe /, '<iframe style="aspect-ratio:16/9;height:auto;width:100%;max-width:700px;" ');
+    } else if (platform === 'suno') {
+      finalHtml = finalHtml.replace(/<iframe /, '<iframe style="height:260px;width:100%;max-width:700px;" ');
+    } else if (platform === 'udio') {
+      finalHtml = finalHtml.replace(/<iframe /, '<iframe style="height:260px;width:100%;max-width:700px;" ');
     } else if (platform === 'soundcloud') {
-      finalHtml = finalHtml.replace(/<iframe /, '<iframe style="height:166px;width:100%;max-width:500px;" ');
+      finalHtml = finalHtml.replace(/<iframe /, '<iframe style="height:166px;width:100%;max-width:700px;" ');
+    } else {
+      finalHtml = finalHtml.replace(/<iframe /, '<iframe style="height:260px;width:100%;max-width:700px;" ');
     }
 
     document.getElementById('mobileEmbedTitle').textContent = title;
