@@ -647,45 +647,6 @@
     .footer-tools a:hover { color: var(--accent); }
 
     /* ══════════════════════════════════
-       PERSISTENT PLAYER BAR
-    ══════════════════════════════════ */
-    .player-bar {
-      position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
-      background: #0a0a10; border-top: 1px solid var(--border);
-      display: none; align-items: center; gap: 12px;
-      padding: 0 20px; height: 72px;
-      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-    }
-    .player-bar.active { display: flex; }
-    .player-bar .player-iframe-wrap {
-      width: 120px; height: 56px; flex-shrink: 0;
-      border-radius: 6px; overflow: hidden; position: relative;
-      background: var(--surface-2);
-    }
-    .player-bar .player-iframe-wrap iframe {
-      width: 100%; height: 100%; border: none;
-    }
-    .player-bar .player-info {
-      flex: 1; min-width: 0;
-    }
-    .player-bar .player-title {
-      font-weight: 600; font-size: 0.85rem; color: var(--text);
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .player-bar .player-meta {
-      font-size: 0.72rem; color: var(--muted);
-    }
-    .player-bar .player-close {
-      background: none; border: none; color: var(--muted);
-      cursor: pointer; font-size: 1.2rem; padding: 8px;
-      transition: color 0.2s;
-    }
-    .player-bar .player-close:hover { color: var(--text); }
-    
-    /* Add bottom padding to body when player is active */
-    body.player-active { padding-bottom: 72px; }
-
-    /* ══════════════════════════════════
        RESPONSIVE
     ══════════════════════════════════ */
     @media (max-width: 960px) {
@@ -700,10 +661,14 @@
       .filters { gap: 6px; }
       .filter-sep { display: none; }
       .footer-links { gap: 28px; }
-      .player-bar .player-iframe-wrap { width: 80px; height: 45px; }
-      .player-bar { padding: 0 12px; height: 64px; }
     }
   </style>
+  <script>
+    // If not inside the app shell, redirect to it
+    if (window.self === window.top && !window.location.search.includes('noshell')) {
+      window.location.replace('/app.html?p=' + encodeURIComponent(window.location.pathname + window.location.search + window.location.hash));
+    }
+  </script>
 </head>
 <body>
 
@@ -713,7 +678,7 @@
   <div class="nav-right">
     <a href="/blog.html" class="nav-link">Blog</a>
     <a href="/login.html" class="nav-link" id="authLink">Login</a>
-    <button class="btn-submit" onclick="window.spaNav?window.spaNav('/submit.html'):window.location.href='/submit.html'">Submit</button>
+    <button class="btn-submit" onclick="window.location.href='/submit.html'">Submit</button>
   </div>
 </nav>
 
@@ -822,16 +787,6 @@
     <p>VoteMyAI is the community-driven platform where AI music creators submit tracks made with tools like Suno, Udio, and ElevenLabs — and the community decides what's best. Every track is rated on a 1-5 star scale, and our Wilson Score algorithm ensures fair rankings regardless of when a track was submitted. Whether you're a creator looking for feedback or a listener discovering the future of music, VoteMyAI is where AI music gets its spotlight.</p>
   </div>
 </section>
-<!-- ═══ PERSISTENT PLAYER BAR ═══ -->
-<div class="player-bar" id="playerBar">
-  <div class="player-iframe-wrap" id="playerIframe"></div>
-  <div class="player-info">
-    <div class="player-title" id="playerTitle">—</div>
-    <div class="player-meta" id="playerMeta">—</div>
-  </div>
-  <button class="player-close" id="playerClose" title="Close player">✕</button>
-</div>
-
 <footer>
   <div class="footer-inner">
     <div class="footer-brand">
@@ -1456,115 +1411,17 @@
     }
   }
 
-  // ─── Persistent Player ───
-  let activePlayerTrackId = null;
-
+  // ─── Play in persistent player (sends message to parent shell) ───
   function playInBar(trackId, embedHtml, title, tool) {
-    const bar = document.getElementById('playerBar');
-    const wrap = document.getElementById('playerIframe');
-    const titleEl = document.getElementById('playerTitle');
-    const metaEl = document.getElementById('playerMeta');
-
-    // If same track, just toggle visibility
-    if (activePlayerTrackId === trackId && bar.classList.contains('active')) {
-      closePlayer();
-      return;
+    if (window.parent !== window) {
+      window.parent.postMessage({
+        type: 'play-track',
+        trackId, embedHtml, title, tool
+      }, '*');
     }
-
-    wrap.innerHTML = embedHtml;
-    titleEl.textContent = title;
-    metaEl.textContent = tool;
-    bar.classList.add('active');
-    document.body.classList.add('player-active');
-    activePlayerTrackId = trackId;
   }
-
-  function closePlayer() {
-    const bar = document.getElementById('playerBar');
-    const wrap = document.getElementById('playerIframe');
-    wrap.innerHTML = '';
-    bar.classList.remove('active');
-    document.body.classList.remove('player-active');
-    activePlayerTrackId = null;
-  }
-
-  document.getElementById('playerClose').addEventListener('click', closePlayer);
-
-  // ─── SPA Navigation ───
-  function initSPALinks() {
-    document.addEventListener('click', (e) => {
-      const link = e.target.closest('a[href]');
-      if (!link) return;
-      
-      const href = link.getAttribute('href');
-      // Only intercept internal .html links (not external, not hash, not submit form actions)
-      if (!href) return;
-      if (link.target === '_blank') return;
-      if (href.startsWith('http') && !href.includes('votemyai.com')) return;
-      if (href.startsWith('#')) return;
-      if (!href.endsWith('.html') && href !== '/') return;
-      
-      e.preventDefault();
-      navigateTo(href);
-    });
-
-    // Handle browser back/forward
-    window.addEventListener('popstate', () => {
-      loadPage(window.location.pathname, false);
-    });
-  }
-
-  function navigateTo(url) {
-    window.history.pushState({}, '', url);
-    loadPage(url, false);
-  }
-  window.spaNav = navigateTo;
-
-  async function loadPage(url, pushState = true) {
-    // If navigating to home, close overlay and show main content
-    if (url === '/' || url === '/index.html') {
-      closeSpaOverlay();
-      return;
-    }
-
-    // Use iframe approach so pages work with their own CSS/JS
-    let overlay = document.getElementById('spaOverlay');
-    if (!overlay) {
-      overlay = document.createElement('div');
-      overlay.id = 'spaOverlay';
-      overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:5000;background:var(--bg,#07070b);display:flex;flex-direction:column;';
-      overlay.innerHTML = `
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 24px;border-bottom:1px solid #1a1a26;background:#07070b;flex-shrink:0;">
-          <a href="/" class="logo" style="text-decoration:none;font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:2px;color:#f2f2f4;display:flex;align-items:center;gap:8px;" onclick="event.preventDefault();window.closeSpaOverlay()"><span style="width:8px;height:8px;background:#e8ff47;border-radius:50%;display:inline-block;"></span>VOTEMYAI</a>
-          <button onclick="window.closeSpaOverlay()" style="background:none;border:1px solid #1a1a26;color:#f2f2f4;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:0.82rem;font-family:'DM Sans',sans-serif;">← Back</button>
-        </div>
-        <iframe id="spaFrame" style="flex:1;border:none;width:100%;"></iframe>
-      `;
-      document.body.appendChild(overlay);
-    }
-    
-    const frame = overlay.querySelector('#spaFrame');
-    frame.src = url;
-    
-    // Adjust iframe bottom padding if player is active
-    if (activePlayerTrackId) {
-      overlay.style.bottom = '72px';
-    } else {
-      overlay.style.bottom = '0';
-    }
-    
-    overlay.style.display = 'flex';
-  }
-
-  function closeSpaOverlay() {
-    const overlay = document.getElementById('spaOverlay');
-    if (overlay) overlay.style.display = 'none';
-    window.history.pushState({}, '', '/');
-  }
-  window.closeSpaOverlay = closeSpaOverlay;
 
   // ─── Init ───
-  initSPALinks();
   checkAuth().then(loadTracks);
 </script>
 
