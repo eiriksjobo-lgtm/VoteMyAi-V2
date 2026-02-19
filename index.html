@@ -261,7 +261,7 @@
       background: var(--surface-hover) !important;
     }
     .track-embed.soundcloud { padding-bottom: 166px; }
-    .track-embed.udio { padding-bottom: 45%; }
+    .track-embed.udio { padding-bottom: 55%; overflow: hidden; }
     .track-embed iframe { border: none; }
 
     /* Card body */
@@ -906,25 +906,18 @@
       embedHtml: `<iframe src="https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&color=%23e8ff47&auto_play=false&show_artwork=true&show_user=false&show_comments=false" scrolling="no" loading="lazy"></iframe>`
     };
 
-    // Suno - multiple URL formats
+    // Suno - only UUID format works for embed
     if (url.includes('suno.com')) {
-      // Format: suno.com/song/UUID
-      const sunoLong = url.match(/suno\.com\/song\/([a-f0-9-]+)/);
-      if (sunoLong) return {
+      // Full song URL with UUID
+      const sunoUUID = url.match(/suno\.com\/(?:song|embed)\/([a-f0-9-]{36})/);
+      if (sunoUUID) return {
         platform: 'suno',
-        embedHtml: `<iframe src="https://suno.com/embed/${sunoLong[1]}" loading="lazy" style="border:none;"></iframe>`
+        embedHtml: `<iframe src="https://suno.com/embed/${sunoUUID[1]}" loading="lazy" style="border:none;"></iframe>`
       };
-      // Format: suno.com/s/SHORTCODE (share links)
-      const sunoShort = url.match(/suno\.com\/s\/([a-zA-Z0-9_-]+)/);
-      if (sunoShort) return {
+      // Short link or other format — can't embed, link out
+      return {
         platform: 'suno',
-        embedHtml: `<iframe src="https://suno.com/embed/${sunoShort[1]}" loading="lazy" style="border:none;"></iframe>`
-      };
-      // Generic suno link with any ID
-      const sunoGeneric = url.match(/suno\.com\/(?:song|s)\/([^\/?&#]+)/);
-      if (sunoGeneric) return {
-        platform: 'suno',
-        embedHtml: `<iframe src="https://suno.com/embed/${sunoGeneric[1]}" loading="lazy" style="border:none;"></iframe>`
+        embedHtml: `<a href="${url}" target="_blank" rel="noopener" class="embed-placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;background:var(--surface-2);color:var(--text);text-decoration:none;gap:8px;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg><span style="font-weight:600;font-size:0.82rem;">Play on Suno</span><span style="font-size:0.7rem;color:var(--muted);">Opens in new tab</span></a>`
       };
     }
 
