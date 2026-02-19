@@ -503,9 +503,9 @@
 <!-- ═══ VIEW TABS ═══ -->
 <div class="view-bar">
   <div class="view-tabs">
-    <button class="view-tab active" onclick="setView('discover')">Discover</button>
-    <button class="view-tab" onclick="setView('top')">Top Rated</button>
-    <button class="view-tab" onclick="setView('new')">New</button>
+    <button class="view-tab active">Discover</button>
+    <button class="view-tab">Top Rated</button>
+    <button class="view-tab">New</button>
   </div>
   <div class="track-count" id="trackCount"></div>
 </div>
@@ -513,19 +513,19 @@
 <!-- ═══ FILTERS ═══ -->
 <div class="filters" id="filtersBar">
   <span class="filter-label">Genre</span>
-  <button class="filter-pill active" data-filter="genre" data-value="all" onclick="setFilter('genre','all',this)">All</button>
-  <button class="filter-pill" data-filter="genre" data-value="Electronic" onclick="setFilter('genre','Electronic',this)">Electronic</button>
-  <button class="filter-pill" data-filter="genre" data-value="Hip-Hop" onclick="setFilter('genre','Hip-Hop',this)">Hip-Hop</button>
-  <button class="filter-pill" data-filter="genre" data-value="Pop" onclick="setFilter('genre','Pop',this)">Pop</button>
-  <button class="filter-pill" data-filter="genre" data-value="Rock" onclick="setFilter('genre','Rock',this)">Rock</button>
-  <button class="filter-pill" data-filter="genre" data-value="Cinematic" onclick="setFilter('genre','Cinematic',this)">Cinematic</button>
-  <button class="filter-pill" data-filter="genre" data-value="Other" onclick="setFilter('genre','Other',this)">Other</button>
+  <button class="filter-pill active" data-filter="genre" data-value="all">All</button>
+  <button class="filter-pill" data-filter="genre" data-value="Electronic">Electronic</button>
+  <button class="filter-pill" data-filter="genre" data-value="Hip-Hop">Hip-Hop</button>
+  <button class="filter-pill" data-filter="genre" data-value="Pop">Pop</button>
+  <button class="filter-pill" data-filter="genre" data-value="Rock">Rock</button>
+  <button class="filter-pill" data-filter="genre" data-value="Cinematic">Cinematic</button>
+  <button class="filter-pill" data-filter="genre" data-value="Other">Other</button>
   <div class="filter-sep"></div>
   <span class="filter-label">Tool</span>
-  <button class="filter-pill active" data-filter="tool" data-value="all" onclick="setFilter('tool','all',this)">All</button>
-  <button class="filter-pill" data-filter="tool" data-value="Suno" onclick="setFilter('tool','Suno',this)">Suno</button>
-  <button class="filter-pill" data-filter="tool" data-value="Udio" onclick="setFilter('tool','Udio',this)">Udio</button>
-  <button class="filter-pill" data-filter="tool" data-value="ElevenLabs" onclick="setFilter('tool','ElevenLabs',this)">ElevenLabs</button>
+  <button class="filter-pill active" data-filter="tool" data-value="all">All</button>
+  <button class="filter-pill" data-filter="tool" data-value="Suno">Suno</button>
+  <button class="filter-pill" data-filter="tool" data-value="Udio">Udio</button>
+  <button class="filter-pill" data-filter="tool" data-value="ElevenLabs">ElevenLabs</button>
 </div>
 
 <!-- ═══ TRACKS GRID ═══ -->
@@ -820,7 +820,7 @@
       let starsHtml = '';
       for (let i = 1; i <= 5; i++) {
         const filled = isRated ? (i <= userScore ? 'filled' : '') : '';
-        starsHtml += `<div class="star ${filled}" data-track="${track.id}" data-score="${i}" onmouseenter="hoverStar(this)" onmouseleave="unhoverStar(this)" onclick="rateStar(this)">${starSVG}</div>`;
+        starsHtml += `<div class="star ${filled}" data-track="${track.id}" data-score="${i}">${starSVG}</div>`;
       }
 
       // Platform badge
@@ -844,11 +844,11 @@
               </div>
             </div>
             <div class="card-footer">
-              <button class="comments-btn" onclick="toggleComments('${track.id}')">
+              <button class="comments-btn" data-action="comments" data-track="${track.id}">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                 Comments
               </button>
-              <button class="share-btn" onclick="shareTrack('${track.id}','${sanitize(track.title)}')">
+              <button class="share-btn" data-action="share" data-track="${track.id}" data-title="${sanitize(track.title)}">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
                 Share
               </button>
@@ -860,7 +860,7 @@
               ${currentUser ? `
                 <div class="comment-form">
                   <input type="text" class="comment-input" id="comment-input-${track.id}" placeholder="Add a comment...">
-                  <button class="comment-submit" onclick="addComment('${track.id}')">Post</button>
+                  <button class="comment-submit" data-action="post-comment" data-track="${track.id}">Post</button>
                 </div>
               ` : '<p style="font-size:0.75rem;color:var(--muted);margin-top:8px;">Log in to comment</p>'}
             </div>
@@ -878,32 +878,81 @@
     return div.innerHTML;
   }
 
-  // ─── Star Hover ───
-  window.hoverStar = function(el) {
-    const container = el.parentElement;
+  // ─── Event Delegation ───
+  // All interactions handled here instead of inline onclick
+  document.addEventListener('click', function(e) {
+    // Star rating click
+    const star = e.target.closest('.star');
+    if (star) {
+      const trackId = star.dataset.track;
+      const score = parseInt(star.dataset.score);
+      const container = star.parentElement;
+      if (container.classList.contains('rated')) return;
+      rateStar(trackId, score, container);
+      return;
+    }
+
+    // Comments toggle
+    const commentsBtn = e.target.closest('[data-action="comments"]');
+    if (commentsBtn) {
+      toggleComments(commentsBtn.dataset.track);
+      return;
+    }
+
+    // Share
+    const shareBtn = e.target.closest('[data-action="share"]');
+    if (shareBtn) {
+      shareTrack(shareBtn.dataset.track, shareBtn.dataset.title, shareBtn);
+      return;
+    }
+
+    // Post comment
+    const postBtn = e.target.closest('[data-action="post-comment"]');
+    if (postBtn) {
+      addComment(postBtn.dataset.track);
+      return;
+    }
+
+    // View tabs
+    const viewTab = e.target.closest('.view-tab');
+    if (viewTab) {
+      const text = viewTab.textContent.trim().toLowerCase();
+      const viewMap = { 'discover': 'discover', 'top rated': 'top', 'new': 'new' };
+      setView(viewMap[text] || 'discover', viewTab);
+      return;
+    }
+
+    // Filter pills
+    const pill = e.target.closest('.filter-pill');
+    if (pill) {
+      setFilter(pill.dataset.filter, pill.dataset.value, pill);
+      return;
+    }
+  });
+
+  // Star hover via delegation
+  document.addEventListener('mouseover', function(e) {
+    const star = e.target.closest('.star');
+    if (!star) return;
+    const container = star.parentElement;
     if (container.classList.contains('rated')) return;
-    const score = parseInt(el.dataset.score);
+    const score = parseInt(star.dataset.score);
     container.querySelectorAll('.star').forEach(s => {
       s.classList.toggle('hover-fill', parseInt(s.dataset.score) <= score);
     });
-  };
+  });
 
-  window.unhoverStar = function(el) {
-    const container = el.parentElement;
+  document.addEventListener('mouseout', function(e) {
+    const star = e.target.closest('.star');
+    if (!star) return;
+    const container = star.parentElement;
     if (container.classList.contains('rated')) return;
     container.querySelectorAll('.star').forEach(s => s.classList.remove('hover-fill'));
-  };
+  });
 
   // ─── Rate ───
-  window.rateStar = async function(el) {
-    const trackId = el.dataset.track;
-    const score = parseInt(el.dataset.score);
-    const container = el.parentElement;
-
-    if (container.classList.contains('rated')) return;
-
+  async function rateStar(trackId, score, container) {
     if (!currentUser) {
-      // Allow anonymous rating via localStorage
       const anonRatings = JSON.parse(localStorage.getItem('anon_ratings') || '{}');
       if (anonRatings[trackId]) return;
       anonRatings[trackId] = score;
@@ -972,26 +1021,26 @@
     } catch(e) {
       console.error('Rate error:', e);
     }
-  };
+  }
 
   // ─── View Tabs ───
-  window.setView = function(view) {
+  function setView(view, tabEl) {
     currentView = view;
     document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
-    event.target.classList.add('active');
+    tabEl.classList.add('active');
     renderTracks();
-  };
+  }
 
   // ─── Filters ───
-  window.setFilter = function(type, value, el) {
+  function setFilter(type, value, el) {
     filters[type] = value;
     document.querySelectorAll(`.filter-pill[data-filter="${type}"]`).forEach(p => p.classList.remove('active'));
     el.classList.add('active');
     renderTracks();
-  };
+  }
 
   // ─── Comments ───
-  window.toggleComments = async function(trackId) {
+  async function toggleComments(trackId) {
     const panel = document.getElementById(`comments-${trackId}`);
     const isOpen = panel.classList.contains('open');
     
@@ -1002,7 +1051,7 @@
       panel.classList.add('open');
       await loadComments(trackId);
     }
-  };
+  }
 
   async function loadComments(trackId) {
     try {
@@ -1017,7 +1066,7 @@
     } catch(e) {}
   }
 
-  window.addComment = async function(trackId) {
+  async function addComment(trackId) {
     const input = document.getElementById(`comment-input-${trackId}`);
     const content = input.value.trim();
     if (!content || !currentUser) return;
@@ -1039,10 +1088,10 @@
       input.value = '';
       await loadComments(trackId);
     } catch(e) {}
-  };
+  }
 
   // ─── Share ───
-  window.shareTrack = function(trackId, title) {
+  function shareTrack(trackId, title, btnEl) {
     const url = `${window.location.origin}/?track=${trackId}`;
     if (navigator.share) {
       navigator.share({ title: `${title} — VoteMyAI`, url });
@@ -1050,13 +1099,11 @@
     } else {
       navigator.clipboard.writeText(url);
       gtag('event', 'share', { track_id: trackId, method: 'clipboard' });
-      // Brief visual feedback
-      const btn = event.target.closest('.share-btn');
-      const orig = btn.innerHTML;
-      btn.innerHTML = '<span style="color:var(--accent);">✓ Copied</span>';
-      setTimeout(() => { btn.innerHTML = orig; }, 1500);
+      const orig = btnEl.innerHTML;
+      btnEl.innerHTML = '<span style="color:var(--accent);">✓ Copied</span>';
+      setTimeout(() => { btnEl.innerHTML = orig; }, 1500);
     }
-  };
+  }
 
   // ─── Init ───
   checkAuth().then(loadTracks);
