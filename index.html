@@ -252,6 +252,14 @@
       position: absolute; top: 0; left: 0;
       width: 100%; height: 100%; border: none;
     }
+    .track-embed a.embed-placeholder {
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%;
+      transition: background 0.2s;
+    }
+    .track-embed a.embed-placeholder:hover {
+      background: var(--surface-hover) !important;
+    }
     .track-embed.soundcloud { padding-bottom: 166px; }
     .track-embed.suno { padding-bottom: 200px; }
 
@@ -915,19 +923,18 @@
       };
     }
 
-    // TikTok
+    // TikTok - can't embed, show clickable card
     if (url.includes('tiktok.com')) {
-      const tiktokMatch = url.match(/video\/(\d+)/);
-      if (tiktokMatch) return {
+      return {
         platform: 'tiktok',
-        embedHtml: `<iframe src="https://www.tiktok.com/embed/v2/${tiktokMatch[1]}" loading="lazy"></iframe>`
+        embedHtml: `<a href="${url}" target="_blank" rel="noopener" class="embed-placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;background:var(--surface-2);color:var(--text);text-decoration:none;gap:8px;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg><span style="font-weight:600;font-size:0.82rem;">Play on TikTok</span><span style="font-size:0.7rem;color:var(--muted);">Opens in new tab</span></a>`
       };
     }
 
-    // ElevenLabs
+    // ElevenLabs - can't embed, show clickable card
     if (url.includes('elevenlabs.io')) return {
       platform: 'elevenlabs',
-      embedHtml: `<a href="${url}" target="_blank" class="embed-placeholder" style="display:flex;align-items:center;justify-content:center;background:var(--surface-2);color:var(--accent);font-weight:700;text-decoration:none;font-size:0.85rem;">▶ Listen on ElevenLabs</a>`
+      embedHtml: `<a href="${url}" target="_blank" rel="noopener" class="embed-placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;background:var(--surface-2);color:var(--text);text-decoration:none;gap:8px;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg><span style="font-weight:600;font-size:0.82rem;">Play on ElevenLabs</span><span style="font-size:0.7rem;color:var(--muted);">Opens in new tab</span></a>`
     };
 
     // Fallback: try as YouTube ID (legacy yt_id support)
