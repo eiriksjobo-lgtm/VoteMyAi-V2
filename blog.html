@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-KW4NR9QBWB"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-KW4NR9QBWB');
+  </script>
+  
+  <title>VoteMyAI Blog – AI Music News, Guides & Reviews</title>
+  
+  <meta name="description" content="Stay up to date with the latest in AI music. Guides on Suno, Udio, ElevenLabs, comparisons, tips for AI music creators, and weekly top tracks from VoteMyAI.">
+  <meta name="keywords" content="AI music blog, Suno guide, Udio guide, ElevenLabs review, AI music generator comparison, how to make AI music, best AI songs, AI music tips">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://www.votemyai.com/blog.html">
+  <meta name="theme-color" content="#e8ff47">
+  
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.votemyai.com/blog.html">
+  <meta property="og:title" content="VoteMyAI Blog – AI Music News, Guides & Reviews">
+  <meta property="og:description" content="Guides, reviews, and news about AI music generators. Learn how to create, submit, and vote for the best AI-generated music.">
+  <meta property="og:image" content="https://www.votemyai.com/og-image.png">
+  <meta property="og:site_name" content="VoteMyAI">
+  
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg: #0a0a0f; --surface: #111118; --surface-2: #16161f;
+      --border: #1e1e2e; --border-hover: #2a2a3e;
+      --accent: #e8ff47; --accent-dim: rgba(232,255,71,0.15);
+      --text: #f0f0f0; --text-secondary: #b0b0c0; --muted: #666680;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; line-height: 1.6; }
+    ::selection { background: var(--accent); color: var(--bg); }
+    
+    /* ── Nav ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10,10,15,0.92);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 40px; height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem; letter-spacing: 3px;
+      color: var(--accent); text-decoration: none;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .logo-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--accent); box-shadow: 0 0 12px var(--accent);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+    .nav-links { display: flex; gap: 28px; align-items: center; }
+    .nav-links a {
+      color: var(--muted); text-decoration: none;
+      font-size: 0.78rem; font-weight: 500;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a.active { color: var(--accent); }
+    .btn-submit {
+      background: var(--accent); color: var(--bg);
+      padding: 10px 22px; border-radius: 8px; border: none;
+      font-weight: 700; cursor: pointer; font-size: 0.78rem;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      font-family: 'DM Sans', sans-serif;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(232,255,71,0.3); }
+
+    /* ── Hero ── */
+    .blog-hero {
+      text-align: center; padding: 100px 40px 60px;
+      max-width: 800px; margin: 0 auto;
+    }
+    .blog-hero h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      letter-spacing: 3px; margin-bottom: 16px;
+    }
+    .blog-hero h1 .accent { color: var(--accent); }
+    .blog-hero p {
+      color: var(--text-secondary); font-size: 1.05rem;
+      max-width: 520px; margin: 0 auto;
+    }
+
+    /* ── Blog Grid ── */
+    .blog-section {
+      max-width: 1100px; margin: 0 auto;
+      padding: 40px 40px 80px;
+    }
+    .blog-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 24px;
+    }
+    
+    /* ── Blog Card ── */
+    .blog-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden;
+      transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+      display: flex; flex-direction: column;
+    }
+    .blog-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.35);
+      border-color: var(--border-hover);
+    }
+    .blog-card a { text-decoration: none; color: inherit; display: flex; flex-direction: column; flex: 1; }
+    .blog-card-img {
+      width: 100%; aspect-ratio: 16/9;
+      background: var(--surface-2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 3rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .blog-card-body { padding: 24px; flex: 1; display: flex; flex-direction: column; }
+    .blog-card-tag {
+      display: inline-block;
+      background: var(--accent-dim);
+      color: var(--accent);
+      padding: 3px 12px; border-radius: 100px;
+      font-size: 0.7rem; font-weight: 700;
+      letter-spacing: 1px; text-transform: uppercase;
+      margin-bottom: 12px; width: fit-content;
+    }
+    .blog-card-title {
+      font-size: 1.15rem; font-weight: 700;
+      line-height: 1.4; margin-bottom: 10px;
+    }
+    .blog-card:hover .blog-card-title { color: var(--accent); }
+    .blog-card-excerpt {
+      color: var(--muted); font-size: 0.88rem;
+      line-height: 1.6; flex: 1;
+    }
+    .blog-card-meta {
+      display: flex; align-items: center; gap: 12px;
+      margin-top: 16px; padding-top: 16px;
+      border-top: 1px solid rgba(30,30,46,0.5);
+      color: var(--muted); font-size: 0.78rem;
+    }
+
+    /* ── Featured Card (first/large) ── */
+    .blog-card.featured {
+      grid-column: 1 / -1;
+    }
+    .blog-card.featured a {
+      flex-direction: row;
+    }
+    .blog-card.featured .blog-card-img {
+      width: 45%; aspect-ratio: auto; min-height: 280px;
+      border-bottom: none; border-right: 1px solid var(--border);
+    }
+    .blog-card.featured .blog-card-body { padding: 32px; }
+    .blog-card.featured .blog-card-title { font-size: 1.5rem; }
+
+    /* ── Footer ── */
+    footer {
+      background: var(--surface); border-top: 1px solid var(--border);
+      padding: 40px; text-align: center;
+    }
+    footer a { color: var(--muted); text-decoration: none; font-size: 0.85rem; margin: 0 12px; }
+    footer a:hover { color: var(--accent); }
+    .footer-copy { color: var(--muted); font-size: 0.8rem; margin-top: 16px; }
+
+    @media (max-width: 768px) {
+      nav { padding: 0 16px; }
+      .nav-links { gap: 14px; }
+      .blog-hero { padding: 80px 20px 40px; }
+      .blog-section { padding: 20px 16px 60px; }
+      .blog-grid { grid-template-columns: 1fr; }
+      .blog-card.featured a { flex-direction: column; }
+      .blog-card.featured .blog-card-img {
+        width: 100%; min-height: 200px;
+        border-right: none; border-bottom: 1px solid var(--border);
+      }
+      footer { padding: 32px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <nav>
+    <a href="/" class="logo"><span class="logo-dot"></span>VOTEMYAI</a>
+    <div class="nav-links">
+      <a href="/#tracks">Tracks</a>
+      <a href="/#leaderboard">Leaderboard</a>
+      <a href="/blog.html" class="active">Blog</a>
+      <button class="btn-submit" onclick="window.location.href='/submit.html'">Submit Track</button>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <section class="blog-hero">
+    <h1>THE <span class="accent">AI MUSIC</span> BLOG</h1>
+    <p>Guides, reviews, comparisons, and tips for AI music creators. Everything you need to make better music with AI.</p>
+  </section>
+
+  <section class="blog-section">
+    <div class="blog-grid">
+
+      <!-- FEATURED: Suno vs Udio vs ElevenLabs -->
+      <article class="blog-card featured">
+        <a href="/blog/suno-vs-udio-vs-elevenlabs.html">
+          <div class="blog-card-img">🎵 vs 🎶 vs 🎤</div>
+          <div class="blog-card-body">
+            <span class="blog-card-tag">Comparison</span>
+            <h2 class="blog-card-title">Suno vs Udio vs ElevenLabs — Which AI Music Generator is Best in 2026?</h2>
+            <p class="blog-card-excerpt">We compare the three biggest AI music generators side by side. Sound quality, features, pricing, vocal quality, and which one is right for you. A complete breakdown for beginners and pros.</p>
+            <div class="blog-card-meta">
+              <span>Feb 19, 2026</span>
+              <span>•</span>
+              <span>8 min read</span>
+            </div>
+          </div>
+        </a>
+      </article>
+
+      <!-- Post 2: How to Make AI Music -->
+      <article class="blog-card">
+        <a href="/blog/how-to-make-ai-music.html">
+          <div class="blog-card-img">🚀</div>
+          <div class="blog-card-body">
+            <span class="blog-card-tag">Guide</span>
+            <h2 class="blog-card-title">How to Make AI Music in 2026 — Complete Beginner's Guide</h2>
+            <p class="blog-card-excerpt">From your first prompt to a finished track. Learn how to use AI music generators, write better prompts, and create songs that sound professional.</p>
+            <div class="blog-card-meta">
+              <span>Feb 19, 2026</span>
+              <span>•</span>
+              <span>6 min read</span>
+            </div>
+          </div>
+        </a>
+      </article>
+
+      <!-- Post 3: Best Free AI Music Generators -->
+      <article class="blog-card">
+        <a href="/blog/best-free-ai-music-generators.html">
+          <div class="blog-card-img">🆓</div>
+          <div class="blog-card-body">
+            <span class="blog-card-tag">Roundup</span>
+            <h2 class="blog-card-title">5 Best Free AI Music Generators in 2026</h2>
+            <p class="blog-card-excerpt">You don't need a paid subscription to make great AI music. Here are the best free tools and what you can create with each one.</p>
+            <div class="blog-card-meta">
+              <span>Feb 19, 2026</span>
+              <span>•</span>
+              <span>5 min read</span>
+            </div>
+          </div>
+        </a>
+      </article>
+
+      <!-- Post 4: AI Music Prompts -->
+      <article class="blog-card">
+        <a href="/blog/ai-music-prompt-tips.html">
+          <div class="blog-card-img">✍️</div>
+          <div class="blog-card-body">
+            <span class="blog-card-tag">Tips</span>
+            <h2 class="blog-card-title">How to Write Better AI Music Prompts — 10 Tips That Actually Work</h2>
+            <p class="blog-card-excerpt">The difference between a mediocre AI song and a great one is often just the prompt. Learn the techniques that top creators use.</p>
+            <div class="blog-card-meta">
+              <span>Feb 19, 2026</span>
+              <span>•</span>
+              <span>5 min read</span>
+            </div>
+          </div>
+        </a>
+      </article>
+
+      <!-- Post 5: What is AI Music -->
+      <article class="blog-card">
+        <a href="/blog/what-is-ai-music.html">
+          <div class="blog-card-img">🤖</div>
+          <div class="blog-card-body">
+            <span class="blog-card-tag">Explainer</span>
+            <h2 class="blog-card-title">What is AI-Generated Music? Everything You Need to Know</h2>
+            <p class="blog-card-excerpt">How does AI actually create music? Is it legal? Can you use it commercially? We answer every question beginners have about AI music.</p>
+            <div class="blog-card-meta">
+              <span>Feb 19, 2026</span>
+              <span>•</span>
+              <span>7 min read</span>
+            </div>
+          </div>
+        </a>
+      </article>
+
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div>
+    <a href="/">Home</a>
+    <a href="/#tracks">Tracks</a>
+    <a href="/submit.html">Submit</a>
+    <a href="/faq.html">FAQ</a>
+    <a href="/contact.html">Contact</a>
+    <a href="/terms.html">Terms</a>
+    <a href="/privacy.html">Privacy</a>
+  </div>
+  <p class="footer-copy">© 2026 VoteMyAI. All rights reserved.</p>
+</footer>
+
+</body>
+</html>
