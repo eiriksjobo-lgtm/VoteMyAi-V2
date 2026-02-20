@@ -893,7 +893,7 @@
   function getSortedTracks(tracks) { switch (currentView) { case 'top': return [...tracks].sort((a, b) => wilsonScore(b.avg_rating||0, b.rating_count||0) - wilsonScore(a.avg_rating||0, a.rating_count||0)); case 'new': return [...tracks].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); default: return [...tracks].sort((a, b) => { const ca = a.rating_count||0, cb = b.rating_count||0; if (ca <= 5 && cb > 5) return -1; if (cb <= 5 && ca > 5) return 1; return new Date(b.created_at) - new Date(a.created_at); }); } }
   function getFilteredTracks() { return allTracks.filter(t => { if (filters.genre !== 'all' && t.genre !== filters.genre) return false; if (filters.tool !== 'all' && t.tool !== filters.tool) return false; return true; }); }
 
-  const TRACKS_PER_PAGE = 9; let visibleCount = TRACKS_PER_PAGE; let currentSorted = []; let activeEmbedTrackId = null;
+  const TRACKS_PER_PAGE = 6; let visibleCount = TRACKS_PER_PAGE; let currentSorted = []; let activeEmbedTrackId = null;
 
   function renderTracks() { visibleCount = TRACKS_PER_PAGE; currentSorted = getSortedTracks(getFilteredTracks()); const grid = document.getElementById('tracksGrid'); const hasActiveIframe = grid && grid.querySelector('.track-embed iframe') !== null; const isPlaying = activeEmbedTrackId || activePlayerTrackId || (playerBar && playerBar.classList.contains('active')) || hasActiveIframe; if (isPlaying) visibleCount = Math.max(visibleCount, currentSorted.length); document.getElementById('trackCount').textContent = `${currentSorted.length} track${currentSorted.length !== 1 ? 's' : ''}`; renderVisibleTracks(); }
 
