@@ -213,9 +213,7 @@
       cursor: pointer; display: flex; align-items: center; justify-content: center;
       background: var(--surface-2); z-index: 2;
     }
-    .embed-thumb img {
-      width: 100%; height: 100%; object-fit: cover;
-    }
+    .embed-thumb img { width: 100%; height: 100%; object-fit: cover; }
     .embed-thumb-overlay {
       position: absolute; inset: 0;
       background: rgba(0,0,0,0.3);
@@ -237,14 +235,12 @@
       letter-spacing: 0.5px; text-transform: uppercase;
     }
 
-    /* Hidden iframe — plays audio invisibly behind thumbnail */
     .hidden-embed-frame {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       z-index: 1; overflow: hidden;
     }
     .hidden-embed-frame iframe { width: 100%; height: 100%; border: none; }
 
-    /* Playing state — show EQ animation on play button */
     .embed-thumb.is-playing { cursor: default; pointer-events: none; }
     .embed-thumb.is-playing .play-circle { background: var(--accent); animation: none; }
     .embed-thumb.is-playing .play-circle svg { display: none; }
@@ -274,28 +270,15 @@
     .track-embed a.embed-placeholder:hover { background: var(--surface-hover) !important; }
     .track-embed.soundcloud { padding-bottom: 166px; }
 
-    /* Load more indicator */
     .scroll-indicator {
       display: flex; flex-direction: column; align-items: center;
       padding: 32px 0 8px; opacity: 0.5; transition: opacity 0.4s;
     }
     .scroll-indicator.hidden { opacity: 0; pointer-events: none; }
-    .scroll-indicator .scroll-line {
-      width: 1px; height: 32px; background: linear-gradient(to bottom, var(--border), var(--accent));
-      margin-bottom: 12px;
-    }
-    .scroll-indicator .scroll-dot {
-      width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
-      animation: scrollPulse 1.8s ease-in-out infinite;
-    }
-    .scroll-indicator .scroll-text {
-      margin-top: 10px; font-size: 0.65rem; letter-spacing: 2px;
-      text-transform: uppercase; color: var(--muted); font-weight: 600;
-    }
-    @keyframes scrollPulse {
-      0%, 100% { opacity: 0.3; transform: translateY(0); }
-      50% { opacity: 1; transform: translateY(6px); }
-    }
+    .scroll-indicator .scroll-line { width: 1px; height: 32px; background: linear-gradient(to bottom, var(--border), var(--accent)); margin-bottom: 12px; }
+    .scroll-indicator .scroll-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: scrollPulse 1.8s ease-in-out infinite; }
+    .scroll-indicator .scroll-text { margin-top: 10px; font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+    @keyframes scrollPulse { 0%,100%{opacity:0.3;transform:translateY(0)} 50%{opacity:1;transform:translateY(6px)} }
 
     .track-body { padding: 16px 18px 18px; }
     .track-title {
@@ -312,7 +295,6 @@
     .badge-genre { background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid rgba(255,255,255,0.06); }
     .badge-platform { background: rgba(56,189,248,0.1); color: #38bdf8; }
 
-    /* Star Rating */
     .rating-row { display: flex; align-items: center; justify-content: space-between; }
     .stars { display: flex; gap: 3px; }
     .star { width: 28px; height: 28px; cursor: pointer; transition: transform 0.15s; display: flex; align-items: center; justify-content: center; }
@@ -326,26 +308,16 @@
     .stars.rated .star { cursor: default; }
     .stars.rated .star:hover { transform: none; }
 
-    /* Card footer */
     .card-footer {
       display: flex; align-items: center; justify-content: flex-start;
       margin-top: 12px; padding-top: 12px;
       border-top: 1px solid rgba(26,26,38,0.6); gap: 16px;
     }
-    .comments-btn {
-      background: none; border: none; color: var(--muted); cursor: pointer;
-      font-size: 0.74rem; font-family: 'DM Sans', sans-serif;
-      display: flex; align-items: center; gap: 5px; transition: color 0.2s;
-    }
+    .comments-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.74rem; font-family: 'DM Sans', sans-serif; display: flex; align-items: center; gap: 5px; transition: color 0.2s; }
     .comments-btn:hover { color: var(--text); }
-    .share-btn {
-      background: none; border: none; color: var(--muted); cursor: pointer;
-      font-size: 0.74rem; font-family: 'DM Sans', sans-serif;
-      display: flex; align-items: center; gap: 4px; transition: color 0.2s;
-    }
+    .share-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.74rem; font-family: 'DM Sans', sans-serif; display: flex; align-items: center; gap: 4px; transition: color 0.2s; }
     .share-btn:hover { color: var(--text); }
 
-    /* Comments panel */
     .comments-panel { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
     .comments-panel.open { max-height: 500px; }
     .comments-inner { padding: 12px 18px 16px; border-top: 1px solid var(--border); }
@@ -354,26 +326,14 @@
     .comment-text { font-size: 0.82rem; color: var(--text-secondary); }
     .comment-author { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
     .comment-form { display: flex; gap: 8px; margin-top: 10px; }
-    .comment-input {
-      flex: 1; background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
-      padding: 8px 12px; border-radius: var(--radius-sm);
-      font-family: 'DM Sans', sans-serif; font-size: 0.8rem; outline: none;
-    }
+    .comment-input { flex: 1; background: var(--surface-2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 0.8rem; outline: none; }
     .comment-input:focus { border-color: var(--accent); }
-    .comment-submit {
-      background: var(--accent); color: var(--bg); border: none; padding: 8px 14px;
-      border-radius: var(--radius-sm); font-weight: 700; font-size: 0.75rem;
-      cursor: pointer; font-family: 'DM Sans', sans-serif;
-    }
+    .comment-submit { background: var(--accent); color: var(--bg); border: none; padding: 8px 14px; border-radius: var(--radius-sm); font-weight: 700; font-size: 0.75rem; cursor: pointer; font-family: 'DM Sans', sans-serif; }
 
-    /* ══════════════════════════════════ EMPTY / SKELETON ══════════════════════════════════ */
     .empty-state { grid-column: 1 / -1; text-align: center; padding: 80px 20px; }
     .empty-state p { color: var(--muted); font-size: 0.95rem; }
     .skeleton-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-    .skeleton {
-      background: linear-gradient(90deg, var(--surface-2) 25%, rgba(255,255,255,0.03) 50%, var(--surface-2) 75%);
-      background-size: 200% 100%; animation: shimmer 1.5s infinite;
-    }
+    .skeleton { background: linear-gradient(90deg, var(--surface-2) 25%, rgba(255,255,255,0.03) 50%, var(--surface-2) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
     @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
     .skeleton-embed { width: 100%; padding-bottom: 56.25%; }
     .skeleton-body { padding: 16px 18px 18px; }
@@ -382,16 +342,12 @@
     .skeleton-badge { height: 22px; width: 60px; border-radius: 100px; }
     .skeleton-stars { height: 28px; border-radius: 4px; width: 60%; }
 
-    /* ══════════════════════════════════ LEADERBOARD ══════════════════════════════════ */
     .leaderboard-section { max-width: 800px; margin: 0 auto; padding: 60px clamp(16px, 4vw, 40px) 40px; }
     .section-header { text-align: center; margin-bottom: 32px; }
     .section-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 2px; text-transform: uppercase; }
     .section-sub { color: var(--muted); font-size: 0.85rem; margin-top: 6px; }
     .leaderboard { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-    .lb-row {
-      display: flex; align-items: center; gap: 16px; padding: 14px 20px;
-      border-bottom: 1px solid var(--border); transition: background 0.2s;
-    }
+    .lb-row { display: flex; align-items: center; gap: 16px; padding: 14px 20px; border-bottom: 1px solid var(--border); transition: background 0.2s; }
     .lb-row:last-child { border-bottom: none; }
     .lb-row:hover { background: var(--accent-glow); }
     .lb-rank { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; color: var(--accent); width: 36px; text-align: center; flex-shrink: 0; }
@@ -402,34 +358,22 @@
     .lb-stars { color: var(--accent); font-size: 0.85rem; font-weight: 700; }
     .lb-count { color: var(--muted); font-size: 0.7rem; }
 
-    /* ══════════════════════════════════ AI TOOLS ══════════════════════════════════ */
     .tools-section { max-width: 1100px; margin: 0 auto; padding: 60px clamp(16px, 4vw, 40px) 40px; }
     .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
-    .tool-card {
-      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
-      padding: 28px 24px; text-decoration: none; color: var(--text);
-      position: relative; overflow: hidden; transition: all 0.3s ease; display: block;
-    }
+    .tool-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 24px; text-decoration: none; color: var(--text); position: relative; overflow: hidden; transition: all 0.3s ease; display: block; }
     .tool-card:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(0,0,0,0.35); border-color: var(--border-hover); }
     .tool-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
     .tool-card.suno::before { background: linear-gradient(90deg, #e8ff47, #a3e635); }
     .tool-card.udio::before { background: linear-gradient(90deg, #818cf8, #c084fc); }
     .tool-card.elevenlabs::before { background: linear-gradient(90deg, #38bdf8, #22d3ee); }
-    .tool-icon {
-      width: 48px; height: 48px; border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.3rem; font-weight: 700; margin-bottom: 16px;
-    }
+    .tool-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 700; margin-bottom: 16px; }
     .tool-card.suno .tool-icon { background: rgba(232,255,71,0.1); color: var(--accent); }
     .tool-card.udio .tool-icon { background: rgba(129,140,248,0.12); color: #818cf8; }
     .tool-card.elevenlabs .tool-icon { background: rgba(56,189,248,0.12); color: #38bdf8; }
     .tool-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 1px; margin-bottom: 6px; }
     .tool-tagline { color: var(--muted); font-size: 0.82rem; line-height: 1.5; margin-bottom: 16px; }
     .tool-features { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
-    .tool-tag {
-      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
-      padding: 3px 10px; border-radius: 100px; font-size: 0.68rem; color: var(--muted); font-weight: 500;
-    }
+    .tool-tag { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); padding: 3px 10px; border-radius: 100px; font-size: 0.68rem; color: var(--muted); font-weight: 500; }
     .tool-cta { font-size: 0.82rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
     .tool-card.suno .tool-cta { color: var(--accent); }
     .tool-card.udio .tool-cta { color: #818cf8; }
@@ -437,247 +381,133 @@
     .tool-card:hover .tool-cta .arrow { transform: translateX(3px); }
     .tool-cta .arrow { transition: transform 0.2s; }
 
-    /* ══════════════════════════════════ SEO ══════════════════════════════════ */
     .seo-section { max-width: 800px; margin: 0 auto; padding: 40px clamp(16px, 4vw, 40px) 60px; }
     .seo-inner { text-align: center; }
     .seo-inner h2 { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 1.5px; margin-bottom: 12px; color: var(--text-secondary); }
     .seo-inner p { color: var(--muted); font-size: 0.82rem; line-height: 1.7; }
 
-    /* ══════════════════════════════════ FOOTER ══════════════════════════════════ */
-    footer {
-      background: var(--surface); border-top: 1px solid var(--border);
-      padding: 48px clamp(16px, 4vw, 40px) 32px;
-    }
-    .footer-inner {
-      max-width: 1200px; margin: 0 auto;
-      display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 32px;
-    }
+    footer { background: var(--surface); border-top: 1px solid var(--border); padding: 48px clamp(16px, 4vw, 40px) 32px; }
+    .footer-inner { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 32px; }
     .footer-brand .logo { margin-bottom: 8px; }
     .footer-brand p { color: var(--muted); font-size: 0.8rem; max-width: 260px; }
     .footer-links { display: flex; gap: 48px; flex-wrap: wrap; }
     .footer-col h4 { font-size: 0.68rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
     .footer-col a { display: block; color: var(--text-secondary); text-decoration: none; font-size: 0.82rem; padding: 3px 0; transition: color 0.2s; }
     .footer-col a:hover { color: var(--accent); }
-    .footer-bottom {
-      max-width: 1200px; margin: 32px auto 0; padding-top: 24px;
-      border-top: 1px solid var(--border);
-      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
-    }
+    .footer-bottom { max-width: 1200px; margin: 32px auto 0; padding-top: 24px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
     .footer-copy { color: var(--muted); font-size: 0.75rem; }
     .footer-tools { display: flex; gap: 16px; }
     .footer-tools a { color: var(--muted); text-decoration: none; font-size: 0.75rem; transition: color 0.2s; }
     .footer-tools a:hover { color: var(--accent); }
 
-    /* ══════════════════════════════════ PERSISTENT PLAYER BAR ══════════════════════════════════ */
-    .player-bar {
-      position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
-      background: rgba(10,10,18,0.97);
-      backdrop-filter: blur(20px);
-      border-top: 1px solid var(--border);
-      display: none; align-items: center; gap: 14px;
-      padding: 0 20px; height: 68px;
-    }
+    .player-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999; background: rgba(10,10,18,0.97); backdrop-filter: blur(20px); border-top: 1px solid var(--border); display: none; align-items: center; gap: 14px; padding: 0 20px; height: 68px; }
     .player-bar.active { display: flex; }
     .player-bar.playing .player-eq span { animation-play-state: running; }
-
     .player-eq { display: flex; align-items: flex-end; gap: 2px; height: 18px; flex-shrink: 0; }
-    .player-eq span {
-      width: 3px; background: var(--accent); border-radius: 2px;
-      animation: eqBounce 0.8s ease-in-out infinite alternate;
-      animation-play-state: paused;
-    }
+    .player-eq span { width: 3px; background: var(--accent); border-radius: 2px; animation: eqBounce 0.8s ease-in-out infinite alternate; animation-play-state: paused; }
     .player-eq span:nth-child(1) { height: 8px; animation-delay: 0s; }
     .player-eq span:nth-child(2) { height: 14px; animation-delay: 0.15s; }
     .player-eq span:nth-child(3) { height: 6px; animation-delay: 0.3s; }
     .player-eq span:nth-child(4) { height: 12px; animation-delay: 0.45s; }
     @keyframes eqBounce { 0%{height:4px} 100%{height:18px} }
-
-    .player-embed-hidden {
-      position: absolute; left: -9999px; top: -9999px;
-      width: 320px; height: 180px; overflow: hidden;
-    }
-
+    .player-embed-hidden { position: absolute; left: -9999px; top: -9999px; width: 320px; height: 180px; overflow: hidden; }
     .player-info { flex: 1; min-width: 0; }
     .player-title { font-weight: 600; font-size: 0.85rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .player-meta { font-size: 0.7rem; color: var(--muted); }
-
     .player-controls { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
-    .player-ctrl {
-      width: 36px; height: 36px; border-radius: 50%; border: none;
-      background: transparent; color: var(--muted); cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: transform 0.15s, color 0.15s;
-    }
+    .player-ctrl { width: 36px; height: 36px; border-radius: 50%; border: none; background: transparent; color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.15s, color 0.15s; }
     .player-ctrl:hover { transform: scale(1.1); color: var(--text); }
     .player-ctrl svg { width: 18px; height: 18px; fill: currentColor; }
-
     body.player-active { padding-bottom: 68px; }
-
     .page-frame { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 5000; display: none; }
     .page-frame.active { display: block; }
     .page-frame iframe { width: 100%; height: 100%; border: none; }
     body.player-active .page-frame { bottom: 68px; }
 
-    /* ══════════════════════════════════ HOW IT WORKS ══════════════════════════════════ */
     .how-section { max-width: 900px; margin: 0 auto; padding: 60px clamp(16px, 4vw, 40px) 20px; }
     .how-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 32px; }
     .how-step { text-align: center; padding: 28px 20px; position: relative; }
-    .how-num {
-      font-family: 'Bebas Neue', sans-serif; font-size: 3rem; line-height: 1;
-      color: var(--accent); opacity: 0.15; margin-bottom: 4px;
-    }
-    .how-icon {
-      width: 52px; height: 52px; border-radius: 14px; margin: 0 auto 14px;
-      display: flex; align-items: center; justify-content: center;
-      background: var(--accent-dim); border: 1px solid rgba(232,255,71,0.1);
-    }
+    .how-num { font-family: 'Bebas Neue', sans-serif; font-size: 3rem; line-height: 1; color: var(--accent); opacity: 0.15; margin-bottom: 4px; }
+    .how-icon { width: 52px; height: 52px; border-radius: 14px; margin: 0 auto 14px; display: flex; align-items: center; justify-content: center; background: var(--accent-dim); border: 1px solid rgba(232,255,71,0.1); }
     .how-icon svg { width: 24px; height: 24px; stroke: var(--accent); fill: none; stroke-width: 1.8; }
-    .how-label {
-      font-family: 'Bebas Neue', sans-serif; font-size: 1.15rem;
-      letter-spacing: 1px; margin-bottom: 6px;
-    }
+    .how-label { font-family: 'Bebas Neue', sans-serif; font-size: 1.15rem; letter-spacing: 1px; margin-bottom: 6px; }
     .how-desc { color: var(--muted); font-size: 0.8rem; line-height: 1.55; }
-    .how-connector {
-      position: absolute; top: 80px; right: -14px;
-      color: var(--border); font-size: 1.2rem; font-weight: 300;
-    }
+    .how-connector { position: absolute; top: 80px; right: -14px; color: var(--border); font-size: 1.2rem; font-weight: 300; }
 
-    /* ══════════════════════════════════ RESPONSIVE ══════════════════════════════════ */
-
-    /* Tablet */
     @media (max-width: 960px) {
       .tracks-grid { grid-template-columns: repeat(2, 1fr); }
       .how-steps { gap: 16px; }
     }
 
-    /* Mobile */
     @media (max-width: 640px) {
-      /* Nav — hamburger */
       nav { height: 54px; }
       .logo { font-size: 1.2rem; letter-spacing: 2px; }
-      .hamburger {
-        display: flex; align-items: center; justify-content: center;
-        width: 36px; height: 36px; border: none; background: none;
-        cursor: pointer; order: -1; margin-right: auto;
-        flex-direction: column; gap: 5px; padding: 6px;
-      }
-      .hamburger span {
-        display: block; width: 20px; height: 2px;
-        background: var(--muted); border-radius: 2px; transition: all 0.3s;
-      }
+      .hamburger { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border: none; background: none; cursor: pointer; order: -1; margin-right: auto; flex-direction: column; gap: 5px; padding: 6px; }
+      .hamburger span { display: block; width: 20px; height: 2px; background: var(--muted); border-radius: 2px; transition: all 0.3s; }
       .hamburger.open span:nth-child(1) { transform: rotate(45deg) translate(2.5px, 2.5px); }
       .hamburger.open span:nth-child(2) { opacity: 0; }
       .hamburger.open span:nth-child(3) { transform: rotate(-45deg) translate(2.5px, -2.5px); }
       nav { flex-wrap: wrap; }
       .nav-right { order: 1; }
-      .nav-links-mobile {
-        display: none; width: 100%; order: 2;
-        flex-direction: column; gap: 0;
-        background: var(--surface); border-top: 1px solid var(--border);
-        margin: 0 -16px; padding: 0; width: calc(100% + 32px);
-      }
+      .nav-links-mobile { display: none; width: 100%; order: 2; flex-direction: column; gap: 0; background: var(--surface); border-top: 1px solid var(--border); margin: 0 -16px; padding: 0; width: calc(100% + 32px); }
       .nav-links-mobile.open { display: flex; }
-      .nav-links-mobile .nav-link {
-        padding: 14px 20px; font-size: 0.76rem; border-bottom: 1px solid var(--border);
-        display: block; text-align: left;
-      }
+      .nav-links-mobile .nav-link { padding: 14px 20px; font-size: 0.76rem; border-bottom: 1px solid var(--border); display: block; text-align: left; }
       .nav-links-mobile .nav-link:last-child { border-bottom: none; }
       .nav-right .nav-link { display: none; }
       .btn-submit { padding: 7px 14px; font-size: 0.65rem; letter-spacing: 1px; }
-
-      /* Hero — full width CTA */
       .hero { padding: 36px 20px 24px; }
       .hero::before { width: 300px; height: 150px; }
       .hero h1 { font-size: clamp(1.8rem, 9vw, 2.4rem); letter-spacing: 2px; margin-bottom: 10px; }
       .hero p { font-size: 0.82rem; margin-bottom: 20px; max-width: 300px; }
-      .hero-cta {
-        padding: 14px 28px; font-size: 0.8rem; width: 100%;
-        max-width: 300px; justify-content: center; border-radius: 12px;
-      }
+      .hero-cta { padding: 14px 28px; font-size: 0.8rem; width: 100%; max-width: 300px; justify-content: center; border-radius: 12px; }
       .hero-stats { gap: 28px; margin-top: 24px; }
       .hero-stat-num { font-size: 1.4rem; }
       .hero-stat-label { font-size: 0.6rem; letter-spacing: 1.2px; }
-
-      /* View tabs + filters */
       .view-bar { flex-direction: column; align-items: stretch; gap: 8px; }
       .track-count { display: none; }
       .view-tabs { align-self: center; }
       .view-tab { padding: 6px 14px; font-size: 0.7rem; }
-
-      /* Collapsible filters */
-      .filter-toggle {
-        display: flex; align-items: center; gap: 6px; justify-content: center;
-        background: none; border: 1px solid var(--border); color: var(--muted);
-        font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 600;
-        letter-spacing: 0.8px; text-transform: uppercase;
-        padding: 8px 16px; border-radius: 8px; cursor: pointer;
-        margin: 8px auto 0; transition: all 0.2s;
-      }
+      .filter-toggle { display: flex; align-items: center; gap: 6px; justify-content: center; background: none; border: 1px solid var(--border); color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; padding: 8px 16px; border-radius: 8px; cursor: pointer; margin: 8px auto 0; transition: all 0.2s; }
       .filter-toggle:hover { border-color: var(--border-hover); color: var(--text); }
       .filter-toggle svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; transition: transform 0.2s; }
       .filter-toggle.open svg { transform: rotate(180deg); }
-      .filters {
-        max-height: 0; overflow: hidden; transition: max-height 0.3s ease;
-        gap: 5px; padding-top: 0; justify-content: center;
-      }
+      .filters { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; gap: 5px; padding-top: 0; justify-content: center; }
       .filters.open { max-height: 120px; padding-top: 10px; }
       .filter-label { font-size: 0.62rem; white-space: nowrap; margin-right: 2px; }
       .filter-pill { padding: 4px 10px; font-size: 0.66rem; flex-shrink: 0; }
       .filter-sep { display: none; }
-
-      /* Track grid — compact list layout */
       .tracks-container { padding: 12px 12px 60px; }
       .tracks-grid { grid-template-columns: 1fr; gap: 8px; }
-
-      /* Track cards — horizontal compact layout */
       .track-card { border-radius: 10px; display: flex; flex-direction: row; flex-wrap: wrap; }
       .track-card:hover { transform: none; box-shadow: none; }
-
-      .track-embed {
-        padding-bottom: 0; height: auto; width: 100px; min-height: 100px;
-        flex-shrink: 0; border-bottom: none; border-right: 1px solid var(--border);
-        border-radius: 10px 0 0 10px;
-      }
+      .track-embed { padding-bottom: 0; height: auto; width: 100px; min-height: 100px; flex-shrink: 0; border-bottom: none; border-right: 1px solid var(--border); border-radius: 10px 0 0 10px; }
       .track-embed iframe { border-radius: 10px 0 0 10px; }
       .track-embed.soundcloud { padding-bottom: 0; height: auto; min-height: 100px; }
-
       .track-body { padding: 10px 12px; flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
       .track-title { font-size: 0.82rem; margin-bottom: 4px; -webkit-line-clamp: 1; }
       .track-badges { margin-bottom: 6px; gap: 4px; }
       .badge { padding: 1px 7px; font-size: 0.56rem; }
-
-      /* Rating row — tighter */
       .rating-row { gap: 6px; }
       .star { width: 26px; height: 26px; }
       .star svg { width: 17px; height: 17px; }
       .rating-score { font-size: 0.88rem; }
       .rating-count { font-size: 0.58rem; }
-
-      /* Hide card footer on compact view — show on tap via comments panel */
       .card-footer { margin-top: 6px; padding-top: 6px; gap: 10px; }
       .comments-btn, .share-btn { font-size: 0.66rem; padding: 4px 0; }
       .comments-btn svg, .share-btn svg { width: 12px; height: 12px; }
-
-      /* Embed thumb (YouTube) — square on mobile */
       .embed-thumb { border-radius: 10px 0 0 10px; }
       .embed-thumb img { border-radius: 10px 0 0 10px; }
       .embed-thumb .play-circle { width: 36px; height: 36px; }
       .embed-thumb .play-circle svg { width: 16px; height: 16px; }
       .embed-thumb .thumb-platform { font-size: 0.55rem; }
-
-      /* Comments panel spans full width under horizontal card */
       .comments-panel { flex-basis: 100%; }
       .comments-inner { padding: 8px 12px 10px; }
       .comment-text { font-size: 0.76rem; }
       .comment-input { padding: 6px 10px; font-size: 0.74rem; }
       .comment-submit { padding: 6px 10px; font-size: 0.68rem; }
-
-      /* Scroll indicator */
       .scroll-indicator { padding: 20px 0 4px; }
       .scroll-indicator .scroll-line { height: 24px; }
       .scroll-indicator .scroll-text { font-size: 0.58rem; }
-
-      /* Leaderboard — taller rows for touch */
       .leaderboard-section { padding: 40px 12px 24px; }
       .section-title { font-size: 1.5rem; }
       .section-sub { font-size: 0.78rem; }
@@ -687,8 +517,6 @@
       .lb-meta { font-size: 0.7rem; }
       .lb-stars { font-size: 0.8rem; }
       .lb-count { font-size: 0.66rem; }
-
-      /* How it works */
       .how-section { padding: 40px 16px 16px; }
       .how-steps { grid-template-columns: 1fr; gap: 8px; }
       .how-step { padding: 20px 16px; display: flex; align-items: center; gap: 16px; text-align: left; }
@@ -698,8 +526,6 @@
       .how-label { font-size: 1rem; margin-bottom: 2px; }
       .how-desc { font-size: 0.74rem; }
       .how-connector { display: none; }
-
-      /* Tools section */
       .tools-section { padding: 40px 12px 24px; }
       .tools-grid { grid-template-columns: 1fr; gap: 12px; }
       .tool-card { padding: 20px 18px; }
@@ -708,13 +534,9 @@
       .tool-tagline { font-size: 0.76rem; margin-bottom: 12px; }
       .tool-tag { font-size: 0.62rem; }
       .tool-cta { font-size: 0.76rem; }
-
-      /* SEO section */
       .seo-section { padding: 24px 16px 40px; }
       .seo-inner h2 { font-size: 1.2rem; }
       .seo-inner p { font-size: 0.76rem; }
-
-      /* Footer */
       footer { padding: 32px 16px 20px; }
       .footer-inner { flex-direction: column; gap: 24px; }
       .footer-brand p { font-size: 0.74rem; }
@@ -725,8 +547,6 @@
       .footer-copy { font-size: 0.68rem; }
       .footer-tools { gap: 12px; }
       .footer-tools a { font-size: 0.68rem; }
-
-      /* Player bar */
       .player-bar { padding: 0 12px; height: 56px; gap: 10px; }
       body.player-active { padding-bottom: 56px; }
       body.player-active .page-frame { bottom: 56px; }
@@ -737,7 +557,6 @@
       .player-eq span { width: 2px; }
     }
 
-    /* Small phones */
     @media (max-width: 380px) {
       .hero h1 { font-size: 1.7rem; letter-spacing: 1px; }
       .hero-stats { gap: 20px; }
@@ -790,28 +609,19 @@
     <div class="how-step">
       <div class="how-num">01</div>
       <div class="how-icon"><svg viewBox="0 0 24 24"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21h14.878a2 2 0 0 0 1.94-1.515L22 17"/></svg></div>
-      <div>
-        <div class="how-label">Submit</div>
-        <div class="how-desc">Upload your AI-generated track from Suno, Udio, or any platform</div>
-      </div>
+      <div><div class="how-label">Submit</div><div class="how-desc">Upload your AI-generated track from Suno, Udio, or any platform</div></div>
       <span class="how-connector">→</span>
     </div>
     <div class="how-step">
       <div class="how-num">02</div>
       <div class="how-icon"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg></div>
-      <div>
-        <div class="how-label">Get Rated</div>
-        <div class="how-desc">The community listens and rates your track from 1 to 5 stars</div>
-      </div>
+      <div><div class="how-label">Get Rated</div><div class="how-desc">The community listens and rates your track from 1 to 5 stars</div></div>
       <span class="how-connector">→</span>
     </div>
     <div class="how-step">
       <div class="how-num">03</div>
       <div class="how-icon"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></div>
-      <div>
-        <div class="how-label">Climb the Board</div>
-        <div class="how-desc">Top-rated tracks rise to the leaderboard for everyone to discover</div>
-      </div>
+      <div><div class="how-label">Climb the Board</div><div class="how-desc">Top-rated tracks rise to the leaderboard for everyone to discover</div></div>
     </div>
   </div>
 </section>
@@ -846,8 +656,7 @@
 
 <!-- ═══ TRACKS GRID ═══ -->
 <div class="tracks-container">
-  <div class="tracks-grid" id="tracksGrid">
-  </div>
+  <div class="tracks-grid" id="tracksGrid"></div>
   <div class="scroll-indicator" id="scrollIndicator">
     <div class="scroll-line"></div>
     <div class="scroll-dot"></div>
@@ -970,7 +779,7 @@
       if (res.ok) {
         currentUser = await res.json();
         localStorage.setItem('sb_token', accessToken);
-        window.history.replaceState(null, '', window.location.pathname);
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
         const redirect = localStorage.getItem('login_redirect');
         if (redirect && redirect !== '/' && redirect !== window.location.pathname) { localStorage.removeItem('login_redirect'); window.location.href = redirect; return; }
         localStorage.removeItem('login_redirect');
@@ -989,21 +798,14 @@
       const ml = document.getElementById('authLinkMobile');
       if (ml) { ml.textContent = currentUser.user_metadata?.name || 'Profile'; ml.href = '/profile.html'; }
     }
-    // Hent anonyme ratings uansett (innlogget eller ikke)
     await loadAnonRatings();
   }
 
-  // Hent brukerens anonyme ratings ved sidelast
   async function loadAnonRatings() {
     const token = getAnonToken();
     try {
-      const res = await fetch(
-        `${SUPABASE_URL}/rest/v1/anonymous_ratings?anon_token=eq.${token}&select=track_id,score`,
-        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
-      );
-      if (res.ok) {
-        (await res.json()).forEach(r => { userRatings[r.track_id] = r.score; });
-      }
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/anonymous_ratings?anon_token=eq.${token}&select=track_id,score`, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } });
+      if (res.ok) { (await res.json()).forEach(r => { userRatings[r.track_id] = r.score; }); }
     } catch(e) {}
   }
 
@@ -1033,516 +835,129 @@
     return { platform: 'unknown', embedHtml: '<div class="embed-placeholder" style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:0.8rem;">No preview available</div>' };
   }
 
-  // ─── Wilson Score ───
-  function wilsonScore(avg, n) {
-    if (n === 0) return 0;
-    const p = (avg - 1) / 4;
-    const z = 1.96;
-    const z2 = z * z;
-    return (p + z2 / (2 * n) - z * Math.sqrt((p * (1 - p) + z2 / (4 * n)) / n)) / (1 + z2 / n);
-  }
+  function wilsonScore(avg, n) { if (n === 0) return 0; const p = (avg - 1) / 4; const z = 1.96; const z2 = z * z; return (p + z2 / (2 * n) - z * Math.sqrt((p * (1 - p) + z2 / (4 * n)) / n)) / (1 + z2 / n); }
 
-  // ─── Load Tracks ───
   async function loadTracks() {
-    try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/tracks?select=*&order=created_at.desc`, { headers: { 'apikey': SUPABASE_KEY } });
-      allTracks = await res.json();
-      renderTracks(); renderLeaderboard(); updateHeroStats();
-    } catch(e) { console.error('Load error:', e); }
+    try { const res = await fetch(`${SUPABASE_URL}/rest/v1/tracks?select=*&order=created_at.desc`, { headers: { 'apikey': SUPABASE_KEY } }); allTracks = await res.json(); renderTracks(); renderLeaderboard(); updateHeroStats(); } catch(e) { console.error('Load error:', e); }
   }
 
-  function updateHeroStats() {
-    document.getElementById('statTracks').textContent = allTracks.length;
-    document.getElementById('statRatings').textContent = allTracks.reduce((s, t) => s + (t.rating_count || 0), 0);
-    document.getElementById('statCreators').textContent = new Set(allTracks.map(t => t.user_id).filter(Boolean)).size;
-  }
+  function updateHeroStats() { document.getElementById('statTracks').textContent = allTracks.length; document.getElementById('statRatings').textContent = allTracks.reduce((s, t) => s + (t.rating_count || 0), 0); document.getElementById('statCreators').textContent = new Set(allTracks.map(t => t.user_id).filter(Boolean)).size; }
 
-  function renderLeaderboard() {
-    const lb = document.getElementById('leaderboardList');
-    const sorted = [...allTracks].sort((a, b) => wilsonScore(b.avg_rating||0, b.rating_count||0) - wilsonScore(a.avg_rating||0, a.rating_count||0)).slice(0, 10);
-    if (!sorted.length) { lb.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted);">No tracks yet</div>'; return; }
-    const medals = ['\u{1F947}', '\u{1F948}', '\u{1F949}'];
-    lb.innerHTML = sorted.map((t, i) => {
-      const rank = i < 3 ? medals[i] : `#${i+1}`;
-      const stars = (t.avg_rating||0) > 0 ? (t.avg_rating).toFixed(1)+' \u2605' : '—';
-      return `<div class="lb-row"><div class="lb-rank">${rank}</div><div class="lb-info"><div class="lb-title">${sanitize(t.title)}</div><div class="lb-meta">${sanitize(t.tool)} · ${sanitize(t.genre)}</div></div><div class="lb-rating"><span class="lb-stars">${stars}</span><span class="lb-count">(${t.rating_count||0})</span></div></div>`;
-    }).join('');
-  }
+  function renderLeaderboard() { const lb = document.getElementById('leaderboardList'); const sorted = [...allTracks].sort((a, b) => wilsonScore(b.avg_rating||0, b.rating_count||0) - wilsonScore(a.avg_rating||0, a.rating_count||0)).slice(0, 10); if (!sorted.length) { lb.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted);">No tracks yet</div>'; return; } const medals = ['\u{1F947}', '\u{1F948}', '\u{1F949}']; lb.innerHTML = sorted.map((t, i) => { const rank = i < 3 ? medals[i] : `#${i+1}`; const stars = (t.avg_rating||0) > 0 ? (t.avg_rating).toFixed(1)+' \u2605' : '\u2014'; return `<div class="lb-row"><div class="lb-rank">${rank}</div><div class="lb-info"><div class="lb-title">${sanitize(t.title)}</div><div class="lb-meta">${sanitize(t.tool)} \u00b7 ${sanitize(t.genre)}</div></div><div class="lb-rating"><span class="lb-stars">${stars}</span><span class="lb-count">(${t.rating_count||0})</span></div></div>`; }).join(''); }
 
-  function getSortedTracks(tracks) {
-    switch (currentView) {
-      case 'top': return [...tracks].sort((a, b) => wilsonScore(b.avg_rating||0, b.rating_count||0) - wilsonScore(a.avg_rating||0, a.rating_count||0));
-      case 'new': return [...tracks].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      default: return [...tracks].sort((a, b) => {
-        const ca = a.rating_count||0, cb = b.rating_count||0;
-        if (ca <= 5 && cb > 5) return -1;
-        if (cb <= 5 && ca > 5) return 1;
-        return new Date(b.created_at) - new Date(a.created_at);
-      });
-    }
-  }
+  function getSortedTracks(tracks) { switch (currentView) { case 'top': return [...tracks].sort((a, b) => wilsonScore(b.avg_rating||0, b.rating_count||0) - wilsonScore(a.avg_rating||0, a.rating_count||0)); case 'new': return [...tracks].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); default: return [...tracks].sort((a, b) => { const ca = a.rating_count||0, cb = b.rating_count||0; if (ca <= 5 && cb > 5) return -1; if (cb <= 5 && ca > 5) return 1; return new Date(b.created_at) - new Date(a.created_at); }); } }
+  function getFilteredTracks() { return allTracks.filter(t => { if (filters.genre !== 'all' && t.genre !== filters.genre) return false; if (filters.tool !== 'all' && t.tool !== filters.tool) return false; return true; }); }
 
-  function getFilteredTracks() {
-    return allTracks.filter(t => {
-      if (filters.genre !== 'all' && t.genre !== filters.genre) return false;
-      if (filters.tool !== 'all' && t.tool !== filters.tool) return false;
-      return true;
-    });
-  }
+  const TRACKS_PER_PAGE = 9; let visibleCount = TRACKS_PER_PAGE; let currentSorted = []; let activeEmbedTrackId = null;
 
-  const TRACKS_PER_PAGE = 9;
-  let visibleCount = TRACKS_PER_PAGE;
-  let currentSorted = [];
-  let activeEmbedTrackId = null;
+  function renderTracks() { visibleCount = TRACKS_PER_PAGE; currentSorted = getSortedTracks(getFilteredTracks()); const grid = document.getElementById('tracksGrid'); const hasActiveIframe = grid && grid.querySelector('.track-embed iframe') !== null; const isPlaying = activeEmbedTrackId || activePlayerTrackId || (playerBar && playerBar.classList.contains('active')) || hasActiveIframe; if (isPlaying) visibleCount = Math.max(visibleCount, currentSorted.length); document.getElementById('trackCount').textContent = `${currentSorted.length} track${currentSorted.length !== 1 ? 's' : ''}`; renderVisibleTracks(); }
 
-  function renderTracks() {
-    visibleCount = TRACKS_PER_PAGE;
-    currentSorted = getSortedTracks(getFilteredTracks());
-    const grid = document.getElementById('tracksGrid');
-    const hasActiveIframe = grid && grid.querySelector('.track-embed iframe') !== null;
-    const isPlaying = activeEmbedTrackId || activePlayerTrackId || (playerBar && playerBar.classList.contains('active')) || hasActiveIframe;
-    if (isPlaying) visibleCount = Math.max(visibleCount, currentSorted.length);
-    document.getElementById('trackCount').textContent = `${currentSorted.length} track${currentSorted.length !== 1 ? 's' : ''}`;
-    renderVisibleTracks();
-  }
+  function renderVisibleTracks() { const grid = document.getElementById('tracksGrid'); const toShow = currentSorted.slice(0, visibleCount); if (!toShow.length) { grid.innerHTML = '<div class="empty-state"><p>No tracks found. Be the first to submit!</p></div>'; setupInfiniteScroll(); return; } const hasActiveIframe = grid.querySelector('.track-embed iframe') !== null; const isPlaying = activeEmbedTrackId || activePlayerTrackId || playerBar.classList.contains('active') || hasActiveIframe; const toShowIds = new Set(toShow.map(t => String(t.id))); if (isPlaying) { const existingIds = new Set(); grid.querySelectorAll('.track-card').forEach(card => { const id = card.id.replace('card-', ''); existingIds.add(id); card.style.display = toShowIds.has(id) ? '' : 'none'; const idx = toShow.findIndex(t => String(t.id) === id); card.style.order = idx >= 0 ? idx : 9999; }); toShow.forEach((track, i) => { if (!existingIds.has(String(track.id))) { grid.insertAdjacentHTML('beforeend', buildCardHtml(track, i)); } }); const playingId = String(activeEmbedTrackId || activePlayerTrackId); if (!toShowIds.has(playingId)) { activeEmbedTrackId = null; closePlayer(); } } else { grid.innerHTML = toShow.map((track, i) => buildCardHtml(track, i)).join(''); } setupInfiniteScroll(); }
 
-  function renderVisibleTracks() {
-    const grid = document.getElementById('tracksGrid');
-    const toShow = currentSorted.slice(0, visibleCount);
-
-    if (!toShow.length) { grid.innerHTML = '<div class="empty-state"><p>No tracks found. Be the first to submit!</p></div>'; setupInfiniteScroll(); return; }
-
-    const hasActiveIframe = grid.querySelector('.track-embed iframe') !== null;
-    const isPlaying = activeEmbedTrackId || activePlayerTrackId || playerBar.classList.contains('active') || hasActiveIframe;
-    const toShowIds = new Set(toShow.map(t => String(t.id)));
-    if (isPlaying) {
-      const existingIds = new Set();
-
-      grid.querySelectorAll('.track-card').forEach(card => {
-        const id = card.id.replace('card-', '');
-        existingIds.add(id);
-        const inView = toShowIds.has(id);
-        card.style.display = inView ? '' : 'none';
-        const idx = toShow.findIndex(t => String(t.id) === id);
-        card.style.order = idx >= 0 ? idx : 9999;
-      });
-
-      toShow.forEach((track, i) => {
-        if (!existingIds.has(String(track.id))) {
-          const html = buildCardHtml(track, i);
-          grid.insertAdjacentHTML('beforeend', html);
-        }
-      });
-
-      const playingId = String(activeEmbedTrackId || activePlayerTrackId);
-      if (!toShowIds.has(playingId)) {
-        activeEmbedTrackId = null;
-        closePlayer();
-      }
-    } else {
-      grid.innerHTML = toShow.map((track, i) => buildCardHtml(track, i)).join('');
-    }
-
-    setupInfiniteScroll();
-  }
-
-  function buildCardHtml(track, i) {
-    const embed = getEmbedHtml(track);
-    const avg = track.avg_rating||0, cnt = track.rating_count||0;
-    const userScore = userRatings[track.id]||0;
-    const isRated = userScore > 0;
-    let embedClass = 'track-embed';
-    if (embed.platform === 'soundcloud') embedClass += ' soundcloud';
-    if (embed.platform === 'udio') embedClass += ' udio';
-    let starsHtml = '';
-    for (let s = 1; s <= 5; s++) starsHtml += `<div class="star ${isRated && s <= userScore ? 'filled' : ''}" data-track="${track.id}" data-score="${s}">${starSVG}</div>`;
-    const plat = embed.platform !== 'unknown' ? embed.platform.charAt(0).toUpperCase() + embed.platform.slice(1) : '';
-    const thumb = getLazyThumb(track, embed);
-
-    return `<div class="track-card" id="card-${track.id}" data-track-id="${track.id}" style="animation-delay:${(i % TRACKS_PER_PAGE) * 0.05}s">
-      <div class="${embedClass}" data-track-id="${track.id}" data-track-title="${sanitize(track.title)}" data-track-tool="${sanitize(track.tool)}" data-track-platform="${embed.platform}" data-track-embed="${encodeURIComponent(embed.embedHtml)}">${thumb}</div>
-      <div class="track-body">
-        <div class="track-title">${sanitize(track.title)}</div>
-        <div class="track-badges"><span class="badge badge-tool">${sanitize(track.tool)}</span><span class="badge badge-genre">${sanitize(track.genre)}</span>${plat ? `<span class="badge badge-platform">${plat}</span>` : ''}</div>
-        <div class="rating-row">
-          <div class="stars ${isRated ? 'rated' : ''}" id="stars-${track.id}">${starsHtml}</div>
-          <div class="rating-info"><div class="rating-score">${avg > 0 ? avg.toFixed(1) : '—'}</div><div class="rating-count">${cnt} rating${cnt !== 1 ? 's' : ''}</div></div>
-        </div>
-        <div class="card-footer">
-          <button class="comments-btn" data-action="comments" data-track="${track.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Comments</button>
-          <button class="share-btn" data-action="share" data-track="${track.id}" data-title="${sanitize(track.title)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Share</button>
-        </div>
-      </div>
-      <div class="comments-panel" id="comments-${track.id}"><div class="comments-inner"><div id="comments-content-${track.id}"><span style="color:var(--muted);font-size:0.8rem;">Loading comments...</span></div>${currentUser ? `<div class="comment-form"><input type="text" class="comment-input" id="comment-input-${track.id}" placeholder="Add a comment..."><button class="comment-submit" data-action="post-comment" data-track="${track.id}">Post</button></div>` : '<p style="font-size:0.75rem;color:var(--muted);margin-top:8px;">Log in to comment</p>'}</div></div>
-    </div>`;
-  }
+  function buildCardHtml(track, i) { const embed = getEmbedHtml(track); const avg = track.avg_rating||0, cnt = track.rating_count||0; const userScore = userRatings[track.id]||0; const isRated = userScore > 0; let embedClass = 'track-embed'; if (embed.platform === 'soundcloud') embedClass += ' soundcloud'; if (embed.platform === 'udio') embedClass += ' udio'; let starsHtml = ''; for (let s = 1; s <= 5; s++) starsHtml += `<div class="star ${isRated && s <= userScore ? 'filled' : ''}" data-track="${track.id}" data-score="${s}">${starSVG}</div>`; const plat = embed.platform !== 'unknown' ? embed.platform.charAt(0).toUpperCase() + embed.platform.slice(1) : ''; const thumb = getLazyThumb(track, embed); return `<div class="track-card" id="card-${track.id}" data-track-id="${track.id}" style="animation-delay:${(i % TRACKS_PER_PAGE) * 0.05}s"><div class="${embedClass}" data-track-id="${track.id}" data-track-title="${sanitize(track.title)}" data-track-tool="${sanitize(track.tool)}" data-track-platform="${embed.platform}" data-track-embed="${encodeURIComponent(embed.embedHtml)}">${thumb}</div><div class="track-body"><div class="track-title">${sanitize(track.title)}</div><div class="track-badges"><span class="badge badge-tool">${sanitize(track.tool)}</span><span class="badge badge-genre">${sanitize(track.genre)}</span>${plat ? `<span class="badge badge-platform">${plat}</span>` : ''}</div><div class="rating-row"><div class="stars ${isRated ? 'rated' : ''}" id="stars-${track.id}">${starsHtml}</div><div class="rating-info"><div class="rating-score">${avg > 0 ? avg.toFixed(1) : '\u2014'}</div><div class="rating-count">${cnt} rating${cnt !== 1 ? 's' : ''}</div></div></div><div class="card-footer"><button class="comments-btn" data-action="comments" data-track="${track.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Comments</button><button class="share-btn" data-action="share" data-track="${track.id}" data-title="${sanitize(track.title)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Share</button></div></div><div class="comments-panel" id="comments-${track.id}"><div class="comments-inner"><div id="comments-content-${track.id}"><span style="color:var(--muted);font-size:0.8rem;">Loading comments...</span></div>${currentUser ? `<div class="comment-form"><input type="text" class="comment-input" id="comment-input-${track.id}" placeholder="Add a comment..."><button class="comment-submit" data-action="post-comment" data-track="${track.id}">Post</button></div>` : '<p style="font-size:0.75rem;color:var(--muted);margin-top:8px;">Log in to comment</p>'}</div></div></div>`; }
 
   // ─── Lazy Thumbnails ───
-  function getLazyThumb(track, embed) {
-    const playSVG = '<svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
-    const platformLabel = embed.platform !== 'unknown' ? embed.platform.charAt(0).toUpperCase() + embed.platform.slice(1) : '';
+  function getLazyThumb(track, embed) { const playSVG = '<svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>'; const platformLabel = embed.platform !== 'unknown' ? embed.platform.charAt(0).toUpperCase() + embed.platform.slice(1) : ''; if (track.thumbnail_url && embed.platform !== 'udio' && embed.platform !== 'soundcloud') { return `<div class="embed-thumb" data-action="load-embed" data-track-id="${track.id}"><img src="${sanitize(track.thumbnail_url)}" alt="${sanitize(track.title)}" loading="lazy"><div class="embed-thumb-overlay"><div class="play-circle">${playSVG}</div>${platformLabel ? `<span class="thumb-platform">${platformLabel}</span>` : ''}</div></div>`; } if (embed.platform === 'youtube') { const match = (track.embed_url || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([^&?\/#]+)/) || [null, track.yt_id]; const videoId = match[1] || track.yt_id; if (videoId) { return `<div class="embed-thumb" data-action="load-embed" data-track-id="${track.id}"><img src="https://img.youtube.com/vi/${videoId}/hqdefault.jpg" alt="${sanitize(track.title)}" loading="lazy"><div class="embed-thumb-overlay"><div class="play-circle">${playSVG}</div><span class="thumb-platform">YouTube</span></div></div>`; } } return embed.embedHtml; }
 
-    if (track.thumbnail_url && embed.platform !== 'udio' && embed.platform !== 'soundcloud') {
-      return `<div class="embed-thumb" data-action="load-embed" data-track-id="${track.id}">
-        <img src="${sanitize(track.thumbnail_url)}" alt="${sanitize(track.title)}" loading="lazy">
-        <div class="embed-thumb-overlay">
-          <div class="play-circle">${playSVG}</div>
-          ${platformLabel ? `<span class="thumb-platform">${platformLabel}</span>` : ''}
-        </div>
-      </div>`;
-    }
+  // ─── Load Embed on Click ───
+  function loadEmbed(trackId) { if (activeEmbedTrackId && activeEmbedTrackId !== trackId) { stopEmbed(activeEmbedTrackId); } const container = document.querySelector(`.track-embed[data-track-id="${trackId}"]`); if (!container) return; const embedHtml = decodeURIComponent(container.dataset.trackEmbed); const platform = container.dataset.trackPlatform; let finalHtml = embedHtml; if (platform === 'youtube') { finalHtml = embedHtml.replace(/src="([^"]+)"/, (m, src) => `src="${src}${src.includes('?') ? '&' : '?'}autoplay=1"`); } else if (platform === 'suno') { finalHtml = embedHtml.replace(/src="([^"]+)"/, (m, src) => `src="${src}${src.includes('?') ? '&' : '?'}autoplay=true"`); } else if (platform === 'soundcloud') { finalHtml = embedHtml.replace('auto_play=false', 'auto_play=true'); } finalHtml = finalHtml.replace(/<iframe /, '<iframe allow="autoplay" '); if (platform === 'youtube') { container.innerHTML = finalHtml; } else { const existingThumb = container.querySelector('.embed-thumb'); if (existingThumb) { existingThumb.classList.add('is-playing'); existingThumb.removeAttribute('data-action'); const hiddenFrame = document.createElement('div'); hiddenFrame.className = 'hidden-embed-frame'; hiddenFrame.innerHTML = finalHtml; container.appendChild(hiddenFrame); } else { container.innerHTML = finalHtml; } } activeEmbedTrackId = trackId; activatePlayerBar(trackId, container, platform); }
 
-    if (embed.platform === 'youtube') {
-      const match = (track.embed_url || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([^&?\/#]+)/) || [null, track.yt_id];
-      const videoId = match[1] || track.yt_id;
-      if (videoId) {
-        return `<div class="embed-thumb" data-action="load-embed" data-track-id="${track.id}">
-          <img src="https://img.youtube.com/vi/${videoId}/hqdefault.jpg" alt="${sanitize(track.title)}" loading="lazy">
-          <div class="embed-thumb-overlay">
-            <div class="play-circle">${playSVG}</div>
-            <span class="thumb-platform">YouTube</span>
-          </div>
-        </div>`;
-      }
-    }
+  function stopEmbed(trackId) { const container = document.querySelector(`.track-embed[data-track-id="${trackId}"]`); if (!container) return; const platform = container.dataset.trackPlatform; const card = container.closest('.track-card'); if (card) card.classList.remove('playing'); if (platform === 'youtube') { container.innerHTML = getLazyThumbById(trackId); } else { const hiddenFrame = container.querySelector('.hidden-embed-frame'); if (hiddenFrame) hiddenFrame.remove(); const thumb = container.querySelector('.embed-thumb'); if (thumb) { thumb.classList.remove('is-playing'); thumb.setAttribute('data-action', 'load-embed'); } else { container.innerHTML = getLazyThumbById(trackId) || decodeURIComponent(container.dataset.trackEmbed); } } }
 
-    return embed.embedHtml;
-  }
+  function getEmbedHtmlById(trackId) { const track = currentSorted.find(t => t.id === trackId); if (!track) return null; return getEmbedHtml(track); }
+  function getLazyThumbById(trackId) { const track = currentSorted.find(t => t.id === trackId); if (!track) return ''; return getLazyThumb(track, getEmbedHtml(track)); }
 
-  // ─── Load Embed on Click (single playback) ───
-  function loadEmbed(trackId) {
-    if (activeEmbedTrackId && activeEmbedTrackId !== trackId) {
-      stopEmbed(activeEmbedTrackId);
-    }
-
-    const container = document.querySelector(`.track-embed[data-track-id="${trackId}"]`);
-    if (!container) return;
-
-    const embedHtml = decodeURIComponent(container.dataset.trackEmbed);
-    const platform = container.dataset.trackPlatform;
-
-    let finalHtml = embedHtml;
-    if (platform === 'youtube') {
-      finalHtml = embedHtml.replace(/src="([^"]+)"/, (m, src) => {
-        return `src="${src}${src.includes('?') ? '&' : '?'}autoplay=1"`;
-      });
-    } else if (platform === 'suno') {
-      finalHtml = embedHtml.replace(/src="([^"]+)"/, (m, src) => {
-        return `src="${src}${src.includes('?') ? '&' : '?'}autoplay=true"`;
-      });
-    } else if (platform === 'soundcloud') {
-      finalHtml = embedHtml.replace('auto_play=false', 'auto_play=true');
-    }
-    finalHtml = finalHtml.replace(/<iframe /, '<iframe allow="autoplay" ');
-
-    if (platform === 'youtube') {
-      container.innerHTML = finalHtml;
-    } else {
-      const existingThumb = container.querySelector('.embed-thumb');
-      if (existingThumb) {
-        existingThumb.classList.add('is-playing');
-        existingThumb.removeAttribute('data-action');
-        const hiddenFrame = document.createElement('div');
-        hiddenFrame.className = 'hidden-embed-frame';
-        hiddenFrame.innerHTML = finalHtml;
-        container.appendChild(hiddenFrame);
-      } else {
-        container.innerHTML = finalHtml;
-      }
-    }
-
-    activeEmbedTrackId = trackId;
-    activatePlayerBar(trackId, container, platform);
-  }
-
-  function stopEmbed(trackId) {
-    const container = document.querySelector(`.track-embed[data-track-id="${trackId}"]`);
-    if (!container) return;
-    const platform = container.dataset.trackPlatform;
-    const card = container.closest('.track-card');
-    if (card) card.classList.remove('playing');
-
-    if (platform === 'youtube') {
-      container.innerHTML = getLazyThumbById(trackId);
-    } else {
-      const hiddenFrame = container.querySelector('.hidden-embed-frame');
-      if (hiddenFrame) hiddenFrame.remove();
-      const thumb = container.querySelector('.embed-thumb');
-      if (thumb) {
-        thumb.classList.remove('is-playing');
-        thumb.setAttribute('data-action', 'load-embed');
-      } else {
-        container.innerHTML = getLazyThumbById(trackId) || decodeURIComponent(container.dataset.trackEmbed);
-      }
-    }
-  }
-
-  function getEmbedHtmlById(trackId) {
-    const track = currentSorted.find(t => t.id === trackId);
-    if (!track) return null;
-    return getEmbedHtml(track);
-  }
-
-  function getLazyThumbById(trackId) {
-    const track = currentSorted.find(t => t.id === trackId);
-    if (!track) return '';
-    const embed = getEmbedHtml(track);
-    return getLazyThumb(track, embed);
-  }
-
-  setInterval(() => {
-    if (document.activeElement && document.activeElement.tagName === 'IFRAME') {
-      const container = document.activeElement.closest('.track-embed[data-track-platform]');
-      if (container) {
-        const trackId = container.dataset.trackId;
-        const platform = container.dataset.trackPlatform;
-        if (platform !== 'youtube' && platform !== 'unknown' && activeEmbedTrackId !== trackId) {
-          if (activeEmbedTrackId) { stopEmbed(activeEmbedTrackId); }
-          activeEmbedTrackId = trackId;
-          activatePlayerBar(trackId, container, platform);
-        }
-      }
-    }
-  }, 500);
+  setInterval(() => { if (document.activeElement && document.activeElement.tagName === 'IFRAME') { const container = document.activeElement.closest('.track-embed[data-track-platform]'); if (container) { const trackId = container.dataset.trackId; const platform = container.dataset.trackPlatform; if (platform !== 'youtube' && platform !== 'unknown' && activeEmbedTrackId !== trackId) { if (activeEmbedTrackId) { stopEmbed(activeEmbedTrackId); } activeEmbedTrackId = trackId; activatePlayerBar(trackId, container, platform); } } } }, 500);
 
   // ─── Infinite Scroll ───
-  let loadingMore = false;
-  let hasMore = false;
-
-  function setupInfiniteScroll() {
-    hasMore = visibleCount < currentSorted.length;
-    const indicator = document.getElementById('scrollIndicator');
-    if (indicator) {
-      indicator.classList.toggle('hidden', !hasMore);
-    }
-  }
-
-  window.addEventListener('scroll', function() {
-    if (!hasMore || loadingMore) return;
-    const grid = document.getElementById('tracksGrid');
-    if (!grid) return;
-    const gridBottom = grid.getBoundingClientRect().bottom;
-    const windowHeight = window.innerHeight;
-    if (gridBottom <= windowHeight + 300) {
-      loadingMore = true;
-      visibleCount += TRACKS_PER_PAGE;
-      renderVisibleTracks();
-      loadingMore = false;
-    }
-  });
+  let loadingMore = false; let hasMore = false;
+  function setupInfiniteScroll() { hasMore = visibleCount < currentSorted.length; const indicator = document.getElementById('scrollIndicator'); if (indicator) indicator.classList.toggle('hidden', !hasMore); }
+  window.addEventListener('scroll', function() { if (!hasMore || loadingMore) return; const grid = document.getElementById('tracksGrid'); if (!grid) return; if (grid.getBoundingClientRect().bottom <= window.innerHeight + 300) { loadingMore = true; visibleCount += TRACKS_PER_PAGE; renderVisibleTracks(); loadingMore = false; } });
 
   function sanitize(str) { if (!str) return ''; const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
 
   // ─── Event Delegation ───
-  document.addEventListener('click', function(e) {
-    const star = e.target.closest('.star');
-    if (star) { rateStar(star.dataset.track, parseInt(star.dataset.score), star.parentElement); return; }
-    const thumbBtn = e.target.closest('[data-action="load-embed"]');
-    if (thumbBtn) { loadEmbed(thumbBtn.dataset.trackId); return; }
-    const commentsBtn = e.target.closest('[data-action="comments"]');
-    if (commentsBtn) { toggleComments(commentsBtn.dataset.track); return; }
-    const shareBtn = e.target.closest('[data-action="share"]');
-    if (shareBtn) { shareTrack(shareBtn.dataset.track, shareBtn.dataset.title, shareBtn); return; }
-    const postBtn = e.target.closest('[data-action="post-comment"]');
-    if (postBtn) { addComment(postBtn.dataset.track); return; }
-    const toolCard = e.target.closest('.tool-card[data-tool]');
-    if (toolCard) { gtag('event', 'tool_click', { tool: toolCard.dataset.tool, location: 'tools_section' }); }
-    const viewTab = e.target.closest('.view-tab');
-    if (viewTab) { const m = { 'discover':'discover', 'top rated':'top', 'new':'new' }; setView(m[viewTab.textContent.trim().toLowerCase()]||'discover', viewTab); return; }
-    const pill = e.target.closest('.filter-pill');
-    if (pill) { setFilter(pill.dataset.filter, pill.dataset.value, pill); return; }
-  });
+  document.addEventListener('click', function(e) { const star = e.target.closest('.star'); if (star) { rateStar(star.dataset.track, parseInt(star.dataset.score), star.parentElement); return; } const thumbBtn = e.target.closest('[data-action="load-embed"]'); if (thumbBtn) { loadEmbed(thumbBtn.dataset.trackId); return; } const commentsBtn = e.target.closest('[data-action="comments"]'); if (commentsBtn) { toggleComments(commentsBtn.dataset.track); return; } const shareBtn = e.target.closest('[data-action="share"]'); if (shareBtn) { shareTrack(shareBtn.dataset.track, shareBtn.dataset.title, shareBtn); return; } const postBtn = e.target.closest('[data-action="post-comment"]'); if (postBtn) { addComment(postBtn.dataset.track); return; } const toolCard = e.target.closest('.tool-card[data-tool]'); if (toolCard) { gtag('event', 'tool_click', { tool: toolCard.dataset.tool, location: 'tools_section' }); } const viewTab = e.target.closest('.view-tab'); if (viewTab) { const m = { 'discover':'discover', 'top rated':'top', 'new':'new' }; setView(m[viewTab.textContent.trim().toLowerCase()]||'discover', viewTab); return; } const pill = e.target.closest('.filter-pill'); if (pill) { setFilter(pill.dataset.filter, pill.dataset.value, pill); return; } });
 
-  document.addEventListener('mouseover', function(e) {
-    const star = e.target.closest('.star');
-    if (!star) return;
-    const c = star.parentElement;
-    if (c.classList.contains('rated')) return;
-    const s = parseInt(star.dataset.score);
-    c.querySelectorAll('.star').forEach(x => x.classList.toggle('hover-fill', parseInt(x.dataset.score) <= s));
-  });
-  document.addEventListener('mouseout', function(e) {
-    const star = e.target.closest('.star');
-    if (!star) return;
-    const c = star.parentElement;
-    if (c.classList.contains('rated')) return;
-    c.querySelectorAll('.star').forEach(x => x.classList.remove('hover-fill'));
-  });
+  document.addEventListener('mouseover', function(e) { const star = e.target.closest('.star'); if (!star) return; const c = star.parentElement; if (c.classList.contains('rated')) return; const s = parseInt(star.dataset.score); c.querySelectorAll('.star').forEach(x => x.classList.toggle('hover-fill', parseInt(x.dataset.score) <= s)); });
+  document.addEventListener('mouseout', function(e) { const star = e.target.closest('.star'); if (!star) return; const c = star.parentElement; if (c.classList.contains('rated')) return; c.querySelectorAll('.star').forEach(x => x.classList.remove('hover-fill')); });
 
   // ─── Rate (via Edge Function) ───
-  async function rateStar(trackId, score, container) {
-    container.classList.add('rated');
-    container.querySelectorAll('.star').forEach(s => {
-      s.classList.remove('hover-fill');
-      s.classList.toggle('filled', parseInt(s.dataset.score) <= score);
-    });
-    userRatings[trackId] = score;
-    gtag('event', 'rate', { track_id: trackId, score });
+  async function rateStar(trackId, score, container) { container.classList.add('rated'); container.querySelectorAll('.star').forEach(s => { s.classList.remove('hover-fill'); s.classList.toggle('filled', parseInt(s.dataset.score) <= score); }); userRatings[trackId] = score; gtag('event', 'rate', { track_id: trackId, score }); try { const res = await fetch(SUPABASE_URL + '/functions/v1/rate-track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ track_id: trackId, score: score, anon_token: getAnonToken() }) }); const data = await res.json(); if (!res.ok) { showToast(data.error || 'Kunne ikke rate'); return; } const t = allTracks.find(x => x.id === trackId); if (t) { t.avg_rating = data.avg_rating; t.rating_count = data.rating_count; } const card = document.getElementById(`card-${trackId}`); if (card) { const se = card.querySelector('.rating-score'); const ce = card.querySelector('.rating-count'); if (se) se.textContent = data.avg_rating ? data.avg_rating.toFixed(1) : '\u2014'; if (ce) ce.textContent = `${data.rating_count||0} rating${(data.rating_count||0)!==1?'s':''}`; } } catch(e) { showToast('Nettverksfeil \u2014 pr\u00f8v igjen'); } }
 
-    try {
-      const res = await fetch(SUPABASE_URL + '/functions/v1/rate-track', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          track_id: trackId,
-          score: score,
-          anon_token: getAnonToken()
-        })
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        showToast(data.error || 'Kunne ikke rate');
-        return;
-      }
-
-      // Oppdater UI med verdier fra server
-      const t = allTracks.find(x => x.id === trackId);
-      if (t) { t.avg_rating = data.avg_rating; t.rating_count = data.rating_count; }
-      const card = document.getElementById(`card-${trackId}`);
-      if (card) {
-        const se = card.querySelector('.rating-score');
-        const ce = card.querySelector('.rating-count');
-        if (se) se.textContent = data.avg_rating ? data.avg_rating.toFixed(1) : '—';
-        if (ce) ce.textContent = `${data.rating_count||0} rating${(data.rating_count||0)!==1?'s':''}`;
-      }
-    } catch(e) {
-      showToast('Nettverksfeil — prøv igjen');
-    }
-  }
-
-  // Toast-melding for feil/info
-  function showToast(msg) {
-    let toast = document.getElementById('vote-toast');
-    if (!toast) {
-      toast = document.createElement('div');
-      toast.id = 'vote-toast';
-      toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1a1a2e;color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;z-index:9999;opacity:0;transition:opacity 0.3s;border:1px solid rgba(232,255,71,0.2);';
-      document.body.appendChild(toast);
-    }
-    toast.textContent = msg;
-    toast.style.opacity = '1';
-    setTimeout(() => { toast.style.opacity = '0'; }, 3000);
-  }
+  function showToast(msg) { let toast = document.getElementById('vote-toast'); if (!toast) { toast = document.createElement('div'); toast.id = 'vote-toast'; toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1a1a2e;color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;z-index:9999;opacity:0;transition:opacity 0.3s;border:1px solid rgba(232,255,71,0.2);'; document.body.appendChild(toast); } toast.textContent = msg; toast.style.opacity = '1'; setTimeout(() => { toast.style.opacity = '0'; }, 3000); }
 
   function setView(v, el) { currentView = v; document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active')); el.classList.add('active'); applyFiltersAndSort(); }
   function setFilter(type, val, el) { filters[type] = val; document.querySelectorAll(`.filter-pill[data-filter="${type}"]`).forEach(p => p.classList.remove('active')); el.classList.add('active'); applyFiltersAndSort(); }
 
-  function applyFiltersAndSort() {
-    const grid = document.getElementById('tracksGrid');
-    if (grid.querySelector('iframe')) {
-      const filtered = getFilteredTracks();
-      const sorted = getSortedTracks(filtered);
-      const visibleIds = new Set(sorted.map(t => String(t.id)));
-
-      document.getElementById('trackCount').textContent = `${sorted.length} track${sorted.length !== 1 ? 's' : ''}`;
-
-      grid.querySelectorAll('.track-card').forEach(card => {
-        const id = card.id.replace('card-', '');
-        card.style.display = visibleIds.has(id) ? '' : 'none';
-        const idx = sorted.findIndex(t => String(t.id) === id);
-        card.style.order = idx >= 0 ? idx : 9999;
-      });
-    } else {
-      renderTracks();
-    }
-  }
+  function applyFiltersAndSort() { const grid = document.getElementById('tracksGrid'); if (grid.querySelector('iframe')) { const filtered = getFilteredTracks(); const sorted = getSortedTracks(filtered); const visibleIds = new Set(sorted.map(t => String(t.id))); document.getElementById('trackCount').textContent = `${sorted.length} track${sorted.length !== 1 ? 's' : ''}`; grid.querySelectorAll('.track-card').forEach(card => { const id = card.id.replace('card-', ''); card.style.display = visibleIds.has(id) ? '' : 'none'; const idx = sorted.findIndex(t => String(t.id) === id); card.style.order = idx >= 0 ? idx : 9999; }); } else { renderTracks(); } }
 
   // ─── Comments ───
   async function toggleComments(id) { const p = document.getElementById(`comments-${id}`); const o = p.classList.contains('open'); document.querySelectorAll('.comments-panel.open').forEach(x => x.classList.remove('open')); if (!o) { p.classList.add('open'); await loadComments(id); } }
-  async function loadComments(id) { try { const res = await fetch(`${SUPABASE_URL}/rest/v1/comments?track_id=eq.${id}&select=*&order=created_at.desc`, { headers: { 'apikey': SUPABASE_KEY } }); const c = await res.json(); document.getElementById(`comments-content-${id}`).innerHTML = c.length ? c.map(x => `<div class="comment"><div class="comment-text">${sanitize(x.content)}</div><div class="comment-author">— ${sanitize(x.author_name||'Anonymous')}</div></div>`).join('') : '<p style="font-size:0.8rem;color:var(--muted);">No comments yet</p>'; } catch(e) {} }
+  async function loadComments(id) { try { const res = await fetch(`${SUPABASE_URL}/rest/v1/comments?track_id=eq.${id}&select=*&order=created_at.desc`, { headers: { 'apikey': SUPABASE_KEY } }); const c = await res.json(); document.getElementById(`comments-content-${id}`).innerHTML = c.length ? c.map(x => `<div class="comment"><div class="comment-text">${sanitize(x.content)}</div><div class="comment-author">\u2014 ${sanitize(x.author_name||'Anonymous')}</div></div>`).join('') : '<p style="font-size:0.8rem;color:var(--muted);">No comments yet</p>'; } catch(e) {} }
   async function addComment(id) { const input = document.getElementById(`comment-input-${id}`); const c = input.value.trim(); if (!c || !currentUser) return; const token = localStorage.getItem('sb_token'); const name = currentUser.user_metadata?.name || currentUser.email?.split('@')[0] || 'Anonymous'; try { await fetch(`${SUPABASE_URL}/rest/v1/comments`, { method:'POST', headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${token}`,'Content-Type':'application/json'}, body: JSON.stringify({track_id:id,user_id:currentUser.id,content:c,author_name:name}) }); gtag('event','comment',{track_id:id}); input.value=''; await loadComments(id); } catch(e) {} }
 
   // ─── Share ───
-  function shareTrack(id, title, btn) { const url = `${window.location.origin}/?track=${id}`; if (navigator.share) { navigator.share({title:`${title} — VoteMyAI`,url}); gtag('event','share',{track_id:id,method:'native'}); } else { navigator.clipboard.writeText(url); gtag('event','share',{track_id:id,method:'clipboard'}); const o=btn.innerHTML; btn.innerHTML='<span style="color:var(--accent);">✓ Copied</span>'; setTimeout(()=>{btn.innerHTML=o;},1500); } }
+  function shareTrack(id, title, btn) { const url = `${window.location.origin}/?track=${id}`; if (navigator.share) { navigator.share({title:`${title} \u2014 VoteMyAI`,url}); gtag('event','share',{track_id:id,method:'native'}); } else { navigator.clipboard.writeText(url); gtag('event','share',{track_id:id,method:'clipboard'}); const o=btn.innerHTML; btn.innerHTML='<span style="color:var(--accent);">\u2713 Copied</span>'; setTimeout(()=>{btn.innerHTML=o;},1500); } }
 
-  // ══════════════════════════════════════════════
-  // PERSISTENT PLAYER BAR
-  // ══════════════════════════════════════════════
+  // ─── Persistent Player Bar ───
   let activePlayerTrackId = null;
-
   const playerBar = document.getElementById('playerBar');
   const playerEmbed = document.getElementById('playerEmbed');
   const playerTitle = document.getElementById('playerTitle');
   const playerMeta = document.getElementById('playerMeta');
-
   let activePlayerPlatform = null;
 
-  function activatePlayerBar(trackId, container, platform) {
-    activePlayerTrackId = trackId;
-    activePlayerPlatform = platform;
-    playerTitle.textContent = container.dataset.trackTitle || 'Now Playing';
-    playerMeta.textContent = container.dataset.trackTool || '';
-    playerBar.classList.add('active', 'playing');
-    document.body.classList.add('player-active');
-    gtag('event', 'play_bar', { track_id: trackId, platform });
-  }
+  function activatePlayerBar(trackId, container, platform) { activePlayerTrackId = trackId; activePlayerPlatform = platform; playerTitle.textContent = container.dataset.trackTitle || 'Now Playing'; playerMeta.textContent = container.dataset.trackTool || ''; playerBar.classList.add('active', 'playing'); document.body.classList.add('player-active'); gtag('event', 'play_bar', { track_id: trackId, platform }); }
 
   document.getElementById('btnClose').addEventListener('click', closePlayer);
+  function closePlayer() { if (activeEmbedTrackId) { stopEmbed(activeEmbedTrackId); activeEmbedTrackId = null; } playerBar.classList.remove('active', 'playing'); document.body.classList.remove('player-active'); activePlayerTrackId = null; activePlayerPlatform = null; closePageFrame(); }
 
-  function closePlayer() {
-    if (activeEmbedTrackId) {
-      stopEmbed(activeEmbedTrackId);
-      activeEmbedTrackId = null;
-    }
-    playerBar.classList.remove('active', 'playing');
-    document.body.classList.remove('player-active');
-    activePlayerTrackId = null;
-    activePlayerPlatform = null;
-    closePageFrame();
-  }
+  function navigateToPage(url) { if (!activePlayerTrackId) { window.location.href = url; return; } const frame = document.getElementById('pageFrame'); frame.querySelector('iframe').src = url; frame.classList.add('active'); }
+  function closePageFrame() { const frame = document.getElementById('pageFrame'); frame.classList.remove('active'); frame.querySelector('iframe').src = ''; }
 
-  // ─── Page Navigation (iframe overlay when player is active) ───
-  function navigateToPage(url) {
-    if (!activePlayerTrackId) { window.location.href = url; return; }
-    const frame = document.getElementById('pageFrame');
-    frame.querySelector('iframe').src = url;
-    frame.classList.add('active');
-  }
-  function closePageFrame() {
-    const frame = document.getElementById('pageFrame');
-    frame.classList.remove('active');
-    frame.querySelector('iframe').src = '';
-  }
-
-  document.addEventListener('click', (e) => {
-    if (!activePlayerTrackId) return;
-    const link = e.target.closest('a[href]');
-    if (!link) return;
-    const href = link.getAttribute('href');
-    if (!href || link.target === '_blank') return;
-    if (href.startsWith('http') && !href.includes(window.location.hostname)) return;
-    if (href.startsWith('#')) return;
-    e.preventDefault();
-    if (href === '/' || href === '/index.html') { closePageFrame(); return; }
-    navigateToPage(href);
-  }, true);
+  document.addEventListener('click', (e) => { if (!activePlayerTrackId) return; const link = e.target.closest('a[href]'); if (!link) return; const href = link.getAttribute('href'); if (!href || link.target === '_blank') return; if (href.startsWith('http') && !href.includes(window.location.hostname)) return; if (href.startsWith('#')) return; e.preventDefault(); if (href === '/' || href === '/index.html') { closePageFrame(); return; } navigateToPage(href); }, true);
 
   // ─── Mobile: Hamburger Menu ───
   const hamburger = document.getElementById('hamburger');
   const mobileNav = document.getElementById('mobileNav');
-  hamburger.addEventListener('click', () => {
-    hamburger.classList.toggle('open');
-    mobileNav.classList.toggle('open');
-  });
-  mobileNav.addEventListener('click', (e) => {
-    if (e.target.closest('.nav-link')) {
-      hamburger.classList.remove('open');
-      mobileNav.classList.remove('open');
-    }
-  });
+  hamburger.addEventListener('click', () => { hamburger.classList.toggle('open'); mobileNav.classList.toggle('open'); });
+  mobileNav.addEventListener('click', (e) => { if (e.target.closest('.nav-link')) { hamburger.classList.remove('open'); mobileNav.classList.remove('open'); } });
 
   // ─── Mobile: Filter Toggle ───
   const filterToggle = document.getElementById('filterToggle');
   const filtersBar = document.getElementById('filtersBar');
-  filterToggle.addEventListener('click', () => {
-    filterToggle.classList.toggle('open');
-    filtersBar.classList.toggle('open');
-  });
+  filterToggle.addEventListener('click', () => { filterToggle.classList.toggle('open'); filtersBar.classList.toggle('open'); });
+
+  // ─── Deep Link: ?track=ID ───
+  function handleDeepLink() {
+    const params = new URLSearchParams(window.location.search);
+    const trackParam = params.get('track');
+    if (!trackParam) return;
+
+    const trackIndex = currentSorted.findIndex(t => String(t.id) === trackParam);
+    if (trackIndex === -1) return;
+
+    if (trackIndex >= visibleCount) {
+      visibleCount = trackIndex + 1;
+      renderVisibleTracks();
+    }
+
+    requestAnimationFrame(() => {
+      const card = document.getElementById('card-' + trackParam);
+      if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        card.style.boxShadow = '0 0 0 2px var(--accent), 0 12px 40px rgba(232,255,71,0.15)';
+        setTimeout(() => { card.style.boxShadow = ''; }, 2500);
+        setTimeout(() => { loadEmbed(trackParam); }, 600);
+      }
+    });
+
+    window.history.replaceState(null, '', '/');
+  }
 
   // ─── Init ───
-  checkAuth().then(loadTracks);
+  checkAuth().then(loadTracks).then(handleDeepLink);
 </script>
 </body>
 </html>
