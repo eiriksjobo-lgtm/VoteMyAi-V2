@@ -93,6 +93,7 @@
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
     .nav-right { display: flex; align-items: center; gap: 8px; }
     .hamburger { display: none; }
+    .nav-links-mobile { display: none; }
     .nav-link {
       color: var(--muted); text-decoration: none;
       font-size: 0.72rem; font-weight: 600;
@@ -940,6 +941,16 @@
 
 <!-- ═══ JAVASCRIPT ═══ -->
 <script>
+  // Anonym token for ratings uten innlogging
+  function getAnonToken() {
+    let token = localStorage.getItem('votemyai_anon_token');
+    if (!token) {
+      token = 'anon_' + crypto.randomUUID();
+      localStorage.setItem('votemyai_anon_token', token);
+    }
+    return token;
+  }
+
   const SUPABASE_URL = 'https://gezijezmsecbtzytotax.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_hOOMtCz7gYsu_-CVD6lW9Q_SxtFlNhw';
   let currentUser = null;
@@ -977,20 +988,22 @@
       authLink.href = '/profile.html';
       const ml = document.getElementById('authLinkMobile');
       if (ml) { ml.textContent = currentUser.user_metadata?.name || 'Profile'; ml.href = '/profile.html'; }
-      await loadUserRatings();
     }
+    // Hent anonyme ratings uansett (innlogget eller ikke)
+    await loadAnonRatings();
   }
 
-  async function loadUserRatings() {
-    if (!currentUser) return;
-    const token = localStorage.getItem('sb_token');
+  // Hent brukerens anonyme ratings ved sidelast
+  async function loadAnonRatings() {
+    const token = getAnonToken();
     try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/ratings?user_id=eq.${currentUser.id}&select=track_id,score`, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${token}` } });
-      if (res.ok) { (await res.json()).forEach(r => { userRatings[r.track_id] = r.score; }); }
-    } catch(e) {}
-    try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/votes?user_id=eq.${currentUser.id}&select=track_id`, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${token}` } });
-      if (res.ok) { (await res.json()).forEach(v => { if (!userRatings[v.track_id]) userRatings[v.track_id] = 5; }); }
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/anonymous_ratings?anon_token=eq.${token}&select=track_id,score`,
+        { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+      );
+      if (res.ok) {
+        (await res.json()).forEach(r => { userRatings[r.track_id] = r.score; });
+      }
     } catch(e) {}
   }
 
@@ -1080,7 +1093,7 @@
   const TRACKS_PER_PAGE = 9;
   let visibleCount = TRACKS_PER_PAGE;
   let currentSorted = [];
-  let activeEmbedTrackId = null; // tracks which embed is currently loaded (for single playback)
+  let activeEmbedTrackId = null;
 
   function renderTracks() {
     visibleCount = TRACKS_PER_PAGE;
@@ -1099,7 +1112,6 @@
 
     if (!toShow.length) { grid.innerHTML = '<div class="empty-state"><p>No tracks found. Be the first to submit!</p></div>'; setupInfiniteScroll(); return; }
 
-    // If anything is playing (player bar active, embed loaded, or any iframe in grid), preserve DOM
     const hasActiveIframe = grid.querySelector('.track-embed iframe') !== null;
     const isPlaying = activeEmbedTrackId || activePlayerTrackId || playerBar.classList.contains('active') || hasActiveIframe;
     const toShowIds = new Set(toShow.map(t => String(t.id)));
@@ -1122,14 +1134,12 @@
         }
       });
 
-      // If active track got filtered out, stop it
       const playingId = String(activeEmbedTrackId || activePlayerTrackId);
       if (!toShowIds.has(playingId)) {
         activeEmbedTrackId = null;
         closePlayer();
       }
     } else {
-      // No active playback — full re-render
       grid.innerHTML = toShow.map((track, i) => buildCardHtml(track, i)).join('');
     }
 
@@ -1149,7 +1159,7 @@
     const plat = embed.platform !== 'unknown' ? embed.platform.charAt(0).toUpperCase() + embed.platform.slice(1) : '';
     const thumb = getLazyThumb(track, embed);
 
-    return `<div class="track-card" id="card-${track.id}" style="animation-delay:${(i % TRACKS_PER_PAGE) * 0.05}s">
+    return `<div class="track-card" id="card-${track.id}" data-track-id="${track.id}" style="animation-delay:${(i % TRACKS_PER_PAGE) * 0.05}s">
       <div class="${embedClass}" data-track-id="${track.id}" data-track-title="${sanitize(track.title)}" data-track-tool="${sanitize(track.tool)}" data-track-platform="${embed.platform}" data-track-embed="${encodeURIComponent(embed.embedHtml)}">${thumb}</div>
       <div class="track-body">
         <div class="track-title">${sanitize(track.title)}</div>
@@ -1172,7 +1182,6 @@
     const playSVG = '<svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
     const platformLabel = embed.platform !== 'unknown' ? embed.platform.charAt(0).toUpperCase() + embed.platform.slice(1) : '';
 
-    // If track has a stored thumbnail_url, use it (skip Udio & SoundCloud — need visible iframe)
     if (track.thumbnail_url && embed.platform !== 'udio' && embed.platform !== 'soundcloud') {
       return `<div class="embed-thumb" data-action="load-embed" data-track-id="${track.id}">
         <img src="${sanitize(track.thumbnail_url)}" alt="${sanitize(track.title)}" loading="lazy">
@@ -1183,7 +1192,6 @@
       </div>`;
     }
 
-    // YouTube fallback — extract video ID for thumbnail
     if (embed.platform === 'youtube') {
       const match = (track.embed_url || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([^&?\/#]+)/) || [null, track.yt_id];
       const videoId = match[1] || track.yt_id;
@@ -1198,13 +1206,11 @@
       }
     }
 
-    // No thumbnail available — render iframe directly
     return embed.embedHtml;
   }
 
   // ─── Load Embed on Click (single playback) ───
   function loadEmbed(trackId) {
-    // Stop previous embed
     if (activeEmbedTrackId && activeEmbedTrackId !== trackId) {
       stopEmbed(activeEmbedTrackId);
     }
@@ -1215,7 +1221,6 @@
     const embedHtml = decodeURIComponent(container.dataset.trackEmbed);
     const platform = container.dataset.trackPlatform;
 
-    // Add autoplay
     let finalHtml = embedHtml;
     if (platform === 'youtube') {
       finalHtml = embedHtml.replace(/src="([^"]+)"/, (m, src) => {
@@ -1231,22 +1236,17 @@
     finalHtml = finalHtml.replace(/<iframe /, '<iframe allow="autoplay" ');
 
     if (platform === 'youtube') {
-      // YouTube: replace thumbnail with video player
       container.innerHTML = finalHtml;
     } else {
-      // All other platforms: keep thumbnail visible, load iframe hidden behind it
       const existingThumb = container.querySelector('.embed-thumb');
       if (existingThumb) {
-        // Mark thumb as playing (show EQ animation instead of play button)
         existingThumb.classList.add('is-playing');
         existingThumb.removeAttribute('data-action');
-        // Add hidden iframe behind the thumbnail
         const hiddenFrame = document.createElement('div');
         hiddenFrame.className = 'hidden-embed-frame';
         hiddenFrame.innerHTML = finalHtml;
         container.appendChild(hiddenFrame);
       } else {
-        // No thumbnail — just show the embed directly
         container.innerHTML = finalHtml;
       }
     }
@@ -1255,7 +1255,6 @@
     activatePlayerBar(trackId, container, platform);
   }
 
-  // Stop an embed — revert to thumbnail state
   function stopEmbed(trackId) {
     const container = document.querySelector(`.track-embed[data-track-id="${trackId}"]`);
     if (!container) return;
@@ -1266,7 +1265,6 @@
     if (platform === 'youtube') {
       container.innerHTML = getLazyThumbById(trackId);
     } else {
-      // Remove hidden iframe and restore thumb to clickable state
       const hiddenFrame = container.querySelector('.hidden-embed-frame');
       if (hiddenFrame) hiddenFrame.remove();
       const thumb = container.querySelector('.embed-thumb');
@@ -1274,20 +1272,17 @@
         thumb.classList.remove('is-playing');
         thumb.setAttribute('data-action', 'load-embed');
       } else {
-        // Fallback: full re-render
         container.innerHTML = getLazyThumbById(trackId) || decodeURIComponent(container.dataset.trackEmbed);
       }
     }
   }
 
-  // Helper: get embed html by track id from current sorted list
   function getEmbedHtmlById(trackId) {
     const track = currentSorted.find(t => t.id === trackId);
     if (!track) return null;
     return getEmbedHtml(track);
   }
 
-  // Helper: get lazy thumb by track id
   function getLazyThumbById(trackId) {
     const track = currentSorted.find(t => t.id === trackId);
     if (!track) return '';
@@ -1295,7 +1290,6 @@
     return getLazyThumb(track, embed);
   }
 
-  // ─── Detect when user plays a non-YouTube embed (iframe focus) ───
   setInterval(() => {
     if (document.activeElement && document.activeElement.tagName === 'IFRAME') {
       const container = document.activeElement.closest('.track-embed[data-track-platform]');
@@ -1303,7 +1297,6 @@
         const trackId = container.dataset.trackId;
         const platform = container.dataset.trackPlatform;
         if (platform !== 'youtube' && platform !== 'unknown' && activeEmbedTrackId !== trackId) {
-          // Stop previous embed
           if (activeEmbedTrackId) { stopEmbed(activeEmbedTrackId); }
           activeEmbedTrackId = trackId;
           activatePlayerBar(trackId, container, platform);
@@ -1330,7 +1323,6 @@
     if (!grid) return;
     const gridBottom = grid.getBoundingClientRect().bottom;
     const windowHeight = window.innerHeight;
-    // Trigger when the bottom of the grid is within 300px of the viewport
     if (gridBottom <= windowHeight + 300) {
       loadingMore = true;
       visibleCount += TRACKS_PER_PAGE;
@@ -1377,30 +1369,61 @@
     c.querySelectorAll('.star').forEach(x => x.classList.remove('hover-fill'));
   });
 
-  // ─── Rate ───
+  // ─── Rate (via Edge Function) ───
   async function rateStar(trackId, score, container) {
-    if (!currentUser) { const a = JSON.parse(localStorage.getItem('anon_ratings')||'{}'); if (a[trackId]) return; a[trackId] = score; localStorage.setItem('anon_ratings', JSON.stringify(a)); }
     container.classList.add('rated');
-    container.querySelectorAll('.star').forEach(s => { s.classList.remove('hover-fill'); s.classList.toggle('filled', parseInt(s.dataset.score) <= score); });
+    container.querySelectorAll('.star').forEach(s => {
+      s.classList.remove('hover-fill');
+      s.classList.toggle('filled', parseInt(s.dataset.score) <= score);
+    });
     userRatings[trackId] = score;
     gtag('event', 'rate', { track_id: trackId, score });
+
     try {
-      const token = localStorage.getItem('sb_token');
-      const h = { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' };
-      if (token) h['Authorization'] = `Bearer ${token}`;
-      await fetch(`${SUPABASE_URL}/rest/v1/ratings`, { method:'POST', headers:{...h,'Prefer':'return=minimal'}, body: JSON.stringify({ track_id: trackId, user_id: currentUser ? currentUser.id : null, score }) });
-      await fetch(`${SUPABASE_URL}/rest/v1/rpc/update_track_rating`, { method:'POST', headers: h, body: JSON.stringify({ tid: trackId }) });
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/tracks?id=eq.${trackId}&select=avg_rating,rating_count`, { headers: { 'apikey': SUPABASE_KEY } });
-      if (res.ok) {
-        const [u] = await res.json();
-        if (u) {
-          const t = allTracks.find(x => x.id === trackId);
-          if (t) { t.avg_rating = u.avg_rating; t.rating_count = u.rating_count; }
-          const card = document.getElementById(`card-${trackId}`);
-          if (card) { const se = card.querySelector('.rating-score'); const ce = card.querySelector('.rating-count'); if (se) se.textContent = u.avg_rating ? u.avg_rating.toFixed(1) : '—'; if (ce) ce.textContent = `${u.rating_count||0} rating${(u.rating_count||0)!==1?'s':''}`; }
-        }
+      const res = await fetch(SUPABASE_URL + '/functions/v1/rate-track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          track_id: trackId,
+          score: score,
+          anon_token: getAnonToken()
+        })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        showToast(data.error || 'Kunne ikke rate');
+        return;
       }
-    } catch(e) { console.error('Rate error:', e); }
+
+      // Oppdater UI med verdier fra server
+      const t = allTracks.find(x => x.id === trackId);
+      if (t) { t.avg_rating = data.avg_rating; t.rating_count = data.rating_count; }
+      const card = document.getElementById(`card-${trackId}`);
+      if (card) {
+        const se = card.querySelector('.rating-score');
+        const ce = card.querySelector('.rating-count');
+        if (se) se.textContent = data.avg_rating ? data.avg_rating.toFixed(1) : '—';
+        if (ce) ce.textContent = `${data.rating_count||0} rating${(data.rating_count||0)!==1?'s':''}`;
+      }
+    } catch(e) {
+      showToast('Nettverksfeil — prøv igjen');
+    }
+  }
+
+  // Toast-melding for feil/info
+  function showToast(msg) {
+    let toast = document.getElementById('vote-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'vote-toast';
+      toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1a1a2e;color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;z-index:9999;opacity:0;transition:opacity 0.3s;border:1px solid rgba(232,255,71,0.2);';
+      document.body.appendChild(toast);
+    }
+    toast.textContent = msg;
+    toast.style.opacity = '1';
+    setTimeout(() => { toast.style.opacity = '0'; }, 3000);
   }
 
   function setView(v, el) { currentView = v; document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active')); el.classList.add('active'); applyFiltersAndSort(); }
@@ -1408,7 +1431,6 @@
 
   function applyFiltersAndSort() {
     const grid = document.getElementById('tracksGrid');
-    // If any iframe is loaded, just show/hide cards via CSS — never touch innerHTML
     if (grid.querySelector('iframe')) {
       const filtered = getFilteredTracks();
       const sorted = getSortedTracks(filtered);
@@ -1436,7 +1458,7 @@
   function shareTrack(id, title, btn) { const url = `${window.location.origin}/?track=${id}`; if (navigator.share) { navigator.share({title:`${title} — VoteMyAI`,url}); gtag('event','share',{track_id:id,method:'native'}); } else { navigator.clipboard.writeText(url); gtag('event','share',{track_id:id,method:'clipboard'}); const o=btn.innerHTML; btn.innerHTML='<span style="color:var(--accent);">✓ Copied</span>'; setTimeout(()=>{btn.innerHTML=o;},1500); } }
 
   // ══════════════════════════════════════════════
-  // PERSISTENT PLAYER BAR — title + EQ + close
+  // PERSISTENT PLAYER BAR
   // ══════════════════════════════════════════════
   let activePlayerTrackId = null;
 
@@ -1445,7 +1467,6 @@
   const playerTitle = document.getElementById('playerTitle');
   const playerMeta = document.getElementById('playerMeta');
 
-  // ─── Activate player bar ───
   let activePlayerPlatform = null;
 
   function activatePlayerBar(trackId, container, platform) {
@@ -1485,7 +1506,6 @@
     frame.querySelector('iframe').src = '';
   }
 
-  // Intercept internal nav when player is active
   document.addEventListener('click', (e) => {
     if (!activePlayerTrackId) return;
     const link = e.target.closest('a[href]');
@@ -1506,7 +1526,6 @@
     hamburger.classList.toggle('open');
     mobileNav.classList.toggle('open');
   });
-  // Close mobile nav when a link is clicked
   mobileNav.addEventListener('click', (e) => {
     if (e.target.closest('.nav-link')) {
       hamburger.classList.remove('open');
@@ -1521,12 +1540,6 @@
     filterToggle.classList.toggle('open');
     filtersBar.classList.toggle('open');
   });
-
-  // ─── Sync mobile auth link ───
-  function updateAuthLinks(user) {
-    const ml = document.getElementById('authLinkMobile');
-    if (ml) ml.textContent = user ? 'Profile' : 'Login';
-  }
 
   // ─── Init ───
   checkAuth().then(loadTracks);
