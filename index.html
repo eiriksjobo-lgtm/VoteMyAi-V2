@@ -332,7 +332,8 @@
 
     .empty-state { grid-column: 1 / -1; text-align: center; padding: 80px 20px; }
     .empty-state p { color: var(--muted); font-size: 0.95rem; }
-    .skeleton-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .skeleton-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; animation: skeletonPulse 1.5s ease-in-out infinite; }
+    @keyframes skeletonPulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
     .skeleton { background: linear-gradient(90deg, var(--surface-2) 25%, rgba(255,255,255,0.03) 50%, var(--surface-2) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
     @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
     .skeleton-embed { width: 100%; padding-bottom: 56.25%; }
@@ -660,7 +661,14 @@
 
 <!-- ═══ TRACKS GRID ═══ -->
 <div class="tracks-container">
-  <div class="tracks-grid" id="tracksGrid"></div>
+  <div class="tracks-grid" id="tracksGrid">
+    <div class="skeleton-card"><div class="skeleton skeleton-embed"></div><div class="skeleton-body"><div class="skeleton skeleton-title"></div><div class="skeleton-badges"><div class="skeleton skeleton-badge"></div><div class="skeleton skeleton-badge"></div></div><div class="skeleton skeleton-stars"></div></div></div>
+    <div class="skeleton-card"><div class="skeleton skeleton-embed"></div><div class="skeleton-body"><div class="skeleton skeleton-title"></div><div class="skeleton-badges"><div class="skeleton skeleton-badge"></div><div class="skeleton skeleton-badge"></div></div><div class="skeleton skeleton-stars"></div></div></div>
+    <div class="skeleton-card"><div class="skeleton skeleton-embed"></div><div class="skeleton-body"><div class="skeleton skeleton-title"></div><div class="skeleton-badges"><div class="skeleton skeleton-badge"></div><div class="skeleton skeleton-badge"></div></div><div class="skeleton skeleton-stars"></div></div></div>
+    <div class="skeleton-card"><div class="skeleton skeleton-embed"></div><div class="skeleton-body"><div class="skeleton skeleton-title"></div><div class="skeleton-badges"><div class="skeleton skeleton-badge"></div><div class="skeleton skeleton-badge"></div></div><div class="skeleton skeleton-stars"></div></div></div>
+    <div class="skeleton-card"><div class="skeleton skeleton-embed"></div><div class="skeleton-body"><div class="skeleton skeleton-title"></div><div class="skeleton-badges"><div class="skeleton skeleton-badge"></div><div class="skeleton skeleton-badge"></div></div><div class="skeleton skeleton-stars"></div></div></div>
+    <div class="skeleton-card"><div class="skeleton skeleton-embed"></div><div class="skeleton-body"><div class="skeleton skeleton-title"></div><div class="skeleton-badges"><div class="skeleton skeleton-badge"></div><div class="skeleton skeleton-badge"></div></div><div class="skeleton skeleton-stars"></div></div></div>
+  </div>
   <div class="scroll-indicator" id="scrollIndicator">
     <div class="scroll-line"></div>
     <div class="scroll-dot"></div>
@@ -850,7 +858,22 @@
     try { const res = await fetch(`${SUPABASE_URL}/rest/v1/tracks?select=*&order=created_at.desc`, { headers: { 'apikey': SUPABASE_KEY } }); allTracks = await res.json(); renderTracks(); renderLeaderboard(); updateHeroStats(); } catch(e) { console.error('Load error:', e); }
   }
 
-  function updateHeroStats() { document.getElementById('statTracks').textContent = allTracks.length; document.getElementById('statRatings').textContent = allTracks.reduce((s, t) => s + (t.rating_count || 0), 0); document.getElementById('statCreators').textContent = new Set(allTracks.map(t => t.user_id).filter(Boolean)).size; }
+  function updateHeroStats() {
+    animateCount('statTracks', allTracks.length);
+    animateCount('statRatings', allTracks.reduce((s, t) => s + (t.rating_count || 0), 0));
+    animateCount('statCreators', new Set(allTracks.map(t => t.user_id).filter(Boolean)).size);
+  }
+  function animateCount(id, target) {
+    const el = document.getElementById(id);
+    if (target === 0) { el.textContent = '0'; return; }
+    let current = 0;
+    const step = Math.max(1, Math.ceil(target / 20));
+    const interval = setInterval(() => {
+      current += step;
+      if (current >= target) { current = target; clearInterval(interval); }
+      el.textContent = current;
+    }, 30);
+  }
 
   let currentLbPeriod = 'week';
   function renderLeaderboard(period) {
