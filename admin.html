@@ -10,162 +10,109 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;500;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0a0a0f; --surface: #111118; --surface-2: #16161f;
-      --border: #1e1e2e; --accent: #e8ff47; --text: #f0f0f0;
-      --muted: #666680; --success: #4ade80; --error: #f87171; --warn: #fbbf24;
+      --bg: #07070b; --surface: #0e0e14; --surface-2: #131319;
+      --border: #1a1a26; --border-hover: #252535;
+      --accent: #e8ff47; --accent-dim: rgba(232,255,71,0.12);
+      --text: #f2f2f4; --text-secondary: #a8a8b8; --muted: #5c5c72;
+      --success: #4ade80; --error: #f87171; --warn: #fbbf24;
+      --radius: 14px; --radius-sm: 8px;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; line-height: 1.6; }
-    
-    /* ── Nav ── */
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    ::selection { background: var(--accent); color: var(--bg); }
+
     .admin-nav {
-      background: var(--surface); border-bottom: 1px solid var(--border);
-      padding: 0 32px; height: 56px;
-      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 200;
+      background: rgba(7,7,11,0.88); backdrop-filter: blur(24px) saturate(1.4);
+      border-bottom: 1px solid rgba(26,26,38,0.6);
+      height: 60px; display: flex; align-items: center; justify-content: space-between;
+      padding: 0 clamp(16px, 4vw, 40px);
     }
-    .admin-nav .logo {
-      font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem;
-      letter-spacing: 2px; color: var(--accent); text-decoration: none;
-      display: flex; align-items: center; gap: 8px;
-    }
-    .admin-nav .logo .badge {
-      background: rgba(248,113,113,0.15); color: var(--error);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.65rem; font-weight: 700; padding: 2px 8px;
-      border-radius: 100px; letter-spacing: 1px;
-    }
-    .admin-nav a { color: var(--muted); text-decoration: none; font-size: 0.82rem; }
-    .admin-nav a:hover { color: var(--text); }
+    .logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 3px; color: var(--accent); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+    .logo-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+    .logo .badge { background: rgba(248,113,113,0.15); color: var(--error); font-family: 'DM Sans', sans-serif; font-size: 0.6rem; font-weight: 700; padding: 2px 8px; border-radius: 100px; letter-spacing: 1px; }
+    .admin-nav a { color: var(--muted); text-decoration: none; font-size: 0.72rem; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; padding: 8px 14px; border-radius: 8px; transition: all 0.2s; }
+    .admin-nav a:hover { color: var(--text); background: rgba(255,255,255,0.04); }
 
-    .container { max-width: 1300px; margin: 0 auto; padding: 32px 24px; }
+    .container { max-width: 1300px; margin: 0 auto; padding: 32px clamp(16px, 4vw, 40px); }
 
-    /* ── Login ── */
+    /* Login */
     .login-box {
       max-width: 400px; margin: 120px auto; text-align: center;
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: 16px; padding: 48px 32px;
+      border-radius: var(--radius); padding: 48px 32px;
     }
-    .login-box h1 {
-      font-family: 'Bebas Neue', sans-serif; font-size: 2rem;
-      color: var(--accent); margin-bottom: 8px; letter-spacing: 2px;
-    }
-    .login-box p { color: var(--muted); font-size: 0.85rem; margin-bottom: 28px; }
+    .login-box h1 { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: var(--accent); margin-bottom: 8px; letter-spacing: 3px; }
+    .login-box p { color: var(--muted); font-size: 0.82rem; margin-bottom: 28px; }
     .login-box input {
-      width: 100%; background: var(--bg); border: 1px solid var(--border);
-      color: var(--text); padding: 12px 16px; border-radius: 10px;
-      font-size: 0.9rem; margin-bottom: 16px; font-family: 'DM Sans', sans-serif;
+      width: 100%; background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
+      padding: 12px 16px; border-radius: var(--radius-sm); font-size: 0.88rem; margin-bottom: 16px;
+      font-family: 'DM Sans', sans-serif; outline: none; transition: border-color 0.2s;
     }
-    .login-box input:focus { outline: none; border-color: var(--accent); }
+    .login-box input:focus { border-color: var(--accent); }
     .login-box .btn {
-      width: 100%; background: var(--accent); color: var(--bg);
-      border: none; padding: 12px; border-radius: 10px;
-      font-weight: 700; cursor: pointer; font-size: 0.9rem;
-      font-family: 'DM Sans', sans-serif; letter-spacing: 0.5px;
+      width: 100%; background: var(--accent); color: var(--bg); border: none; padding: 12px;
+      border-radius: var(--radius-sm); font-weight: 700; cursor: pointer; font-size: 0.85rem;
+      font-family: 'DM Sans', sans-serif; letter-spacing: 0.5px; transition: all 0.2s;
     }
+    .login-box .btn:hover { box-shadow: 0 4px 20px rgba(232,255,71,0.25); }
 
-    /* ── Stats Grid ── */
-    .stats-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px; margin-bottom: 40px;
-    }
-    .stat-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; padding: 24px;
-    }
-    .stat-card .stat-label {
-      font-size: 0.75rem; color: var(--muted);
-      text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px;
-    }
-    .stat-card .stat-value {
-      font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem;
-      color: var(--accent); letter-spacing: 1px;
-    }
-    .stat-card .stat-sub {
-      font-size: 0.78rem; color: var(--muted); margin-top: 4px;
-    }
+    /* Stats */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 32px; }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+    .stat-label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; margin-bottom: 6px; }
+    .stat-value { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: var(--accent); letter-spacing: 1px; line-height: 1; }
 
-    /* ── Tabs ── */
-    .tabs {
-      display: flex; gap: 4px; margin-bottom: 24px;
-      border-bottom: 1px solid var(--border); padding-bottom: 0;
-    }
+    /* Tabs */
+    .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
     .tab {
-      background: none; border: none; color: var(--muted);
-      padding: 10px 20px; cursor: pointer; font-size: 0.85rem;
-      font-weight: 600; font-family: 'DM Sans', sans-serif;
-      border-bottom: 2px solid transparent;
-      transition: all 0.2s;
+      background: none; border: none; color: var(--muted); padding: 10px 20px; cursor: pointer;
+      font-size: 0.78rem; font-weight: 600; font-family: 'DM Sans', sans-serif;
+      border-bottom: 2px solid transparent; transition: all 0.2s; letter-spacing: 0.5px;
     }
     .tab:hover { color: var(--text); }
     .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
-    /* ── Tables ── */
-    .table-wrap {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; overflow: hidden;
-    }
-    table { width: 100%; border-collapse: collapse; }
-    th {
-      padding: 14px 16px; text-align: left; font-size: 0.75rem;
-      color: var(--muted); text-transform: uppercase; letter-spacing: 1px;
-      background: var(--surface-2); border-bottom: 1px solid var(--border);
-      font-weight: 600;
-    }
-    td {
-      padding: 12px 16px; font-size: 0.85rem;
-      border-bottom: 1px solid rgba(30,30,46,0.5);
-      max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    }
+    /* Tables */
+    .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 600px; }
+    th { padding: 12px 16px; text-align: left; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.2px; background: var(--surface-2); border-bottom: 1px solid var(--border); font-weight: 600; }
+    td { padding: 10px 16px; font-size: 0.82rem; border-bottom: 1px solid rgba(26,26,38,0.5); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     tr:last-child td { border-bottom: none; }
     tr:hover td { background: rgba(232,255,71,0.02); }
 
-    .btn-delete {
-      background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2);
-      color: var(--error); padding: 5px 12px; border-radius: 6px;
-      cursor: pointer; font-size: 0.75rem; font-weight: 600;
-      transition: all 0.2s; font-family: 'DM Sans', sans-serif;
-    }
+    .btn-delete { background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2); color: var(--error); padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 0.7rem; font-weight: 600; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
     .btn-delete:hover { background: rgba(248,113,113,0.2); }
+    .btn-edit { background: rgba(232,255,71,0.08); border: 1px solid rgba(232,255,71,0.2); color: var(--accent); padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 0.7rem; font-weight: 600; transition: all 0.2s; font-family: 'DM Sans', sans-serif; margin-right: 4px; }
+    .btn-edit:hover { background: rgba(232,255,71,0.15); }
 
-    .user-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      font-size: 0.82rem;
-    }
-    .user-avatar {
-      width: 28px; height: 28px; border-radius: 50%;
-      background: var(--accent); color: var(--bg);
-      display: inline-flex; align-items: center; justify-content: center;
-      font-size: 0.7rem; font-weight: 700; flex-shrink: 0;
-    }
+    .user-badge { display: inline-flex; align-items: center; gap: 8px; }
+    .user-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: var(--bg); display: inline-flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; flex-shrink: 0; overflow: hidden; }
+    .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
     .text-accent { color: var(--accent); font-weight: 700; }
     .text-muted { color: var(--muted); }
-    .text-sm { font-size: 0.78rem; }
+    .text-sm { font-size: 0.75rem; }
+    .text-email { color: var(--text-secondary); font-size: 0.78rem; }
 
-    .status {
-      padding: 10px 16px; border-radius: 8px; margin-bottom: 16px;
-      font-size: 0.85rem; display: none;
-    }
+    .status { padding: 10px 16px; border-radius: var(--radius-sm); margin-bottom: 16px; font-size: 0.82rem; display: none; }
     .status.error { display: block; background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2); color: var(--error); }
     .status.success { display: block; background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.2); color: var(--success); }
-    .status.warning { display: block; background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.2); color: var(--warn); }
 
-    .empty-state {
-      text-align: center; padding: 48px; color: var(--muted); font-size: 0.9rem;
-    }
+    .empty-state { text-align: center; padding: 48px; color: var(--muted); font-size: 0.85rem; }
+    .loading { text-align: center; padding: 32px; color: var(--muted); font-size: 0.82rem; }
 
     @media (max-width: 768px) {
       .container { padding: 20px 12px; }
       .stats-grid { grid-template-columns: repeat(2, 1fr); }
-      .admin-nav { padding: 0 16px; }
-      td, th { padding: 8px 10px; font-size: 0.78rem; }
+      td, th { padding: 8px 10px; font-size: 0.75rem; }
+      .tab { padding: 8px 12px; font-size: 0.7rem; }
     }
   </style>
 </head>
 <body>
 
-<!-- ── Login ── -->
 <div id="loginSection">
   <div class="login-box">
     <h1>ADMIN</h1>
@@ -176,317 +123,211 @@
   </div>
 </div>
 
-<!-- ── Dashboard ── -->
 <div id="adminPanel" style="display:none;">
   <nav class="admin-nav">
-    <a href="/admin.html" class="logo">VOTEMYAI <span class="badge">ADMIN</span></a>
+    <a href="/admin.html" class="logo"><span class="logo-dot"></span>VOTEMYAI <span class="badge">ADMIN</span></a>
     <a href="/">← Back to site</a>
   </nav>
 
   <div class="container">
     <div class="status" id="adminStatus"></div>
 
-    <!-- Stats -->
-    <div class="stats-grid" id="statsGrid">
-      <div class="stat-card">
-        <div class="stat-label">Total Tracks</div>
-        <div class="stat-value" id="sTracks">—</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Total Votes</div>
-        <div class="stat-value" id="sVotes">—</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Total Comments</div>
-        <div class="stat-value" id="sComments">—</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Users</div>
-        <div class="stat-value" id="sUsers">—</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Messages</div>
-        <div class="stat-value" id="sMessages">—</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Avg Votes/Track</div>
-        <div class="stat-value" id="sAvg">—</div>
-      </div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-label">Tracks</div><div class="stat-value" id="sTracks">—</div></div>
+      <div class="stat-card"><div class="stat-label">Ratings</div><div class="stat-value" id="sRatings">—</div></div>
+      <div class="stat-card"><div class="stat-label">Comments</div><div class="stat-value" id="sComments">—</div></div>
+      <div class="stat-card"><div class="stat-label">Users</div><div class="stat-value" id="sUsers">—</div></div>
+      <div class="stat-card"><div class="stat-label">Messages</div><div class="stat-value" id="sMessages">—</div></div>
+      <div class="stat-card"><div class="stat-label">Avg Rating</div><div class="stat-value" id="sAvg">—</div></div>
     </div>
 
-    <!-- Tabs -->
     <div class="tabs">
-      <button class="tab active" onclick="switchTab('users')">👤 Users</button>
-      <button class="tab" onclick="switchTab('tracks')">📀 Tracks</button>
-      <button class="tab" onclick="switchTab('comments')">💬 Comments</button>
-      <button class="tab" onclick="switchTab('messages')">📬 Messages</button>
+      <button class="tab active" onclick="switchTab('users', this)">Users</button>
+      <button class="tab" onclick="switchTab('tracks', this)">Tracks</button>
+      <button class="tab" onclick="switchTab('comments', this)">Comments</button>
+      <button class="tab" onclick="switchTab('messages', this)">Messages</button>
     </div>
 
-    <!-- Users Tab -->
-    <div class="tab-content active" id="tab-users">
-      <div class="table-wrap">
-        <table id="usersTable">
-          <tr><th>User</th><th>Email</th><th>Tracks</th><th>Votes Given</th><th>Comments</th><th>Joined</th></tr>
-        </table>
-      </div>
-    </div>
-
-    <!-- Tracks Tab -->
-    <div class="tab-content" id="tab-tracks">
-      <div class="table-wrap">
-        <table id="tracksTable">
-          <tr><th>Title</th><th>Tool</th><th>Genre</th><th>Votes</th><th>Submitted</th><th>Actions</th></tr>
-        </table>
-      </div>
-    </div>
-
-    <!-- Comments Tab -->
-    <div class="tab-content" id="tab-comments">
-      <div class="table-wrap">
-        <table id="commentsTable">
-          <tr><th>Track</th><th>Author</th><th>Comment</th><th>Date</th><th>Actions</th></tr>
-        </table>
-      </div>
-    </div>
-
-    <!-- Messages Tab -->
-    <div class="tab-content" id="tab-messages">
-      <div class="table-wrap">
-        <table id="messagesTable">
-          <tr><th>Name</th><th>Email</th><th>Message</th><th>Date</th><th>Actions</th></tr>
-        </table>
-      </div>
-    </div>
+    <div class="tab-content active" id="tab-users"><div class="loading">Loading users...</div></div>
+    <div class="tab-content" id="tab-tracks"><div class="loading">Loading tracks...</div></div>
+    <div class="tab-content" id="tab-comments"><div class="loading">Loading comments...</div></div>
+    <div class="tab-content" id="tab-messages"><div class="loading">Loading messages...</div></div>
   </div>
 </div>
 
-<script type="module">
+<script>
   const SUPABASE_URL = 'https://gezijezmsecbtzytotax.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_hOOMtCz7gYsu_-CVD6lW9Q_SxtFlNhw';
-  const ADMIN_PASSWORD = '5p1elBerg!';
-  
-  let token = localStorage.getItem('sb_token');
-  
-  // Handle OAuth return
-  const hash = window.location.hash.substring(1);
-  const hashParams = new URLSearchParams(hash);
-  const hashToken = hashParams.get('access_token');
-  if (hashToken) {
-    token = hashToken;
-    localStorage.setItem('sb_token', token);
-    window.history.replaceState(null, '', window.location.pathname);
-  }
-  
-  function sanitize(str) {
-    if (!str) return '';
-    const d = document.createElement('div');
-    d.textContent = str;
-    return d.innerHTML;
-  }
-  
+  let adminPassword = '';
+  let authUsers = [];
+
+  function sanitize(str) { if (!str) return ''; const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+  function formatDate(d) { if (!d) return '\u2014'; return new Date(d).toLocaleDateString('no-NO', { day: 'numeric', month: 'short', year: 'numeric' }); }
+
   function showStatus(id, msg, type) {
     const el = document.getElementById(id);
-    el.textContent = msg;
-    el.className = `status ${type}`;
+    el.textContent = msg; el.className = `status ${type}`;
     if (type === 'success') setTimeout(() => { el.style.display = 'none'; }, 3000);
   }
-  
-  function authHeaders() {
-    const h = { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' };
-    if (token) h['Authorization'] = `Bearer ${token}`;
-    return h;
-  }
-  
-  function formatDate(d) {
-    if (!d) return '—';
-    return new Date(d).toLocaleDateString('no-NO', { day: 'numeric', month: 'short', year: 'numeric' });
-  }
-  
-  function getInitials(name, email) {
-    if (name) return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
-    if (email) return email[0].toUpperCase();
-    return '?';
+
+  function headers() {
+    return { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' };
   }
 
-  // ── Tab switching ──
-  window.switchTab = function(tab) {
+  window.switchTab = function(tab, el) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-    event.target.classList.add('active');
+    el.classList.add('active');
     document.getElementById(`tab-${tab}`).classList.add('active');
   };
 
-  // ── Login ──
   window.login = async function() {
-    if (document.getElementById('passwordInput').value !== ADMIN_PASSWORD) {
-      showStatus('loginStatus', 'Wrong password', 'error');
+    adminPassword = document.getElementById('passwordInput').value;
+    // Verify password by calling edge function
+    try {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/admin-users`, {
+        headers: { 'x-admin-password': adminPassword }
+      });
+      if (!res.ok) {
+        showStatus('loginStatus', 'Wrong password', 'error');
+        return;
+      }
+      const data = await res.json();
+      authUsers = data.users || [];
+    } catch(e) {
+      showStatus('loginStatus', 'Could not connect', 'error');
       return;
     }
-    token = localStorage.getItem('sb_token');
     document.getElementById('loginSection').style.display = 'none';
     document.getElementById('adminPanel').style.display = 'block';
     loadData();
   };
 
-  // ── Load all data ──
   async function loadData() {
     try {
-      // Parallel fetch
-      const [tracksRes, commentsRes, messagesRes, votesRes] = await Promise.all([
-        fetch(`${SUPABASE_URL}/rest/v1/tracks?select=*&order=created_at.desc`, { headers: authHeaders() }),
-        fetch(`${SUPABASE_URL}/rest/v1/comments?select=*,tracks(title)&order=created_at.desc`, { headers: authHeaders() }),
-        fetch(`${SUPABASE_URL}/rest/v1/contact_messages?select=*&order=created_at.desc`, { headers: authHeaders() }),
-        fetch(`${SUPABASE_URL}/rest/v1/votes?select=*`, { headers: authHeaders() })
+      const [tracksRes, commentsRes, messagesRes, ratingsRes] = await Promise.all([
+        fetch(`${SUPABASE_URL}/rest/v1/tracks?select=*&order=created_at.desc`, { headers: headers() }),
+        fetch(`${SUPABASE_URL}/rest/v1/comments?select=*,tracks(title)&order=created_at.desc`, { headers: headers() }),
+        fetch(`${SUPABASE_URL}/rest/v1/contact_messages?select=*&order=created_at.desc`, { headers: headers() }),
+        fetch(`${SUPABASE_URL}/rest/v1/anonymous_ratings?select=*`, { headers: headers() })
       ]);
 
       const tracks = await tracksRes.json();
       const comments = await commentsRes.json();
       const messages = await messagesRes.json();
-      const votes = await votesRes.json();
+      const ratings = await ratingsRes.json();
 
-      // ── Build user data from tracks, votes, comments ──
+      // Build user map from auth data
       const userMap = {};
-      
-      // From tracks (has user_id if logged in)
+      authUsers.forEach(u => {
+        userMap[u.id] = { ...u, trackCount: 0, ratingCount: 0, commentCount: 0 };
+      });
+
       tracks.forEach(t => {
-        if (t.user_id) {
-          if (!userMap[t.user_id]) userMap[t.user_id] = { tracks: 0, votes: 0, comments: 0, email: '', name: '', joined: t.created_at };
-          userMap[t.user_id].tracks++;
-          if (t.created_at < userMap[t.user_id].joined) userMap[t.user_id].joined = t.created_at;
-        }
+        if (t.user_id && userMap[t.user_id]) userMap[t.user_id].trackCount++;
       });
-
-      // From votes
-      votes.forEach(v => {
-        if (v.user_id) {
-          if (!userMap[v.user_id]) userMap[v.user_id] = { tracks: 0, votes: 0, comments: 0, email: '', name: '', joined: v.created_at || '' };
-          userMap[v.user_id].votes++;
-        }
-      });
-
-      // From comments (has author_name)
       comments.forEach(c => {
-        if (c.user_id) {
-          if (!userMap[c.user_id]) userMap[c.user_id] = { tracks: 0, votes: 0, comments: 0, email: '', name: '', joined: c.created_at || '' };
-          userMap[c.user_id].comments++;
-          if (c.author_name) userMap[c.user_id].name = c.author_name;
-        }
+        if (c.user_id && userMap[c.user_id]) userMap[c.user_id].commentCount++;
       });
 
-      // Try to get user details from auth (may fail with anon key, that's fine)
-      try {
-        // We can fetch user emails from tracks/comments metadata if available
-        // For now, show user_id or author_name
-      } catch(e) {}
+      const users = Object.values(userMap);
+      users.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-      const users = Object.entries(userMap).map(([id, data]) => ({ id, ...data }));
-      users.sort((a, b) => (b.tracks + b.votes + b.comments) - (a.tracks + a.votes + a.comments));
+      // Stats
+      const totalRatings = tracks.reduce((s, t) => s + (t.rating_count || 0), 0);
+      const ratedTracks = tracks.filter(t => t.rating_count > 0);
+      const avgRating = ratedTracks.length ? (ratedTracks.reduce((s, t) => s + (parseFloat(t.avg_rating) || 0), 0) / ratedTracks.length).toFixed(1) : '\u2014';
 
-      // ── Stats ──
-      const totalVotes = tracks.reduce((sum, t) => sum + (parseInt(t.votes) || 0), 0);
       document.getElementById('sTracks').textContent = tracks.length;
-      document.getElementById('sVotes').textContent = totalVotes;
+      document.getElementById('sRatings').textContent = totalRatings;
       document.getElementById('sComments').textContent = comments.length;
       document.getElementById('sUsers').textContent = users.length;
       document.getElementById('sMessages').textContent = messages.length;
-      document.getElementById('sAvg').textContent = tracks.length ? (totalVotes / tracks.length).toFixed(1) : '0';
+      document.getElementById('sAvg').textContent = avgRating;
 
-      // ── Users table ──
-      const usersTable = document.getElementById('usersTable');
-      usersTable.innerHTML = `
-        <tr><th>User</th><th>User ID</th><th>Tracks</th><th>Votes Given</th><th>Comments</th><th>First Seen</th><th>Actions</th></tr>
-        ${users.length ? users.map(u => `
-          <tr>
-            <td>
-              <span class="user-badge">
-                <span class="user-avatar">${getInitials(u.name, u.id)}</span>
-                ${sanitize(u.name || 'Anonymous')}
-              </span>
-            </td>
-            <td class="text-muted text-sm">${u.id.substring(0, 8)}...</td>
-            <td class="text-accent">${u.tracks}</td>
-            <td>${u.votes}</td>
-            <td>${u.comments}</td>
-            <td class="text-muted">${formatDate(u.joined)}</td>
+      // Users table
+      document.getElementById('tab-users').innerHTML = `<div class="table-wrap"><table>
+        <tr><th>User</th><th>Email</th><th>Tracks</th><th>Comments</th><th>Joined</th><th>Actions</th></tr>
+        ${users.length ? users.map(u => {
+          const name = sanitize(u.name || 'No name');
+          const avatarHtml = u.avatar ? `<img src="${sanitize(u.avatar)}" alt="">` : (u.name || u.email || '?').charAt(0).toUpperCase();
+          return `<tr>
+            <td><span class="user-badge"><span class="user-avatar">${avatarHtml}</span>${name}</span></td>
+            <td class="text-email">${sanitize(u.email)}</td>
+            <td class="text-accent">${u.trackCount}</td>
+            <td>${u.commentCount}</td>
+            <td class="text-muted">${formatDate(u.created_at)}</td>
             <td><button class="btn-delete" onclick="deleteUser('${u.id}')">Delete</button></td>
-          </tr>
-        `).join('') : '<tr><td colspan="7" class="empty-state">No users yet</td></tr>'}
-      `;
+          </tr>`;
+        }).join('') : '<tr><td colspan="6" class="empty-state">No users yet</td></tr>'}
+      </table></div>`;
 
-      // ── Tracks table ──
-      document.getElementById('tracksTable').innerHTML = `
-        <tr><th>Title</th><th>Tool</th><th>Genre</th><th>Votes</th><th>Submitted</th><th>Actions</th></tr>
-        ${tracks.length ? tracks.map(t => `
-          <tr>
+      // Tracks table
+      document.getElementById('tab-tracks').innerHTML = `<div class="table-wrap"><table>
+        <tr><th>Title</th><th>Submitted By</th><th>Tool</th><th>Genre</th><th>Avg Rating</th><th>Ratings</th><th>Submitted</th><th>Actions</th></tr>
+        ${tracks.length ? tracks.map(t => {
+          const user = t.user_id && userMap[t.user_id] ? userMap[t.user_id] : null;
+          const submitter = user ? sanitize(user.name || user.email || 'Unknown') : '<span class="text-muted">Unknown</span>';
+          const avg = t.avg_rating ? parseFloat(t.avg_rating).toFixed(1) : '\u2014';
+          return `<tr>
             <td><strong>${sanitize(t.title)}</strong></td>
+            <td class="text-sm">${submitter}</td>
             <td>${sanitize(t.tool)}</td>
             <td>${sanitize(t.genre)}</td>
-            <td class="text-accent">${t.votes || 0}</td>
+            <td class="text-accent">${avg}</td>
+            <td>${t.rating_count || 0}</td>
             <td class="text-muted">${formatDate(t.created_at)}</td>
             <td><button class="btn-delete" onclick="deleteTrack('${t.id}')">Delete</button></td>
-          </tr>
-        `).join('') : '<tr><td colspan="6" class="empty-state">No tracks yet</td></tr>'}
-      `;
+          </tr>`;
+        }).join('') : '<tr><td colspan="8" class="empty-state">No tracks yet</td></tr>'}
+      </table></div>`;
 
-      // ── Comments table ──
-      document.getElementById('commentsTable').innerHTML = `
-        <tr><th>Track</th><th>Author</th><th>Comment</th><th>Date</th><th>Actions</th></tr>
-        ${comments.length ? comments.map(c => `
-          <tr>
+      // Comments table
+      document.getElementById('tab-comments').innerHTML = `<div class="table-wrap"><table>
+        <tr><th>Track</th><th>Author</th><th>Email</th><th>Comment</th><th>Date</th><th>Actions</th></tr>
+        ${comments.length ? comments.map(c => {
+          const user = c.user_id && userMap[c.user_id] ? userMap[c.user_id] : null;
+          const email = user ? sanitize(user.email) : '<span class="text-muted">\u2014</span>';
+          return `<tr>
             <td>${sanitize(c.tracks?.title || 'Unknown')}</td>
             <td>${sanitize(c.author_name || 'Anonymous')}</td>
+            <td class="text-email text-sm">${email}</td>
             <td>${sanitize(c.content)}</td>
             <td class="text-muted">${formatDate(c.created_at)}</td>
             <td><button class="btn-delete" onclick="deleteComment('${c.id}')">Delete</button></td>
-          </tr>
-        `).join('') : '<tr><td colspan="5" class="empty-state">No comments yet</td></tr>'}
-      `;
+          </tr>`;
+        }).join('') : '<tr><td colspan="6" class="empty-state">No comments yet</td></tr>'}
+      </table></div>`;
 
-      // ── Messages table ──
-      document.getElementById('messagesTable').innerHTML = `
+      // Messages table
+      document.getElementById('tab-messages').innerHTML = `<div class="table-wrap"><table>
         <tr><th>Name</th><th>Email</th><th>Message</th><th>Date</th><th>Actions</th></tr>
-        ${messages.length ? messages.map(m => `
-          <tr>
+        ${messages.length ? messages.map(m => `<tr>
             <td>${sanitize(m.name)}</td>
-            <td>${sanitize(m.email)}</td>
+            <td class="text-email">${sanitize(m.email)}</td>
             <td>${sanitize(m.message)}</td>
             <td class="text-muted">${formatDate(m.created_at)}</td>
             <td><button class="btn-delete" onclick="deleteMessage('${m.id}')">Delete</button></td>
-          </tr>
-        `).join('') : '<tr><td colspan="5" class="empty-state">No messages yet</td></tr>'}
-      `;
+          </tr>`).join('') : '<tr><td colspan="5" class="empty-state">No messages yet</td></tr>'}
+      </table></div>`;
 
-    } catch (err) {
+    } catch(err) {
       console.error('Load error:', err);
       showStatus('adminStatus', 'Failed to load data: ' + err.message, 'error');
     }
   }
 
-  // ── Delete ──
   async function adminDelete(table, id, label) {
     if (!confirm(`Delete this ${label}?`)) return;
-    token = localStorage.getItem('sb_token');
     try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
-        method: 'DELETE',
-        headers: authHeaders()
-      });
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, { method: 'DELETE', headers: headers() });
       if (res.ok || res.status === 204) {
         showStatus('adminStatus', `${label} deleted.`, 'success');
         await loadData();
-      } else if (res.status === 401 || res.status === 403) {
-        showStatus('adminStatus', 'Not authorized. Log in on main site first.', 'error');
       } else {
-        const errText = await res.text();
-        if (errText.includes('policy') || errText.includes('permission')) {
-          showStatus('adminStatus', 'Cannot delete — RLS policy missing in Supabase.', 'error');
-        } else {
-          showStatus('adminStatus', `Failed to delete. Status: ${res.status}`, 'error');
-        }
+        showStatus('adminStatus', `Failed to delete ${label}. Check RLS policies.`, 'error');
       }
-    } catch (err) {
-      showStatus('adminStatus', `Network error: ${err.message}`, 'error');
-    }
+    } catch(err) { showStatus('adminStatus', `Error: ${err.message}`, 'error'); }
   }
 
   window.deleteTrack = (id) => adminDelete('tracks', id, 'Track');
@@ -494,28 +335,14 @@
   window.deleteMessage = (id) => adminDelete('contact_messages', id, 'Message');
 
   window.deleteUser = async function(userId) {
-    if (!confirm(`Delete this user and ALL their data (tracks, votes, comments)?`)) return;
-    token = localStorage.getItem('sb_token');
+    if (!confirm('Delete this user and ALL their data (tracks, comments)?')) return;
     try {
-      // Delete user's votes, comments, then tracks (order matters for foreign keys)
-      const tables = [
-        { name: 'votes', filter: `user_id=eq.${userId}` },
-        { name: 'comments', filter: `user_id=eq.${userId}` },
-        { name: 'tracks', filter: `user_id=eq.${userId}` }
-      ];
-      for (const t of tables) {
-        await fetch(`${SUPABASE_URL}/rest/v1/${t.name}?${t.filter}`, {
-          method: 'DELETE',
-          headers: authHeaders()
-        });
-      }
-      showStatus('adminStatus', 'User and all their data deleted.', 'success');
+      await fetch(`${SUPABASE_URL}/rest/v1/comments?user_id=eq.${userId}`, { method: 'DELETE', headers: headers() });
+      await fetch(`${SUPABASE_URL}/rest/v1/tracks?user_id=eq.${userId}`, { method: 'DELETE', headers: headers() });
+      showStatus('adminStatus', 'User data deleted.', 'success');
       await loadData();
-    } catch (err) {
-      showStatus('adminStatus', `Error deleting user: ${err.message}`, 'error');
-    }
+    } catch(err) { showStatus('adminStatus', `Error: ${err.message}`, 'error'); }
   };
 </script>
-
 </body>
 </html>
