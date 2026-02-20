@@ -343,6 +343,10 @@
     .skeleton-stars { height: 28px; border-radius: 4px; width: 60%; }
 
     .leaderboard-section { max-width: 800px; margin: 0 auto; padding: 60px clamp(16px, 4vw, 40px) 40px; }
+    .lb-tabs { display: flex; gap: 4px; justify-content: center; margin-bottom: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 3px; width: fit-content; margin-left: auto; margin-right: auto; }
+    .lb-tab { padding: 7px 20px; border-radius: 8px; border: none; background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+    .lb-tab:hover { color: var(--text); }
+    .lb-tab.active { background: var(--accent); color: var(--bg); }
     .section-header { text-align: center; margin-bottom: 32px; }
     .section-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 2px; text-transform: uppercase; }
     .section-sub { color: var(--muted); font-size: 0.85rem; margin-top: 6px; }
@@ -670,6 +674,11 @@
     <h2 class="section-title">Top Rated</h2>
     <p class="section-sub">Ranked by community ratings using Wilson Score</p>
   </div>
+  <div class="lb-tabs">
+    <button class="lb-tab active" data-period="week">This Week</button>
+    <button class="lb-tab" data-period="month">This Month</button>
+    <button class="lb-tab" data-period="all">All Time</button>
+  </div>
   <div class="leaderboard" id="leaderboardList">
     <div class="skeleton skeleton-lb-row" style="height:56px;margin-bottom:2px;border-radius:0;"></div>
     <div class="skeleton skeleton-lb-row" style="height:56px;margin-bottom:2px;border-radius:0;"></div>
@@ -843,7 +852,20 @@
 
   function updateHeroStats() { document.getElementById('statTracks').textContent = allTracks.length; document.getElementById('statRatings').textContent = allTracks.reduce((s, t) => s + (t.rating_count || 0), 0); document.getElementById('statCreators').textContent = new Set(allTracks.map(t => t.user_id).filter(Boolean)).size; }
 
-  function renderLeaderboard() { const lb = document.getElementById('leaderboardList'); const sorted = [...allTracks].sort((a, b) => wilsonScore(b.avg_rating||0, b.rating_count||0) - wilsonScore(a.avg_rating||0, a.rating_count||0)).slice(0, 10); if (!sorted.length) { lb.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted);">No tracks yet</div>'; return; } const medals = ['\u{1F947}', '\u{1F948}', '\u{1F949}']; lb.innerHTML = sorted.map((t, i) => { const rank = i < 3 ? medals[i] : `#${i+1}`; const stars = (t.avg_rating||0) > 0 ? (t.avg_rating).toFixed(1)+' \u2605' : '\u2014'; return `<div class="lb-row"><div class="lb-rank">${rank}</div><div class="lb-info"><div class="lb-title">${sanitize(t.title)}</div><div class="lb-meta">${sanitize(t.tool)} \u00b7 ${sanitize(t.genre)}</div></div><div class="lb-rating"><span class="lb-stars">${stars}</span><span class="lb-count">(${t.rating_count||0})</span></div></div>`; }).join(''); }
+  let currentLbPeriod = 'week';
+  function renderLeaderboard(period) {
+    if (period) currentLbPeriod = period;
+    const lb = document.getElementById('leaderboardList');
+    let filtered = [...allTracks];
+    const now = new Date();
+    if (currentLbPeriod === 'week') { const cutoff = new Date(now - 7 * 24 * 60 * 60 * 1000); filtered = filtered.filter(t => new Date(t.created_at) >= cutoff); }
+    else if (currentLbPeriod === 'month') { const cutoff = new Date(now - 30 * 24 * 60 * 60 * 1000); filtered = filtered.filter(t => new Date(t.created_at) >= cutoff); }
+    const sorted = filtered.sort((a, b) => wilsonScore(b.avg_rating||0, b.rating_count||0) - wilsonScore(a.avg_rating||0, a.rating_count||0)).slice(0, 10);
+    if (!sorted.length) { lb.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted);">No tracks in this period</div>'; return; }
+    const medals = ['\u{1F947}', '\u{1F948}', '\u{1F949}'];
+    lb.innerHTML = sorted.map((t, i) => { const rank = i < 3 ? medals[i] : `#${i+1}`; const stars = (t.avg_rating||0) > 0 ? (t.avg_rating).toFixed(1)+' \u2605' : '\u2014'; return `<div class="lb-row"><div class="lb-rank">${rank}</div><div class="lb-info"><div class="lb-title">${sanitize(t.title)}</div><div class="lb-meta">${sanitize(t.tool)} \u00b7 ${sanitize(t.genre)}</div></div><div class="lb-rating"><span class="lb-stars">${stars}</span><span class="lb-count">(${t.rating_count||0})</span></div></div>`; }).join('');
+  }
+  document.querySelectorAll('.lb-tab').forEach(tab => { tab.addEventListener('click', () => { document.querySelectorAll('.lb-tab').forEach(t => t.classList.remove('active')); tab.classList.add('active'); renderLeaderboard(tab.dataset.period); }); });
 
   function getSortedTracks(tracks) { switch (currentView) { case 'top': return [...tracks].sort((a, b) => wilsonScore(b.avg_rating||0, b.rating_count||0) - wilsonScore(a.avg_rating||0, a.rating_count||0)); case 'new': return [...tracks].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); default: return [...tracks].sort((a, b) => { const ca = a.rating_count||0, cb = b.rating_count||0; if (ca <= 5 && cb > 5) return -1; if (cb <= 5 && ca > 5) return 1; return new Date(b.created_at) - new Date(a.created_at); }); } }
   function getFilteredTracks() { return allTracks.filter(t => { if (filters.genre !== 'all' && t.genre !== filters.genre) return false; if (filters.tool !== 'all' && t.tool !== filters.tool) return false; return true; }); }
