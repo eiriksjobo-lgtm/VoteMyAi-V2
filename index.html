@@ -945,12 +945,30 @@
 
     requestAnimationFrame(() => {
       const card = document.getElementById('card-' + trackParam);
-      if (card) {
-        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        card.style.boxShadow = '0 0 0 2px var(--accent), 0 12px 40px rgba(232,255,71,0.15)';
-        setTimeout(() => { card.style.boxShadow = ''; }, 2500);
-        setTimeout(() => { loadEmbed(trackParam); }, 600);
-      }
+      if (!card) return;
+
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      card.style.boxShadow = '0 0 0 2px var(--accent), 0 12px 40px rgba(232,255,71,0.15)';
+      setTimeout(() => { card.style.boxShadow = ''; }, 4000);
+
+      // Show pulsing play overlay (autoplay blocked by browsers without user gesture)
+      const overlay = document.createElement('div');
+      overlay.id = 'deeplink-overlay';
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:9998;background:rgba(7,7,11,0.7);display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(4px);';
+      overlay.innerHTML = `<div style="text-align:center;"><div style="width:80px;height:80px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 0 40px rgba(232,255,71,0.4);animation:deepPulse 1.5s ease-in-out infinite;cursor:pointer;"><svg width="36" height="36" viewBox="0 0 24 24" fill="#07070b"><polygon points="6 3 20 12 6 21"/></svg></div><div style="color:var(--text);font-weight:700;font-size:1rem;margin-bottom:4px;">Tap to play</div><div style="color:var(--muted);font-size:0.8rem;">${sanitize(currentSorted[trackIndex]?.title || '')}</div></div>`;
+
+      // Add pulse animation
+      const style = document.createElement('style');
+      style.textContent = '@keyframes deepPulse{0%,100%{transform:scale(1);box-shadow:0 0 40px rgba(232,255,71,0.4)}50%{transform:scale(1.08);box-shadow:0 0 60px rgba(232,255,71,0.6)}}';
+      document.head.appendChild(style);
+
+      overlay.addEventListener('click', () => {
+        overlay.remove();
+        style.remove();
+        loadEmbed(trackParam);
+      }, { once: true });
+
+      document.body.appendChild(overlay);
     });
 
     window.history.replaceState(null, '', '/');
