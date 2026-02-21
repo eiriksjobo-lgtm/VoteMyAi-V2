@@ -138,7 +138,7 @@
     .hero-stat { text-align: center; }
     .hero-stat-num {
       display: block; font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.8rem; letter-spacing: 1px; color: var(--accent); line-height: 1;
+      font-size: 1.6rem; letter-spacing: 1px; color: var(--accent); line-height: 1;
     }
     .hero-stat-label {
       font-size: 0.68rem; color: var(--muted);
@@ -924,9 +924,9 @@
   <p>The community rates tracks made with Suno, Udio, ElevenLabs and more. The best rise to the top.</p>
   <a href="/submit.html" class="hero-cta">Submit Your Track <span>→</span></a>
   <div class="hero-stats" id="heroStats">
-    <div class="hero-stat"><span class="hero-stat-num" id="statTracks">—</span><span class="hero-stat-label">Tracks</span></div>
-    <div class="hero-stat"><span class="hero-stat-num" id="statRatings">—</span><span class="hero-stat-label">Ratings</span></div>
-    <div class="hero-stat"><span class="hero-stat-num" id="statCreators">—</span><span class="hero-stat-label">Creators</span></div>
+    <div class="hero-stat"><span class="hero-stat-num">🎵</span><span class="hero-stat-label">AI Music Platform</span></div>
+    <div class="hero-stat"><span class="hero-stat-num">⭐</span><span class="hero-stat-label">Community Rated</span></div>
+    <div class="hero-stat"><span class="hero-stat-num">🚀</span><span class="hero-stat-label">Submit Yours Free</span></div>
   </div>
 </section>
 
@@ -1219,22 +1219,8 @@
     try { const res = await fetch(`${SUPABASE_URL}/rest/v1/tracks?select=*&order=created_at.desc`, { headers: { 'apikey': SUPABASE_KEY } }); allTracks = await res.json(); renderTracks(); renderLeaderboard(); updateHeroStats(); } catch(e) { console.error('Load error:', e); }
   }
 
-  function updateHeroStats() {
-    animateCount('statTracks', allTracks.length);
-    animateCount('statRatings', allTracks.reduce((s, t) => s + (t.rating_count || 0), 0));
-    animateCount('statCreators', new Set(allTracks.map(t => t.user_id).filter(Boolean)).size);
-  }
-  function animateCount(id, target) {
-    const el = document.getElementById(id);
-    if (target === 0) { el.textContent = '0'; return; }
-    let current = 0;
-    const step = Math.max(1, Math.ceil(target / 20));
-    const interval = setInterval(() => {
-      current += step;
-      if (current >= target) { current = target; clearInterval(interval); }
-      el.textContent = current;
-    }, 30);
-  }
+  function updateHeroStats() { /* disabled until 100+ users */ }
+  function animateCount(id, target) { /* disabled */ }
 
   let currentLbPeriod = 'week';
   function renderLeaderboard(period) {
@@ -1560,7 +1546,9 @@
     const genreOrder = Object.entries(genreMap).sort((a, b) => b[1].length - a[1].length);
     genreOrder.forEach(([genre, tracks]) => {
       const emoji = GENRE_EMOJIS[genre] || '🎶';
-      html += buildGenreRow(emoji, genre, tracks);
+      // Sort within genre: best rated first (Wilson Score)
+      const genreSorted = [...tracks].sort((a, b) => wilsonScore(b.avg_rating||0, b.rating_count||0) - wilsonScore(a.avg_rating||0, a.rating_count||0));
+      html += buildGenreRow(emoji, genre, genreSorted);
     });
 
     container.innerHTML = html;
