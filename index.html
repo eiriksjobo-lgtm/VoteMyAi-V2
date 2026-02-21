@@ -767,6 +767,22 @@
     .search-results-empty p { font-size: 0.9rem; margin-bottom: 4px; }
     .search-results-empty span { font-size: 0.78rem; opacity: 0.6; }
 
+    .browse-card.is-playing {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(232,255,71,0.2), 0 12px 40px rgba(0,0,0,0.4);
+    }
+    .browse-card.is-playing .browse-card-thumb {
+      aspect-ratio: 16/9;
+    }
+    .browse-card.is-playing .browse-card-thumb iframe {
+      width: 100% !important;
+      height: 100% !important;
+      border: none !important;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
     /* Hide old sections */
     .view-bar, .filters, .filter-toggle, .tracks-container { display: none !important; }
 
@@ -1548,9 +1564,13 @@
     // Save original thumbnail HTML for restore
     thumbContainer.dataset.originalHtml = thumbContainer.innerHTML;
     
-    // Replace thumb with embed
-    thumbContainer.innerHTML = '<div style="position:absolute;top:0;left:0;width:100%;height:100%;">' + embedHtml + '</div>';
-    thumbContainer.style.aspectRatio = embed.platform === 'soundcloud' ? 'auto' : '16/10';
+    // Make sure iframe fills the space
+    embedHtml = embedHtml.replace(/<iframe /, '<iframe style="width:100%;height:100%;border:none;position:absolute;top:0;left:0;" ');
+    
+    // Replace thumb with embed - expand card for better embed viewing
+    thumbContainer.style.aspectRatio = '16/9';
+    thumbContainer.style.position = 'relative';
+    thumbContainer.innerHTML = embedHtml;
     thumbContainer.removeAttribute('data-action');
     
     card.classList.add('is-playing');
@@ -1576,6 +1596,7 @@
       thumbContainer.innerHTML = thumbContainer.dataset.originalHtml;
       delete thumbContainer.dataset.originalHtml;
       thumbContainer.setAttribute('data-action', 'load-embed');
+      thumbContainer.style.aspectRatio = '16/10';
     }
     card.classList.remove('is-playing');
     activeBrowseTrackId = null;
