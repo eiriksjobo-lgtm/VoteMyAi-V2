@@ -204,7 +204,7 @@
   <div id="formContainer" style="display: none;">
     <form id="submitForm">
       <div class="form-group">
-        <label>Track URL <span class="label-hint">\u2014 YouTube, SoundCloud, Suno or Udio</span></label>
+        <label>Track URL <span class="label-hint">— YouTube, SoundCloud, Suno or Udio</span></label>
         <input type="url" id="trackUrl" placeholder="Paste a link from any supported platform..." required>
         <div class="platform-badge" id="platformBadge"></div>
         <div class="preview-container" id="previewContainer"></div>
@@ -221,6 +221,8 @@
           <option value="">Select tool...</option>
           <option value="Suno">Suno</option>
           <option value="Udio">Udio</option>
+          <option value="ElevenLabs">ElevenLabs</option>
+          <option value="Gemini">Gemini (Lyria)</option>
           <option value="Other">Other</option>
         </select>
       </div>
@@ -229,11 +231,26 @@
         <label>Genre</label>
         <select id="genre" required>
           <option value="">Select genre...</option>
-          <option value="Electronic">Electronic</option>
-          <option value="Hip-Hop">Hip-Hop</option>
           <option value="Pop">Pop</option>
           <option value="Rock">Rock</option>
+          <option value="Hip-Hop">Hip-Hop</option>
+          <option value="Electronic">Electronic</option>
+          <option value="R&B / Soul">R&B / Soul</option>
           <option value="Cinematic">Cinematic</option>
+          <option value="Jazz">Jazz</option>
+          <option value="Latin">Latin</option>
+          <option value="Indie / Folk">Indie / Folk</option>
+          <option value="Country">Country</option>
+          <option value="Metal">Metal</option>
+          <option value="Drum & Bass">Drum & Bass</option>
+          <option value="Lo-Fi">Lo-Fi</option>
+          <option value="Funk">Funk</option>
+          <option value="Reggae">Reggae</option>
+          <option value="Blues">Blues</option>
+          <option value="Ambient">Ambient</option>
+          <option value="Classical">Classical</option>
+          <option value="Afrobeat">Afrobeat</option>
+          <option value="K-Pop">K-Pop</option>
           <option value="Other">Other</option>
         </select>
       </div>
@@ -307,14 +324,12 @@
     }
     
     // Suno - multiple URL formats
-    // Full song URL: suno.com/song/UUID
     const sunoLong = url.match(/suno\.com\/song\/([a-f0-9-]{36})/);
     if (sunoLong) return { platform: 'suno', id: sunoLong[1], url: url };
-    // Short link: suno.com/s/SHORTCODE \u2014 needs resolution
     const sunoShort = url.match(/suno\.com\/s\/([a-zA-Z0-9_-]+)/);
     if (sunoShort) return { platform: 'suno-short', id: sunoShort[1], url: url };
     
-    // Udio - needs UUID resolution for embed
+    // Udio
     if (url.includes('udio.com/songs/')) {
       const udioSlug = url.match(/udio\.com\/songs\/([a-zA-Z0-9_-]+)/);
       if (udioSlug) return { platform: 'udio-resolve', id: udioSlug[1], url: url };
@@ -359,7 +374,7 @@
       const result = parseTrackUrl(url);
       
       if (result) {
-        // Handle Suno short links - auto-resolve to UUID
+        // Handle Suno short links
         if (result.platform === 'suno-short') {
           badge.textContent = '♪ Resolving Suno link...';
           badge.className = 'platform-badge show suno';
@@ -400,7 +415,7 @@
           return;
         }
 
-        // Handle Udio slugs - auto-resolve to UUID for embed
+        // Handle Udio slugs
         if (result.platform === 'udio-resolve') {
           badge.textContent = '♪ Resolving Udio link...';
           badge.className = 'platform-badge show udio';
@@ -423,7 +438,6 @@
               badge.className = 'platform-badge show udio';
               showPreview('udio', data.uuid);
             } else {
-              // Fallback: use slug as embed ID
               detectedPlatform = 'udio';
               detectedId = result.id;
               detectedUrl = result.url;
@@ -432,7 +446,6 @@
               showPreview('udio', result.id);
             }
           } catch (err) {
-            // Fallback: use slug
             detectedPlatform = 'udio';
             detectedId = result.id;
             detectedUrl = result.url;
@@ -460,7 +473,7 @@
         detectedPlatform = null;
         detectedId = null;
         detectedUrl = null;
-        badge.textContent = '✗ Unsupported URL \u2014 use YouTube, SoundCloud, Suno or Udio';
+        badge.textContent = '✗ Unsupported URL — use YouTube, SoundCloud, Suno or Udio';
         badge.className = 'platform-badge show invalid';
         preview.classList.remove('show');
       }
@@ -495,7 +508,6 @@
     }
     
     try {
-      // Fetch thumbnail before saving
       let thumbnailUrl = null;
       try {
         btn.textContent = 'Fetching cover art...';
@@ -512,8 +524,6 @@
 
       btn.textContent = 'Submitting...';
 
-      // For YouTube, store in yt_id for backwards compatibility
-      // For all platforms, store full URL in embed_url
       const trackData = {
         title,
         yt_id: detectedPlatform === 'youtube' ? detectedId : null,
