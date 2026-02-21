@@ -674,7 +674,7 @@
 
     /* Browse Card */
     .browse-card {
-      flex: 0 0 270px; background: var(--surface); border: 1px solid var(--border);
+      flex: 0 0 220px; background: var(--surface); border: 1px solid var(--border);
       border-radius: 12px; overflow: hidden;
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       scroll-snap-align: start; position: relative;
@@ -769,7 +769,7 @@
     /* Search results mode — grid instead of rows */
     .search-results-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
       gap: 14px;
       padding: 0 clamp(16px, 4vw, 48px) 40px;
     }
@@ -876,7 +876,7 @@
     .view-bar, .filters, .filter-toggle, .tracks-container { display: none !important; }
 
     @media (max-width: 640px) {
-      .browse-card { flex: 0 0 200px; }
+      .browse-card { flex: 0 0 170px; }
       .browse-controls { flex-direction: column; align-items: stretch; gap: 8px; padding: 0 12px 16px; }
       .search-box { max-width: 100%; }
       .browse-view-tabs { align-self: center; }
