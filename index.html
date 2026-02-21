@@ -477,7 +477,7 @@
       .filter-toggle svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; transition: transform 0.2s; }
       .filter-toggle.open svg { transform: rotate(180deg); }
       .filters { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; gap: 5px; padding-top: 0; justify-content: center; }
-      .filters.open { max-height: 120px; padding-top: 10px; }
+      .filters.open { max-height: 200px; padding-top: 10px; }
       .filter-label { font-size: 0.62rem; white-space: nowrap; margin-right: 2px; }
       .filter-pill { padding: 4px 10px; font-size: 0.66rem; flex-shrink: 0; }
       .filter-sep { display: none; }
@@ -646,17 +646,34 @@
 <div class="filters" id="filtersBar">
   <span class="filter-label">Genre</span>
   <button class="filter-pill active" data-filter="genre" data-value="all">All</button>
-  <button class="filter-pill" data-filter="genre" data-value="Electronic">Electronic</button>
-  <button class="filter-pill" data-filter="genre" data-value="Hip-Hop">Hip-Hop</button>
   <button class="filter-pill" data-filter="genre" data-value="Pop">Pop</button>
   <button class="filter-pill" data-filter="genre" data-value="Rock">Rock</button>
+  <button class="filter-pill" data-filter="genre" data-value="Hip-Hop">Hip-Hop</button>
+  <button class="filter-pill" data-filter="genre" data-value="Electronic">Electronic</button>
+  <button class="filter-pill" data-filter="genre" data-value="R&B / Soul">R&B / Soul</button>
   <button class="filter-pill" data-filter="genre" data-value="Cinematic">Cinematic</button>
+  <button class="filter-pill" data-filter="genre" data-value="Jazz">Jazz</button>
+  <button class="filter-pill" data-filter="genre" data-value="Latin">Latin</button>
+  <button class="filter-pill" data-filter="genre" data-value="Indie / Folk">Indie / Folk</button>
+  <button class="filter-pill" data-filter="genre" data-value="Country">Country</button>
+  <button class="filter-pill" data-filter="genre" data-value="Metal">Metal</button>
+  <button class="filter-pill" data-filter="genre" data-value="Drum & Bass">Drum & Bass</button>
+  <button class="filter-pill" data-filter="genre" data-value="Lo-Fi">Lo-Fi</button>
+  <button class="filter-pill" data-filter="genre" data-value="Funk">Funk</button>
+  <button class="filter-pill" data-filter="genre" data-value="Reggae">Reggae</button>
+  <button class="filter-pill" data-filter="genre" data-value="Blues">Blues</button>
+  <button class="filter-pill" data-filter="genre" data-value="Ambient">Ambient</button>
+  <button class="filter-pill" data-filter="genre" data-value="Classical">Classical</button>
+  <button class="filter-pill" data-filter="genre" data-value="Afrobeat">Afrobeat</button>
+  <button class="filter-pill" data-filter="genre" data-value="K-Pop">K-Pop</button>
   <button class="filter-pill" data-filter="genre" data-value="Other">Other</button>
   <div class="filter-sep"></div>
   <span class="filter-label">Tool</span>
   <button class="filter-pill active" data-filter="tool" data-value="all">All</button>
   <button class="filter-pill" data-filter="tool" data-value="Suno">Suno</button>
   <button class="filter-pill" data-filter="tool" data-value="Udio">Udio</button>
+  <button class="filter-pill" data-filter="tool" data-value="ElevenLabs">ElevenLabs</button>
+  <button class="filter-pill" data-filter="tool" data-value="Gemini">Gemini</button>
 </div>
 
 <!-- ═══ TRACKS GRID ═══ -->
@@ -996,13 +1013,11 @@
       card.style.boxShadow = '0 0 0 2px var(--accent), 0 12px 40px rgba(232,255,71,0.15)';
       setTimeout(() => { card.style.boxShadow = ''; }, 4000);
 
-      // Show pulsing play overlay (autoplay blocked by browsers without user gesture)
       const overlay = document.createElement('div');
       overlay.id = 'deeplink-overlay';
       overlay.style.cssText = 'position:fixed;inset:0;z-index:9998;background:rgba(7,7,11,0.7);display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(4px);';
       overlay.innerHTML = `<div style="text-align:center;"><div style="width:80px;height:80px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 0 40px rgba(232,255,71,0.4);animation:deepPulse 1.5s ease-in-out infinite;cursor:pointer;"><svg width="36" height="36" viewBox="0 0 24 24" fill="#07070b"><polygon points="6 3 20 12 6 21"/></svg></div><div style="color:var(--text);font-weight:700;font-size:1rem;margin-bottom:4px;">Tap to play</div><div style="color:var(--muted);font-size:0.8rem;">${sanitize(currentSorted[trackIndex]?.title || '')}</div></div>`;
 
-      // Add pulse animation
       const style = document.createElement('style');
       style.textContent = '@keyframes deepPulse{0%,100%{transform:scale(1);box-shadow:0 0 40px rgba(232,255,71,0.4)}50%{transform:scale(1.08);box-shadow:0 0 60px rgba(232,255,71,0.6)}}';
       document.head.appendChild(style);
