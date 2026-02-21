@@ -1605,39 +1605,78 @@
     scroll.addEventListener('scroll', updateArrows);
     updateArrows();
 
-    // Mouse drag to scroll
+    // Mouse drag to scroll with momentum (iOS-style)
     let isDragging = false;
     let startX = 0;
     let scrollStart = 0;
     let hasDragged = false;
+    let velocity = 0;
+    let lastX = 0;
+    let lastTime = 0;
+    let momentumId = null;
 
     scroll.addEventListener('mousedown', (e) => {
-      // Ignore clicks on buttons/stars/links
       if (e.target.closest('button, .bstar, a, .browse-card-footer')) return;
+      if (momentumId) { cancelAnimationFrame(momentumId); momentumId = null; }
       isDragging = true;
       hasDragged = false;
       startX = e.pageX;
+      lastX = e.pageX;
+      lastTime = Date.now();
       scrollStart = scroll.scrollLeft;
+      velocity = 0;
       scroll.style.cursor = 'grabbing';
+      scroll.style.scrollSnapType = 'none';
       scroll.style.scrollBehavior = 'auto';
       e.preventDefault();
     });
 
     window.addEventListener('mousemove', (e) => {
       if (!isDragging) return;
-      const dx = e.pageX - startX;
-      if (Math.abs(dx) > 5) hasDragged = true;
-      scroll.scrollLeft = scrollStart - dx;
+      const now = Date.now();
+      const dt = now - lastTime;
+      const dx = e.pageX - lastX;
+      if (dt > 0) velocity = dx / dt;
+      lastX = e.pageX;
+      lastTime = now;
+      const totalDx = e.pageX - startX;
+      if (Math.abs(totalDx) > 3) hasDragged = true;
+      scroll.scrollLeft = scrollStart - totalDx;
     });
 
     window.addEventListener('mouseup', () => {
       if (!isDragging) return;
       isDragging = false;
       scroll.style.cursor = '';
-      scroll.style.scrollBehavior = 'smooth';
-      // Block click if we dragged
+
+      // Momentum coast
+      let v = -velocity * 1000; // px/sec
+      const friction = 0.95;
+      let last = performance.now();
+
+      function coast(now) {
+        const dt = (now - last) / 1000;
+        last = now;
+        v *= friction;
+        scroll.scrollLeft += v * dt;
+        if (Math.abs(v) > 10) {
+          momentumId = requestAnimationFrame(coast);
+        } else {
+          scroll.style.scrollSnapType = 'x proximity';
+          scroll.style.scrollBehavior = 'smooth';
+          momentumId = null;
+        }
+      }
+
+      if (Math.abs(v) > 50) {
+        momentumId = requestAnimationFrame(coast);
+      } else {
+        scroll.style.scrollSnapType = 'x proximity';
+        scroll.style.scrollBehavior = 'smooth';
+      }
+
       if (hasDragged) {
-        scroll.addEventListener('click', (e) => { e.stopPropagation(); }, { capture: true, once: true });
+        scroll.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); }, { capture: true, once: true });
       }
     });
   }
