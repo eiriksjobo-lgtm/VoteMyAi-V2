@@ -1177,7 +1177,7 @@
   function sanitize(str) { if (!str) return ''; const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
 
   // ─── Event Delegation ───
-  document.addEventListener('click', function(e) { const star = e.target.closest('.star'); if (star) { rateStar(star.dataset.track, parseInt(star.dataset.score), star.parentElement); return; } const thumbBtn = e.target.closest('[data-action="load-embed"]'); if (thumbBtn) { const isBrowse = thumbBtn.closest('.browse-card'); if (isBrowse) { browsePlay(thumbBtn.dataset.trackId); } else { loadEmbed(thumbBtn.dataset.trackId); } return; } const commentsBtn = e.target.closest('[data-action="comments"]'); if (commentsBtn) { toggleComments(commentsBtn.dataset.track); return; } const shareBtn = e.target.closest('[data-action="share"]'); if (shareBtn) { shareTrack(shareBtn.dataset.track, shareBtn.dataset.title, shareBtn); return; } const postBtn = e.target.closest('[data-action="post-comment"]'); if (postBtn) { addComment(postBtn.dataset.track); return; } const lbRow = e.target.closest('[data-action="lb-play"]'); if (lbRow) { const tid = lbRow.dataset.trackId; const idx = currentSorted.findIndex(t => String(t.id) === tid); if (idx >= 0 && idx >= visibleCount) { visibleCount = idx + 1; renderVisibleTracks(); } requestAnimationFrame(() => { const card = document.getElementById('card-' + tid); if (card) { card.scrollIntoView({ behavior: 'smooth', block: 'center' }); card.style.boxShadow = '0 0 0 2px var(--accent), 0 12px 40px rgba(232,255,71,0.15)'; setTimeout(() => { card.style.boxShadow = ''; }, 2500); setTimeout(() => { loadEmbed(tid); }, 600); } }); return; } const toolCard = e.target.closest('.tool-card[data-tool]'); if (toolCard) { gtag('event', 'tool_click', { tool: toolCard.dataset.tool, location: 'tools_section' }); } const viewTab = e.target.closest('.view-tab'); if (viewTab) { const m = { 'discover':'discover', 'top rated':'top', 'new':'new' }; setView(m[viewTab.textContent.trim().toLowerCase()]||'discover', viewTab); return; } const pill = e.target.closest('.filter-pill'); if (pill) { setFilter(pill.dataset.filter, pill.dataset.value, pill); return; } });
+  document.addEventListener('click', function(e) { const star = e.target.closest('.star'); if (star) { rateStar(star.dataset.track, parseInt(star.dataset.score), star.parentElement); return; } const thumbBtn = e.target.closest('[data-action="load-embed"]'); if (thumbBtn) { const isBrowse = thumbBtn.closest('.browse-card'); if (isBrowse) { browsePlay(thumbBtn.dataset.trackId); } else { loadEmbed(thumbBtn.dataset.trackId); } return; } const commentsBtn = e.target.closest('[data-action="comments"]'); if (commentsBtn) { toggleComments(commentsBtn.dataset.track); return; } const shareBtn = e.target.closest('[data-action="share"]'); if (shareBtn) { shareTrack(shareBtn.dataset.track, shareBtn.dataset.title, shareBtn); return; } const postBtn = e.target.closest('[data-action="post-comment"]'); if (postBtn) { addComment(postBtn.dataset.track); return; } const lbRow = e.target.closest('[data-action="lb-play"]'); if (lbRow) { const tid = lbRow.dataset.trackId; const card = document.querySelector('.browse-card[data-track-id="' + tid + '"]'); if (card) { card.scrollIntoView({ behavior: 'smooth', block: 'center' }); card.style.boxShadow = '0 0 0 2px var(--accent), 0 12px 40px rgba(232,255,71,0.15)'; setTimeout(() => { card.style.boxShadow = ''; }, 2500); setTimeout(() => { browsePlay(tid); }, 600); } else { browsePlay(tid); } return; } const toolCard = e.target.closest('.tool-card[data-tool]'); if (toolCard) { gtag('event', 'tool_click', { tool: toolCard.dataset.tool, location: 'tools_section' }); } const viewTab = e.target.closest('.view-tab'); if (viewTab) { const m = { 'discover':'discover', 'top rated':'top', 'new':'new' }; setView(m[viewTab.textContent.trim().toLowerCase()]||'discover', viewTab); return; } const pill = e.target.closest('.filter-pill'); if (pill) { setFilter(pill.dataset.filter, pill.dataset.value, pill); return; } });
 
   document.addEventListener('mouseover', function(e) { const star = e.target.closest('.star'); if (!star) return; const c = star.parentElement; if (c.classList.contains('rated')) return; const s = parseInt(star.dataset.score); c.querySelectorAll('.star').forEach(x => x.classList.toggle('hover-fill', parseInt(x.dataset.score) <= s)); });
   document.addEventListener('mouseout', function(e) { const star = e.target.closest('.star'); if (!star) return; const c = star.parentElement; if (c.classList.contains('rated')) return; c.querySelectorAll('.star').forEach(x => x.classList.remove('hover-fill')); });
@@ -1235,26 +1235,23 @@
     const trackParam = params.get('track');
     if (!trackParam) return;
 
-    const trackIndex = currentSorted.findIndex(t => String(t.id) === trackParam);
-    if (trackIndex === -1) return;
-
-    if (trackIndex >= visibleCount) {
-      visibleCount = trackIndex + 1;
-      renderVisibleTracks();
-    }
+    const track = allTracks.find(t => String(t.id) === trackParam);
+    if (!track) return;
 
     requestAnimationFrame(() => {
-      const card = document.getElementById('card-' + trackParam);
-      if (!card) return;
+      // Find the browse card
+      const card = document.querySelector('.browse-card[data-track-id="' + trackParam + '"]');
+      if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        card.style.boxShadow = '0 0 0 2px var(--accent), 0 12px 40px rgba(232,255,71,0.15)';
+        setTimeout(() => { card.style.boxShadow = ''; }, 4000);
+      }
 
-      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      card.style.boxShadow = '0 0 0 2px var(--accent), 0 12px 40px rgba(232,255,71,0.15)';
-      setTimeout(() => { card.style.boxShadow = ''; }, 4000);
-
+      // Show tap-to-play overlay
       const overlay = document.createElement('div');
       overlay.id = 'deeplink-overlay';
       overlay.style.cssText = 'position:fixed;inset:0;z-index:9998;background:rgba(7,7,11,0.7);display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(4px);';
-      overlay.innerHTML = `<div style="text-align:center;"><div style="width:80px;height:80px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 0 40px rgba(232,255,71,0.4);animation:deepPulse 1.5s ease-in-out infinite;cursor:pointer;"><svg width="36" height="36" viewBox="0 0 24 24" fill="#07070b"><polygon points="6 3 20 12 6 21"/></svg></div><div style="color:var(--text);font-weight:700;font-size:1rem;margin-bottom:4px;">Tap to play</div><div style="color:var(--muted);font-size:0.8rem;">${sanitize(currentSorted[trackIndex]?.title || '')}</div></div>`;
+      overlay.innerHTML = `<div style="text-align:center;"><div style="width:80px;height:80px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 0 40px rgba(232,255,71,0.4);animation:deepPulse 1.5s ease-in-out infinite;cursor:pointer;"><svg width="36" height="36" viewBox="0 0 24 24" fill="#07070b"><polygon points="6 3 20 12 6 21"/></svg></div><div style="color:var(--text);font-weight:700;font-size:1rem;margin-bottom:4px;">Tap to play</div><div style="color:var(--muted);font-size:0.8rem;">${sanitize(track.title || '')}</div></div>`;
 
       const style = document.createElement('style');
       style.textContent = '@keyframes deepPulse{0%,100%{transform:scale(1);box-shadow:0 0 40px rgba(232,255,71,0.4)}50%{transform:scale(1.08);box-shadow:0 0 60px rgba(232,255,71,0.6)}}';
@@ -1263,7 +1260,7 @@
       overlay.addEventListener('click', () => {
         overlay.remove();
         style.remove();
-        loadEmbed(trackParam);
+        browsePlay(trackParam);
       }, { once: true });
 
       document.body.appendChild(overlay);
