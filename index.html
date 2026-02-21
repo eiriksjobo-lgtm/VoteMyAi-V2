@@ -1708,10 +1708,11 @@
           '</div>' +
         '</div>';
     } else {
-      // Audio platforms: hide iframe off-screen, show visual "now playing" overlay
+      // Audio platforms: hide iframe visually but keep in DOM flow for autoplay
+      embedHtml = embedHtml.replace(/<iframe /, '<iframe style="width:100%;height:100%;border:none;" ');
       const hiddenPlayer = document.createElement('div');
       hiddenPlayer.id = 'hidden-player-' + uid;
-      hiddenPlayer.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:400px;height:400px;overflow:hidden;';
+      hiddenPlayer.style.cssText = 'position:fixed;left:0;bottom:0;width:1px;height:1px;overflow:hidden;opacity:0.01;pointer-events:none;z-index:-1;';
       hiddenPlayer.innerHTML = embedHtml;
       document.body.appendChild(hiddenPlayer);
       
