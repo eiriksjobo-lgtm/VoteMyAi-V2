@@ -637,26 +637,40 @@
     /* Horizontal scroll */
     .genre-row-scroll {
       display: flex; gap: 14px; overflow-x: auto; overflow-y: hidden;
-      scroll-behavior: smooth; padding: 4px clamp(16px, 4vw, 48px) 18px;
+      scroll-behavior: smooth; padding: 4px 8px 18px;
       -ms-overflow-style: none; scrollbar-width: none; scroll-snap-type: x proximity;
+      flex: 1; min-width: 0;
     }
     .genre-row-scroll::-webkit-scrollbar { display: none; }
 
-    /* Scroll arrows */
+    /* Scroll arrows — fixed outside cards */
+    .genre-row-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
     .scroll-arrow {
-      position: absolute; top: 55%; transform: translateY(-50%);
-      width: 40px; height: 40px; border-radius: 50%;
-      border: 1px solid var(--border); background: rgba(7,7,11,0.92);
-      backdrop-filter: blur(12px); color: var(--text); cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      z-index: 10; opacity: 0; transition: all 0.25s;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 2px solid var(--accent);
+      background: var(--surface);
+      color: var(--accent);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      transition: all 0.25s;
       box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      flex-shrink: 0;
+      opacity: 0;
     }
     .genre-row:hover .scroll-arrow.show { opacity: 1; }
-    .scroll-arrow:hover { background: var(--accent); color: var(--bg); border-color: var(--accent); transform: translateY(-50%) scale(1.1); }
-    .scroll-arrow.left { left: 8px; }
-    .scroll-arrow.right { right: 8px; }
-    .scroll-arrow svg { width: 18px; height: 18px; fill: currentColor; }
+    .scroll-arrow:hover { background: var(--accent); color: var(--bg); border-color: var(--accent); transform: scale(1.15); box-shadow: 0 0 20px rgba(232,255,71,0.3); }
+    .scroll-arrow.left { margin-left: clamp(4px, 1vw, 12px); margin-right: -6px; }
+    .scroll-arrow.right { margin-right: clamp(4px, 1vw, 12px); margin-left: -6px; }
+    .scroll-arrow svg { width: 20px; height: 20px; fill: currentColor; }
 
     /* Browse Card */
     .browse-card {
@@ -782,6 +796,36 @@
       top: 0;
       left: 0;
     }
+
+    /* Stop overlay on playing cards */
+    .browse-stop-overlay {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 3; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      background: transparent;
+      transition: background 0.2s;
+    }
+    .browse-stop-overlay:hover { background: rgba(7,7,11,0.5); }
+    .browse-stop-btn {
+      width: 48px; height: 48px; border-radius: 50%;
+      background: rgba(232,255,71,0.9); color: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: all 0.25s; transform: scale(0.8);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    }
+    .browse-stop-overlay:hover .browse-stop-btn { opacity: 1; transform: scale(1); }
+    .browse-eq-bars {
+      position: absolute; bottom: 10px; left: 12px;
+      display: flex; align-items: flex-end; gap: 3px; height: 20px;
+    }
+    .browse-eq-bars span {
+      width: 3px; background: var(--accent); border-radius: 2px;
+      animation: eqBounce 0.8s ease-in-out infinite alternate;
+    }
+    .browse-eq-bars span:nth-child(1) { height: 8px; animation-delay: 0s; }
+    .browse-eq-bars span:nth-child(2) { height: 14px; animation-delay: 0.15s; }
+    .browse-eq-bars span:nth-child(3) { height: 6px; animation-delay: 0.3s; }
+    .browse-eq-bars span:nth-child(4) { height: 12px; animation-delay: 0.45s; }
 
     /* Hide old sections */
     .view-bar, .filters, .filter-toggle, .tracks-container { display: none !important; }
@@ -1193,7 +1237,7 @@
   function sanitize(str) { if (!str) return ''; const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
 
   // ─── Event Delegation ───
-  document.addEventListener('click', function(e) { const star = e.target.closest('.star'); if (star) { rateStar(star.dataset.track, parseInt(star.dataset.score), star.parentElement); return; } const thumbBtn = e.target.closest('[data-action="load-embed"]'); if (thumbBtn) { const isBrowse = thumbBtn.closest('.browse-card'); if (isBrowse) { browsePlay(thumbBtn.dataset.trackId); } else { loadEmbed(thumbBtn.dataset.trackId); } return; } const commentsBtn = e.target.closest('[data-action="comments"]'); if (commentsBtn) { toggleComments(commentsBtn.dataset.track); return; } const shareBtn = e.target.closest('[data-action="share"]'); if (shareBtn) { shareTrack(shareBtn.dataset.track, shareBtn.dataset.title, shareBtn); return; } const postBtn = e.target.closest('[data-action="post-comment"]'); if (postBtn) { addComment(postBtn.dataset.track); return; } const lbRow = e.target.closest('[data-action="lb-play"]'); if (lbRow) { const tid = lbRow.dataset.trackId; const card = document.querySelector('.browse-card[data-track-id="' + tid + '"]'); if (card) { card.scrollIntoView({ behavior: 'smooth', block: 'center' }); card.style.boxShadow = '0 0 0 2px var(--accent), 0 12px 40px rgba(232,255,71,0.15)'; setTimeout(() => { card.style.boxShadow = ''; }, 2500); setTimeout(() => { browsePlay(tid); }, 600); } else { browsePlay(tid); } return; } const toolCard = e.target.closest('.tool-card[data-tool]'); if (toolCard) { gtag('event', 'tool_click', { tool: toolCard.dataset.tool, location: 'tools_section' }); } const viewTab = e.target.closest('.view-tab'); if (viewTab) { const m = { 'discover':'discover', 'top rated':'top', 'new':'new' }; setView(m[viewTab.textContent.trim().toLowerCase()]||'discover', viewTab); return; } const pill = e.target.closest('.filter-pill'); if (pill) { setFilter(pill.dataset.filter, pill.dataset.value, pill); return; } });
+  document.addEventListener('click', function(e) { const star = e.target.closest('.star'); if (star) { rateStar(star.dataset.track, parseInt(star.dataset.score), star.parentElement); return; } const stopBtn = e.target.closest('[data-action="browse-stop"]'); if (stopBtn) { browsePlay(stopBtn.dataset.trackId); return; } const thumbBtn = e.target.closest('[data-action="load-embed"]'); if (thumbBtn) { const isBrowse = thumbBtn.closest('.browse-card'); if (isBrowse) { browsePlay(thumbBtn.dataset.trackId); } else { loadEmbed(thumbBtn.dataset.trackId); } return; } const commentsBtn = e.target.closest('[data-action="comments"]'); if (commentsBtn) { toggleComments(commentsBtn.dataset.track); return; } const shareBtn = e.target.closest('[data-action="share"]'); if (shareBtn) { shareTrack(shareBtn.dataset.track, shareBtn.dataset.title, shareBtn); return; } const postBtn = e.target.closest('[data-action="post-comment"]'); if (postBtn) { addComment(postBtn.dataset.track); return; } const lbRow = e.target.closest('[data-action="lb-play"]'); if (lbRow) { const tid = lbRow.dataset.trackId; const card = document.querySelector('.browse-card[data-track-id="' + tid + '"]'); if (card) { card.scrollIntoView({ behavior: 'smooth', block: 'center' }); card.style.boxShadow = '0 0 0 2px var(--accent), 0 12px 40px rgba(232,255,71,0.15)'; setTimeout(() => { card.style.boxShadow = ''; }, 2500); setTimeout(() => { browsePlay(tid); }, 600); } else { browsePlay(tid); } return; } const toolCard = e.target.closest('.tool-card[data-tool]'); if (toolCard) { gtag('event', 'tool_click', { tool: toolCard.dataset.tool, location: 'tools_section' }); } const viewTab = e.target.closest('.view-tab'); if (viewTab) { const m = { 'discover':'discover', 'top rated':'top', 'new':'new' }; setView(m[viewTab.textContent.trim().toLowerCase()]||'discover', viewTab); return; } const pill = e.target.closest('.filter-pill'); if (pill) { setFilter(pill.dataset.filter, pill.dataset.value, pill); return; } });
 
   document.addEventListener('mouseover', function(e) { const star = e.target.closest('.star'); if (!star) return; const c = star.parentElement; if (c.classList.contains('rated')) return; const s = parseInt(star.dataset.score); c.querySelectorAll('.star').forEach(x => x.classList.toggle('hover-fill', parseInt(x.dataset.score) <= s)); });
   document.addEventListener('mouseout', function(e) { const star = e.target.closest('.star'); if (!star) return; const c = star.parentElement; if (c.classList.contains('rated')) return; c.querySelectorAll('.star').forEach(x => x.classList.remove('hover-fill')); });
@@ -1440,16 +1484,20 @@
         '<span class="genre-row-count">' + tracks.length + ' track' + (tracks.length !== 1 ? 's' : '') + '</span>' +
         '<div class="genre-row-line"></div>' +
       '</div>' +
-      '<button class="scroll-arrow left" aria-label="Scroll left"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>' +
-      '<button class="scroll-arrow right show" aria-label="Scroll right"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></button>' +
-      '<div class="genre-row-scroll">' + cards + '</div>' +
+      '<div class="genre-row-wrapper">' +
+        '<button class="scroll-arrow left" aria-label="Scroll left"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>' +
+        '<div class="genre-row-scroll">' + cards + '</div>' +
+        '<button class="scroll-arrow right show" aria-label="Scroll right"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></button>' +
+      '</div>' +
     '</div>';
   }
 
   function setupScrollArrows(row) {
-    const scroll = row.querySelector('.genre-row-scroll');
-    const leftArr = row.querySelector('.scroll-arrow.left');
-    const rightArr = row.querySelector('.scroll-arrow.right');
+    const wrapper = row.querySelector('.genre-row-wrapper');
+    if (!wrapper) return;
+    const scroll = wrapper.querySelector('.genre-row-scroll');
+    const leftArr = wrapper.querySelector('.scroll-arrow.left');
+    const rightArr = wrapper.querySelector('.scroll-arrow.right');
     if (!scroll || !leftArr || !rightArr) return;
     
     function updateArrows() {
@@ -1536,6 +1584,17 @@
 
   // Browse card play — load embed directly into the card
   function browsePlay(trackId) {
+    // Toggle: if already playing this track, stop it
+    if (activeBrowseTrackId === String(trackId)) {
+      browseStop(trackId);
+      // Also close player bar
+      playerBar.classList.remove('active', 'playing');
+      document.body.classList.remove('player-active');
+      activePlayerTrackId = null;
+      activePlayerPlatform = null;
+      return;
+    }
+
     const track = allTracks.find(t => String(t.id) === String(trackId));
     if (!track) return;
     
@@ -1567,14 +1626,20 @@
     // Make sure iframe fills the space
     embedHtml = embedHtml.replace(/<iframe /, '<iframe style="width:100%;height:100%;border:none;position:absolute;top:0;left:0;" ');
     
-    // Replace thumb with embed - expand card for better embed viewing
+    // Replace thumb with embed + stop overlay on top
     thumbContainer.style.aspectRatio = '16/9';
     thumbContainer.style.position = 'relative';
-    thumbContainer.innerHTML = embedHtml;
+    thumbContainer.innerHTML = embedHtml +
+      '<div class="browse-stop-overlay" data-action="browse-stop" data-track-id="' + trackId + '">' +
+        '<div class="browse-stop-btn">' +
+          '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>' +
+        '</div>' +
+        '<div class="browse-eq-bars"><span></span><span></span><span></span><span></span></div>' +
+      '</div>';
     thumbContainer.removeAttribute('data-action');
     
     card.classList.add('is-playing');
-    activeBrowseTrackId = trackId;
+    activeBrowseTrackId = String(trackId);
     
     // Activate player bar
     playerTitle.textContent = track.title || 'Now Playing';
@@ -1596,6 +1661,7 @@
       thumbContainer.innerHTML = thumbContainer.dataset.originalHtml;
       delete thumbContainer.dataset.originalHtml;
       thumbContainer.setAttribute('data-action', 'load-embed');
+      thumbContainer.setAttribute('data-track-id', trackId);
       thumbContainer.style.aspectRatio = '16/10';
     }
     card.classList.remove('is-playing');
@@ -1607,8 +1673,17 @@
   // Override closePlayer to also stop browse embeds
   const _origClosePlayer = closePlayer;
   closePlayer = function() {
-    if (activeBrowseTrackId) { browseStop(activeBrowseTrackId); }
-    _origClosePlayer();
+    if (activeBrowseTrackId) {
+      browseStop(activeBrowseTrackId);
+    }
+    playerBar.classList.remove('active', 'playing');
+    document.body.classList.remove('player-active');
+    activePlayerTrackId = null;
+    activePlayerPlatform = null;
+    // Don't call _origClosePlayer — it tries to use old track-embed system
+    // Just close the page frame if open
+    const frame = document.getElementById('pageFrame');
+    if (frame) { frame.classList.remove('active'); frame.querySelector('iframe').src = ''; }
   };
 
   // Override loadTracks to also render browse
