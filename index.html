@@ -569,6 +569,226 @@
       .nav-link { padding: 6px 6px; font-size: 0.6rem; }
       .btn-submit { padding: 6px 10px; font-size: 0.6rem; }
     }
+
+    /* ══════════════════════════════════ BROWSE (Netflix-style) ══════════════════════════════════ */
+    .browse-section { max-width: 1400px; margin: 0 auto; padding: 0 0 80px; }
+    
+    .browse-controls {
+      display: flex; align-items: center; gap: 12px;
+      padding: 0 clamp(16px, 4vw, 48px) 20px; flex-wrap: wrap;
+    }
+    .search-box { flex: 1; min-width: 200px; max-width: 400px; position: relative; }
+    .search-box input {
+      width: 100%; background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); padding: 10px 16px 10px 42px; border-radius: 100px;
+      font-family: 'DM Sans', sans-serif; font-size: 0.82rem;
+      transition: all 0.25s; outline: none;
+    }
+    .search-box input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(232,255,71,0.08); }
+    .search-box input::placeholder { color: var(--muted); }
+    .search-box .search-icon {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      width: 16px; height: 16px; stroke: var(--muted); fill: none; stroke-width: 2; pointer-events: none;
+    }
+    .search-box .search-clear {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      width: 20px; height: 20px; border-radius: 50%; border: none;
+      background: var(--border); color: var(--muted); cursor: pointer;
+      display: none; align-items: center; justify-content: center;
+      font-size: 12px; line-height: 1; transition: all 0.15s;
+    }
+    .search-box .search-clear.show { display: flex; }
+    .search-box .search-clear:hover { background: var(--accent); color: var(--bg); }
+    
+    .browse-view-tabs {
+      display: flex; gap: 4px; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 10px; padding: 3px;
+    }
+    .browse-view-tab {
+      padding: 7px 18px; border-radius: 8px; border: none;
+      background: transparent; color: var(--muted);
+      font-family: 'DM Sans', sans-serif; font-size: 0.74rem; font-weight: 600;
+      letter-spacing: 0.8px; text-transform: uppercase;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .browse-view-tab:hover { color: var(--text); }
+    .browse-view-tab.active { background: var(--accent); color: var(--bg); }
+    .browse-count { color: var(--muted); font-size: 0.74rem; font-weight: 500; margin-left: auto; }
+
+    /* Genre Row */
+    .genre-row { margin-bottom: 4px; position: relative; }
+    .genre-row-header {
+      display: flex; align-items: center; gap: 12px;
+      padding: 18px clamp(16px, 4vw, 48px) 10px;
+    }
+    .genre-row-title {
+      font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem;
+      letter-spacing: 1.5px; color: var(--text);
+      display: flex; align-items: center; gap: 10px; white-space: nowrap;
+    }
+    .genre-row-title .genre-emoji { font-size: 1.1rem; }
+    .genre-row-count {
+      font-size: 0.65rem; color: var(--muted); font-weight: 500;
+      background: var(--surface); padding: 2px 10px;
+      border-radius: 100px; border: 1px solid var(--border); white-space: nowrap;
+    }
+    .genre-row-line { flex: 1; height: 1px; background: linear-gradient(90deg, var(--border) 0%, transparent 100%); }
+
+    /* Horizontal scroll */
+    .genre-row-scroll {
+      display: flex; gap: 14px; overflow-x: auto; overflow-y: hidden;
+      scroll-behavior: smooth; padding: 4px clamp(16px, 4vw, 48px) 18px;
+      -ms-overflow-style: none; scrollbar-width: none; scroll-snap-type: x proximity;
+    }
+    .genre-row-scroll::-webkit-scrollbar { display: none; }
+
+    /* Scroll arrows */
+    .scroll-arrow {
+      position: absolute; top: 55%; transform: translateY(-50%);
+      width: 40px; height: 40px; border-radius: 50%;
+      border: 1px solid var(--border); background: rgba(7,7,11,0.92);
+      backdrop-filter: blur(12px); color: var(--text); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 10; opacity: 0; transition: all 0.25s;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    }
+    .genre-row:hover .scroll-arrow.show { opacity: 1; }
+    .scroll-arrow:hover { background: var(--accent); color: var(--bg); border-color: var(--accent); transform: translateY(-50%) scale(1.1); }
+    .scroll-arrow.left { left: 8px; }
+    .scroll-arrow.right { right: 8px; }
+    .scroll-arrow svg { width: 18px; height: 18px; fill: currentColor; }
+
+    /* Browse Card */
+    .browse-card {
+      flex: 0 0 270px; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      scroll-snap-align: start; position: relative;
+    }
+    .browse-card:hover {
+      border-color: var(--accent); transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(232,255,71,0.15); z-index: 5;
+    }
+    .browse-card-thumb {
+      position: relative; width: 100%; aspect-ratio: 16/10;
+      overflow: hidden; background: var(--surface-2);
+    }
+    .browse-card-thumb img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .browse-card:hover .browse-card-thumb img { transform: scale(1.08); }
+    
+    .browse-card-play {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%) scale(0.8);
+      width: 48px; height: 48px; border-radius: 50%;
+      background: var(--accent); display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 4px 24px rgba(232,255,71,0.4); cursor: pointer; border: none;
+    }
+    .browse-card:hover .browse-card-play { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    .browse-card-play svg { width: 20px; height: 20px; fill: var(--bg); margin-left: 2px; }
+
+    .browse-card-platform {
+      position: absolute; bottom: 8px; left: 10px;
+      font-size: 0.6rem; font-weight: 600; color: rgba(255,255,255,0.8);
+      letter-spacing: 0.5px; text-transform: uppercase;
+      background: rgba(0,0,0,0.5); padding: 2px 8px; border-radius: 4px;
+      backdrop-filter: blur(4px);
+    }
+    
+    .browse-card-hot {
+      position: absolute; top: 8px; right: 10px;
+      font-size: 0.58rem; font-weight: 700; color: var(--bg);
+      background: var(--accent); padding: 2px 8px; border-radius: 4px;
+      letter-spacing: 0.5px; text-transform: uppercase;
+      display: flex; align-items: center; gap: 3px;
+    }
+    .browse-card-hot .dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--bg); animation: cardPulse 1.5s ease-in-out infinite;
+    }
+    @keyframes cardPulse { 0%,100%{opacity:.4;transform:scale(1)} 50%{opacity:1;transform:scale(1.4)} }
+
+    .browse-card-body { padding: 12px 14px 14px; }
+    .browse-card-title {
+      font-size: 0.84rem; font-weight: 700; line-height: 1.3; margin-bottom: 6px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .browse-card-meta { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+    .browse-card-badge {
+      padding: 2px 8px; border-radius: 100px;
+      font-size: 0.6rem; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase;
+    }
+    .browse-card-badge.tool { background: var(--accent-dim); color: var(--accent); }
+    .browse-card-badge.genre { background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid rgba(255,255,255,0.06); }
+
+    .browse-card-rating { display: flex; align-items: center; justify-content: space-between; }
+    .browse-card-stars { display: flex; gap: 2px; }
+    .browse-card-stars .bstar {
+      width: 24px; height: 24px; cursor: pointer; display: flex;
+      align-items: center; justify-content: center; transition: transform 0.15s;
+    }
+    .browse-card-stars .bstar:hover { transform: scale(1.25); }
+    .browse-card-stars .bstar svg { width: 16px; height: 16px; fill: var(--star-empty); transition: fill 0.15s; }
+    .browse-card-stars .bstar.filled svg { fill: var(--accent); }
+    .browse-card-stars .bstar.hover-fill svg { fill: var(--accent); opacity: 0.7; }
+    .browse-card-stars.rated .bstar { cursor: default; }
+    .browse-card-stars.rated .bstar:hover { transform: none; }
+    .browse-card-score { text-align: right; }
+    .browse-card-score-num { font-size: 0.95rem; font-weight: 700; color: var(--accent); line-height: 1; }
+    .browse-card-score-count { font-size: 0.6rem; color: var(--muted); }
+    
+    .browse-card-footer {
+      display: flex; align-items: center; gap: 10px;
+      margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(26,26,38,0.5);
+    }
+    .browse-card-footer button {
+      background: none; border: none; color: var(--muted); cursor: pointer;
+      font-size: 0.66rem; font-family: 'DM Sans', sans-serif;
+      display: flex; align-items: center; gap: 4px; transition: color 0.2s; padding: 0;
+    }
+    .browse-card-footer button:hover { color: var(--text); }
+    .browse-card-footer button svg { width: 12px; height: 12px; }
+
+    /* Search results mode — grid instead of rows */
+    .search-results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 14px;
+      padding: 0 clamp(16px, 4vw, 48px) 40px;
+    }
+    .search-results-grid .browse-card { flex: none; }
+    .search-results-empty {
+      text-align: center; padding: 60px 20px; color: var(--muted);
+      grid-column: 1 / -1;
+    }
+    .search-results-empty p { font-size: 0.9rem; margin-bottom: 4px; }
+    .search-results-empty span { font-size: 0.78rem; opacity: 0.6; }
+
+    /* Hide old sections */
+    .view-bar, .filters, .filter-toggle, .tracks-container { display: none !important; }
+
+    @media (max-width: 640px) {
+      .browse-card { flex: 0 0 200px; }
+      .browse-controls { flex-direction: column; align-items: stretch; gap: 8px; padding: 0 12px 16px; }
+      .search-box { max-width: 100%; }
+      .browse-view-tabs { align-self: center; }
+      .browse-count { display: none; }
+      .genre-row-header { padding: 12px 12px 6px; }
+      .genre-row-scroll { padding: 4px 12px 12px; gap: 10px; }
+      .genre-row-title { font-size: 1.1rem; }
+      .scroll-arrow { display: none !important; }
+      .browse-card-body { padding: 10px 12px 12px; }
+      .browse-card-title { font-size: 0.78rem; }
+      .browse-card-badge { font-size: 0.55rem; padding: 2px 6px; }
+      .browse-card-stars .bstar { width: 22px; height: 22px; }
+      .browse-card-stars .bstar svg { width: 14px; height: 14px; }
+      .browse-card-score-num { font-size: 0.82rem; }
+      .search-results-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; padding: 0 12px 30px; }
+    }
+
   </style>
 </head>
 <body>
@@ -629,6 +849,24 @@
       <div><div class="how-label">Climb the Board</div><div class="how-desc">Top-rated tracks rise to the leaderboard for everyone to discover</div></div>
     </div>
   </div>
+
+<!-- ═══ BROWSE (Netflix-style) ═══ -->
+<section class="browse-section" id="browseSection">
+  <div class="browse-controls">
+    <div class="search-box">
+      <svg class="search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="browseSearch" placeholder="Search tracks, genres, tools...">
+      <button class="search-clear" id="searchClear" aria-label="Clear">×</button>
+    </div>
+    <div class="browse-view-tabs">
+      <button class="browse-view-tab active" data-view="discover">Discover</button>
+      <button class="browse-view-tab" data-view="top">Top Rated</button>
+      <button class="browse-view-tab" data-view="new">New</button>
+    </div>
+    <div class="browse-count" id="browseCount"></div>
+  </div>
+  <div id="browseRows"></div>
+  <div id="searchResults" class="search-results-grid" style="display:none;"></div>
 </section>
 
 <!-- ═══ VIEW TABS ═══ -->
@@ -1033,6 +1271,262 @@
 
     window.history.replaceState(null, '', '/');
   }
+
+
+  // ═══ BROWSE: Netflix-style genre rows ═══
+  const GENRE_EMOJIS = {
+    'Pop': '🎵', 'Rock': '🎸', 'Hip-Hop': '🎤', 'Electronic': '⚡',
+    'R&B / Soul': '💜', 'Cinematic': '🎬', 'Jazz': '🎷', 'Latin': '💃',
+    'Indie / Folk': '🍂', 'Country': '🤠', 'Metal': '🤘', 'Drum & Bass': '🥁',
+    'Lo-Fi': '☕', 'Funk': '🕺', 'Reggae': '🌴', 'Blues': '🎹',
+    'Ambient': '🌌', 'Classical': '🎻', 'Afrobeat': '🌍', 'K-Pop': '✨',
+    'Other': '🎶'
+  };
+
+  let browseView = 'discover';
+  let searchQuery = '';
+
+  function buildBrowseCard(track, embed) {
+    const avg = track.avg_rating || 0;
+    const cnt = track.rating_count || 0;
+    const userScore = userRatings[track.id] || 0;
+    const isRated = userScore > 0;
+    const plat = embed.platform !== 'unknown' ? embed.platform.charAt(0).toUpperCase() + embed.platform.slice(1) : '';
+    
+    // Hot indicator: 3+ ratings
+    const isHot = cnt >= 3;
+    
+    // Thumbnail
+    let thumbSrc = track.thumbnail_url || '';
+    if (!thumbSrc && embed.platform === 'youtube') {
+      const match = (track.embed_url || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([^&?\/#]+)/) || [null, track.yt_id];
+      if (match[1]) thumbSrc = 'https://img.youtube.com/vi/' + match[1] + '/hqdefault.jpg';
+    }
+    
+    let starsHtml = '';
+    for (let s = 1; s <= 5; s++) {
+      starsHtml += '<div class="bstar ' + (isRated && s <= userScore ? 'filled' : '') + '" data-track="' + track.id + '" data-score="' + s + '">' + starSVG + '</div>';
+    }
+
+    return '<div class="browse-card" data-track-id="' + track.id + '">' +
+      '<div class="browse-card-thumb" data-action="load-embed" data-track-id="' + track.id + '">' +
+        (thumbSrc ? '<img src="' + sanitize(thumbSrc) + '" alt="' + sanitize(track.title) + '" loading="lazy">' : '<div style="width:100%;height:100%;background:var(--surface-2);"></div>') +
+        '<button class="browse-card-play" data-action="load-embed" data-track-id="' + track.id + '"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></button>' +
+        (plat ? '<span class="browse-card-platform">' + plat + '</span>' : '') +
+        (isHot ? '<span class="browse-card-hot"><span class="dot"></span> HOT</span>' : '') +
+      '</div>' +
+      '<div class="browse-card-body">' +
+        '<div class="browse-card-title">' + sanitize(track.title) + '</div>' +
+        '<div class="browse-card-meta">' +
+          '<span class="browse-card-badge tool">' + sanitize(track.tool) + '</span>' +
+          '<span class="browse-card-badge genre">' + sanitize(track.genre) + '</span>' +
+        '</div>' +
+        '<div class="browse-card-rating">' +
+          '<div class="browse-card-stars ' + (isRated ? 'rated' : '') + '" id="bstars-' + track.id + '">' + starsHtml + '</div>' +
+          '<div class="browse-card-score">' +
+            '<div class="browse-card-score-num">' + (avg > 0 ? avg.toFixed(1) : '—') + '</div>' +
+            '<div class="browse-card-score-count">' + cnt + ' rating' + (cnt !== 1 ? 's' : '') + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="browse-card-footer">' +
+          '<button data-action="comments" data-track="' + track.id + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Comments</button>' +
+          '<button data-action="share" data-track="' + track.id + '" data-title="' + sanitize(track.title) + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Share</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="comments-panel" id="comments-' + track.id + '"><div class="comments-inner"><div id="comments-content-' + track.id + '"><span style="color:var(--muted);font-size:0.8rem;">Loading...</span></div>' +
+      (currentUser ? '<div class="comment-form"><input type="text" class="comment-input" id="comment-input-' + track.id + '" placeholder="Add a comment..."><button class="comment-submit" data-action="post-comment" data-track="' + track.id + '">Post</button></div>' : '<p style="font-size:0.75rem;color:var(--muted);margin-top:8px;">Log in to comment</p>') +
+      '</div></div>' +
+    '</div>';
+  }
+
+  function sortBrowseTracks(tracks) {
+    switch (browseView) {
+      case 'top': return [...tracks].sort((a, b) => wilsonScore(b.avg_rating||0, b.rating_count||0) - wilsonScore(a.avg_rating||0, a.rating_count||0));
+      case 'new': return [...tracks].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      default: return [...tracks].sort((a, b) => {
+        const ca = a.rating_count||0, cb = b.rating_count||0;
+        if (ca <= 5 && cb > 5) return -1;
+        if (cb <= 5 && ca > 5) return 1;
+        return new Date(b.created_at) - new Date(a.created_at);
+      });
+    }
+  }
+
+  function renderBrowse() {
+    const container = document.getElementById('browseRows');
+    const searchContainer = document.getElementById('searchResults');
+    const sorted = sortBrowseTracks(allTracks);
+    
+    document.getElementById('browseCount').textContent = sorted.length + ' track' + (sorted.length !== 1 ? 's' : '');
+    
+    // Search mode
+    if (searchQuery.length >= 2) {
+      container.style.display = 'none';
+      searchContainer.style.display = 'grid';
+      const q = searchQuery.toLowerCase();
+      const results = sorted.filter(t =>
+        (t.title || '').toLowerCase().includes(q) ||
+        (t.genre || '').toLowerCase().includes(q) ||
+        (t.tool || '').toLowerCase().includes(q)
+      );
+      if (results.length) {
+        searchContainer.innerHTML = results.map(t => buildBrowseCard(t, getEmbedHtml(t))).join('');
+      } else {
+        searchContainer.innerHTML = '<div class="search-results-empty"><p>No tracks found for "' + sanitize(searchQuery) + '"</p><span>Try a different search term</span></div>';
+      }
+      return;
+    }
+    
+    container.style.display = 'block';
+    searchContainer.style.display = 'none';
+
+    // Group by genre
+    const genreMap = {};
+    sorted.forEach(t => {
+      const g = t.genre || 'Other';
+      if (!genreMap[g]) genreMap[g] = [];
+      genreMap[g].push(t);
+    });
+
+    // Build "Trending" row first (top rated across all genres)
+    const trending = [...sorted].sort((a, b) => wilsonScore(b.avg_rating||0, b.rating_count||0) - wilsonScore(a.avg_rating||0, a.rating_count||0)).slice(0, 12);
+
+    let html = '';
+    
+    // Trending row
+    if (trending.length) {
+      html += buildGenreRow('🔥', 'Trending Now', trending);
+    }
+
+    // Recently added (if discover view)
+    if (browseView === 'discover') {
+      const recent = [...sorted].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 12);
+      if (recent.length) {
+        html += buildGenreRow('🆕', 'Just Added', recent);
+      }
+    }
+
+    // Genre rows (only show genres that have tracks, sorted by track count)
+    const genreOrder = Object.entries(genreMap).sort((a, b) => b[1].length - a[1].length);
+    genreOrder.forEach(([genre, tracks]) => {
+      const emoji = GENRE_EMOJIS[genre] || '🎶';
+      html += buildGenreRow(emoji, genre, tracks);
+    });
+
+    container.innerHTML = html;
+    
+    // Setup scroll arrows
+    container.querySelectorAll('.genre-row').forEach(setupScrollArrows);
+  }
+
+  function buildGenreRow(emoji, title, tracks) {
+    const cards = tracks.map(t => buildBrowseCard(t, getEmbedHtml(t))).join('');
+    return '<div class="genre-row">' +
+      '<div class="genre-row-header">' +
+        '<div class="genre-row-title"><span class="genre-emoji">' + emoji + '</span> ' + sanitize(title) + '</div>' +
+        '<span class="genre-row-count">' + tracks.length + ' track' + (tracks.length !== 1 ? 's' : '') + '</span>' +
+        '<div class="genre-row-line"></div>' +
+      '</div>' +
+      '<button class="scroll-arrow left" aria-label="Scroll left"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>' +
+      '<button class="scroll-arrow right show" aria-label="Scroll right"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></button>' +
+      '<div class="genre-row-scroll">' + cards + '</div>' +
+    '</div>';
+  }
+
+  function setupScrollArrows(row) {
+    const scroll = row.querySelector('.genre-row-scroll');
+    const leftArr = row.querySelector('.scroll-arrow.left');
+    const rightArr = row.querySelector('.scroll-arrow.right');
+    if (!scroll || !leftArr || !rightArr) return;
+    
+    function updateArrows() {
+      const canLeft = scroll.scrollLeft > 20;
+      const canRight = scroll.scrollLeft < scroll.scrollWidth - scroll.clientWidth - 20;
+      leftArr.classList.toggle('show', canLeft);
+      rightArr.classList.toggle('show', canRight);
+    }
+    
+    leftArr.addEventListener('click', () => { scroll.scrollBy({ left: -600, behavior: 'smooth' }); });
+    rightArr.addEventListener('click', () => { scroll.scrollBy({ left: 600, behavior: 'smooth' }); });
+    scroll.addEventListener('scroll', updateArrows);
+    updateArrows();
+  }
+
+  // Search
+  const browseSearchInput = document.getElementById('browseSearch');
+  const searchClearBtn = document.getElementById('searchClear');
+  let searchDebounce;
+  browseSearchInput.addEventListener('input', () => {
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(() => {
+      searchQuery = browseSearchInput.value.trim();
+      searchClearBtn.classList.toggle('show', searchQuery.length > 0);
+      renderBrowse();
+    }, 250);
+  });
+  searchClearBtn.addEventListener('click', () => {
+    browseSearchInput.value = '';
+    searchQuery = '';
+    searchClearBtn.classList.remove('show');
+    renderBrowse();
+  });
+
+  // View tabs
+  document.querySelectorAll('.browse-view-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.browse-view-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      browseView = tab.dataset.view;
+      renderBrowse();
+    });
+  });
+
+  // Star rating on browse cards
+  document.addEventListener('mouseover', function(e) {
+    const star = e.target.closest('.bstar');
+    if (!star) return;
+    const c = star.parentElement;
+    if (c.classList.contains('rated')) return;
+    const s = parseInt(star.dataset.score);
+    c.querySelectorAll('.bstar').forEach(x => x.classList.toggle('hover-fill', parseInt(x.dataset.score) <= s));
+  });
+  document.addEventListener('mouseout', function(e) {
+    const star = e.target.closest('.bstar');
+    if (!star) return;
+    const c = star.parentElement;
+    if (c.classList.contains('rated')) return;
+    c.querySelectorAll('.bstar').forEach(x => x.classList.remove('hover-fill'));
+  });
+  document.addEventListener('click', function(e) {
+    const star = e.target.closest('.bstar');
+    if (star) {
+      const trackId = star.dataset.track;
+      const score = parseInt(star.dataset.score);
+      const container = star.parentElement;
+      container.classList.add('rated');
+      container.querySelectorAll('.bstar').forEach(s => {
+        s.classList.remove('hover-fill');
+        s.classList.toggle('filled', parseInt(s.dataset.score) <= score);
+      });
+      // Also update the old stars if they exist
+      const oldStars = document.getElementById('stars-' + trackId);
+      if (oldStars) {
+        oldStars.classList.add('rated');
+        oldStars.querySelectorAll('.star').forEach(s => {
+          s.classList.toggle('filled', parseInt(s.dataset.score) <= score);
+        });
+      }
+      rateStar(trackId, score, container);
+      return;
+    }
+  });
+
+  // Override loadTracks to also render browse
+  const _origLoadTracks = loadTracks;
+  loadTracks = async function() {
+    await _origLoadTracks();
+    renderBrowse();
+  };
 
   // ─── Init ───
   checkAuth().then(loadTracks).then(handleDeepLink);
