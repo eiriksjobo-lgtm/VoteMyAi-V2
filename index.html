@@ -827,6 +827,51 @@
     .browse-eq-bars span:nth-child(3) { height: 6px; animation-delay: 0.3s; }
     .browse-eq-bars span:nth-child(4) { height: 12px; animation-delay: 0.45s; }
 
+    /* Now Playing overlay for audio platforms (Suno, SoundCloud, Udio) */
+    .browse-now-playing {
+      position: absolute; inset: 0; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .bnp-bg {
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(232,255,71,0.15) 0%, rgba(7,7,11,0.95) 60%);
+      animation: bnpShift 4s ease-in-out infinite alternate;
+    }
+    @keyframes bnpShift {
+      0% { background: linear-gradient(135deg, rgba(232,255,71,0.15) 0%, rgba(7,7,11,0.95) 60%); }
+      100% { background: linear-gradient(225deg, rgba(232,255,71,0.1) 0%, rgba(7,7,11,0.95) 60%); }
+    }
+    .bnp-content { position: relative; z-index: 2; text-align: center; }
+    .bnp-eq {
+      display: flex; align-items: flex-end; justify-content: center;
+      gap: 4px; height: 32px; margin-bottom: 10px;
+    }
+    .bnp-eq span {
+      width: 4px; background: var(--accent); border-radius: 2px;
+      animation: eqBounce 0.8s ease-in-out infinite alternate;
+    }
+    .bnp-eq span:nth-child(1) { height: 10px; animation-delay: 0s; }
+    .bnp-eq span:nth-child(2) { height: 20px; animation-delay: 0.1s; }
+    .bnp-eq span:nth-child(3) { height: 28px; animation-delay: 0.2s; }
+    .bnp-eq span:nth-child(4) { height: 16px; animation-delay: 0.3s; }
+    .bnp-eq span:nth-child(5) { height: 12px; animation-delay: 0.4s; }
+    .bnp-title {
+      font-size: 0.6rem; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 4px;
+    }
+    .bnp-track {
+      font-size: 0.78rem; font-weight: 600; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      max-width: 200px; margin: 0 auto;
+    }
+    .bnp-stop {
+      font-size: 0.58rem; color: var(--muted); margin-top: 8px;
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .browse-now-playing:hover .bnp-stop { opacity: 1; }
+    .browse-now-playing:hover .bnp-bg { opacity: 0.7; }
+
     /* Hide old sections */
     .view-bar, .filters, .filter-toggle, .tracks-container { display: none !important; }
 
@@ -1651,17 +1696,36 @@
     
     thumbContainer.dataset.originalHtml = thumbContainer.innerHTML;
     
-    embedHtml = embedHtml.replace(/<iframe /, '<iframe style="width:100%;height:100%;border:none;position:absolute;top:0;left:0;" ');
-    
-    thumbContainer.style.aspectRatio = '16/9';
-    thumbContainer.style.position = 'relative';
-    thumbContainer.innerHTML = embedHtml +
-      '<div class="browse-stop-overlay" data-action="browse-stop" data-uid="' + uid + '" data-track-id="' + trackId + '">' +
-        '<div class="browse-stop-btn">' +
-          '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>' +
-        '</div>' +
-        '<div class="browse-eq-bars"><span></span><span></span><span></span><span></span></div>' +
-      '</div>';
+    // YouTube: show video in card. Others: play hidden, show visual indicator
+    if (embed.platform === 'youtube') {
+      embedHtml = embedHtml.replace(/<iframe /, '<iframe style="width:100%;height:100%;border:none;position:absolute;top:0;left:0;" ');
+      thumbContainer.style.aspectRatio = '16/9';
+      thumbContainer.style.position = 'relative';
+      thumbContainer.innerHTML = embedHtml +
+        '<div class="browse-stop-overlay" data-action="browse-stop" data-uid="' + uid + '" data-track-id="' + trackId + '">' +
+          '<div class="browse-stop-btn">' +
+            '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>' +
+          '</div>' +
+        '</div>';
+    } else {
+      // Audio platforms: hide iframe off-screen, show visual "now playing" overlay
+      const hiddenPlayer = document.createElement('div');
+      hiddenPlayer.id = 'hidden-player-' + uid;
+      hiddenPlayer.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:400px;height:400px;overflow:hidden;';
+      hiddenPlayer.innerHTML = embedHtml;
+      document.body.appendChild(hiddenPlayer);
+      
+      thumbContainer.innerHTML = 
+        '<div class="browse-now-playing" data-action="browse-stop" data-uid="' + uid + '" data-track-id="' + trackId + '">' +
+          '<div class="bnp-bg"></div>' +
+          '<div class="bnp-content">' +
+            '<div class="bnp-eq"><span></span><span></span><span></span><span></span><span></span></div>' +
+            '<div class="bnp-title">Now Playing</div>' +
+            '<div class="bnp-track">' + sanitize(track.title) + '</div>' +
+            '<div class="bnp-stop">Click to stop</div>' +
+          '</div>' +
+        '</div>';
+    }
     thumbContainer.removeAttribute('data-action');
     
     card.classList.add('is-playing');
@@ -1682,6 +1746,10 @@
     if (!card) return;
     const thumbContainer = card.querySelector('.browse-card-thumb');
     if (!thumbContainer) return;
+    
+    // Remove hidden player if exists
+    const hiddenPlayer = document.getElementById('hidden-player-' + uid);
+    if (hiddenPlayer) hiddenPlayer.remove();
     
     if (thumbContainer.dataset.originalHtml) {
       thumbContainer.innerHTML = thumbContainer.dataset.originalHtml;
