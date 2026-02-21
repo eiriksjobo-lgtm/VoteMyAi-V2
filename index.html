@@ -1210,11 +1210,11 @@
 
   const TRACKS_PER_PAGE = 9; let visibleCount = TRACKS_PER_PAGE; let currentSorted = []; let activeEmbedTrackId = null;
 
-  function renderTracks() { visibleCount = TRACKS_PER_PAGE; currentSorted = getSortedTracks(getFilteredTracks()); const grid = document.getElementById('tracksGrid'); const hasActiveIframe = grid && grid.querySelector('.track-embed iframe') !== null; const isPlaying = activeEmbedTrackId || activePlayerTrackId || (playerBar && playerBar.classList.contains('active')) || hasActiveIframe; if (isPlaying) visibleCount = Math.max(visibleCount, currentSorted.length); document.getElementById('trackCount').textContent = `${currentSorted.length} track${currentSorted.length !== 1 ? 's' : ''}`; renderVisibleTracks(); }
+  function renderTracks() { currentSorted = getSortedTracks(getFilteredTracks()); }
 
-  function renderVisibleTracks() { const grid = document.getElementById('tracksGrid'); const toShow = currentSorted.slice(0, visibleCount); if (!toShow.length) { grid.innerHTML = '<div class="empty-state"><p>No tracks found. Be the first to submit!</p></div>'; setupInfiniteScroll(); return; } const hasActiveIframe = grid.querySelector('.track-embed iframe') !== null; const isPlaying = activeEmbedTrackId || activePlayerTrackId || playerBar.classList.contains('active') || hasActiveIframe; const toShowIds = new Set(toShow.map(t => String(t.id))); if (isPlaying) { const existingIds = new Set(); grid.querySelectorAll('.track-card').forEach(card => { const id = card.id.replace('card-', ''); existingIds.add(id); card.style.display = toShowIds.has(id) ? '' : 'none'; const idx = toShow.findIndex(t => String(t.id) === id); card.style.order = idx >= 0 ? idx : 9999; }); toShow.forEach((track, i) => { if (!existingIds.has(String(track.id))) { grid.insertAdjacentHTML('beforeend', buildCardHtml(track, i)); } }); const playingId = String(activeEmbedTrackId || activePlayerTrackId); if (!toShowIds.has(playingId)) { activeEmbedTrackId = null; closePlayer(); } } else { grid.innerHTML = toShow.map((track, i) => buildCardHtml(track, i)).join(''); } setupInfiniteScroll(); }
+  function renderVisibleTracks() { /* disabled — browse system handles display */ }
 
-  function buildCardHtml(track, i) { const embed = getEmbedHtml(track); const avg = track.avg_rating||0, cnt = track.rating_count||0; const userScore = userRatings[track.id]||0; const isRated = userScore > 0; let embedClass = 'track-embed'; if (embed.platform === 'soundcloud') embedClass += ' soundcloud'; if (embed.platform === 'udio') embedClass += ' udio'; let starsHtml = ''; for (let s = 1; s <= 5; s++) starsHtml += `<div class="star ${isRated && s <= userScore ? 'filled' : ''}" data-track="${track.id}" data-score="${s}">${starSVG}</div>`; const plat = embed.platform !== 'unknown' ? embed.platform.charAt(0).toUpperCase() + embed.platform.slice(1) : ''; const thumb = getLazyThumb(track, embed); return `<div class="track-card" id="card-${track.id}" data-track-id="${track.id}" style="animation-delay:${(i % TRACKS_PER_PAGE) * 0.05}s"><div class="${embedClass}" data-track-id="${track.id}" data-track-title="${sanitize(track.title)}" data-track-tool="${sanitize(track.tool)}" data-track-platform="${embed.platform}" data-track-embed="${encodeURIComponent(embed.embedHtml)}">${thumb}</div><div class="track-body"><div class="track-title">${sanitize(track.title)}</div><div class="track-badges"><span class="badge badge-tool">${sanitize(track.tool)}</span><span class="badge badge-genre">${sanitize(track.genre)}</span>${plat ? `<span class="badge badge-platform">${plat}</span>` : ''}</div><div class="rating-row"><div class="stars ${isRated ? 'rated' : ''}" id="stars-${track.id}">${starsHtml}</div><div class="rating-info"><div class="rating-score">${avg > 0 ? avg.toFixed(1) : '\u2014'}</div><div class="rating-count">${cnt} rating${cnt !== 1 ? 's' : ''}</div></div></div><div class="card-footer"><button class="comments-btn" data-action="comments" data-track="${track.id}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Comments</button><button class="share-btn" data-action="share" data-track="${track.id}" data-title="${sanitize(track.title)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Share</button></div></div><div class="comments-panel" id="comments-${track.id}"><div class="comments-inner"><div id="comments-content-${track.id}"><span style="color:var(--muted);font-size:0.8rem;">Loading comments...</span></div>${currentUser ? `<div class="comment-form"><input type="text" class="comment-input" id="comment-input-${track.id}" placeholder="Add a comment..."><button class="comment-submit" data-action="post-comment" data-track="${track.id}">Post</button></div>` : '<p style="font-size:0.75rem;color:var(--muted);margin-top:8px;">Log in to comment</p>'}</div></div></div>`; }
+  function buildCardHtml() { return ''; /* disabled */ }
 
   // ─── Lazy Thumbnails ───
   function getLazyThumb(track, embed) { const playSVG = '<svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>'; const platformLabel = embed.platform !== 'unknown' ? embed.platform.charAt(0).toUpperCase() + embed.platform.slice(1) : ''; if (track.thumbnail_url) { return `<div class="embed-thumb" data-action="load-embed" data-track-id="${track.id}"><img src="${sanitize(track.thumbnail_url)}" alt="${sanitize(track.title)}" loading="lazy"><div class="embed-thumb-overlay"><div class="play-circle">${playSVG}</div>${platformLabel ? `<span class="thumb-platform">${platformLabel}</span>` : ''}</div></div>`; } if (embed.platform === 'youtube') { const match = (track.embed_url || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([^&?\/#]+)/) || [null, track.yt_id]; const videoId = match[1] || track.yt_id; if (videoId) { return `<div class="embed-thumb" data-action="load-embed" data-track-id="${track.id}"><img src="https://img.youtube.com/vi/${videoId}/hqdefault.jpg" alt="${sanitize(track.title)}" loading="lazy"><div class="embed-thumb-overlay"><div class="play-circle">${playSVG}</div><span class="thumb-platform">YouTube</span></div></div>`; } } return embed.embedHtml; }
@@ -1227,17 +1227,17 @@
   function getEmbedHtmlById(trackId) { const track = currentSorted.find(t => t.id === trackId); if (!track) return null; return getEmbedHtml(track); }
   function getLazyThumbById(trackId) { const track = currentSorted.find(t => t.id === trackId); if (!track) return ''; return getLazyThumb(track, getEmbedHtml(track)); }
 
-  setInterval(() => { if (document.activeElement && document.activeElement.tagName === 'IFRAME') { const container = document.activeElement.closest('.track-embed[data-track-platform]'); if (container) { const trackId = container.dataset.trackId; const platform = container.dataset.trackPlatform; if (platform !== 'youtube' && platform !== 'unknown' && activeEmbedTrackId !== trackId) { if (activeEmbedTrackId) { stopEmbed(activeEmbedTrackId); } activeEmbedTrackId = trackId; activatePlayerBar(trackId, container, platform); } } } }, 500);
+  /* Old iframe monitor disabled — browse system handles playback */
 
-  // ─── Infinite Scroll ───
+  // ─── Infinite Scroll — disabled, browse uses horizontal scroll ───
   let loadingMore = false; let hasMore = false;
-  function setupInfiniteScroll() { hasMore = visibleCount < currentSorted.length; const indicator = document.getElementById('scrollIndicator'); if (indicator) indicator.classList.toggle('hidden', !hasMore); }
+  function setupInfiniteScroll() { /* disabled */ }
   window.addEventListener('scroll', function() { if (!hasMore || loadingMore) return; const grid = document.getElementById('tracksGrid'); if (!grid) return; if (grid.getBoundingClientRect().bottom <= window.innerHeight + 300) { loadingMore = true; visibleCount += TRACKS_PER_PAGE; renderVisibleTracks(); loadingMore = false; } });
 
   function sanitize(str) { if (!str) return ''; const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
 
   // ─── Event Delegation ───
-  document.addEventListener('click', function(e) { const star = e.target.closest('.star'); if (star) { rateStar(star.dataset.track, parseInt(star.dataset.score), star.parentElement); return; } const stopBtn = e.target.closest('[data-action="browse-stop"]'); if (stopBtn) { browsePlay(stopBtn.dataset.trackId); return; } const thumbBtn = e.target.closest('[data-action="load-embed"]'); if (thumbBtn) { const isBrowse = thumbBtn.closest('.browse-card'); if (isBrowse) { browsePlay(thumbBtn.dataset.trackId); } else { loadEmbed(thumbBtn.dataset.trackId); } return; } const commentsBtn = e.target.closest('[data-action="comments"]'); if (commentsBtn) { toggleComments(commentsBtn.dataset.track); return; } const shareBtn = e.target.closest('[data-action="share"]'); if (shareBtn) { shareTrack(shareBtn.dataset.track, shareBtn.dataset.title, shareBtn); return; } const postBtn = e.target.closest('[data-action="post-comment"]'); if (postBtn) { addComment(postBtn.dataset.track); return; } const lbRow = e.target.closest('[data-action="lb-play"]'); if (lbRow) { const tid = lbRow.dataset.trackId; const card = document.querySelector('.browse-card[data-track-id="' + tid + '"]'); if (card) { card.scrollIntoView({ behavior: 'smooth', block: 'center' }); card.style.boxShadow = '0 0 0 2px var(--accent), 0 12px 40px rgba(232,255,71,0.15)'; setTimeout(() => { card.style.boxShadow = ''; }, 2500); setTimeout(() => { browsePlay(tid); }, 600); } else { browsePlay(tid); } return; } const toolCard = e.target.closest('.tool-card[data-tool]'); if (toolCard) { gtag('event', 'tool_click', { tool: toolCard.dataset.tool, location: 'tools_section' }); } const viewTab = e.target.closest('.view-tab'); if (viewTab) { const m = { 'discover':'discover', 'top rated':'top', 'new':'new' }; setView(m[viewTab.textContent.trim().toLowerCase()]||'discover', viewTab); return; } const pill = e.target.closest('.filter-pill'); if (pill) { setFilter(pill.dataset.filter, pill.dataset.value, pill); return; } });
+  document.addEventListener('click', function(e) { const star = e.target.closest('.star'); if (star) { rateStar(star.dataset.track, parseInt(star.dataset.score), star.parentElement); return; } const stopBtn = e.target.closest('[data-action="browse-stop"]'); if (stopBtn) { browsePlay(stopBtn.dataset.uid, stopBtn.dataset.trackId); return; } const thumbBtn = e.target.closest('[data-action="load-embed"]'); if (thumbBtn) { const uid = thumbBtn.dataset.uid; if (uid) { browsePlay(uid, thumbBtn.dataset.trackId); } return; } const commentsBtn = e.target.closest('[data-action="comments"]'); if (commentsBtn) { toggleComments(commentsBtn.dataset.track, commentsBtn); return; } const shareBtn = e.target.closest('[data-action="share"]'); if (shareBtn) { shareTrack(shareBtn.dataset.track, shareBtn.dataset.title, shareBtn); return; } const postBtn = e.target.closest('[data-action="post-comment"]'); if (postBtn) { addComment(postBtn.dataset.track, postBtn); return; } const lbRow = e.target.closest('[data-action="lb-play"]'); if (lbRow) { const tid = lbRow.dataset.trackId; const card = document.querySelector('.browse-card[data-track-id="' + tid + '"]'); if (card) { const uid = card.dataset.uid; card.scrollIntoView({ behavior: 'smooth', block: 'center' }); card.style.boxShadow = '0 0 0 2px var(--accent), 0 12px 40px rgba(232,255,71,0.15)'; setTimeout(() => { card.style.boxShadow = ''; }, 2500); setTimeout(() => { browsePlay(uid, tid); }, 600); } return; } const toolCard = e.target.closest('.tool-card[data-tool]'); if (toolCard) { gtag('event', 'tool_click', { tool: toolCard.dataset.tool, location: 'tools_section' }); } const viewTab = e.target.closest('.view-tab'); if (viewTab) { const m = { 'discover':'discover', 'top rated':'top', 'new':'new' }; setView(m[viewTab.textContent.trim().toLowerCase()]||'discover', viewTab); return; } const pill = e.target.closest('.filter-pill'); if (pill) { setFilter(pill.dataset.filter, pill.dataset.value, pill); return; } });
 
   document.addEventListener('mouseover', function(e) { const star = e.target.closest('.star'); if (!star) return; const c = star.parentElement; if (c.classList.contains('rated')) return; const s = parseInt(star.dataset.score); c.querySelectorAll('.star').forEach(x => x.classList.toggle('hover-fill', parseInt(x.dataset.score) <= s)); });
   document.addEventListener('mouseout', function(e) { const star = e.target.closest('.star'); if (!star) return; const c = star.parentElement; if (c.classList.contains('rated')) return; c.querySelectorAll('.star').forEach(x => x.classList.remove('hover-fill')); });
@@ -1253,9 +1253,39 @@
   function applyFiltersAndSort() { const grid = document.getElementById('tracksGrid'); if (grid.querySelector('iframe')) { const filtered = getFilteredTracks(); const sorted = getSortedTracks(filtered); const visibleIds = new Set(sorted.map(t => String(t.id))); document.getElementById('trackCount').textContent = `${sorted.length} track${sorted.length !== 1 ? 's' : ''}`; grid.querySelectorAll('.track-card').forEach(card => { const id = card.id.replace('card-', ''); card.style.display = visibleIds.has(id) ? '' : 'none'; const idx = sorted.findIndex(t => String(t.id) === id); card.style.order = idx >= 0 ? idx : 9999; }); } else { renderTracks(); } }
 
   // ─── Comments ───
-  async function toggleComments(id) { const p = document.getElementById(`comments-${id}`); const o = p.classList.contains('open'); document.querySelectorAll('.comments-panel.open').forEach(x => x.classList.remove('open')); if (!o) { p.classList.add('open'); await loadComments(id); } }
-  async function loadComments(id) { try { const res = await fetch(`${SUPABASE_URL}/rest/v1/comments?track_id=eq.${id}&select=*&order=created_at.desc`, { headers: { 'apikey': SUPABASE_KEY } }); const c = await res.json(); document.getElementById(`comments-content-${id}`).innerHTML = c.length ? c.map(x => `<div class="comment"><div class="comment-text">${sanitize(x.content)}</div><div class="comment-author">\u2014 ${sanitize(x.author_name||'Anonymous')}</div></div>`).join('') : '<p style="font-size:0.8rem;color:var(--muted);">No comments yet</p>'; } catch(e) {} }
-  async function addComment(id) { const input = document.getElementById(`comment-input-${id}`); const c = input.value.trim(); if (!c || !currentUser) return; const token = localStorage.getItem('sb_token'); const name = currentUser.user_metadata?.name || currentUser.email?.split('@')[0] || 'Anonymous'; try { await fetch(`${SUPABASE_URL}/rest/v1/comments`, { method:'POST', headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${token}`,'Content-Type':'application/json'}, body: JSON.stringify({track_id:id,user_id:currentUser.id,content:c,author_name:name}) }); gtag('event','comment',{track_id:id}); input.value=''; await loadComments(id); } catch(e) {} }
+  async function toggleComments(trackId, el) {
+    // Find the comments panel within the same card
+    const card = el ? el.closest('.browse-card') : null;
+    let panel;
+    if (card) {
+      panel = card.querySelector('.comments-panel');
+    } else {
+      panel = document.getElementById(`comments-${trackId}`);
+    }
+    if (!panel) return;
+    const wasOpen = panel.classList.contains('open');
+    document.querySelectorAll('.comments-panel.open').forEach(x => x.classList.remove('open'));
+    if (!wasOpen) {
+      panel.classList.add('open');
+      const contentEl = panel.querySelector('[data-track-id]') || panel.querySelector('[id^="comments-content-"]') || panel.querySelector('[id^="cc-"]');
+      const tid = contentEl ? (contentEl.dataset.trackId || trackId) : trackId;
+      await loadComments(tid, panel);
+    }
+  }
+  async function loadComments(trackId, panel) {
+    const contentEl = panel ? (panel.querySelector('[id^="cc-"]') || panel.querySelector('[id^="comments-content-"]')) : document.getElementById(`comments-content-${trackId}`);
+    if (!contentEl) return;
+    try { const res = await fetch(`${SUPABASE_URL}/rest/v1/comments?track_id=eq.${trackId}&select=*&order=created_at.desc`, { headers: { 'apikey': SUPABASE_KEY } }); const c = await res.json(); contentEl.innerHTML = c.length ? c.map(x => `<div class="comment"><div class="comment-text">${sanitize(x.content)}</div><div class="comment-author">\u2014 ${sanitize(x.author_name||'Anonymous')}</div></div>`).join('') : '<p style="font-size:0.8rem;color:var(--muted);">No comments yet</p>'; } catch(e) {}
+  }
+  async function addComment(trackId, el) {
+    const card = el ? el.closest('.browse-card') : null;
+    const input = card ? card.querySelector('.comment-input') : document.getElementById(`comment-input-${trackId}`);
+    if (!input) return;
+    const c = input.value.trim(); if (!c || !currentUser) return;
+    const token = localStorage.getItem('sb_token');
+    const name = currentUser.user_metadata?.name || currentUser.email?.split('@')[0] || 'Anonymous';
+    try { await fetch(`${SUPABASE_URL}/rest/v1/comments`, { method:'POST', headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${token}`,'Content-Type':'application/json'}, body: JSON.stringify({track_id:trackId,user_id:currentUser.id,content:c,author_name:name}) }); gtag('event','comment',{track_id:trackId}); input.value=''; const panel = card ? card.querySelector('.comments-panel') : null; await loadComments(trackId, panel); } catch(e) {}
+  }
 
   // ─── Share ───
   function shareTrack(id, title, btn) { const url = `${window.location.origin}/?track=${id}`; if (navigator.share) { navigator.share({title:`${title} \u2014 VoteMyAI`,url}); gtag('event','share',{track_id:id,method:'native'}); } else { navigator.clipboard.writeText(url); gtag('event','share',{track_id:id,method:'clipboard'}); const o=btn.innerHTML; btn.innerHTML='<span style="color:var(--accent);">\u2713 Copied</span>'; setTimeout(()=>{btn.innerHTML=o;},1500); } }
@@ -1320,7 +1350,8 @@
       overlay.addEventListener('click', () => {
         overlay.remove();
         style.remove();
-        browsePlay(trackParam);
+        const card = document.querySelector('.browse-card[data-track-id="' + trackParam + '"]');
+        if (card) { browsePlay(card.dataset.uid, trackParam); }
       }, { once: true });
 
       document.body.appendChild(overlay);
@@ -1343,17 +1374,17 @@
   let browseView = 'discover';
   let searchQuery = '';
 
+  let browseCardUid = 0;
+
   function buildBrowseCard(track, embed) {
+    const uid = 'bc-' + (browseCardUid++);
     const avg = track.avg_rating || 0;
     const cnt = track.rating_count || 0;
     const userScore = userRatings[track.id] || 0;
     const isRated = userScore > 0;
     const plat = embed.platform !== 'unknown' ? embed.platform.charAt(0).toUpperCase() + embed.platform.slice(1) : '';
-    
-    // Hot indicator: 3+ ratings
     const isHot = cnt >= 3;
     
-    // Thumbnail
     let thumbSrc = track.thumbnail_url || '';
     if (!thumbSrc && embed.platform === 'youtube') {
       const match = (track.embed_url || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([^&?\/#]+)/) || [null, track.yt_id];
@@ -1365,10 +1396,10 @@
       starsHtml += '<div class="bstar ' + (isRated && s <= userScore ? 'filled' : '') + '" data-track="' + track.id + '" data-score="' + s + '">' + starSVG + '</div>';
     }
 
-    return '<div class="browse-card" data-track-id="' + track.id + '">' +
-      '<div class="browse-card-thumb" data-action="load-embed" data-track-id="' + track.id + '">' +
+    return '<div class="browse-card" id="' + uid + '" data-track-id="' + track.id + '" data-uid="' + uid + '">' +
+      '<div class="browse-card-thumb" data-action="load-embed" data-uid="' + uid + '" data-track-id="' + track.id + '">' +
         (thumbSrc ? '<img src="' + sanitize(thumbSrc) + '" alt="' + sanitize(track.title) + '" loading="lazy">' : '<div style="width:100%;height:100%;background:var(--surface-2);"></div>') +
-        '<button class="browse-card-play" data-action="load-embed" data-track-id="' + track.id + '"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></button>' +
+        '<button class="browse-card-play" data-action="load-embed" data-uid="' + uid + '" data-track-id="' + track.id + '"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></button>' +
         (plat ? '<span class="browse-card-platform">' + plat + '</span>' : '') +
         (isHot ? '<span class="browse-card-hot"><span class="dot"></span> HOT</span>' : '') +
       '</div>' +
@@ -1379,9 +1410,9 @@
           '<span class="browse-card-badge genre">' + sanitize(track.genre) + '</span>' +
         '</div>' +
         '<div class="browse-card-rating">' +
-          '<div class="browse-card-stars ' + (isRated ? 'rated' : '') + '" id="bstars-' + track.id + '">' + starsHtml + '</div>' +
+          '<div class="browse-card-stars ' + (isRated ? 'rated' : '') + '">' + starsHtml + '</div>' +
           '<div class="browse-card-score">' +
-            '<div class="browse-card-score-num">' + (avg > 0 ? avg.toFixed(1) : '—') + '</div>' +
+            '<div class="browse-card-score-num">' + (avg > 0 ? avg.toFixed(1) : '\u2014') + '</div>' +
             '<div class="browse-card-score-count">' + cnt + ' rating' + (cnt !== 1 ? 's' : '') + '</div>' +
           '</div>' +
         '</div>' +
@@ -1390,8 +1421,8 @@
           '<button data-action="share" data-track="' + track.id + '" data-title="' + sanitize(track.title) + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Share</button>' +
         '</div>' +
       '</div>' +
-      '<div class="comments-panel" id="comments-' + track.id + '"><div class="comments-inner"><div id="comments-content-' + track.id + '"><span style="color:var(--muted);font-size:0.8rem;">Loading...</span></div>' +
-      (currentUser ? '<div class="comment-form"><input type="text" class="comment-input" id="comment-input-' + track.id + '" placeholder="Add a comment..."><button class="comment-submit" data-action="post-comment" data-track="' + track.id + '">Post</button></div>' : '<p style="font-size:0.75rem;color:var(--muted);margin-top:8px;">Log in to comment</p>') +
+      '<div class="comments-panel" id="cp-' + uid + '"><div class="comments-inner"><div id="cc-' + uid + '" data-track-id="' + track.id + '"><span style="color:var(--muted);font-size:0.8rem;">Loading...</span></div>' +
+      (currentUser ? '<div class="comment-form"><input type="text" class="comment-input" id="ci-' + uid + '" data-track-id="' + track.id + '" placeholder="Add a comment..."><button class="comment-submit" data-action="post-comment" data-track="' + track.id + '" data-uid="' + uid + '">Post</button></div>' : '<p style="font-size:0.75rem;color:var(--muted);margin-top:8px;">Log in to comment</p>') +
       '</div></div>' +
     '</div>';
   }
@@ -1582,12 +1613,11 @@
     }
   });
 
-  // Browse card play — load embed directly into the card
-  function browsePlay(trackId) {
-    // Toggle: if already playing this track, stop it
-    if (activeBrowseTrackId === String(trackId)) {
-      browseStop(trackId);
-      // Also close player bar
+  // Browse card play — load embed directly into the card (uses uid for unique targeting)
+  function browsePlay(uid, trackId) {
+    // Toggle: if already playing this uid, stop it
+    if (activeBrowseUid === uid) {
+      browseStop(uid);
       playerBar.classList.remove('active', 'playing');
       document.body.classList.remove('player-active');
       activePlayerTrackId = null;
@@ -1598,11 +1628,11 @@
     const track = allTracks.find(t => String(t.id) === String(trackId));
     if (!track) return;
     
-    // Stop any currently playing embed
-    if (activeBrowseTrackId) browseStop(activeBrowseTrackId);
-    if (activeEmbedTrackId) { stopEmbed(activeEmbedTrackId); activeEmbedTrackId = null; }
+    // Stop any currently playing
+    if (activeBrowseUid) browseStop(activeBrowseUid);
+    if (activeEmbedTrackId) { activeEmbedTrackId = null; }
     
-    const card = document.querySelector('.browse-card[data-track-id="' + trackId + '"]');
+    const card = document.getElementById(uid);
     if (!card) return;
     const thumbContainer = card.querySelector('.browse-card-thumb');
     if (!thumbContainer) return;
@@ -1610,7 +1640,6 @@
     const embed = getEmbedHtml(track);
     let embedHtml = embed.embedHtml;
     
-    // Add autoplay
     if (embed.platform === 'youtube') {
       embedHtml = embedHtml.replace(/src="([^"]+)"/, (m, src) => 'src="' + src + (src.includes('?') ? '&' : '?') + 'autoplay=1"');
     } else if (embed.platform === 'suno') {
@@ -1620,17 +1649,14 @@
     }
     embedHtml = embedHtml.replace(/<iframe /, '<iframe allow="autoplay" ');
     
-    // Save original thumbnail HTML for restore
     thumbContainer.dataset.originalHtml = thumbContainer.innerHTML;
     
-    // Make sure iframe fills the space
     embedHtml = embedHtml.replace(/<iframe /, '<iframe style="width:100%;height:100%;border:none;position:absolute;top:0;left:0;" ');
     
-    // Replace thumb with embed + stop overlay on top
     thumbContainer.style.aspectRatio = '16/9';
     thumbContainer.style.position = 'relative';
     thumbContainer.innerHTML = embedHtml +
-      '<div class="browse-stop-overlay" data-action="browse-stop" data-track-id="' + trackId + '">' +
+      '<div class="browse-stop-overlay" data-action="browse-stop" data-uid="' + uid + '" data-track-id="' + trackId + '">' +
         '<div class="browse-stop-btn">' +
           '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>' +
         '</div>' +
@@ -1639,9 +1665,9 @@
     thumbContainer.removeAttribute('data-action');
     
     card.classList.add('is-playing');
+    activeBrowseUid = uid;
     activeBrowseTrackId = String(trackId);
     
-    // Activate player bar
     playerTitle.textContent = track.title || 'Now Playing';
     playerMeta.textContent = (track.tool || '') + ' · ' + (track.genre || '');
     playerBar.classList.add('active', 'playing');
@@ -1651,8 +1677,8 @@
     gtag('event', 'play_bar', { track_id: trackId, platform: embed.platform });
   }
 
-  function browseStop(trackId) {
-    const card = document.querySelector('.browse-card[data-track-id="' + trackId + '"]');
+  function browseStop(uid) {
+    const card = document.getElementById(uid);
     if (!card) return;
     const thumbContainer = card.querySelector('.browse-card-thumb');
     if (!thumbContainer) return;
@@ -1661,27 +1687,26 @@
       thumbContainer.innerHTML = thumbContainer.dataset.originalHtml;
       delete thumbContainer.dataset.originalHtml;
       thumbContainer.setAttribute('data-action', 'load-embed');
-      thumbContainer.setAttribute('data-track-id', trackId);
       thumbContainer.style.aspectRatio = '16/10';
     }
     card.classList.remove('is-playing');
+    activeBrowseUid = null;
     activeBrowseTrackId = null;
   }
 
   let activeBrowseTrackId = null;
+  let activeBrowseUid = null;
 
   // Override closePlayer to also stop browse embeds
   const _origClosePlayer = closePlayer;
   closePlayer = function() {
-    if (activeBrowseTrackId) {
-      browseStop(activeBrowseTrackId);
+    if (activeBrowseUid) {
+      browseStop(activeBrowseUid);
     }
     playerBar.classList.remove('active', 'playing');
     document.body.classList.remove('player-active');
     activePlayerTrackId = null;
     activePlayerPlatform = null;
-    // Don't call _origClosePlayer — it tries to use old track-embed system
-    // Just close the page frame if open
     const frame = document.getElementById('pageFrame');
     if (frame) { frame.classList.remove('active'); frame.querySelector('iframe').src = ''; }
   };
