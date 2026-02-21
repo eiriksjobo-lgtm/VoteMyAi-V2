@@ -1374,15 +1374,32 @@
     if (!track) return;
 
     requestAnimationFrame(() => {
-      // Find the browse card
-      const card = document.querySelector('.browse-card[data-track-id="' + trackParam + '"]');
-      if (card) {
-        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        card.style.boxShadow = '0 0 0 2px var(--accent), 0 12px 40px rgba(232,255,71,0.15)';
-        setTimeout(() => { card.style.boxShadow = ''; }, 4000);
+      // Find the card in its GENRE row, not in Trending/Just Added
+      const genre = track.genre || 'Other';
+      let targetCard = null;
+      document.querySelectorAll('.genre-row').forEach(row => {
+        const title = row.querySelector('.genre-row-title');
+        if (!title) return;
+        const rowTitle = title.textContent.trim();
+        // Skip Trending Now and Just Added rows
+        if (rowTitle.includes('Trending') || rowTitle.includes('Just Added')) return;
+        // Match genre name
+        if (rowTitle.includes(genre)) {
+          const card = row.querySelector('.browse-card[data-track-id="' + trackParam + '"]');
+          if (card) targetCard = card;
+        }
+      });
+      // Fallback: any card with this track
+      if (!targetCard) {
+        targetCard = document.querySelector('.browse-card[data-track-id="' + trackParam + '"]');
       }
 
-      // Show tap-to-play overlay
+      if (targetCard) {
+        targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        targetCard.style.boxShadow = '0 0 0 2px var(--accent), 0 12px 40px rgba(232,255,71,0.15)';
+        setTimeout(() => { targetCard.style.boxShadow = ''; }, 4000);
+      }
+
       const overlay = document.createElement('div');
       overlay.id = 'deeplink-overlay';
       overlay.style.cssText = 'position:fixed;inset:0;z-index:9998;background:rgba(7,7,11,0.7);display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(4px);';
@@ -1395,8 +1412,7 @@
       overlay.addEventListener('click', () => {
         overlay.remove();
         style.remove();
-        const card = document.querySelector('.browse-card[data-track-id="' + trackParam + '"]');
-        if (card) { browsePlay(card.dataset.uid, trackParam); }
+        if (targetCard) { browsePlay(targetCard.dataset.uid, trackParam); }
       }, { once: true });
 
       document.body.appendChild(overlay);
