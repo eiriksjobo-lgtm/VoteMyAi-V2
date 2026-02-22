@@ -11,23 +11,23 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; line-height: 1.8; }
     nav { position: sticky; top: 0; background: rgba(10,10,15,0.95); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 0 40px; height: 64px; display: flex; align-items: center; z-index: 100; }
-    .logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 2px; color: var(--accent); cursor: pointer; }
+    .logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 2px; color: var(--accent); cursor: pointer; text-decoration: none; }
     .container { max-width: 800px; margin: 0 auto; padding: 80px 40px; }
     h1 { font-family: 'Bebas Neue', sans-serif; font-size: 3rem; letter-spacing: 2px; color: var(--accent); margin-bottom: 20px; }
     h2 { font-size: 1.5rem; color: var(--accent); margin: 32px 0 16px; }
     p { color: var(--muted); margin-bottom: 16px; }
     .updated { color: var(--muted); font-size: 0.9rem; margin-bottom: 40px; }
+    a { color: var(--accent); text-decoration: none; }
+    @media (max-width: 640px) { .container { padding: 40px 20px; } h1 { font-size: 2.2rem; } nav { padding: 0 20px; } }
   </style>
 </head>
 <body>
-
 <nav>
-  <div class="logo" onclick="window.location.href='/'">VOTEMYAI</div>
+  <a href="/" class="logo">VOTEMYAI</a>
 </nav>
-
 <div class="container">
   <h1>Terms of Service</h1>
-  <div class="updated">Last updated: February 18, 2026</div>
+  <div class="updated">Last updated: February 22, 2026</div>
 
   <h2>1. Acceptance of Terms</h2>
   <p>By accessing and using VoteMyAI, you accept and agree to be bound by these Terms of Service. If you do not agree, please do not use our platform.</p>
@@ -39,7 +39,7 @@
   <h2>3. Acceptable Use</h2>
   <p>You agree not to:</p>
   <p>• Submit content that infringes on others' intellectual property rights<br>
-  • Use bots or automation to manipulate votes<br>
+  • Use bots or automation to manipulate ratings<br>
   • Upload malicious content or spam<br>
   • Harass or abuse other users<br>
   • Violate any applicable laws or regulations</p>
@@ -47,19 +47,28 @@
   <h2>4. AI-Generated Content</h2>
   <p>VoteMyAI is specifically for AI-generated music. By submitting tracks, you confirm they were created using AI music generation tools.</p>
 
-  <h2>5. Account Termination</h2>
+  <h2>5. Copyright &amp; Takedown Requests</h2>
+  <p>We respect the intellectual property rights of others. If you believe that content on VoteMyAI infringes your copyright, please contact us through our <a href="/contact.html">Contact page</a> with the following information:</p>
+  <p>• A description of the copyrighted work you believe has been infringed<br>
+  • The URL or location of the infringing content on our platform<br>
+  • Your contact information (name and email)<br>
+  • A statement that you have a good faith belief the use is not authorized by the copyright owner</p>
+  <p>Upon receiving a valid takedown request, we will promptly remove or disable access to the content in question. Repeat infringers may have their accounts terminated.</p>
+
+  <h2>6. Account Termination</h2>
   <p>We reserve the right to suspend or terminate accounts that violate these terms or engage in abusive behavior.</p>
 
-  <h2>6. Disclaimer</h2>
+  <h2>7. Disclaimer</h2>
   <p>VoteMyAI is provided "as is" without warranties of any kind. We are not responsible for user-submitted content or any damages resulting from use of our platform.</p>
 
-  <h2>7. Changes to Terms</h2>
+  <h2>8. Limitation of Liability</h2>
+  <p>To the fullest extent permitted by law, VoteMyAI and its operators shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the platform, including but not limited to loss of data, revenue, or profits.</p>
+
+  <h2>9. Changes to Terms</h2>
   <p>We may update these Terms of Service at any time. Continued use of the platform constitutes acceptance of updated terms.</p>
 
-  <h2>8. Contact</h2>
-  <p>For questions about these terms, contact us through our <a href="/contact.html" style="color: var(--accent);">Contact page</a>.</p>
-
+  <h2>10. Contact</h2>
+  <p>For questions about these terms, contact us through our <a href="/contact.html">Contact page</a>.</p>
 </div>
-
 </body>
 </html>
