@@ -173,6 +173,8 @@
     .lb-row { display: flex; align-items: center; gap: 16px; padding: 14px 20px; border-bottom: 1px solid var(--border); transition: background 0.2s; cursor: pointer; }
     .lb-row:last-child { border-bottom: none; }
     .lb-row:hover { background: var(--accent-glow); }
+    .lb-play-icon { opacity: 0; transition: opacity 0.2s; flex-shrink: 0; }
+    .lb-row:hover .lb-play-icon { opacity: 1; }
     .lb-rank { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; color: var(--accent); width: 36px; text-align: center; flex-shrink: 0; }
     .lb-info { flex: 1; min-width: 0; }
     .lb-title { font-weight: 700; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -511,6 +513,14 @@
       background: var(--bg); animation: cardPulse 1.5s ease-in-out infinite;
     }
     @keyframes cardPulse { 0%,100%{opacity:.4;transform:scale(1)} 50%{opacity:1;transform:scale(1.4)} }
+
+    .browse-card-new {
+      position: absolute; top: 8px; left: 10px;
+      font-size: 0.58rem; font-weight: 700; color: #fff;
+      background: #818cf8; padding: 2px 8px; border-radius: 4px;
+      letter-spacing: 0.5px; text-transform: uppercase;
+      display: flex; align-items: center; gap: 3px;
+    }
     @keyframes ratingPop { 0%{transform:scale(1)} 40%{transform:scale(1.3)} 100%{transform:scale(1)} }
     .browse-card-stars.just-rated .bstar.filled { animation: ratingPop 0.35s cubic-bezier(0.16,1,0.3,1); }
     .browse-card-stars.just-rated .bstar.filled:nth-child(2) { animation-delay: 0.05s; }
@@ -714,9 +724,9 @@
   <p>The community rates tracks made with Suno, Udio, ElevenLabs and more. The best rise to the top.</p>
   <a href="/submit.html" class="hero-cta">Submit Your Track <span>→</span></a>
   <div class="hero-stats" id="heroStats">
-    <div class="hero-stat"><span class="hero-stat-num">🎵</span><span class="hero-stat-label">AI Music Platform</span></div>
-    <div class="hero-stat"><span class="hero-stat-num">⭐</span><span class="hero-stat-label">Community Rated</span></div>
-    <div class="hero-stat"><span class="hero-stat-num">🚀</span><span class="hero-stat-label">Submit Yours Free</span></div>
+    <div class="hero-stat"><span class="hero-stat-num" id="statTracks">—</span><span class="hero-stat-label">Tracks</span></div>
+    <div class="hero-stat"><span class="hero-stat-num" id="statRatings">—</span><span class="hero-stat-label">Ratings</span></div>
+    <div class="hero-stat"><span class="hero-stat-num" id="statTools">—</span><span class="hero-stat-label">AI Tools</span></div>
   </div>
 </section>
 
@@ -947,8 +957,27 @@
     try { const res = await fetch(`${SUPABASE_URL}/rest/v1/tracks?select=*&order=created_at.desc`, { headers: { 'apikey': SUPABASE_KEY } }); if (!res.ok) throw new Error('HTTP ' + res.status); allTracks = await res.json(); renderTracks(); renderLeaderboard(); updateHeroStats(); } catch(e) { console.error('Load error:', e); document.getElementById('browseRows').innerHTML = '<div style="text-align:center;padding:60px 20px;"><p style="color:var(--muted);margin-bottom:12px;">Could not load tracks.</p><button onclick="location.reload()" style="background:var(--accent);color:var(--bg);border:none;padding:10px 24px;border-radius:8px;font-weight:700;cursor:pointer;">Retry</button></div>'; }
   }
 
-  function updateHeroStats() {}
-  function animateCount() {}
+  function updateHeroStats() {
+    const totalTracks = allTracks.length;
+    const totalRatings = allTracks.reduce((sum, t) => sum + (t.rating_count || 0), 0);
+    const tools = new Set(allTracks.map(t => t.tool).filter(Boolean)).size;
+    animateCount('statTracks', totalTracks);
+    animateCount('statRatings', totalRatings);
+    animateCount('statTools', tools);
+  }
+  function animateCount(id, target) {
+    const el = document.getElementById(id);
+    if (!el || target === 0) { if (el) el.textContent = target || '—'; return; }
+    const duration = 800;
+    const start = performance.now();
+    function step(now) {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = Math.round(eased * target);
+      if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
 
   let currentLbPeriod = 'week';
   function renderLeaderboard(period) {
@@ -961,7 +990,7 @@
     const sorted = filtered.sort((a, b) => wilsonScore(b.avg_rating||0, b.rating_count||0) - wilsonScore(a.avg_rating||0, a.rating_count||0)).slice(0, 10);
     if (!sorted.length) { lb.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted);">No tracks in this period</div>'; return; }
     const medals = ['\u{1F947}', '\u{1F948}', '\u{1F949}'];
-    lb.innerHTML = sorted.map((t, i) => { const rank = i < 3 ? medals[i] : `#${i+1}`; const stars = (t.avg_rating||0) > 0 ? (t.avg_rating).toFixed(1)+' \u2605' : '\u2014'; return `<div class="lb-row" data-action="lb-play" data-track-id="${t.id}"><div class="lb-rank">${rank}</div><div class="lb-info"><div class="lb-title">${sanitize(t.title)}</div><div class="lb-meta">${sanitize(t.tool)} \u00b7 ${sanitize(t.genre)}</div></div><div class="lb-rating"><span class="lb-stars">${stars}</span><span class="lb-count">(${t.rating_count||0})</span></div></div>`; }).join('');
+    lb.innerHTML = sorted.map((t, i) => { const rank = i < 3 ? medals[i] : `#${i+1}`; const stars = (t.avg_rating||0) > 0 ? (t.avg_rating).toFixed(1)+' \u2605' : '\u2014'; return `<div class="lb-row" data-action="lb-play" data-track-id="${t.id}"><div class="lb-rank">${rank}</div><div class="lb-info"><div class="lb-title">${sanitize(t.title)}</div><div class="lb-meta">${sanitize(t.tool)} \u00b7 ${sanitize(t.genre)}</div></div><div class="lb-rating"><span class="lb-stars">${stars}</span><span class="lb-count">(${t.rating_count||0})</span></div><div class="lb-play-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="var(--accent)"><polygon points="6 3 20 12 6 21"/></svg></div></div>`; }).join('');
   }
   document.querySelectorAll('.lb-tab').forEach(tab => { tab.addEventListener('click', () => { document.querySelectorAll('.lb-tab').forEach(t => t.classList.remove('active')); tab.classList.add('active'); renderLeaderboard(tab.dataset.period); }); });
 
@@ -1193,6 +1222,7 @@
     const isRated = userScore > 0;
     const plat = embed.platform !== 'unknown' ? embed.platform.charAt(0).toUpperCase() + embed.platform.slice(1) : '';
     const isHot = cnt >= 3;
+    const isNew = (Date.now() - new Date(track.created_at).getTime()) < 7 * 24 * 60 * 60 * 1000;
     const trackIdAttr = sanitizeAttr(String(track.id));
     const titleAttr = sanitizeAttr(track.title || '');
     
@@ -1213,6 +1243,7 @@
         '<button class="browse-card-play" data-action="load-embed" data-uid="' + uid + '" data-track-id="' + trackIdAttr + '"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></button>' +
         (plat ? '<span class="browse-card-platform">' + plat + '</span>' : '') +
         (isHot ? '<span class="browse-card-hot"><span class="dot"></span> HOT</span>' : '') +
+        (isNew && !isHot ? '<span class="browse-card-new">NEW</span>' : '') +
       '</div>' +
       '<div class="browse-card-body">' +
         '<div class="browse-card-title">' + sanitize(track.title) + '</div>' +
