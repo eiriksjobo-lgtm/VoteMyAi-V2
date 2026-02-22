@@ -1771,7 +1771,7 @@
     // If same iframe already exists, just show popup
     const box = document.getElementById('udio-iframe-box');
     const existingIframe = box.querySelector('iframe');
-    const newSrc = 'https://www.udio.com/embed/' + udioId;
+    const newSrc = 'https://www.udio.com/embed/' + udioId + '?loop=0';
     
     if (!existingIframe || existingIframe.src !== newSrc) {
       // New track — replace iframe
