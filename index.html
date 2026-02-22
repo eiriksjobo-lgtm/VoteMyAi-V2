@@ -1343,7 +1343,7 @@
   function activatePlayerBar(trackId, container, platform) { activePlayerTrackId = trackId; activePlayerPlatform = platform; playerTitle.textContent = container.dataset.trackTitle || 'Now Playing'; playerMeta.textContent = container.dataset.trackTool || ''; playerBar.classList.add('active', 'playing'); document.body.classList.add('player-active'); gtag('event', 'play_bar', { track_id: trackId, platform }); }
 
   document.getElementById('btnClose').addEventListener('click', closePlayer);
-  function closePlayer() { destroyUdioPlayer(); if (activeEmbedTrackId) { stopEmbed(activeEmbedTrackId); activeEmbedTrackId = null; } playerBar.classList.remove('active', 'playing', 'udio-active'); document.body.classList.remove('player-active'); activePlayerTrackId = null; activePlayerPlatform = null; closePageFrame(); }
+  function closePlayer() { stopUdioFull(); if (activeEmbedTrackId) { stopEmbed(activeEmbedTrackId); activeEmbedTrackId = null; } if (activeBrowseUid) browseStop(activeBrowseUid); playerBar.classList.remove('active', 'playing', 'udio-active'); document.body.classList.remove('player-active'); activePlayerTrackId = null; activePlayerPlatform = null; closePageFrame(); }
 
   function navigateToPage(url) { if (!activePlayerTrackId) { window.location.href = url; return; } const frame = document.getElementById('pageFrame'); frame.querySelector('iframe').src = url; frame.classList.add('active'); }
   function closePageFrame() { const frame = document.getElementById('pageFrame'); frame.classList.remove('active'); frame.querySelector('iframe').src = ''; }
@@ -1882,9 +1882,6 @@
     const hiddenPlayer = document.getElementById('hidden-player-' + uid);
     if (hiddenPlayer) hiddenPlayer.remove();
     
-    // Destroy Udio player if active
-    if (udioState !== 'closed') destroyUdioPlayer();
-    
     if (thumbContainer.dataset.originalHtml) {
       thumbContainer.innerHTML = thumbContainer.dataset.originalHtml;
       delete thumbContainer.dataset.originalHtml;
@@ -1905,7 +1902,7 @@
     if (activeBrowseUid) {
       browseStop(activeBrowseUid);
     }
-    destroyUdioPlayer();
+    stopUdioFull();
     playerBar.classList.remove('active', 'playing', 'udio-active');
     document.body.classList.remove('player-active');
     activePlayerTrackId = null;
@@ -1950,7 +1947,7 @@
     `;
     document.body.appendChild(udioContainer);
     document.getElementById('udioMinBtn').addEventListener('click', minimizeUdio);
-    document.getElementById('udioCloseBtn').addEventListener('click', destroyUdioPlayer);
+    document.getElementById('udioCloseBtn').addEventListener('click', stopUdioFull);
     document.getElementById('udio-backdrop').addEventListener('click', minimizeUdio);
   }
 
@@ -1974,19 +1971,23 @@
     udioContainer.className = 'udio-popup';
     udioState = 'popup';
     
-    // Auto-minimize: when user clicks inside the iframe, they likely pressed play
-    // We detect this via blur event (focus leaves our window and goes to iframe)
+    // Auto-minimize: detect when user clicks play (focus goes to iframe)
     function onIframeClick() {
       if (udioState === 'popup') {
-        // Small delay so the click registers inside the iframe first
-        setTimeout(minimizeUdio, 600);
+        clearTimeout(window._udioAutoMin);
+        setTimeout(minimizeUdio, 500);
       }
       window.removeEventListener('blur', onIframeClick);
     }
-    // Remove any previous listener
     window.removeEventListener('blur', window._udioBlurHandler);
     window._udioBlurHandler = onIframeClick;
     window.addEventListener('blur', onIframeClick);
+    
+    // Also auto-minimize after 4s in case user already pressed play
+    clearTimeout(window._udioAutoMin);
+    window._udioAutoMin = setTimeout(() => {
+      if (udioState === 'popup') minimizeUdio();
+    }, 4000);
   }
   
   function minimizeUdio() {
@@ -2008,17 +2009,21 @@
       if (box) box.innerHTML = '';
       udioState = 'closed';
     }
-    
+    clearTimeout(window._udioAutoMin);
+    window.removeEventListener('blur', window._udioBlurHandler);
+  }
+  
+  // Full stop: destroy iframe + restore card + reset player bar
+  function stopUdioFull() {
+    destroyUdioPlayer();
     if (activeBrowseUid) {
-      const card = document.getElementById(activeBrowseUid);
-      if (card) card.classList.remove('is-playing');
-      activeBrowseUid = null;
-      activeBrowseTrackId = null;
+      browseStop(activeBrowseUid);
     }
     playerBar.classList.remove('active', 'playing', 'udio-active');
     document.body.classList.remove('player-active');
     activePlayerTrackId = null;
     activePlayerPlatform = null;
+  }
   }
 
   // Styles — everything controlled by class on #udio-container
