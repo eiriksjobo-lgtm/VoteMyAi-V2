@@ -76,7 +76,7 @@
       opacity: 0.7;
     }
     
-    input, select {
+    input, select, textarea {
       width: 100%;
       background: var(--surface);
       border: 1px solid var(--border);
@@ -85,11 +85,19 @@
       border-radius: 8px;
       font-family: 'DM Sans', sans-serif;
       font-size: 1rem;
+      resize: vertical;
     }
     
-    input:focus, select:focus {
+    input:focus, select:focus, textarea:focus {
       outline: none;
       border-color: var(--accent);
+    }
+
+    .char-count {
+      text-align: right;
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 4px;
     }
 
     .url-help {
@@ -335,6 +343,12 @@
           <div class="genre-dropdown" id="genreDropdown"></div>
           <div class="genre-selected-tag" id="genreTag"><span id="genreTagText"></span><span class="genre-clear" id="genreClear">&times;</span></div>
         </div>
+      </div>
+
+      <div class="form-group">
+        <label>Artist's Note <span class="label-hint">&mdash; optional</span></label>
+        <textarea id="artistNote" placeholder="Share the story behind this track — inspiration, prompts, techniques..." maxlength="500" rows="3"></textarea>
+        <div class="char-count"><span id="noteCount">0</span>/500</div>
       </div>
       
       <button type="submit" class="submit-btn" id="submitBtn">Submit Track</button>
@@ -718,6 +732,11 @@
     msg.style.display = 'block';
   }
   
+  // Character counter for artist note
+  document.getElementById('artistNote').addEventListener('input', (e) => {
+    document.getElementById('noteCount').textContent = e.target.value.length;
+  });
+
   // ── Form submit ──
   document.getElementById('submitForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -729,6 +748,7 @@
     const title = document.getElementById('title').value.trim();
     const tool = document.getElementById('tool').value;
     const genre = document.getElementById('genre').value;
+    const artistNote = document.getElementById('artistNote').value.trim() || null;
     
     if (!genre) {
       showMessage('Please select a genre', 'error');
@@ -768,6 +788,7 @@
         thumbnail_url: thumbnailUrl,
         tool,
         genre,
+        artist_note: artistNote,
         votes: 0,
         user_id: currentUser.id
       };
