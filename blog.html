@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <!-- Google Analytics -->
+  <script>if(localStorage.getItem('cookie_consent')==='declined'){window['ga-disable-G-KW4NR9QBWB']=true;}</script>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-KW4NR9QBWB"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -87,7 +88,6 @@
     .blog-card.featured .blog-card-img { width: 45%; aspect-ratio: auto; min-height: 280px; border-bottom: none; border-right: 1px solid var(--border); }
     .blog-card.featured .blog-card-body { padding: 32px; }
     .blog-card.featured .blog-card-title { font-size: 1.5rem; }
-    .blog-card-new { position: absolute; top: 12px; right: 12px; background: var(--accent); color: var(--bg); padding: 3px 10px; border-radius: 6px; font-size: 0.65rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
 
     footer { background: var(--surface); border-top: 1px solid var(--border); padding: 40px; text-align: center; }
     footer a { color: var(--muted); text-decoration: none; font-size: 0.85rem; margin: 0 12px; }
@@ -128,19 +128,36 @@
   <section class="blog-section">
     <div class="blog-grid">
 
-      <!-- FEATURED: NEW - Grammy Article -->
+      <!-- FEATURED: Top-Rated AI Songs -->
       <article class="blog-card featured" style="position:relative;">
+        <a href="/blog/what-makes-a-top-rated-ai-song.html">
+          <div class="blog-card-img">⭐</div>
+          <div class="blog-card-body">
+            <span class="blog-card-tag">Creator Guide</span>
+            <h2 class="blog-card-title">What Makes a Top-Rated AI Song? Lessons From the VoteMyAI Community</h2>
+            <p class="blog-card-excerpt">We analyzed the top-rated AI tracks to find what separates a 5-star song from a forgettable one. Specific prompts, song structure, genre choice, and the human touch all matter more than you'd think.</p>
+            <div class="blog-card-meta">
+              <span>Feb 22, 2026</span>
+              <span>•</span>
+              <span>7 min read</span>
+              <span style="margin-left:auto;background:var(--accent);color:var(--bg);padding:2px 10px;border-radius:6px;font-size:0.65rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;">NEW</span>
+            </div>
+          </div>
+        </a>
+      </article>
+
+      <!-- Post: Grammy Article -->
+      <article class="blog-card">
         <a href="/blog/can-ai-music-win-a-grammy.html">
           <div class="blog-card-img">🏆</div>
           <div class="blog-card-body">
             <span class="blog-card-tag">Industry</span>
             <h2 class="blog-card-title">Can AI Music Win a Grammy? The Rules, the Debate & What It Means for Creators</h2>
-            <p class="blog-card-excerpt">The Beatles already won a Grammy with AI-restored vocals. Kanye is using AI on his next album. The Recording Academy says AI won't disqualify you. So where does that leave AI music creators? We break down the rules, the precedents, and the future.</p>
+            <p class="blog-card-excerpt">The Beatles already won a Grammy with AI-restored vocals. Kanye is using AI on his next album. We break down the rules, the precedents, and the future.</p>
             <div class="blog-card-meta">
               <span>Feb 23, 2026</span>
               <span>•</span>
               <span>8 min read</span>
-              <span style="margin-left:auto;background:var(--accent);color:var(--bg);padding:2px 10px;border-radius:6px;font-size:0.65rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;">NEW</span>
             </div>
           </div>
         </a>
@@ -256,6 +273,7 @@
   <div>
     <a href="/">Home</a>
     <a href="/submit.html">Submit</a>
+    <a href="/about.html">About</a>
     <a href="/faq.html">FAQ</a>
     <a href="/contact.html">Contact</a>
     <a href="/terms.html">Terms</a>
