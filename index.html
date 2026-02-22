@@ -543,6 +543,20 @@
     .browse-card-score { text-align: right; }
     .browse-card-score-num { font-size: 0.95rem; font-weight: 700; color: var(--accent); line-height: 1; }
     .browse-card-score-count { font-size: 0.6rem; color: var(--muted); }
+
+    .browse-card-note { padding: 0 14px; margin-bottom: 4px; }
+    .browse-card-note-toggle {
+      font-size: 0.72rem; color: var(--accent); cursor: pointer;
+      font-weight: 600; opacity: 0.8; transition: opacity 0.2s;
+    }
+    .browse-card-note-toggle:hover { opacity: 1; }
+    .browse-card-note-text {
+      display: none; font-size: 0.76rem; color: var(--muted);
+      line-height: 1.5; margin-top: 6px; padding: 8px 10px;
+      background: rgba(255,255,255,0.02); border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+    .browse-card-note-text.open { display: block; }
     
     .browse-card-footer {
       display: flex; align-items: center; gap: 10px;
@@ -983,7 +997,7 @@
   function sanitizeAttr(str) { if (!str) return ''; return str.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
   // ─── Event Delegation ───
-  document.addEventListener('click', function(e) { const star = e.target.closest('.star'); if (star) { rateStar(star.dataset.track, parseInt(star.dataset.score), star.parentElement); return; } const stopBtn = e.target.closest('[data-action="browse-stop"]'); if (stopBtn) { browsePlay(stopBtn.dataset.uid, stopBtn.dataset.trackId); return; } const thumbBtn = e.target.closest('[data-action="load-embed"]'); if (thumbBtn) { const uid = thumbBtn.dataset.uid; if (uid) { browsePlay(uid, thumbBtn.dataset.trackId); } return; } const commentsBtn = e.target.closest('[data-action="comments"]'); if (commentsBtn) { toggleComments(commentsBtn.dataset.track, commentsBtn); return; } const shareBtn = e.target.closest('[data-action="share"]'); if (shareBtn) { shareTrack(shareBtn.dataset.track, shareBtn.dataset.title, shareBtn); return; } const postBtn = e.target.closest('[data-action="post-comment"]'); if (postBtn) { addComment(postBtn.dataset.track, postBtn); return; } const lbRow = e.target.closest('[data-action="lb-play"]'); if (lbRow) { const tid = lbRow.dataset.trackId; const card = document.querySelector('.browse-card[data-track-id="' + tid + '"]'); if (card) { const uid = card.dataset.uid; card.scrollIntoView({ behavior: 'smooth', block: 'center' }); card.style.boxShadow = '0 0 0 2px var(--accent), 0 12px 40px rgba(232,255,71,0.15)'; setTimeout(() => { card.style.boxShadow = ''; }, 2500); setTimeout(() => { browsePlay(uid, tid); }, 600); } return; } const toolCard = e.target.closest('.tool-card[data-tool]'); if (toolCard) { gtag('event', 'tool_click', { tool: toolCard.dataset.tool, location: 'tools_section' }); } });
+  document.addEventListener('click', function(e) { const star = e.target.closest('.star'); if (star) { rateStar(star.dataset.track, parseInt(star.dataset.score), star.parentElement); return; } const stopBtn = e.target.closest('[data-action="browse-stop"]'); if (stopBtn) { browsePlay(stopBtn.dataset.uid, stopBtn.dataset.trackId); return; } const thumbBtn = e.target.closest('[data-action="load-embed"]'); if (thumbBtn) { const uid = thumbBtn.dataset.uid; if (uid) { browsePlay(uid, thumbBtn.dataset.trackId); } return; } const noteToggle = e.target.closest('[data-action="toggle-note"]'); if (noteToggle) { const noteText = document.getElementById('note-' + noteToggle.dataset.uid); if (noteText) noteText.classList.toggle('open'); return; } const commentsBtn = e.target.closest('[data-action="comments"]'); if (commentsBtn) { toggleComments(commentsBtn.dataset.track, commentsBtn); return; } const shareBtn = e.target.closest('[data-action="share"]'); if (shareBtn) { shareTrack(shareBtn.dataset.track, shareBtn.dataset.title, shareBtn); return; } const postBtn = e.target.closest('[data-action="post-comment"]'); if (postBtn) { addComment(postBtn.dataset.track, postBtn); return; } const lbRow = e.target.closest('[data-action="lb-play"]'); if (lbRow) { const tid = lbRow.dataset.trackId; const card = document.querySelector('.browse-card[data-track-id="' + tid + '"]'); if (card) { const uid = card.dataset.uid; card.scrollIntoView({ behavior: 'smooth', block: 'center' }); card.style.boxShadow = '0 0 0 2px var(--accent), 0 12px 40px rgba(232,255,71,0.15)'; setTimeout(() => { card.style.boxShadow = ''; }, 2500); setTimeout(() => { browsePlay(uid, tid); }, 600); } return; } const toolCard = e.target.closest('.tool-card[data-tool]'); if (toolCard) { gtag('event', 'tool_click', { tool: toolCard.dataset.tool, location: 'tools_section' }); } });
 
   document.addEventListener('mouseover', function(e) { const star = e.target.closest('.star'); if (!star) return; const c = star.parentElement; if (c.classList.contains('rated')) return; const s = parseInt(star.dataset.score); c.querySelectorAll('.star').forEach(x => x.classList.toggle('hover-fill', parseInt(x.dataset.score) <= s)); });
   document.addEventListener('mouseout', function(e) { const star = e.target.closest('.star'); if (!star) return; const c = star.parentElement; if (c.classList.contains('rated')) return; c.querySelectorAll('.star').forEach(x => x.classList.remove('hover-fill')); });
@@ -1240,6 +1254,7 @@
             '<div class="browse-card-score-count">' + cnt + ' rating' + (cnt !== 1 ? 's' : '') + '</div>' +
           '</div>' +
         '</div>' +
+        (track.artist_note ? '<div class="browse-card-note"><div class="browse-card-note-toggle" data-action="toggle-note" data-uid="' + uid + '">📝 Artist\'s Note</div><div class="browse-card-note-text" id="note-' + uid + '">' + sanitize(track.artist_note) + '</div></div>' : '') +
         '<div class="browse-card-footer">' +
           '<button data-action="comments" data-track="' + trackIdAttr + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Comments</button>' +
           '<button data-action="share" data-track="' + trackIdAttr + '" data-title="' + titleAttr + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Share</button>' +
