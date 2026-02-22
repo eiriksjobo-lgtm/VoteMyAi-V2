@@ -1883,56 +1883,46 @@
     renderBrowse();
   };
 
-  // ─── Udio Popup Player ───
-  let udioPopup = null;
-  let udioOverlay = null;
+  // ─── Udio Persistent Player ───
+  let udioIframeContainer = null;
   
   function openUdioPlayer(udioId, trackTitle, thumbUrl) {
-    closeUdioPlayer();
+    // Remove any existing Udio iframe
+    if (udioIframeContainer) {
+      udioIframeContainer.remove();
+      udioIframeContainer = null;
+    }
     
-    // Create overlay
-    udioOverlay = document.createElement('div');
-    udioOverlay.id = 'udio-overlay';
-    udioOverlay.style.cssText = 'position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,0.75);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);opacity:0;transition:opacity 0.4s cubic-bezier(0.16,1,0.3,1);cursor:pointer;';
-    udioOverlay.addEventListener('click', closeUdioPlayer);
-    document.body.appendChild(udioOverlay);
-    requestAnimationFrame(() => { udioOverlay.style.opacity = '1'; });
+    // Create hidden iframe container attached to body (persists while navigating)
+    udioIframeContainer = document.createElement('div');
+    udioIframeContainer.id = 'udio-persistent-player';
+    udioIframeContainer.style.cssText = 'position:fixed;left:0;bottom:68px;width:100%;height:0;overflow:hidden;z-index:199;transition:height 0.35s cubic-bezier(0.16,1,0.3,1);background:#111118;border-top:1px solid rgba(129,140,248,0.15);';
+    udioIframeContainer.innerHTML = `<iframe src="https://www.udio.com/embed/${udioId}" allow="autoplay; encrypted-media" style="width:100%;height:100%;border:none;"></iframe>`;
+    document.body.appendChild(udioIframeContainer);
     
-    // Create popup
-    udioPopup = document.createElement('div');
-    udioPopup.id = 'udio-popup';
-    
-    udioPopup.innerHTML = `
-      <div class="udio-pp-inner">
-        <div class="udio-pp-header">
-          <div class="udio-pp-badge">
-            <span class="udio-pp-dot"></span>
-            <span>NOW PLAYING</span>
-          </div>
-          <button class="udio-pp-close" onclick="closeUdioPlayer()">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
-          </button>
-        </div>
-        
-        <div class="udio-pp-embed">
-          <iframe src="https://www.udio.com/embed/${udioId}" allow="autoplay; encrypted-media" style="width:100%;height:100%;border:none;"></iframe>
-        </div>
-      </div>
-    `;
-    
-    document.body.appendChild(udioPopup);
-    requestAnimationFrame(() => { udioPopup.classList.add('open'); });
+    // Show/hide toggle via player bar
+    playerBar.dataset.udioId = udioId;
+    playerBar.dataset.udioExpanded = 'false';
+  }
+  
+  function toggleUdioExpand() {
+    if (!udioIframeContainer) return;
+    const isExpanded = playerBar.dataset.udioExpanded === 'true';
+    if (isExpanded) {
+      udioIframeContainer.style.height = '0';
+      playerBar.dataset.udioExpanded = 'false';
+    } else {
+      udioIframeContainer.style.height = '340px';
+      playerBar.dataset.udioExpanded = 'true';
+    }
   }
   
   function closeUdioPlayer() {
-    if (udioPopup) {
-      udioPopup.classList.remove('open');
-      udioPopup.classList.add('closing');
-      setTimeout(() => { if (udioPopup) { udioPopup.remove(); udioPopup = null; } }, 400);
-    }
-    if (udioOverlay) {
-      udioOverlay.style.opacity = '0';
-      setTimeout(() => { if (udioOverlay) { udioOverlay.remove(); udioOverlay = null; } }, 400);
+    if (udioIframeContainer) {
+      udioIframeContainer.style.height = '0';
+      setTimeout(() => {
+        if (udioIframeContainer) { udioIframeContainer.remove(); udioIframeContainer = null; }
+      }, 350);
     }
     if (activeBrowseUid) {
       const card = document.getElementById(activeBrowseUid);
@@ -1941,103 +1931,64 @@
       activeBrowseTrackId = null;
     }
     playerBar.classList.remove('active', 'playing');
+    playerBar.removeAttribute('data-udio-id');
+    playerBar.removeAttribute('data-udio-expanded');
     document.body.classList.remove('player-active');
     activePlayerTrackId = null;
     activePlayerPlatform = null;
   }
 
-  // Inject Udio popup styles
+  // Inject Udio player bar enhancement styles
   const udioStyles = document.createElement('style');
   udioStyles.textContent = `
-    #udio-popup {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) scale(0.92);
-      z-index: 8001;
-      width: min(480px, 94vw);
-      opacity: 0;
-      transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-      pointer-events: none;
+    #udio-persistent-player {
+      box-shadow: 0 -8px 40px rgba(0,0,0,0.5);
     }
-    #udio-popup.open {
-      opacity: 1;
-      transform: translate(-50%, -50%) scale(1);
-      pointer-events: auto;
-    }
-    #udio-popup.closing {
-      opacity: 0;
-      transform: translate(-50%, -50%) scale(0.95);
-      transition: all 0.3s ease-in;
-    }
-    .udio-pp-inner {
-      position: relative;
-      border-radius: 20px;
-      overflow: hidden;
-      background: #111118;
-      border: 1px solid rgba(129, 140, 248, 0.25);
-      box-shadow:
-        0 40px 100px rgba(0, 0, 0, 0.8),
-        0 0 80px rgba(129, 140, 248, 0.06),
-        inset 0 1px 0 rgba(255, 255, 255, 0.06);
-    }
-    .udio-pp-header {
+    .player-bar[data-udio-id] .udio-expand-btn {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 14px 16px;
-      background: rgba(129, 140, 248, 0.04);
-      border-bottom: 1px solid rgba(129, 140, 248, 0.1);
     }
-    .udio-pp-badge {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.58rem;
-      font-weight: 800;
-      letter-spacing: 2.5px;
-      text-transform: uppercase;
+    .udio-expand-btn {
+      display: none;
+      width: 36px; height: 36px;
+      border-radius: 50%; border: none;
+      background: rgba(129,140,248,0.12);
       color: #818cf8;
-      font-family: 'DM Sans', sans-serif;
-    }
-    .udio-pp-dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: #818cf8;
-      box-shadow: 0 0 12px rgba(129, 140, 248, 0.8);
-      animation: udioDotPulse 1.8s ease-in-out infinite;
-    }
-    @keyframes udioDotPulse {
-      0%, 100% { opacity: 1; box-shadow: 0 0 12px rgba(129, 140, 248, 0.8); }
-      50% { opacity: 0.4; box-shadow: 0 0 4px rgba(129, 140, 248, 0.3); }
-    }
-    .udio-pp-close {
-      width: 30px; height: 30px;
-      border-radius: 50%;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      background: rgba(255, 255, 255, 0.04);
-      color: rgba(255, 255, 255, 0.45);
       cursor: pointer;
-      display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.25s;
+      transition: all 0.2s;
+      flex-shrink: 0;
     }
-    .udio-pp-close:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: #fff;
-      border-color: rgba(255, 255, 255, 0.2);
-      transform: rotate(90deg);
+    .udio-expand-btn:hover {
+      background: rgba(129,140,248,0.25);
+      transform: scale(1.1);
     }
-    .udio-pp-embed {
-      height: 400px;
+    .udio-expand-btn svg {
+      transition: transform 0.3s;
+    }
+    .player-bar[data-udio-expanded="true"] .udio-expand-btn svg {
+      transform: rotate(180deg);
+    }
+    .player-bar[data-udio-id] {
+      border-top-color: rgba(129,140,248,0.2);
+    }
+    .player-bar[data-udio-id] .player-eq span {
+      background: #818cf8;
     }
     @media (max-width: 640px) {
-      #udio-popup { width: 96vw; }
-      .udio-pp-embed { height: 350px; }
+      #udio-persistent-player { bottom: 56px; }
+      .player-bar[data-udio-expanded="true"] ~ #udio-persistent-player { height: 280px; }
     }
   `;
   document.head.appendChild(udioStyles);
+
+  // Add expand button to player bar
+  const udioExpandBtn = document.createElement('button');
+  udioExpandBtn.className = 'udio-expand-btn player-ctrl';
+  udioExpandBtn.title = 'Show/hide Udio player';
+  udioExpandBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8l-6 6h12z"/></svg>';
+  udioExpandBtn.addEventListener('click', toggleUdioExpand);
+  document.querySelector('.player-controls').insertBefore(udioExpandBtn, document.getElementById('btnClose'));
 
   // Click handler for Udio players
   document.addEventListener('click', function(e) {
@@ -2050,7 +2001,19 @@
       const title = card ? card.querySelector('.browse-card-title')?.textContent : '';
       const thumbImg = card ? card.querySelector('.browse-card-thumb img') : null;
       const thumbUrl = thumbImg ? thumbImg.src : '';
+      
+      // Stop any other playing track
+      if (activeBrowseUid) browseStop(activeBrowseUid);
+      
       openUdioPlayer(udioId, title, thumbUrl);
+      
+      // Expand immediately so user can press play
+      setTimeout(() => { 
+        if (udioIframeContainer) {
+          udioIframeContainer.style.height = '340px';
+          playerBar.dataset.udioExpanded = 'true';
+        }
+      }, 100);
       
       if (card) {
         const trackId = card.dataset.trackId;
