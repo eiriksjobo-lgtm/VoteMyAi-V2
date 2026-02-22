@@ -1770,6 +1770,22 @@
       const udioId = embed.udioId;
       if (udioId) {
         openUdioPlayer(udioId, track.title);
+        
+        // Show Now Playing overlay on the card (same as Suno/SoundCloud)
+        const thumbOrig = thumbContainer.innerHTML;
+        thumbContainer.dataset.originalHtml = thumbOrig;
+        thumbContainer.innerHTML = 
+          '<div class="browse-now-playing" data-action="browse-stop" data-uid="' + uid + '" data-track-id="' + trackId + '">' +
+            '<div class="bnp-bg"></div>' +
+            '<div class="bnp-content">' +
+              '<div class="bnp-eq"><span></span><span></span><span></span><span></span><span></span></div>' +
+              '<div class="bnp-title">Now Playing</div>' +
+              '<div class="bnp-track">' + sanitize(track.title) + '</div>' +
+              '<div class="bnp-stop">Click to stop</div>' +
+            '</div>' +
+          '</div>';
+        thumbContainer.removeAttribute('data-action');
+        
         playerTitle.textContent = track.title || 'Now Playing';
         playerMeta.textContent = 'Udio · ' + (track.genre || '');
         playerBar.classList.add('active', 'playing', 'udio-active');
@@ -1855,6 +1871,9 @@
     const hiddenPlayer = document.getElementById('hidden-player-' + uid);
     if (hiddenPlayer) hiddenPlayer.remove();
     
+    // Destroy Udio player if active
+    if (udioState !== 'closed') destroyUdioPlayer();
+    
     if (thumbContainer.dataset.originalHtml) {
       thumbContainer.innerHTML = thumbContainer.dataset.originalHtml;
       delete thumbContainer.dataset.originalHtml;
@@ -1875,7 +1894,8 @@
     if (activeBrowseUid) {
       browseStop(activeBrowseUid);
     }
-    playerBar.classList.remove('active', 'playing');
+    destroyUdioPlayer();
+    playerBar.classList.remove('active', 'playing', 'udio-active');
     document.body.classList.remove('player-active');
     activePlayerTrackId = null;
     activePlayerPlatform = null;
@@ -1942,6 +1962,20 @@
     // Show as popup
     udioContainer.className = 'udio-popup';
     udioState = 'popup';
+    
+    // Auto-minimize: when user clicks inside the iframe, they likely pressed play
+    // We detect this via blur event (focus leaves our window and goes to iframe)
+    function onIframeClick() {
+      if (udioState === 'popup') {
+        // Small delay so the click registers inside the iframe first
+        setTimeout(minimizeUdio, 600);
+      }
+      window.removeEventListener('blur', onIframeClick);
+    }
+    // Remove any previous listener
+    window.removeEventListener('blur', window._udioBlurHandler);
+    window._udioBlurHandler = onIframeClick;
+    window.addEventListener('blur', onIframeClick);
   }
   
   function minimizeUdio() {
