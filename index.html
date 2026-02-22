@@ -1303,12 +1303,35 @@
     container.style.display = 'block';
     searchContainer.style.display = 'none';
 
-    // Group by genre
+    // Map subgenres to parent categories for browse grouping
+    const GENRE_PARENTS = {
+      'Synth-Pop':'Pop','Indie Pop':'Pop','Electropop':'Pop','Dream Pop':'Pop','K-Pop':'Pop','J-Pop':'Pop','Art Pop':'Pop','Dance Pop':'Pop',
+      'Indie Rock':'Rock','Alt Rock':'Rock','Punk Rock':'Rock','Post-Punk':'Rock','Garage Rock':'Rock','Psychedelic Rock':'Rock','Prog Rock':'Rock','Shoegaze':'Rock','Grunge':'Rock','Britpop':'Rock',
+      'Trap':'Hip-Hop','Boom Bap':'Hip-Hop','Lo-Fi Hip-Hop':'Hip-Hop','Drill':'Hip-Hop','Conscious Rap':'Hip-Hop','Old School Hip-Hop':'Hip-Hop','Cloud Rap':'Hip-Hop',
+      'House':'Electronic','Deep House':'Electronic','Tech House':'Electronic','Techno':'Electronic','Trance':'Electronic','Dubstep':'Electronic','Drum & Bass':'Electronic','IDM':'Electronic','Breakbeat':'Electronic','Garage':'Electronic','Hardstyle':'Electronic','Eurodance':'Electronic','Italo Disco':'Electronic','Synthwave':'Electronic','Electro':'Electronic','Future Bass':'Electronic',
+      'Neo Soul':'R&B / Soul','Contemporary R&B':'R&B / Soul','Motown':'R&B / Soul',
+      'Dance':'Electronic','EDM':'Electronic','Nu-Disco':'Electronic','Tropical House':'Electronic','Afro House':'Electronic',
+      'Disco':'Funk','Funk':'Funk',
+      'Heavy Metal':'Metal','Death Metal':'Metal','Black Metal':'Metal','Doom Metal':'Metal','Thrash Metal':'Metal','Metalcore':'Metal','Nu Metal':'Metal','Power Metal':'Metal','Symphonic Metal':'Metal',
+      'Smooth Jazz':'Jazz','Bebop':'Jazz','Jazz Fusion':'Jazz','Acid Jazz':'Jazz','Nu Jazz':'Jazz','Swing':'Jazz',
+      'Orchestral':'Classical','Neoclassical':'Classical','Baroque':'Classical','Romantic':'Classical','Chamber Music':'Classical','Film Score':'Cinematic','Epic Orchestral':'Cinematic',
+      'Folk':'Indie / Folk','Acoustic':'Indie / Folk','Singer-Songwriter':'Indie / Folk','Indie Folk':'Indie / Folk','Americana':'Indie / Folk','Bluegrass':'Indie / Folk','Celtic':'Indie / Folk',
+      'Reggaeton':'Latin','Salsa':'Latin','Bossa Nova':'Latin','Latin Pop':'Latin','Cumbia':'Latin','Bachata':'Latin','Merengue':'Latin',
+      'Country Rock':'Country','Outlaw Country':'Country','Alt Country':'Country','Honky Tonk':'Country',
+      'Chillout':'Ambient','Chillwave':'Ambient','Downtempo':'Ambient','New Age':'Ambient','Space Ambient':'Ambient','Vaporwave':'Ambient',
+      'Dub':'Reggae','Dancehall':'Reggae','Ska':'Reggae','Rocksteady':'Reggae','Soca':'Reggae','Calypso':'Reggae',
+      'Afrobeats':'Afrobeat','Amapiano':'Afrobeat','Highlife':'Afrobeat','Juju':'Afrobeat',
+      'Delta Blues':'Blues','Chicago Blues':'Blues','Blues Rock':'Blues','Rhythm & Blues':'Blues',
+      'World Music':'Other','Middle Eastern':'Other','Indian':'Other','Asian':'Other','Flamenco':'Other','Polka':'Other','Experimental':'Other','Noise':'Other'
+    };
+
+    // Group by parent genre, keeping subgenre info
     const genreMap = {};
     sorted.forEach(t => {
       const g = t.genre || 'Other';
-      if (!genreMap[g]) genreMap[g] = [];
-      genreMap[g].push(t);
+      const parent = GENRE_PARENTS[g] || g;
+      if (!genreMap[parent]) genreMap[parent] = [];
+      genreMap[parent].push(t);
     });
 
     // Build "Trending" row first (top rated across all genres)
