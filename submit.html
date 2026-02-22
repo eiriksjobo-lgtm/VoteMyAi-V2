@@ -92,6 +92,14 @@
       border-color: var(--accent);
     }
 
+    .url-help {
+      margin-top: 8px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .url-help strong { color: var(--text); font-weight: 600; }
+
     /* Genre combobox */
     .genre-combo { position: relative; }
     .genre-combo input {
@@ -295,8 +303,9 @@
   <div id="formContainer" style="display: none;">
     <form id="submitForm">
       <div class="form-group">
-        <label>Track URL <span class="label-hint">&mdash; YouTube, SoundCloud, Suno or Udio</span></label>
-        <input type="url" id="trackUrl" placeholder="Paste a link from any supported platform..." required>
+        <label>Track URL <span class="label-hint">&mdash; Suno, Udio, YouTube or SoundCloud</span></label>
+        <input type="url" id="trackUrl" placeholder="Paste your track link here..." required>
+        <div class="url-help">Used a different AI tool? Just upload your track to <strong>YouTube</strong> or <strong>SoundCloud</strong> first, then paste the link here.</div>
         <div class="platform-badge" id="platformBadge"></div>
         <div class="preview-container" id="previewContainer"></div>
       </div>
