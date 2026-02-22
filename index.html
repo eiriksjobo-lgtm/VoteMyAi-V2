@@ -1768,7 +1768,8 @@
     // Toggle: if already playing this uid, stop it
     if (activeBrowseUid === uid) {
       browseStop(uid);
-      playerBar.classList.remove('active', 'playing');
+      destroyUdioPlayer();
+      playerBar.classList.remove('active', 'playing', 'udio-active');
       document.body.classList.remove('player-active');
       activePlayerTrackId = null;
       activePlayerPlatform = null;
@@ -1778,9 +1779,30 @@
     const track = allTracks.find(t => String(t.id) === String(trackId));
     if (!track) return;
     
-    // Stop any currently playing
+    // ── STOP EVERYTHING first ──
+    // 1. Stop any browse card playing
     if (activeBrowseUid) browseStop(activeBrowseUid);
-    if (activeEmbedTrackId) { activeEmbedTrackId = null; }
+    // 2. Kill any Udio iframe
+    destroyUdioPlayer();
+    // 3. Stop any vote-page embed
+    if (activeEmbedTrackId) { stopEmbed(activeEmbedTrackId); activeEmbedTrackId = null; }
+    // 4. Remove ALL hidden players (nuclear cleanup)
+    document.querySelectorAll('[id^="hidden-player-"]').forEach(el => el.remove());
+    // 5. Remove ALL is-playing states from all cards
+    document.querySelectorAll('.browse-card.is-playing').forEach(c => c.classList.remove('is-playing'));
+    // 6. Restore ALL now-playing overlays to original thumbs
+    document.querySelectorAll('.browse-card-thumb').forEach(tc => {
+      if (tc.dataset.originalHtml) {
+        tc.innerHTML = tc.dataset.originalHtml;
+        delete tc.dataset.originalHtml;
+        tc.setAttribute('data-action', 'load-embed');
+        tc.style.aspectRatio = '16/10';
+      }
+    });
+    // 7. Reset state
+    playerBar.classList.remove('udio-active');
+    activeBrowseUid = null;
+    activeBrowseTrackId = null;
     
     const card = document.getElementById(uid);
     if (!card) return;
@@ -1825,9 +1847,6 @@
       return;
     }
     
-    // Non-Udio track: destroy any active Udio player
-    destroyUdioPlayer();
-    playerBar.classList.remove('udio-active');
     
     if (embed.platform === 'youtube') {
       embedHtml = embedHtml.replace(/src="([^"]+)"/, (m, src) => 'src="' + src + (src.includes('?') ? '&' : '?') + 'autoplay=1"');
@@ -2167,35 +2186,15 @@
   udioExpandBtn.addEventListener('click', expandUdio);
   document.querySelector('.player-controls').insertBefore(udioExpandBtn, document.getElementById('btnClose'));
 
-  // Click handler for Udio cards
+  // Click handler for Udio play buttons in cards — delegate to browsePlay
   document.addEventListener('click', function(e) {
     const udioPlayer = e.target.closest('.udio-player');
     if (udioPlayer) {
       e.stopPropagation();
       e.preventDefault();
-      const udioId = udioPlayer.dataset.udioId;
       const card = udioPlayer.closest('.browse-card');
-      const title = card ? card.querySelector('.browse-card-title')?.textContent : '';
-      
-      if (activeBrowseUid) browseStop(activeBrowseUid);
-      
-      openUdioPlayer(udioId, title);
-      
       if (card) {
-        const trackId = card.dataset.trackId;
-        const track = allTracks.find(t => String(t.id) === String(trackId));
-        if (track) {
-          playerTitle.textContent = track.title || 'Now Playing';
-          playerMeta.textContent = 'Udio · ' + (track.genre || '');
-          playerBar.classList.add('active', 'playing', 'udio-active');
-          document.body.classList.add('player-active');
-          activePlayerTrackId = trackId;
-          activePlayerPlatform = 'udio';
-          activeBrowseUid = card.dataset.uid;
-          activeBrowseTrackId = String(trackId);
-          card.classList.add('is-playing');
-          gtag('event', 'play_bar', { track_id: trackId, platform: 'udio' });
-        }
+        browsePlay(card.dataset.uid, card.dataset.trackId);
       }
     }
   });
