@@ -134,17 +134,16 @@
       font-size: 0.82rem; letter-spacing: 0.5px; transition: all 0.2s;
     }
     .hero-cta:hover { box-shadow: 0 8px 32px rgba(232,255,71,0.25); transform: translateY(-2px); }
-    .hero-stats { display: flex; gap: 48px; justify-content: center; margin-top: 36px; }
-    .hero-stat { text-align: center; }
-    .hero-stat-num {
-      display: block; font-family: 'Bebas Neue', sans-serif;
-      font-size: 1.6rem; letter-spacing: 1px; color: var(--accent); line-height: 1;
+    .hero-tools { display: flex; gap: 12px; justify-content: center; margin-top: 36px; flex-wrap: wrap; }
+    .hero-tool {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      padding: 12px 24px; border-radius: 10px;
+      background: var(--surface); border: 1px solid var(--border);
+      text-decoration: none; transition: all 0.25s;
     }
-    .hero-stat-label {
-      font-size: 0.68rem; color: var(--muted);
-      text-transform: uppercase; letter-spacing: 1.5px;
-      font-weight: 600; margin-top: 4px; display: block;
-    }
+    .hero-tool:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+    .hero-tool-name { font-weight: 700; font-size: 0.9rem; color: var(--text); }
+    .hero-tool-cta { font-size: 0.68rem; color: var(--accent); font-weight: 600; letter-spacing: 0.3px; }
 
     /* ══════════════════════════════════ TRACK GRID (removed — browse system active) ══════════════════════════════════ */
 
@@ -298,9 +297,10 @@
       .hero h1 { font-size: clamp(1.8rem, 9vw, 2.4rem); letter-spacing: 2px; margin-bottom: 10px; }
       .hero p { font-size: 0.82rem; margin-bottom: 20px; max-width: 300px; }
       .hero-cta { padding: 14px 28px; font-size: 0.8rem; width: 100%; max-width: 300px; justify-content: center; border-radius: 12px; }
-      .hero-stats { gap: 28px; margin-top: 24px; }
-      .hero-stat-num { font-size: 1.4rem; }
-      .hero-stat-label { font-size: 0.6rem; letter-spacing: 1.2px; }
+      .hero-tools { gap: 8px; margin-top: 24px; }
+      .hero-tool { padding: 10px 18px; }
+      .hero-tool-name { font-size: 0.82rem; }
+      .hero-tool-cta { font-size: 0.62rem; }
       .leaderboard-section { padding: 40px 12px 24px; }
       .section-title { font-size: 1.5rem; }
       .section-sub { font-size: 0.78rem; }
@@ -352,8 +352,7 @@
 
     @media (max-width: 380px) {
       .hero h1 { font-size: 1.7rem; letter-spacing: 1px; }
-      .hero-stats { gap: 20px; }
-      .hero-stat-num { font-size: 1.2rem; }
+      .hero-tools { gap: 6px; }
       .nav-link { padding: 6px 6px; font-size: 0.6rem; }
       .btn-submit { padding: 6px 10px; font-size: 0.6rem; }
     }
@@ -709,10 +708,19 @@
   <h1>DISCOVER & RATE<br><span class="accent">AI MUSIC</span></h1>
   <p>The community rates tracks made with Suno, Udio, ElevenLabs and more. The best rise to the top.</p>
   <a href="/submit.html" class="hero-cta">Submit Your Track <span>→</span></a>
-  <div class="hero-stats" id="heroStats">
-    <div class="hero-stat"><span class="hero-stat-num" id="statTracks">—</span><span class="hero-stat-label">Tracks</span></div>
-    <div class="hero-stat"><span class="hero-stat-num" id="statRatings">—</span><span class="hero-stat-label">Ratings</span></div>
-    <div class="hero-stat"><span class="hero-stat-num" id="statTools">—</span><span class="hero-stat-label">AI Tools</span></div>
+  <div class="hero-tools">
+    <a href="https://suno.com" target="_blank" rel="noopener" class="hero-tool">
+      <span class="hero-tool-name">Suno</span>
+      <span class="hero-tool-cta">Try free →</span>
+    </a>
+    <a href="https://www.udio.com" target="_blank" rel="noopener" class="hero-tool">
+      <span class="hero-tool-name">Udio</span>
+      <span class="hero-tool-cta">Try free →</span>
+    </a>
+    <a href="https://try.elevenlabs.io/xj2k88ooae07" target="_blank" rel="noopener" class="hero-tool">
+      <span class="hero-tool-name">ElevenLabs</span>
+      <span class="hero-tool-cta">Try free →</span>
+    </a>
   </div>
 </section>
 
@@ -938,27 +946,7 @@
     try { const res = await fetch(`${SUPABASE_URL}/rest/v1/tracks?select=*&order=created_at.desc`, { headers: { 'apikey': SUPABASE_KEY } }); if (!res.ok) throw new Error('HTTP ' + res.status); allTracks = await res.json(); renderTracks(); renderLeaderboard(); updateHeroStats(); } catch(e) { console.error('Load error:', e); document.getElementById('browseRows').innerHTML = '<div style="text-align:center;padding:60px 20px;"><p style="color:var(--muted);margin-bottom:12px;">Could not load tracks.</p><button onclick="location.reload()" style="background:var(--accent);color:var(--bg);border:none;padding:10px 24px;border-radius:8px;font-weight:700;cursor:pointer;">Retry</button></div>'; }
   }
 
-  function updateHeroStats() {
-    const totalTracks = allTracks.length;
-    const totalRatings = allTracks.reduce((sum, t) => sum + (t.rating_count || 0), 0);
-    const tools = new Set(allTracks.map(t => t.tool).filter(Boolean)).size;
-    animateCount('statTracks', totalTracks);
-    animateCount('statRatings', totalRatings);
-    animateCount('statTools', tools);
-  }
-  function animateCount(id, target) {
-    const el = document.getElementById(id);
-    if (!el || target === 0) { if (el) el.textContent = target || '—'; return; }
-    const duration = 800;
-    const start = performance.now();
-    function step(now) {
-      const progress = Math.min((now - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      el.textContent = Math.round(eased * target);
-      if (progress < 1) requestAnimationFrame(step);
-    }
-    requestAnimationFrame(step);
-  }
+  function updateHeroStats() {}
 
   let currentLbPeriod = 'week';
   function renderLeaderboard(period) {
