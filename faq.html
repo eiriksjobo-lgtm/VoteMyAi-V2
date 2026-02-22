@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FAQ – VoteMyAI</title>
+  <meta name="description" content="Frequently asked questions about VoteMyAI — how to submit tracks, rate music, and more.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;500;700&display=swap" rel="stylesheet">
   <style>
@@ -11,19 +12,20 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; line-height: 1.8; }
     nav { position: sticky; top: 0; background: rgba(10,10,15,0.95); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 0 40px; height: 64px; display: flex; align-items: center; justify-content: space-between; z-index: 100; }
-    .logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 2px; color: var(--accent); cursor: pointer; }
+    .logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 2px; color: var(--accent); cursor: pointer; text-decoration: none; }
     .container { max-width: 800px; margin: 0 auto; padding: 80px 40px; }
     h1 { font-family: 'Bebas Neue', sans-serif; font-size: 3rem; letter-spacing: 2px; color: var(--accent); margin-bottom: 40px; }
     .faq-item { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
     .faq-question { font-size: 1.2rem; font-weight: 700; color: var(--accent); margin-bottom: 12px; }
     .faq-answer { color: var(--muted); }
     a { color: var(--accent); text-decoration: none; }
+    @media (max-width: 640px) { .container { padding: 40px 20px; } h1 { font-size: 2.2rem; } nav { padding: 0 20px; } }
   </style>
 </head>
 <body>
 
 <nav>
-  <div class="logo" onclick="window.location.href='/'">VOTEMYAI</div>
+  <a href="/" class="logo">VOTEMYAI</a>
 </nav>
 
 <div class="container">
@@ -31,52 +33,57 @@
 
   <div class="faq-item">
     <div class="faq-question">What is VoteMyAI?</div>
-    <div class="faq-answer">VoteMyAI is a platform where you can submit your AI-generated music tracks and let the community vote on them. The best tracks rise to the top!</div>
+    <div class="faq-answer">VoteMyAI is a platform where you can submit AI-generated music tracks and let the community rate them. The best-rated tracks rise to the top of the leaderboard.</div>
   </div>
 
   <div class="faq-item">
     <div class="faq-question">How do I submit a track?</div>
-    <div class="faq-answer">Click "Submit Track" in the navigation, log in with your Google account, and fill out the submission form with your YouTube link, track title, AI tool used, and genre.</div>
+    <div class="faq-answer">Click "Submit" in the navigation, log in with your Google account, and paste a link from Suno, Udio, YouTube, or SoundCloud. Used a different AI tool? Just upload your track to YouTube or SoundCloud first, then submit the link.</div>
   </div>
 
   <div class="faq-item">
-    <div class="faq-question">Do I need to log in to vote?</div>
-    <div class="faq-answer">No! You can vote without logging in. However, logging in allows you to submit tracks and comment on them.</div>
+    <div class="faq-question">Which platforms are supported?</div>
+    <div class="faq-answer">We support direct embeds from Suno, Udio, YouTube, and SoundCloud. Since you can upload any audio to YouTube or SoundCloud, tracks made with any AI tool can be submitted.</div>
   </div>
 
   <div class="faq-item">
-    <div class="faq-question">Can I vote multiple times on the same track?</div>
-    <div class="faq-answer">No, you can only vote once per track. We track votes locally in your browser to prevent spam.</div>
+    <div class="faq-question">Do I need to log in to rate tracks?</div>
+    <div class="faq-answer">No! You can rate any track from 1 to 5 stars without logging in. However, logging in lets you submit tracks and leave comments.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question">Can I rate the same track more than once?</div>
+    <div class="faq-answer">No, each person can rate a track once. We use a combination of browser tokens and server-side checks to keep ratings fair.</div>
   </div>
 
   <div class="faq-item">
     <div class="faq-question">Which AI music tools are supported?</div>
-    <div class="faq-answer">We support tracks created with Suno, Udio, ElevenLabs, and other AI music generation tools. Just select your tool when submitting.</div>
-  </div>
-
-  <div class="faq-item">
-    <div class="faq-question">Can I delete my submitted tracks?</div>
-    <div class="faq-answer">Yes! Go to your profile page and click the delete button next to any of your tracks.</div>
+    <div class="faq-answer">Any AI music tool works — Suno, Udio, ElevenLabs, Stable Audio, Boomy, MusicGPT, and more. Just select the tool you used when submitting, or choose "Other" if yours isn't listed.</div>
   </div>
 
   <div class="faq-item">
     <div class="faq-question">How does the leaderboard work?</div>
-    <div class="faq-answer">The leaderboard shows the top 10 tracks with the most votes. It updates in real-time as people vote.</div>
+    <div class="faq-answer">The leaderboard ranks tracks using a Wilson Score algorithm. This means a track with 10 ratings averaging 4.5 stars will rank higher than a track with 1 rating of 5 stars. It rewards both quality and engagement.</div>
   </div>
 
   <div class="faq-item">
-    <div class="faq-question">Can I comment on tracks?</div>
-    <div class="faq-answer">Yes! You need to be logged in to leave comments. Click the 💬 Comments button under any track to view and add comments.</div>
+    <div class="faq-question">What genres can I submit?</div>
+    <div class="faq-answer">We support over 100 genres and subgenres — from Pop and Hip-Hop to Synthwave, Italo Disco, Amapiano, and more. You can also type in a custom genre if yours isn't listed.</div>
   </div>
 
   <div class="faq-item">
-    <div class="faq-question">Is VoteMyAI free to use?</div>
-    <div class="faq-answer">Yes! VoteMyAI is completely free for both submitting and voting on tracks.</div>
+    <div class="faq-question">Is VoteMyAI free?</div>
+    <div class="faq-answer">Yes! Submitting tracks, rating, and commenting is completely free.</div>
   </div>
 
   <div class="faq-item">
-    <div class="faq-question">Who can I contact for support?</div>
-    <div class="faq-answer">Visit our <a href="/contact.html">Contact page</a> to get in touch with us!</div>
+    <div class="faq-question">Can I delete my submitted tracks?</div>
+    <div class="faq-answer">Yes. Contact us through the <a href="/contact.html">Contact page</a> and we'll remove your track.</div>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-question">Who can I contact for help?</div>
+    <div class="faq-answer">Visit our <a href="/contact.html">Contact page</a> to send us a message. We typically respond within 24 hours.</div>
   </div>
 
 </div>
