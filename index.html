@@ -809,17 +809,96 @@
     else if (currentLbPeriod === 'month') { const cutoff = new Date(now - 30*24*60*60*1000); filtered = filtered.filter(t => new Date(t.created_at) >= cutoff); }
     const sorted = filtered.sort((a,b) => wilsonScore(b.avg_rating||0,b.rating_count||0) - wilsonScore(a.avg_rating||0,a.rating_count||0)).slice(0,10);
     if (!sorted.length) { lb.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted);">No tracks in this period</div>'; return; }
-    const medals = ['\U0001f947','\U0001f948','\U0001f949'];
+    const medals = ['🥇','🥈','🥉'];
     lb.innerHTML = sorted.map((t,i) => { const rank = i<3 ? medals[i] : `#${i+1}`; const stars = (t.avg_rating||0) > 0 ? (t.avg_rating).toFixed(1)+' \u2605' : '\u2014'; return `<div class="lb-row" data-action="lb-play" data-track-id="${sanitizeAttr(String(t.id))}"><div class="lb-rank">${rank}</div><div class="lb-info"><div class="lb-title">${sanitize(t.title)}</div><div class="lb-meta">${sanitize(t.tool)} \u00b7 ${sanitize(t.genre)}</div></div><div class="lb-rating"><span class="lb-stars">${stars}</span><span class="lb-count">(${t.rating_count||0})</span></div></div>`; }).join('');
   }
   document.querySelectorAll('.lb-tab').forEach(tab => { tab.addEventListener('click', () => { document.querySelectorAll('.lb-tab').forEach(t => t.classList.remove('active')); tab.classList.add('active'); renderLeaderboard(tab.dataset.period); }); });
-); });
+
+  // ═══ BROWSE: Netflix-style genre rows ═══
+  const GENRE_EMOJIS = {
+    'Pop':'🎵','Rock':'🎸','Hip-Hop':'🎤','Electronic':'⚡','R&B / Soul':'💜','Cinematic':'🎬','Jazz':'🎷','Latin':'💃',
+    'Indie / Folk':'🍂','Country':'🤠','Metal':'🤘','Drum & Bass':'🥁','Lo-Fi':'☕','Funk':'🕺','Reggae':'🌴','Blues':'🎹',
+    'Ambient':'🌌','Classical':'🎻','Afrobeat':'🌍','K-Pop':'✨','Other':'🎶'
+  };
+  let browseView = 'discover';
+  let searchQuery = '';
+  let browseCardUid = 0;
+
+  function sortBrowseTracks(tracks) {
+    switch (browseView) {
+      case 'top': return [...tracks].sort((a,b) => wilsonScore(b.avg_rating||0,b.rating_count||0) - wilsonScore(a.avg_rating||0,a.rating_count||0));
+      case 'new': return [...tracks].sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+      default: return [...tracks].sort((a,b) => { const ca=a.rating_count||0,cb=b.rating_count||0; if(ca<=5&&cb>5) return -1; if(cb<=5&&ca>5) return 1; return new Date(b.created_at)-new Date(a.created_at); });
+    }
+  }
+
+  /* FIX: buildBrowseCard now uses sanitizeAttr for all HTML attribute values */
+  function buildBrowseCard(track, embed) {
+    const uid = 'bc-' + (browseCardUid++);
+    const avg = track.avg_rating || 0;
+    const cnt = track.rating_count || 0;
+    const userScore = userRatings[track.id] || 0;
+    const isRated = userScore > 0;
+    const plat = embed.platform !== 'unknown' ? embed.platform.charAt(0).toUpperCase() + embed.platform.slice(1) : '';
+    const isHot = cnt >= 3;
+    const trackIdAttr = sanitizeAttr(String(track.id));
+    const titleAttr = sanitizeAttr(track.title || '');
+    let thumbSrc = track.thumbnail_url || '';
+    if (!thumbSrc && embed.platform === 'youtube') {
+      const match = (track.embed_url || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([^&?\/#]+)/) || [null, track.yt_id];
+      if (match[1]) thumbSrc = 'https://img.youtube.com/vi/' + match[1] + '/hqdefault.jpg';
+    }
+    let starsHtml = '';
+    for (let s = 1; s <= 5; s++) {
+      starsHtml += '<div class="bstar ' + (isRated && s <= userScore ? 'filled' : '') + '" data-track="' + trackIdAttr + '" data-score="' + s + '">' + starSVG + '</div>';
+    }
+    return '<div class="browse-card" id="' + uid + '" data-track-id="' + trackIdAttr + '" data-uid="' + uid + '">' +
+      '<div class="browse-card-thumb" data-action="load-embed" data-uid="' + uid + '" data-track-id="' + trackIdAttr + '">' +
+        (thumbSrc ? '<img src="' + sanitizeAttr(thumbSrc) + '" alt="' + titleAttr + '" loading="lazy">' : '<div style="width:100%;height:100%;background:var(--surface-2);"></div>') +
+        '<button class="browse-card-play" data-action="load-embed" data-uid="' + uid + '" data-track-id="' + trackIdAttr + '"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></button>' +
+        (plat ? '<span class="browse-card-platform">' + plat + '</span>' : '') +
+        (isHot ? '<span class="browse-card-hot"><span class="dot"></span> HOT</span>' : '') +
+      '</div>' +
+      '<div class="browse-card-body">' +
+        '<div class="browse-card-title">' + sanitize(track.title) + '</div>' +
+        '<div class="browse-card-meta"><span class="browse-card-badge tool">' + sanitize(track.tool) + '</span><span class="browse-card-badge genre">' + sanitize(track.genre) + '</span></div>' +
+        '<div class="browse-card-rating"><div class="browse-card-stars ' + (isRated ? 'rated' : '') + '">' + starsHtml + '</div>' +
+          '<div class="browse-card-score"><div class="browse-card-score-num">' + (avg > 0 ? avg.toFixed(1) : '\u2014') + '</div><div class="browse-card-score-count">' + cnt + ' rating' + (cnt !== 1 ? 's' : '') + '</div></div></div>' +
+        '<div class="browse-card-footer">' +
+          '<button data-action="comments" data-track="' + trackIdAttr + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Comments</button>' +
+          '<button data-action="share" data-track="' + trackIdAttr + '" data-title="' + titleAttr + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Share</button>' +
+        '</div></div>' +
+      '<div class="comments-panel" id="cp-' + uid + '"><div class="comments-inner"><div id="cc-' + uid + '" data-track-id="' + trackIdAttr + '"><span style="color:var(--muted);font-size:0.8rem;">Loading...</span></div>' +
+      (currentUser ? '<div class="comment-form"><input type="text" class="comment-input" id="ci-' + uid + '" data-track-id="' + trackIdAttr + '" placeholder="Add a comment..."><button class="comment-submit" data-action="post-comment" data-track="' + trackIdAttr + '" data-uid="' + uid + '">Post</button></div>' : '<p style="font-size:0.75rem;color:var(--muted);margin-top:8px;">Log in to comment</p>') +
+      '</div></div></div>';
+  }
+
+  function buildGenreRow(emoji, title, tracks) {
+    const cards = tracks.map(t => buildBrowseCard(t, getEmbedHtml(t))).join('');
+    return `<div class="genre-row"><div class="genre-row-header"><div class="genre-row-title"><span class="genre-emoji">${emoji}</span> ${sanitize(title)}</div><span class="genre-row-count">${tracks.length} track${tracks.length!==1?'s':''}</span><div class="genre-row-line"></div></div><div class="genre-row-wrapper"><button class="scroll-arrow left" aria-label="Scroll left"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><div class="genre-row-scroll">${cards}</div><button class="scroll-arrow right show" aria-label="Scroll right"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></button></div></div>`;
+  }
+
+  function renderBrowse() {
+    const container = document.getElementById('browseRows');
+    const searchContainer = document.getElementById('searchResults');
+    const sorted = sortBrowseTracks(allTracks);
+    document.getElementById('browseCount').textContent = sorted.length + ' track' + (sorted.length !== 1 ? 's' : '');
+    if (searchQuery.length >= 2) {
+      container.style.display = 'none'; searchContainer.style.display = 'grid';
+      const q = searchQuery.toLowerCase();
+      const results = sorted.filter(t => (t.title||'').toLowerCase().includes(q) || (t.genre||'').toLowerCase().includes(q) || (t.tool||'').toLowerCase().includes(q));
+      searchContainer.innerHTML = results.length ? results.map(t => buildBrowseCard(t, getEmbedHtml(t))).join('') : `<div class="search-results-empty"><p>No tracks found for "${sanitize(searchQuery)}"</p><span>Try a different search term</span></div>`;
+      return;
+    }
+    container.style.display = 'block'; searchContainer.style.display = 'none';
+    const genreMap = {};
+    sorted.forEach(t => { const g = t.genre || 'Other'; if (!genreMap[g]) genreMap[g] = []; genreMap[g].push(t); });
     const trending = [...sorted].sort((a,b) => wilsonScore(b.avg_rating||0,b.rating_count||0) - wilsonScore(a.avg_rating||0,a.rating_count||0)).slice(0,12);
     let html = '';
-    if (trending.length) html += buildGenreRow('\U0001f525', 'Trending Now', trending);
-    if (browseView === 'discover') { const recent = [...sorted].sort((a,b) => new Date(b.created_at)-new Date(a.created_at)).slice(0,12); if (recent.length) html += buildGenreRow('\U0001f195', 'Just Added', recent); }
+    if (trending.length) html += buildGenreRow('🔥', 'Trending Now', trending);
+    if (browseView === 'discover') { const recent = [...sorted].sort((a,b) => new Date(b.created_at)-new Date(a.created_at)).slice(0,12); if (recent.length) html += buildGenreRow('🆕', 'Just Added', recent); }
     Object.entries(genreMap).sort((a,b) => b[1].length - a[1].length).forEach(([genre, tracks]) => {
-      const emoji = GENRE_EMOJIS[genre] || '\U0001f3b6';
+      const emoji = GENRE_EMOJIS[genre] || '🎶';
       html += buildGenreRow(emoji, genre, [...tracks].sort((a,b) => wilsonScore(b.avg_rating||0,b.rating_count||0) - wilsonScore(a.avg_rating||0,a.rating_count||0)));
     });
     container.innerHTML = html;
