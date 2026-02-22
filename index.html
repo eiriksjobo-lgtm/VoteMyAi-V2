@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <!-- GA4 -->
+  <script>if(localStorage.getItem('cookie_consent')==='declined'){window['ga-disable-G-KW4NR9QBWB']=true;}</script>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-KW4NR9QBWB"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-KW4NR9QBWB');</script>
 
@@ -1967,5 +1968,36 @@
   // ─── Init ───
   checkAuth().then(loadTracks).then(handleDeepLink);
 </script>
+<!-- ═══ COOKIE CONSENT ═══ -->
+<div id="cookieBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:14px 24px;z-index:9999;font-size:0.82rem;color:var(--muted);backdrop-filter:blur(16px);">
+  <div style="max-width:1000px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+    <span>We use cookies for analytics and to improve your experience. <a href="/privacy.html" style="color:var(--accent);">Privacy Policy</a></span>
+    <div style="display:flex;gap:8px;flex-shrink:0;">
+      <button onclick="acceptCookies()" style="background:var(--accent);color:var(--bg);border:none;padding:8px 20px;border-radius:6px;font-weight:700;font-size:0.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;">Accept</button>
+      <button onclick="declineCookies()" style="background:transparent;color:var(--muted);border:1px solid var(--border);padding:8px 16px;border-radius:6px;font-weight:600;font-size:0.78rem;cursor:pointer;font-family:'DM Sans',sans-serif;">Decline</button>
+    </div>
+  </div>
+</div>
+<script>
+function acceptCookies() {
+  localStorage.setItem('cookie_consent', 'accepted');
+  document.getElementById('cookieBanner').style.display = 'none';
+}
+function declineCookies() {
+  localStorage.setItem('cookie_consent', 'declined');
+  document.getElementById('cookieBanner').style.display = 'none';
+  // Disable GA4
+  window['ga-disable-G-KW4NR9QBWB'] = true;
+}
+(function() {
+  const consent = localStorage.getItem('cookie_consent');
+  if (!consent) {
+    document.getElementById('cookieBanner').style.display = 'block';
+  } else if (consent === 'declined') {
+    window['ga-disable-G-KW4NR9QBWB'] = true;
+  }
+})();
+</script>
+
 </body>
 </html>
