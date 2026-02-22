@@ -1200,9 +1200,9 @@
     }
     if (url.includes('udio.com')) {
       const udioUuid = url.match(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/);
-      if (udioUuid) return { platform: 'udio', embedHtml: `<iframe src="https://www.udio.com/embed/${udioUuid[0]}" scrolling="no" loading="lazy"></iframe>` };
+      if (udioUuid) return { platform: 'udio', embedHtml: `<iframe src="https://www.udio.com/embed/${udioUuid[0]}" scrolling="no" loading="lazy" allow="autoplay; encrypted-media" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>` };
       const udioSlug = url.match(/udio\.com\/songs\/([a-zA-Z0-9_-]+)/);
-      if (udioSlug) return { platform: 'udio', embedHtml: `<iframe src="https://www.udio.com/embed/${udioSlug[1]}" scrolling="no" loading="lazy"></iframe>` };
+      if (udioSlug) return { platform: 'udio', embedHtml: `<iframe src="https://www.udio.com/embed/${udioSlug[1]}" scrolling="no" loading="lazy" allow="autoplay; encrypted-media" sandbox="allow-scripts allow-same-origin allow-popups allow-forms"></iframe>` };
     }
     return { platform: 'unknown', embedHtml: '' };
   }
