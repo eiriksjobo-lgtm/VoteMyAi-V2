@@ -738,6 +738,12 @@
       background: var(--bg); animation: cardPulse 1.5s ease-in-out infinite;
     }
     @keyframes cardPulse { 0%,100%{opacity:.4;transform:scale(1)} 50%{opacity:1;transform:scale(1.4)} }
+    @keyframes ratingPop { 0%{transform:scale(1)} 40%{transform:scale(1.3)} 100%{transform:scale(1)} }
+    .browse-card-stars.just-rated .bstar.filled { animation: ratingPop 0.35s cubic-bezier(0.16,1,0.3,1); }
+    .browse-card-stars.just-rated .bstar.filled:nth-child(2) { animation-delay: 0.05s; }
+    .browse-card-stars.just-rated .bstar.filled:nth-child(3) { animation-delay: 0.1s; }
+    .browse-card-stars.just-rated .bstar.filled:nth-child(4) { animation-delay: 0.15s; }
+    .browse-card-stars.just-rated .bstar.filled:nth-child(5) { animation-delay: 0.2s; }
 
     .browse-card-body { padding: 12px 14px 14px; }
     .browse-card-title {
@@ -902,8 +908,8 @@
       .browse-card-body { padding: 10px 12px 12px; }
       .browse-card-title { font-size: 0.78rem; }
       .browse-card-badge { font-size: 0.55rem; padding: 2px 6px; }
-      .browse-card-stars .bstar { width: 22px; height: 22px; }
-      .browse-card-stars .bstar svg { width: 14px; height: 14px; }
+      .browse-card-stars .bstar { width: 32px; height: 32px; }
+      .browse-card-stars .bstar svg { width: 18px; height: 18px; }
       .browse-card-score-num { font-size: 0.82rem; }
       .search-results-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; padding: 0 12px 30px; }
     }
@@ -1286,9 +1292,9 @@
   document.addEventListener('mouseout', function(e) { const star = e.target.closest('.star'); if (!star) return; const c = star.parentElement; if (c.classList.contains('rated')) return; c.querySelectorAll('.star').forEach(x => x.classList.remove('hover-fill')); });
 
   // ─── Rate (via Edge Function) ───
-  async function rateStar(trackId, score, container) { container.classList.add('rated'); container.querySelectorAll('.star').forEach(s => { s.classList.remove('hover-fill'); s.classList.toggle('filled', parseInt(s.dataset.score) <= score); }); userRatings[trackId] = score; gtag('event', 'rate', { track_id: trackId, score }); try { const res = await fetch(SUPABASE_URL + '/functions/v1/rate-track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ track_id: trackId, score: score, anon_token: getAnonToken() }) }); const data = await res.json(); if (!res.ok) { showToast(data.error || 'Kunne ikke rate'); return; } const t = allTracks.find(x => x.id === trackId); if (t) { t.avg_rating = data.avg_rating; t.rating_count = data.rating_count; } const card = document.getElementById(`card-${trackId}`); if (card) { const se = card.querySelector('.rating-score'); const ce = card.querySelector('.rating-count'); if (se) se.textContent = data.avg_rating ? data.avg_rating.toFixed(1) : '\u2014'; if (ce) ce.textContent = `${data.rating_count||0} rating${(data.rating_count||0)!==1?'s':''}`; } } catch(e) { showToast('Nettverksfeil \u2014 pr\u00f8v igjen'); } }
+  async function rateStar(trackId, score, container) { container.classList.add('rated'); container.querySelectorAll('.star').forEach(s => { s.classList.remove('hover-fill'); s.classList.toggle('filled', parseInt(s.dataset.score) <= score); }); userRatings[trackId] = score; gtag('event', 'rate', { track_id: trackId, score }); try { const res = await fetch(SUPABASE_URL + '/functions/v1/rate-track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ track_id: trackId, score: score, anon_token: getAnonToken() }) }); const data = await res.json(); if (!res.ok) { showToast(data.error || 'Kunne ikke rate'); return; } const t = allTracks.find(x => x.id === trackId); if (t) { t.avg_rating = data.avg_rating; t.rating_count = data.rating_count; } showToast(score >= 4 ? '\u2b50 ' + score + '/5 \u2014 Great taste!' : '\u2705 Rated ' + score + '/5'); const card = document.getElementById(`card-${trackId}`); if (card) { const se = card.querySelector('.rating-score'); const ce = card.querySelector('.rating-count'); if (se) se.textContent = data.avg_rating ? data.avg_rating.toFixed(1) : '\u2014'; if (ce) ce.textContent = `${data.rating_count||0} rating${(data.rating_count||0)!==1?'s':''}`; } document.querySelectorAll(`.browse-card[data-track-id="${trackId}"]`).forEach(bc => { const sn = bc.querySelector('.browse-card-score-num'); const sc = bc.querySelector('.browse-card-score-count'); if (sn) sn.textContent = data.avg_rating ? data.avg_rating.toFixed(1) : '\u2014'; if (sc) sc.textContent = (data.rating_count||0) + ' rating' + ((data.rating_count||0)!==1?'s':''); }); } catch(e) { showToast('Network error \u2014 try again'); } }
 
-  function showToast(msg) { let toast = document.getElementById('vote-toast'); if (!toast) { toast = document.createElement('div'); toast.id = 'vote-toast'; toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1a1a2e;color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;z-index:9999;opacity:0;transition:opacity 0.3s;border:1px solid rgba(232,255,71,0.2);'; document.body.appendChild(toast); } toast.textContent = msg; toast.style.opacity = '1'; setTimeout(() => { toast.style.opacity = '0'; }, 3000); }
+  function showToast(msg) { let toast = document.getElementById('vote-toast'); if (!toast) { toast = document.createElement('div'); toast.id = 'vote-toast'; toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--surface);color:var(--text);padding:12px 24px;border-radius:12px;font-size:0.82rem;font-weight:600;z-index:9999;opacity:0;transition:opacity 0.3s,transform 0.3s;border:1px solid rgba(232,255,71,0.25);box-shadow:0 8px 32px rgba(0,0,0,0.5);backdrop-filter:blur(12px);'; document.body.appendChild(toast); } toast.textContent = msg; toast.style.opacity = '1'; toast.style.transform = 'translateX(-50%) translateY(0)'; setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(-50%) translateY(10px)'; }, 2500); }
 
   function setView(v, el) { currentView = v; document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active')); el.classList.add('active'); applyFiltersAndSort(); }
   function setFilter(type, val, el) { filters[type] = val; document.querySelectorAll(`.filter-pill[data-filter="${type}"]`).forEach(p => p.classList.remove('active')); el.classList.add('active'); applyFiltersAndSort(); }
@@ -1331,7 +1337,7 @@
   }
 
   // ─── Share ───
-  function shareTrack(id, title, btn) { const url = `${window.location.origin}/?track=${id}`; if (navigator.share) { navigator.share({title:`${title} \u2014 VoteMyAI`,url}); gtag('event','share',{track_id:id,method:'native'}); } else { navigator.clipboard.writeText(url); gtag('event','share',{track_id:id,method:'clipboard'}); const o=btn.innerHTML; btn.innerHTML='<span style="color:var(--accent);">\u2713 Copied</span>'; setTimeout(()=>{btn.innerHTML=o;},1500); } }
+  function shareTrack(id, title, btn) { const url = `${window.location.origin}/?track=${id}`; if (navigator.share) { navigator.share({title:`${title} \u2014 VoteMyAI`,text:`Listen to "${title}" on VoteMyAI`,url}); gtag('event','share',{track_id:id,method:'native'}); } else { navigator.clipboard.writeText(url); gtag('event','share',{track_id:id,method:'clipboard'}); showToast('\U0001f517 Link copied!'); } }
 
   // ─── Persistent Player Bar ───
   let activePlayerTrackId = null;
@@ -1415,6 +1421,17 @@
 
     const track = allTracks.find(t => String(t.id) === trackParam);
     if (!track) return;
+
+    // Update page title and meta for this specific track
+    document.title = `${track.title} — VoteMyAI`;
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    const ogDesc = document.querySelector('meta[property="og:description"]');
+    const twTitle = document.querySelector('meta[name="twitter:title"]');
+    const twDesc = document.querySelector('meta[name="twitter:description"]');
+    if (ogTitle) ogTitle.content = `${track.title} — Rate this AI track on VoteMyAI`;
+    if (ogDesc) ogDesc.content = `Made with ${track.tool}${track.genre ? ' · ' + track.genre : ''}. Listen and rate on VoteMyAI.`;
+    if (twTitle) twTitle.content = `${track.title} — Rate this AI track on VoteMyAI`;
+    if (twDesc) twDesc.content = `Made with ${track.tool}${track.genre ? ' · ' + track.genre : ''}. Listen and rate on VoteMyAI.`;
 
     requestAnimationFrame(() => {
       // Find the card in its GENRE row, not in Trending/Just Added
@@ -1779,6 +1796,8 @@
       const score = parseInt(star.dataset.score);
       const container = star.parentElement;
       container.classList.add('rated');
+      container.classList.add('just-rated');
+      setTimeout(() => container.classList.remove('just-rated'), 500);
       container.querySelectorAll('.bstar').forEach(s => {
         s.classList.remove('hover-fill');
         s.classList.toggle('filled', parseInt(s.dataset.score) <= score);
