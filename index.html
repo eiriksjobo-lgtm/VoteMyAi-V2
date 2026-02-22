@@ -426,9 +426,10 @@
     .player-ctrl.locate:hover { background: rgba(232,255,71,0.12); color: var(--accent); }
     .player-ctrl svg { width: 18px; height: 18px; fill: currentColor; }
     body.player-active { padding-bottom: 68px; }
-    .page-frame { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 5000; display: none; }
+    .page-frame { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 5000; display: none; overflow: hidden; }
     .page-frame.active { display: block; }
-    .page-frame iframe { width: 100%; height: 100%; border: none; }
+    .page-frame iframe { width: 100%; height: 100%; border: none; overflow: auto; scrollbar-width: none; -ms-overflow-style: none; }
+    .page-frame iframe::-webkit-scrollbar { display: none; }
     .pf-close {
       position: absolute; top: 12px; right: 12px; z-index: 5001;
       width: 40px; height: 40px; border-radius: 50%;
@@ -1350,7 +1351,7 @@
   });
   function closePlayer() { stopUdioFull(); if (activeEmbedTrackId) { stopEmbed(activeEmbedTrackId); activeEmbedTrackId = null; } if (activeBrowseUid) browseStop(activeBrowseUid); playerBar.classList.remove('active', 'playing', 'udio-active'); document.body.classList.remove('player-active'); activePlayerTrackId = null; activePlayerPlatform = null; closePageFrame(); }
 
-  function navigateToPage(url) { window.location.href = url; }
+  function navigateToPage(url) { if (!activePlayerTrackId) { window.location.href = url; return; } const frame = document.getElementById('pageFrame'); frame.querySelector('iframe').src = url; frame.classList.add('active'); }
   function closePageFrame() { 
     const frame = document.getElementById('pageFrame'); 
     frame.classList.remove('active'); 
@@ -1393,7 +1394,7 @@
     }, 2000);
   }
 
-  // Links navigate normally - no iframe hijacking
+  document.addEventListener('click', (e) => { if (!activePlayerTrackId) return; const link = e.target.closest('a[href]'); if (!link) return; const href = link.getAttribute('href'); if (!href || link.target === '_blank') return; if (href.startsWith('http') && !href.includes(window.location.hostname)) return; if (href.startsWith('#')) return; e.preventDefault(); if (href === '/' || href === '/index.html') { closePageFrame(); return; } navigateToPage(href); }, true);
 
   // ─── Mobile: Hamburger Menu ───
   const hamburger = document.getElementById('hamburger');
