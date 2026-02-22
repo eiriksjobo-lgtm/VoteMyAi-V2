@@ -146,177 +146,7 @@
       font-weight: 600; margin-top: 4px; display: block;
     }
 
-    /* ══════════════════════════════════ VIEW TABS ══════════════════════════════════ */
-    .view-bar {
-      max-width: 1200px; margin: 0 auto;
-      padding: 0 clamp(16px, 4vw, 40px);
-      display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: 12px;
-    }
-    .view-tabs {
-      display: flex; gap: 4px; background: var(--surface);
-      border: 1px solid var(--border); border-radius: 10px; padding: 3px;
-    }
-    .view-tab {
-      padding: 7px 20px; border-radius: 8px; border: none;
-      background: transparent; color: var(--muted);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.78rem; font-weight: 600;
-      letter-spacing: 0.8px; text-transform: uppercase;
-      cursor: pointer; transition: all 0.2s;
-    }
-    .view-tab:hover { color: var(--text); }
-    .view-tab.active { background: var(--accent); color: var(--bg); }
-    .track-count { color: var(--muted); font-size: 0.78rem; font-weight: 500; }
-
-    /* ══════════════════════════════════ FILTERS ══════════════════════════════════ */
-    .filters {
-      max-width: 1200px; margin: 0 auto;
-      padding: 16px clamp(16px, 4vw, 40px) 0;
-      display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
-    }
-    .filter-label { color: var(--muted); font-size: 0.7rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-right: 4px; }
-    .filter-pill {
-      padding: 5px 14px; border-radius: 100px;
-      border: 1px solid var(--border); background: transparent; color: var(--muted);
-      font-family: 'DM Sans', sans-serif; font-size: 0.74rem; font-weight: 500;
-      cursor: pointer; transition: all 0.2s; white-space: nowrap;
-    }
-    .filter-pill:hover { border-color: var(--border-hover); color: var(--text); }
-    .filter-pill.active { background: var(--accent-dim); border-color: rgba(232,255,71,0.3); color: var(--accent); }
-    .filter-sep { width: 1px; height: 20px; background: var(--border); margin: 0 6px; }
-    .filter-toggle { display: none; }
-
-    /* ══════════════════════════════════ TRACK GRID ══════════════════════════════════ */
-    .tracks-container { max-width: 1200px; margin: 0 auto; padding: 24px clamp(16px, 4vw, 40px) 80px; }
-    .tracks-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-
-    /* ══════════════════════════════════ TRACK CARD ══════════════════════════════════ */
-    .track-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius); overflow: hidden; transition: all 0.25s ease;
-      opacity: 0; animation: cardFadeIn 0.4s ease forwards;
-    }
-    @keyframes cardFadeIn { to { opacity: 1; } }
-    .track-card:hover { border-color: var(--border-hover); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
-    .track-embed {
-      position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;
-      background: var(--surface-2); border-bottom: 1px solid var(--border);
-    }
-    .track-embed iframe, .track-embed .embed-placeholder {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;
-    }
-
-    /* Lazy thumbnail */
-    .embed-thumb {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      background: var(--surface-2); z-index: 2;
-    }
-    .embed-thumb img { width: 100%; height: 100%; object-fit: cover; }
-    .embed-thumb-overlay {
-      position: absolute; inset: 0;
-      background: rgba(0,0,0,0.3);
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 6px; transition: background 0.2s;
-    }
-    .embed-thumb:hover .embed-thumb-overlay { background: rgba(0,0,0,0.15); }
-    .embed-thumb .play-circle {
-      width: 56px; height: 56px; border-radius: 50%;
-      background: rgba(232,255,71,0.9); color: var(--bg);
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .embed-thumb:hover .play-circle { transform: scale(1.1); box-shadow: 0 6px 28px rgba(232,255,71,0.35); }
-    .embed-thumb .play-circle svg { width: 24px; height: 24px; fill: var(--bg); margin-left: 2px; }
-    .embed-thumb .thumb-platform {
-      font-size: 0.7rem; font-weight: 600; color: rgba(255,255,255,0.85);
-      letter-spacing: 0.5px; text-transform: uppercase;
-    }
-
-    .hidden-embed-frame {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      z-index: 1; overflow: hidden;
-    }
-    .hidden-embed-frame iframe { width: 100%; height: 100%; border: none; }
-
-    .embed-thumb.is-playing { cursor: default; pointer-events: none; }
-    .embed-thumb.is-playing .play-circle { background: var(--accent); animation: none; }
-    .embed-thumb.is-playing .play-circle svg { display: none; }
-    .embed-thumb.is-playing .play-circle::after {
-      content: '';
-      display: block; width: 20px; height: 16px;
-      background:
-        linear-gradient(var(--bg), var(--bg)) 0px 100% / 3px 60% no-repeat,
-        linear-gradient(var(--bg), var(--bg)) 5px 100% / 3px 100% no-repeat,
-        linear-gradient(var(--bg), var(--bg)) 10px 100% / 3px 40% no-repeat,
-        linear-gradient(var(--bg), var(--bg)) 15px 100% / 3px 80% no-repeat;
-      animation: eqBars 0.8s ease-in-out infinite alternate;
-    }
-    @keyframes eqBars {
-      0%   { background-size: 3px 60%, 3px 100%, 3px 40%, 3px 80%; }
-      25%  { background-size: 3px 80%, 3px 50%,  3px 90%, 3px 60%; }
-      50%  { background-size: 3px 40%, 3px 70%, 3px 100%, 3px 30%; }
-      75%  { background-size: 3px 90%, 3px 40%,  3px 60%, 3px 100%; }
-      100% { background-size: 3px 60%, 3px 100%, 3px 40%, 3px 80%; }
-    }
-    .embed-thumb.is-playing .embed-thumb-overlay { background: rgba(0,0,0,0.35); }
-    .track-embed.udio { padding-bottom: 56.25%; height: 0; overflow: hidden; }
-    .track-embed.udio iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
-    .track-embed a.embed-placeholder {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%; transition: background 0.2s;
-    }
-    .track-embed a.embed-placeholder:hover { background: var(--surface-hover) !important; }
-    .track-embed.soundcloud { padding-bottom: 166px; }
-
-    .scroll-indicator {
-      display: flex; flex-direction: column; align-items: center;
-      padding: 32px 0 8px; opacity: 0.5; transition: opacity 0.4s;
-    }
-    .scroll-indicator.hidden { opacity: 0; pointer-events: none; }
-    .scroll-indicator .scroll-line { width: 1px; height: 32px; background: linear-gradient(to bottom, var(--border), var(--accent)); margin-bottom: 12px; }
-    .scroll-indicator .scroll-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: scrollPulse 1.8s ease-in-out infinite; }
-    .scroll-indicator .scroll-text { margin-top: 10px; font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); font-weight: 600; }
-    @keyframes scrollPulse { 0%,100%{opacity:0.3;transform:translateY(0)} 50%{opacity:1;transform:translateY(6px)} }
-
-    .track-body { padding: 16px 18px 18px; }
-    .track-title {
-      font-size: 0.88rem; font-weight: 700; line-height: 1.35; margin-bottom: 8px;
-      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-    }
-    .track-badges { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
-    .badge {
-      display: inline-flex; align-items: center; gap: 4px;
-      padding: 3px 10px; border-radius: 100px;
-      font-size: 0.66rem; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;
-    }
-    .badge-tool { background: var(--accent-dim); color: var(--accent); }
-    .badge-genre { background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid rgba(255,255,255,0.06); }
-    .badge-platform { background: rgba(56,189,248,0.1); color: #38bdf8; }
-
-    .rating-row { display: flex; align-items: center; justify-content: space-between; }
-    .stars { display: flex; gap: 3px; }
-    .star { width: 28px; height: 28px; cursor: pointer; transition: transform 0.15s; display: flex; align-items: center; justify-content: center; }
-    .star:hover { transform: scale(1.2); }
-    .star svg { width: 20px; height: 20px; fill: var(--star-empty); transition: fill 0.15s; }
-    .star.filled svg { fill: var(--accent); }
-    .star.hover-fill svg { fill: var(--accent); opacity: 0.7; }
-    .rating-info { text-align: right; }
-    .rating-score { font-size: 1.1rem; font-weight: 700; color: var(--accent); line-height: 1; }
-    .rating-count { font-size: 0.68rem; color: var(--muted); margin-top: 1px; }
-    .stars.rated .star { cursor: default; }
-    .stars.rated .star:hover { transform: none; }
-
-    .card-footer {
-      display: flex; align-items: center; justify-content: flex-start;
-      margin-top: 12px; padding-top: 12px;
-      border-top: 1px solid rgba(26,26,38,0.6); gap: 16px;
-    }
-    .comments-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.74rem; font-family: 'DM Sans', sans-serif; display: flex; align-items: center; gap: 5px; transition: color 0.2s; }
-    .comments-btn:hover { color: var(--text); }
-    .share-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.74rem; font-family: 'DM Sans', sans-serif; display: flex; align-items: center; gap: 4px; transition: color 0.2s; }
-    .share-btn:hover { color: var(--text); }
+    /* ══════════════════════════════════ TRACK GRID (removed — browse system active) ══════════════════════════════════ */
 
     .comments-panel { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
     .comments-panel.open { max-height: 500px; }
@@ -330,18 +160,6 @@
     .comment-input:focus { border-color: var(--accent); }
     .comment-submit { background: var(--accent); color: var(--bg); border: none; padding: 8px 14px; border-radius: var(--radius-sm); font-weight: 700; font-size: 0.75rem; cursor: pointer; font-family: 'DM Sans', sans-serif; }
 
-    .empty-state { grid-column: 1 / -1; text-align: center; padding: 80px 20px; }
-    .empty-state p { color: var(--muted); font-size: 0.95rem; }
-    .skeleton-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; animation: skeletonPulse 1.5s ease-in-out infinite; }
-    @keyframes skeletonPulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
-    .skeleton { background: linear-gradient(90deg, var(--surface-2) 25%, rgba(255,255,255,0.03) 50%, var(--surface-2) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
-    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-    .skeleton-embed { width: 100%; padding-bottom: 56.25%; }
-    .skeleton-body { padding: 16px 18px 18px; }
-    .skeleton-title { height: 16px; border-radius: 4px; width: 75%; margin-bottom: 10px; }
-    .skeleton-badges { display: flex; gap: 6px; margin-bottom: 14px; }
-    .skeleton-badge { height: 22px; width: 60px; border-radius: 100px; }
-    .skeleton-stars { height: 28px; border-radius: 4px; width: 60%; }
 
     .leaderboard-section { max-width: 800px; margin: 0 auto; padding: 60px clamp(16px, 4vw, 40px) 40px; }
     .lb-tabs { display: flex; gap: 4px; justify-content: center; margin-bottom: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 3px; width: fit-content; margin-left: auto; margin-right: auto; }
@@ -481,51 +299,6 @@
       .hero-stats { gap: 28px; margin-top: 24px; }
       .hero-stat-num { font-size: 1.4rem; }
       .hero-stat-label { font-size: 0.6rem; letter-spacing: 1.2px; }
-      .view-bar { flex-direction: column; align-items: stretch; gap: 8px; }
-      .track-count { display: none; }
-      .view-tabs { align-self: center; }
-      .view-tab { padding: 6px 14px; font-size: 0.7rem; }
-      .filter-toggle { display: flex; align-items: center; gap: 6px; justify-content: center; background: none; border: 1px solid var(--border); color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; padding: 8px 16px; border-radius: 8px; cursor: pointer; margin: 8px auto 0; transition: all 0.2s; }
-      .filter-toggle:hover { border-color: var(--border-hover); color: var(--text); }
-      .filter-toggle svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; transition: transform 0.2s; }
-      .filter-toggle.open svg { transform: rotate(180deg); }
-      .filters { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; gap: 5px; padding-top: 0; justify-content: center; }
-      .filters.open { max-height: 200px; padding-top: 10px; }
-      .filter-label { font-size: 0.62rem; white-space: nowrap; margin-right: 2px; }
-      .filter-pill { padding: 4px 10px; font-size: 0.66rem; flex-shrink: 0; }
-      .filter-sep { display: none; }
-      .tracks-container { padding: 12px 12px 60px; }
-      .tracks-grid { grid-template-columns: 1fr; gap: 8px; }
-      .track-card { border-radius: 10px; display: flex; flex-direction: row; flex-wrap: wrap; }
-      .track-card:hover { transform: none; box-shadow: none; }
-      .track-embed { padding-bottom: 0; height: auto; width: 100px; min-height: 100px; flex-shrink: 0; border-bottom: none; border-right: 1px solid var(--border); border-radius: 10px 0 0 10px; }
-      .track-embed iframe { border-radius: 10px 0 0 10px; }
-      .track-embed.soundcloud { padding-bottom: 0; height: auto; min-height: 100px; }
-      .track-body { padding: 10px 12px; flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
-      .track-title { font-size: 0.82rem; margin-bottom: 4px; -webkit-line-clamp: 1; }
-      .track-badges { margin-bottom: 6px; gap: 4px; }
-      .badge { padding: 1px 7px; font-size: 0.56rem; }
-      .rating-row { gap: 6px; }
-      .star { width: 26px; height: 26px; }
-      .star svg { width: 17px; height: 17px; }
-      .rating-score { font-size: 0.88rem; }
-      .rating-count { font-size: 0.58rem; }
-      .card-footer { margin-top: 6px; padding-top: 6px; gap: 10px; }
-      .comments-btn, .share-btn { font-size: 0.66rem; padding: 4px 0; }
-      .comments-btn svg, .share-btn svg { width: 12px; height: 12px; }
-      .embed-thumb { border-radius: 10px 0 0 10px; }
-      .embed-thumb img { border-radius: 10px 0 0 10px; }
-      .embed-thumb .play-circle { width: 36px; height: 36px; }
-      .embed-thumb .play-circle svg { width: 16px; height: 16px; }
-      .embed-thumb .thumb-platform { font-size: 0.55rem; }
-      .comments-panel { flex-basis: 100%; }
-      .comments-inner { padding: 8px 12px 10px; }
-      .comment-text { font-size: 0.76rem; }
-      .comment-input { padding: 6px 10px; font-size: 0.74rem; }
-      .comment-submit { padding: 6px 10px; font-size: 0.68rem; }
-      .scroll-indicator { padding: 20px 0 4px; }
-      .scroll-indicator .scroll-line { height: 24px; }
-      .scroll-indicator .scroll-text { font-size: 0.58rem; }
       .leaderboard-section { padding: 40px 12px 24px; }
       .section-title { font-size: 1.5rem; }
       .section-sub { font-size: 0.78rem; }
@@ -892,8 +665,6 @@
     .browse-now-playing:hover .bnp-stop { opacity: 1; }
     .browse-now-playing:hover .bnp-bg { opacity: 0.7; }
 
-    /* Hide old sections */
-    .view-bar, .filters, .filter-toggle, .tracks-container { display: none !important; }
 
     @media (max-width: 640px) {
       .browse-card { flex: 0 0 170px; }
@@ -994,63 +765,6 @@
   <div id="browseRows"></div>
   <div id="searchResults" class="search-results-grid" style="display:none;"></div>
 </section>
-
-<!-- ═══ VIEW TABS ═══ -->
-<div class="view-bar">
-  <div class="view-tabs">
-    <button class="view-tab active">Discover</button>
-    <button class="view-tab">Top Rated</button>
-    <button class="view-tab">New</button>
-  </div>
-  <div class="track-count" id="trackCount"></div>
-</div>
-
-<!-- ═══ FILTERS ═══ -->
-<button class="filter-toggle" id="filterToggle">Filters <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button>
-<div class="filters" id="filtersBar">
-  <span class="filter-label">Genre</span>
-  <button class="filter-pill active" data-filter="genre" data-value="all">All</button>
-  <button class="filter-pill" data-filter="genre" data-value="Pop">Pop</button>
-  <button class="filter-pill" data-filter="genre" data-value="Rock">Rock</button>
-  <button class="filter-pill" data-filter="genre" data-value="Hip-Hop">Hip-Hop</button>
-  <button class="filter-pill" data-filter="genre" data-value="Electronic">Electronic</button>
-  <button class="filter-pill" data-filter="genre" data-value="R&B / Soul">R&B / Soul</button>
-  <button class="filter-pill" data-filter="genre" data-value="Cinematic">Cinematic</button>
-  <button class="filter-pill" data-filter="genre" data-value="Jazz">Jazz</button>
-  <button class="filter-pill" data-filter="genre" data-value="Latin">Latin</button>
-  <button class="filter-pill" data-filter="genre" data-value="Indie / Folk">Indie / Folk</button>
-  <button class="filter-pill" data-filter="genre" data-value="Country">Country</button>
-  <button class="filter-pill" data-filter="genre" data-value="Metal">Metal</button>
-  <button class="filter-pill" data-filter="genre" data-value="Drum & Bass">Drum & Bass</button>
-  <button class="filter-pill" data-filter="genre" data-value="Lo-Fi">Lo-Fi</button>
-  <button class="filter-pill" data-filter="genre" data-value="Funk">Funk</button>
-  <button class="filter-pill" data-filter="genre" data-value="Reggae">Reggae</button>
-  <button class="filter-pill" data-filter="genre" data-value="Blues">Blues</button>
-  <button class="filter-pill" data-filter="genre" data-value="Ambient">Ambient</button>
-  <button class="filter-pill" data-filter="genre" data-value="Classical">Classical</button>
-  <button class="filter-pill" data-filter="genre" data-value="Afrobeat">Afrobeat</button>
-  <button class="filter-pill" data-filter="genre" data-value="K-Pop">K-Pop</button>
-  <button class="filter-pill" data-filter="genre" data-value="Other">Other</button>
-  <div class="filter-sep"></div>
-  <span class="filter-label">Tool</span>
-  <button class="filter-pill active" data-filter="tool" data-value="all">All</button>
-  <button class="filter-pill" data-filter="tool" data-value="Suno">Suno</button>
-  <button class="filter-pill" data-filter="tool" data-value="Udio">Udio</button>
-  <button class="filter-pill" data-filter="tool" data-value="ElevenLabs">ElevenLabs</button>
-  <button class="filter-pill" data-filter="tool" data-value="Gemini">Gemini</button>
-</div>
-
-<!-- ═══ TRACKS GRID ═══ -->
-<div class="tracks-container">
-  <div class="tracks-grid" id="tracksGrid">
-    <div class="skeleton-card"><div class="skeleton skeleton-embed"></div><div class="skeleton-body"><div class="skeleton skeleton-title"></div><div class="skeleton-badges"><div class="skeleton skeleton-badge"></div><div class="skeleton skeleton-badge"></div></div><div class="skeleton skeleton-stars"></div></div></div>
-    <div class="skeleton-card"><div class="skeleton skeleton-embed"></div><div class="skeleton-body"><div class="skeleton skeleton-title"></div><div class="skeleton-badges"><div class="skeleton skeleton-badge"></div><div class="skeleton skeleton-badge"></div></div><div class="skeleton skeleton-stars"></div></div></div>
-    <div class="skeleton-card"><div class="skeleton skeleton-embed"></div><div class="skeleton-body"><div class="skeleton skeleton-title"></div><div class="skeleton-badges"><div class="skeleton skeleton-badge"></div><div class="skeleton skeleton-badge"></div></div><div class="skeleton skeleton-stars"></div></div></div>
-    <div class="skeleton-card"><div class="skeleton skeleton-embed"></div><div class="skeleton-body"><div class="skeleton skeleton-title"></div><div class="skeleton-badges"><div class="skeleton skeleton-badge"></div><div class="skeleton skeleton-badge"></div></div><div class="skeleton skeleton-stars"></div></div></div>
-    <div class="skeleton-card"><div class="skeleton skeleton-embed"></div><div class="skeleton-body"><div class="skeleton skeleton-title"></div><div class="skeleton-badges"><div class="skeleton skeleton-badge"></div><div class="skeleton skeleton-badge"></div></div><div class="skeleton skeleton-stars"></div></div></div>
-    <div class="skeleton-card"><div class="skeleton skeleton-embed"></div><div class="skeleton-body"><div class="skeleton skeleton-title"></div><div class="skeleton-badges"><div class="skeleton skeleton-badge"></div><div class="skeleton skeleton-badge"></div></div><div class="skeleton skeleton-stars"></div></div></div>
-  </div>
-</div>
 
 <!-- ═══ LEADERBOARD ═══ -->
 <section class="leaderboard-section" id="leaderboard">
@@ -1159,8 +873,6 @@
   let currentUser = null;
   let allTracks = [];
   let userRatings = {};
-  let currentView = 'discover';
-  let filters = { genre: 'all', tool: 'all' };
   const starSVG = `<svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>`;
 
   // ─── Auth ───
@@ -1235,8 +947,8 @@
     try { const res = await fetch(`${SUPABASE_URL}/rest/v1/tracks?select=*&order=created_at.desc`, { headers: { 'apikey': SUPABASE_KEY } }); if (!res.ok) throw new Error('HTTP ' + res.status); allTracks = await res.json(); renderTracks(); renderLeaderboard(); updateHeroStats(); } catch(e) { console.error('Load error:', e); document.getElementById('browseRows').innerHTML = '<div style="text-align:center;padding:60px 20px;"><p style="color:var(--muted);margin-bottom:12px;">Could not load tracks.</p><button onclick="location.reload()" style="background:var(--accent);color:var(--bg);border:none;padding:10px 24px;border-radius:8px;font-weight:700;cursor:pointer;">Retry</button></div>'; }
   }
 
-  function updateHeroStats() { /* disabled until 100+ users */ }
-  function animateCount(id, target) { /* disabled */ }
+  function updateHeroStats() {}
+  function animateCount() {}
 
   let currentLbPeriod = 'week';
   function renderLeaderboard(period) {
@@ -1253,16 +965,9 @@
   }
   document.querySelectorAll('.lb-tab').forEach(tab => { tab.addEventListener('click', () => { document.querySelectorAll('.lb-tab').forEach(t => t.classList.remove('active')); tab.classList.add('active'); renderLeaderboard(tab.dataset.period); }); });
 
-  function getSortedTracks(tracks) { switch (currentView) { case 'top': return [...tracks].sort((a, b) => wilsonScore(b.avg_rating||0, b.rating_count||0) - wilsonScore(a.avg_rating||0, a.rating_count||0)); case 'new': return [...tracks].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); default: return [...tracks].sort((a, b) => { const ca = a.rating_count||0, cb = b.rating_count||0; if (ca <= 5 && cb > 5) return -1; if (cb <= 5 && ca > 5) return 1; return new Date(b.created_at) - new Date(a.created_at); }); } }
-  function getFilteredTracks() { return allTracks.filter(t => { if (filters.genre !== 'all' && t.genre !== filters.genre) return false; if (filters.tool !== 'all' && t.tool !== filters.tool) return false; return true; }); }
-
   const TRACKS_PER_PAGE = 9; let visibleCount = TRACKS_PER_PAGE; let currentSorted = []; let activeEmbedTrackId = null;
 
-  function renderTracks() { currentSorted = getSortedTracks(getFilteredTracks()); }
-
-  function renderVisibleTracks() { /* disabled — browse system handles display */ }
-
-  function buildCardHtml() { return ''; /* disabled */ }
+  function renderTracks() { currentSorted = [...allTracks]; }
 
   // ─── Lazy Thumbnails ───
   function getLazyThumb(track, embed) { const playSVG = '<svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>'; const platformLabel = embed.platform !== 'unknown' ? embed.platform.charAt(0).toUpperCase() + embed.platform.slice(1) : ''; if (track.thumbnail_url) { return `<div class="embed-thumb" data-action="load-embed" data-track-id="${track.id}"><img src="${sanitize(track.thumbnail_url)}" alt="${sanitize(track.title)}" loading="lazy"><div class="embed-thumb-overlay"><div class="play-circle">${playSVG}</div>${platformLabel ? `<span class="thumb-platform">${platformLabel}</span>` : ''}</div></div>`; } if (embed.platform === 'youtube') { const match = (track.embed_url || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([^&?\/#]+)/) || [null, track.yt_id]; const videoId = match[1] || track.yt_id; if (videoId) { return `<div class="embed-thumb" data-action="load-embed" data-track-id="${track.id}"><img src="https://img.youtube.com/vi/${videoId}/hqdefault.jpg" alt="${sanitize(track.title)}" loading="lazy"><div class="embed-thumb-overlay"><div class="play-circle">${playSVG}</div><span class="thumb-platform">YouTube</span></div></div>`; } } return embed.embedHtml; }
@@ -1275,18 +980,11 @@
   function getEmbedHtmlById(trackId) { const track = currentSorted.find(t => t.id === trackId); if (!track) return null; return getEmbedHtml(track); }
   function getLazyThumbById(trackId) { const track = currentSorted.find(t => t.id === trackId); if (!track) return ''; return getLazyThumb(track, getEmbedHtml(track)); }
 
-  /* Old iframe monitor disabled — browse system handles playback */
-
-  // ─── Infinite Scroll — disabled, browse uses horizontal scroll ───
-  let loadingMore = false; let hasMore = false;
-  function setupInfiniteScroll() { /* disabled */ }
-  window.addEventListener('scroll', function() { if (!hasMore || loadingMore) return; const grid = document.getElementById('tracksGrid'); if (!grid) return; if (grid.getBoundingClientRect().bottom <= window.innerHeight + 300) { loadingMore = true; visibleCount += TRACKS_PER_PAGE; renderVisibleTracks(); loadingMore = false; } });
-
   function sanitize(str) { if (!str) return ''; const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
   function sanitizeAttr(str) { if (!str) return ''; return str.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
   // ─── Event Delegation ───
-  document.addEventListener('click', function(e) { const star = e.target.closest('.star'); if (star) { rateStar(star.dataset.track, parseInt(star.dataset.score), star.parentElement); return; } const stopBtn = e.target.closest('[data-action="browse-stop"]'); if (stopBtn) { browsePlay(stopBtn.dataset.uid, stopBtn.dataset.trackId); return; } const thumbBtn = e.target.closest('[data-action="load-embed"]'); if (thumbBtn) { const uid = thumbBtn.dataset.uid; if (uid) { browsePlay(uid, thumbBtn.dataset.trackId); } return; } const commentsBtn = e.target.closest('[data-action="comments"]'); if (commentsBtn) { toggleComments(commentsBtn.dataset.track, commentsBtn); return; } const shareBtn = e.target.closest('[data-action="share"]'); if (shareBtn) { shareTrack(shareBtn.dataset.track, shareBtn.dataset.title, shareBtn); return; } const postBtn = e.target.closest('[data-action="post-comment"]'); if (postBtn) { addComment(postBtn.dataset.track, postBtn); return; } const lbRow = e.target.closest('[data-action="lb-play"]'); if (lbRow) { const tid = lbRow.dataset.trackId; const card = document.querySelector('.browse-card[data-track-id="' + tid + '"]'); if (card) { const uid = card.dataset.uid; card.scrollIntoView({ behavior: 'smooth', block: 'center' }); card.style.boxShadow = '0 0 0 2px var(--accent), 0 12px 40px rgba(232,255,71,0.15)'; setTimeout(() => { card.style.boxShadow = ''; }, 2500); setTimeout(() => { browsePlay(uid, tid); }, 600); } return; } const toolCard = e.target.closest('.tool-card[data-tool]'); if (toolCard) { gtag('event', 'tool_click', { tool: toolCard.dataset.tool, location: 'tools_section' }); } const viewTab = e.target.closest('.view-tab'); if (viewTab) { const m = { 'discover':'discover', 'top rated':'top', 'new':'new' }; setView(m[viewTab.textContent.trim().toLowerCase()]||'discover', viewTab); return; } const pill = e.target.closest('.filter-pill'); if (pill) { setFilter(pill.dataset.filter, pill.dataset.value, pill); return; } });
+  document.addEventListener('click', function(e) { const star = e.target.closest('.star'); if (star) { rateStar(star.dataset.track, parseInt(star.dataset.score), star.parentElement); return; } const stopBtn = e.target.closest('[data-action="browse-stop"]'); if (stopBtn) { browsePlay(stopBtn.dataset.uid, stopBtn.dataset.trackId); return; } const thumbBtn = e.target.closest('[data-action="load-embed"]'); if (thumbBtn) { const uid = thumbBtn.dataset.uid; if (uid) { browsePlay(uid, thumbBtn.dataset.trackId); } return; } const commentsBtn = e.target.closest('[data-action="comments"]'); if (commentsBtn) { toggleComments(commentsBtn.dataset.track, commentsBtn); return; } const shareBtn = e.target.closest('[data-action="share"]'); if (shareBtn) { shareTrack(shareBtn.dataset.track, shareBtn.dataset.title, shareBtn); return; } const postBtn = e.target.closest('[data-action="post-comment"]'); if (postBtn) { addComment(postBtn.dataset.track, postBtn); return; } const lbRow = e.target.closest('[data-action="lb-play"]'); if (lbRow) { const tid = lbRow.dataset.trackId; const card = document.querySelector('.browse-card[data-track-id="' + tid + '"]'); if (card) { const uid = card.dataset.uid; card.scrollIntoView({ behavior: 'smooth', block: 'center' }); card.style.boxShadow = '0 0 0 2px var(--accent), 0 12px 40px rgba(232,255,71,0.15)'; setTimeout(() => { card.style.boxShadow = ''; }, 2500); setTimeout(() => { browsePlay(uid, tid); }, 600); } return; } const toolCard = e.target.closest('.tool-card[data-tool]'); if (toolCard) { gtag('event', 'tool_click', { tool: toolCard.dataset.tool, location: 'tools_section' }); } });
 
   document.addEventListener('mouseover', function(e) { const star = e.target.closest('.star'); if (!star) return; const c = star.parentElement; if (c.classList.contains('rated')) return; const s = parseInt(star.dataset.score); c.querySelectorAll('.star').forEach(x => x.classList.toggle('hover-fill', parseInt(x.dataset.score) <= s)); });
   document.addEventListener('mouseout', function(e) { const star = e.target.closest('.star'); if (!star) return; const c = star.parentElement; if (c.classList.contains('rated')) return; c.querySelectorAll('.star').forEach(x => x.classList.remove('hover-fill')); });
@@ -1295,11 +993,6 @@
   async function rateStar(trackId, score, container) { container.classList.add('rated'); container.querySelectorAll('.star').forEach(s => { s.classList.remove('hover-fill'); s.classList.toggle('filled', parseInt(s.dataset.score) <= score); }); userRatings[trackId] = score; gtag('event', 'rate', { track_id: trackId, score }); try { const res = await fetch(SUPABASE_URL + '/functions/v1/rate-track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ track_id: trackId, score: score, anon_token: getAnonToken() }) }); const data = await res.json(); if (!res.ok) { showToast(data.error || 'Kunne ikke rate'); return; } const t = allTracks.find(x => x.id === trackId); if (t) { t.avg_rating = data.avg_rating; t.rating_count = data.rating_count; } showToast(score >= 4 ? '\u2b50 ' + score + '/5 \u2014 Great taste!' : '\u2705 Rated ' + score + '/5'); const card = document.getElementById(`card-${trackId}`); if (card) { const se = card.querySelector('.rating-score'); const ce = card.querySelector('.rating-count'); if (se) se.textContent = data.avg_rating ? data.avg_rating.toFixed(1) : '\u2014'; if (ce) ce.textContent = `${data.rating_count||0} rating${(data.rating_count||0)!==1?'s':''}`; } document.querySelectorAll(`.browse-card[data-track-id="${trackId}"]`).forEach(bc => { const sn = bc.querySelector('.browse-card-score-num'); const sc = bc.querySelector('.browse-card-score-count'); if (sn) sn.textContent = data.avg_rating ? data.avg_rating.toFixed(1) : '\u2014'; if (sc) sc.textContent = (data.rating_count||0) + ' rating' + ((data.rating_count||0)!==1?'s':''); }); } catch(e) { showToast('Network error \u2014 try again'); } }
 
   function showToast(msg) { let toast = document.getElementById('vote-toast'); if (!toast) { toast = document.createElement('div'); toast.id = 'vote-toast'; toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--surface);color:var(--text);padding:12px 24px;border-radius:12px;font-size:0.82rem;font-weight:600;z-index:9999;opacity:0;transition:opacity 0.3s,transform 0.3s;border:1px solid rgba(232,255,71,0.25);box-shadow:0 8px 32px rgba(0,0,0,0.5);backdrop-filter:blur(12px);'; document.body.appendChild(toast); } toast.textContent = msg; toast.style.opacity = '1'; toast.style.transform = 'translateX(-50%) translateY(0)'; setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(-50%) translateY(10px)'; }, 2500); }
-
-  function setView(v, el) { currentView = v; document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active')); el.classList.add('active'); applyFiltersAndSort(); }
-  function setFilter(type, val, el) { filters[type] = val; document.querySelectorAll(`.filter-pill[data-filter="${type}"]`).forEach(p => p.classList.remove('active')); el.classList.add('active'); applyFiltersAndSort(); }
-
-  function applyFiltersAndSort() { const grid = document.getElementById('tracksGrid'); if (grid.querySelector('iframe')) { const filtered = getFilteredTracks(); const sorted = getSortedTracks(filtered); const visibleIds = new Set(sorted.map(t => String(t.id))); document.getElementById('trackCount').textContent = `${sorted.length} track${sorted.length !== 1 ? 's' : ''}`; grid.querySelectorAll('.track-card').forEach(card => { const id = card.id.replace('card-', ''); card.style.display = visibleIds.has(id) ? '' : 'none'; const idx = sorted.findIndex(t => String(t.id) === id); card.style.order = idx >= 0 ? idx : 9999; }); } else { renderTracks(); } }
 
   // ─── Comments ───
   async function toggleComments(trackId, el) {
@@ -1407,11 +1100,6 @@
   const mobileNav = document.getElementById('mobileNav');
   hamburger.addEventListener('click', () => { hamburger.classList.toggle('open'); mobileNav.classList.toggle('open'); });
   mobileNav.addEventListener('click', (e) => { if (e.target.closest('.nav-link')) { hamburger.classList.remove('open'); mobileNav.classList.remove('open'); } });
-
-  // ─── Mobile: Filter Toggle ───
-  const filterToggle = document.getElementById('filterToggle');
-  const filtersBar = document.getElementById('filtersBar');
-  filterToggle.addEventListener('click', () => { filterToggle.classList.toggle('open'); filtersBar.classList.toggle('open'); });
 
   // ─── Deep Link: ?track=ID ───
   function handleDeepLink() {
