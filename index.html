@@ -1350,7 +1350,7 @@
   });
   function closePlayer() { stopUdioFull(); if (activeEmbedTrackId) { stopEmbed(activeEmbedTrackId); activeEmbedTrackId = null; } if (activeBrowseUid) browseStop(activeBrowseUid); playerBar.classList.remove('active', 'playing', 'udio-active'); document.body.classList.remove('player-active'); activePlayerTrackId = null; activePlayerPlatform = null; closePageFrame(); }
 
-  function navigateToPage(url) { if (!activePlayerTrackId) { window.location.href = url; return; } const frame = document.getElementById('pageFrame'); frame.querySelector('iframe').src = url; frame.classList.add('active'); }
+  function navigateToPage(url) { window.location.href = url; }
   function closePageFrame() { 
     const frame = document.getElementById('pageFrame'); 
     frame.classList.remove('active'); 
@@ -1393,7 +1393,7 @@
     }, 2000);
   }
 
-  document.addEventListener('click', (e) => { if (!activePlayerTrackId) return; const link = e.target.closest('a[href]'); if (!link) return; const href = link.getAttribute('href'); if (!href || link.target === '_blank') return; if (href.startsWith('http') && !href.includes(window.location.hostname)) return; if (href.startsWith('#')) return; e.preventDefault(); if (href === '/' || href === '/index.html') { closePageFrame(); return; } navigateToPage(href); }, true);
+  // Links navigate normally - no iframe hijacking
 
   // ─── Mobile: Hamburger Menu ───
   const hamburger = document.getElementById('hamburger');
