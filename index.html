@@ -148,16 +148,17 @@
 
     /* ══════════════════════════════════ TRACK GRID (removed — browse system active) ══════════════════════════════════ */
 
-    .comments-panel { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
-    .comments-panel.open { max-height: 500px; }
-    .comments-inner { padding: 12px 18px 16px; border-top: 1px solid var(--border); }
+    .comments-panel { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; position: relative; z-index: 10; }
+    .comments-panel.open { max-height: 500px; overflow: visible; }
+    .comments-inner { padding: 12px 18px 16px; border-top: 1px solid var(--border); position: relative; z-index: 10; }
     .comment { padding: 8px 0; border-bottom: 1px solid rgba(26,26,38,0.4); }
     .comment:last-child { border-bottom: none; }
     .comment-text { font-size: 0.82rem; color: var(--text-secondary); }
     .comment-author { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
     .comment-form { display: flex; gap: 8px; margin-top: 10px; }
-    .comment-input { flex: 1; background: var(--surface-2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 0.8rem; outline: none; }
+    .comment-input { flex: 1; background: var(--surface-2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 0.8rem; outline: none; -webkit-appearance: none; appearance: none; cursor: text; position: relative; z-index: 10; -webkit-user-select: text; user-select: text; }
     .comment-input:focus { border-color: var(--accent); }
+    .comment-form { display: flex; gap: 8px; margin-top: 10px; position: relative; z-index: 10; }
     .comment-submit { background: var(--accent); color: var(--bg); border: none; padding: 8px 14px; border-radius: var(--radius-sm); font-weight: 700; font-size: 0.75rem; cursor: pointer; font-family: 'DM Sans', sans-serif; }
 
 
@@ -692,6 +693,11 @@
       .browse-card-stars .bstar { width: 32px; height: 32px; }
       .browse-card-stars .bstar svg { width: 18px; height: 18px; }
       .browse-card-score-num { font-size: 0.82rem; }
+      .browse-card-score-count { font-size: 0.55rem; }
+      .browse-card-rating { flex-direction: column; align-items: flex-start; gap: 4px; }
+      .browse-card-score { display: flex; align-items: center; gap: 6px; text-align: left; }
+      .browse-card-score-num { font-size: 0.78rem; }
+      .browse-card-score-count { font-size: 0.6rem; }
       .search-results-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; padding: 0 12px 30px; }
     }
 
@@ -1223,6 +1229,11 @@
     const titleAttr = sanitizeAttr(track.title || '');
     
     let thumbSrc = track.thumbnail_url || '';
+    // For Suno: derive fresh thumbnail from song UUID
+    if (embed.platform === 'suno') {
+      const sunoMatch = (track.embed_url || '').match(/suno\.com\/(?:song|embed)\/([a-f0-9-]{36})/);
+      if (sunoMatch) thumbSrc = 'https://cdn2.suno.ai/image_' + sunoMatch[1] + '.jpeg';
+    }
     if (!thumbSrc && embed.platform === 'youtube') {
       const match = (track.embed_url || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([^&?\/#]+)/) || [null, track.yt_id];
       if (match[1]) thumbSrc = 'https://img.youtube.com/vi/' + match[1] + '/hqdefault.jpg';
