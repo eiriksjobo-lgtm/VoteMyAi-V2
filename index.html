@@ -1050,7 +1050,7 @@
   }
 
   // ─── Share ───
-  function shareTrack(id, title, btn) { const url = `${window.location.origin}/?track=${id}`; if (navigator.share) { navigator.share({title:`${title} \u2014 VoteMyAI`,text:`Listen to "${title}" on VoteMyAI`,url}); gtag('event','share',{track_id:id,method:'native'}); } else { navigator.clipboard.writeText(url); gtag('event','share',{track_id:id,method:'clipboard'}); showToast('\U0001f517 Link copied!'); } }
+  function shareTrack(id, title, btn) { const url = `${window.location.origin}/share/${id}`; if (navigator.share) { navigator.share({title:`${title} \u2014 VoteMyAI`,text:`Listen to "${title}" on VoteMyAI`,url}); gtag('event','share',{track_id:id,method:'native'}); } else { navigator.clipboard.writeText(url); gtag('event','share',{track_id:id,method:'clipboard'}); showToast('\U0001f517 Link copied!'); } }
 
   // ─── Persistent Player Bar ───
   let activePlayerTrackId = null;
