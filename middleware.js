@@ -1,48 +1,34 @@
 // ═══════════════════════════════════════════════════════════════
-// VoteMyAI — Middleware for Dynamic OG Tags
+// VoteMyAI — Edge Middleware for Dynamic OG Tags (no Next.js)
 // ═══════════════════════════════════════════════════════════════
-// This middleware runs BEFORE any other routing.
-// It checks if the request has ?track=ID and if the visitor
-// is a crawler (bot). If so, it fetches track data and returns
-// HTML with the correct OG tags. Otherwise, it passes through.
-
-import { NextResponse } from 'next/server';
 
 const SUPABASE_URL = 'https://gezijezmsecbtzytotax.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_hOOMtCz7gYsu_-CVD6lW9Q_SxtFlNhw';
 
-// Common social media and search engine crawlers
 const BOT_PATTERNS = [
-  'facebookexternalhit', 'Facebot', 'Twitterbot', 'LinkedInBot',
-  'WhatsApp', 'Slackbot', 'Discordbot', 'TelegramBot',
-  'Googlebot', 'bingbot', 'Embedly', 'Iframely',
-  'vkShare', 'Pinterestbot', 'Applebot',
-  'curl', // for testing
+  'facebookexternalhit', 'facebot', 'twitterbot', 'linkedinbot',
+  'whatsapp', 'slackbot', 'discordbot', 'telegrambot',
+  'googlebot', 'bingbot', 'embedly', 'iframely',
+  'vkshare', 'pinterestbot', 'applebot', 'curl',
 ];
-
-export const config = {
-  matcher: '/',
-};
 
 export default async function middleware(request) {
   const url = new URL(request.url);
-  const trackId = url.searchParams.get('track');
 
-  // Only intercept if ?track= is present
-  if (!trackId) {
-    return NextResponse.next();
+  // Only intercept requests to / with ?track= parameter
+  if (url.pathname !== '/' || !url.searchParams.has('track')) {
+    return;
   }
+
+  const trackId = url.searchParams.get('track');
+  if (!trackId) return;
 
   // Check if this is a bot/crawler
-  const ua = request.headers.get('user-agent') || '';
-  const isBot = BOT_PATTERNS.some(bot => ua.toLowerCase().includes(bot.toLowerCase()));
+  const ua = (request.headers.get('user-agent') || '').toLowerCase();
+  const isBot = BOT_PATTERNS.some(bot => ua.includes(bot));
+  if (!isBot) return;
 
-  // If not a bot, let the request pass through to index.html
-  if (!isBot) {
-    return NextResponse.next();
-  }
-
-  // ─── Bot detected with ?track= → return dynamic OG tags ───
+  // Fetch track data from Supabase
   let track = null;
   try {
     const res = await fetch(
@@ -55,19 +41,14 @@ export default async function middleware(request) {
       }
     );
     const data = await res.json();
-    if (data && data.length > 0) {
-      track = data[0];
-    }
+    if (data && data.length > 0) track = data[0];
   } catch (e) {
-    // If fetch fails, pass through
-    return NextResponse.next();
+    return;
   }
 
-  if (!track) {
-    return NextResponse.next();
-  }
+  if (!track) return;
 
-  // Build metadata
+  // Build OG metadata
   const title = `${track.title} — VoteMyAI`;
   const description = `Made with ${track.tool}${track.genre ? ' · ' + track.genre : ''}${track.avg_rating ? ' · ' + track.avg_rating.toFixed(1) + '★' : ''}. Listen and rate on VoteMyAI.`;
 
@@ -76,9 +57,7 @@ export default async function middleware(request) {
     image = track.thumbnail_url;
   } else if (track.embed_url && track.embed_url.includes('suno.com')) {
     const sunoMatch = track.embed_url.match(/suno\.com\/(?:song|embed)\/([a-f0-9-]{36})/);
-    if (sunoMatch) {
-      image = `https://cdn2.suno.ai/image_${sunoMatch[1]}.jpeg`;
-    }
+    if (sunoMatch) image = `https://cdn2.suno.ai/image_${sunoMatch[1]}.jpeg`;
   }
 
   const pageUrl = `https://www.votemyai.com/?track=${trackId}`;
@@ -104,7 +83,7 @@ export default async function middleware(request) {
 </body>
 </html>`;
 
-  return new NextResponse(html, {
+  return new Response(html, {
     status: 200,
     headers: {
       'Content-Type': 'text/html; charset=utf-8',
