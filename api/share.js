@@ -5,15 +5,24 @@ export const config = { runtime: 'edge' };
 
 export default async function handler(request) {
   const url = new URL(request.url);
-  // Extract track ID from /api/share?id=xxx
   const trackId = url.searchParams.get('id');
 
+  // No track ID — redirect to homepage
   if (!trackId) {
-    return Response.redirect('https://www.votemyai.com/', 302);
+    return new Response('<html><head><meta http-equiv="refresh" content="0;url=https://www.votemyai.com/"><script>window.location.replace("https://www.votemyai.com/")</script></head></html>', {
+      status: 200,
+      headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    });
   }
 
-  // Fetch track from Supabase
-  let track = null;
+  const pageUrl = 'https://www.votemyai.com/?track=' + trackId;
+
+  // Default OG values (used if Supabase fetch fails)
+  let title = 'VoteMyAI — Rate the Best AI-Generated Music';
+  let desc = 'Listen and rate AI-generated music on VoteMyAI.';
+  let image = 'https://www.votemyai.com/og-image.png';
+
+  // Try to fetch track data
   try {
     const res = await fetch(
       `${SUPABASE_URL}/rest/v1/tracks?id=eq.${trackId}&select=id,title,tool,genre,thumbnail_url,embed_url,avg_rating,rating_count`,
@@ -25,33 +34,27 @@ export default async function handler(request) {
       }
     );
     const data = await res.json();
-    if (data && data.length > 0) track = data[0];
+    if (data && data.length > 0) {
+      const track = data[0];
+      title = track.title + ' — VoteMyAI';
+      desc = 'Made with ' + (track.tool || 'AI') +
+        (track.genre ? ' · ' + track.genre : '') +
+        (track.avg_rating ? ' · ' + track.avg_rating.toFixed(1) + '★' : '') +
+        '. Listen and rate on VoteMyAI.';
+
+      if (track.thumbnail_url) {
+        image = track.thumbnail_url;
+      } else if (track.embed_url && track.embed_url.includes('suno.com')) {
+        const m = track.embed_url.match(/suno\.com\/(?:song|embed)\/([a-f0-9-]{36})/);
+        if (m) image = 'https://cdn2.suno.ai/image_' + m[1] + '.jpeg';
+      }
+    }
   } catch (e) {
-    return Response.redirect(`https://www.votemyai.com/?track=${trackId}`, 302);
+    // Use defaults
   }
 
-  if (!track) {
-    return Response.redirect(`https://www.votemyai.com/?track=${trackId}`, 302);
-  }
-
-  // Build OG metadata
-  const title = track.title + ' — VoteMyAI';
-  const desc = 'Made with ' + (track.tool || 'AI') +
-    (track.genre ? ' · ' + track.genre : '') +
-    (track.avg_rating ? ' · ' + track.avg_rating.toFixed(1) + '★' : '') +
-    '. Listen and rate on VoteMyAI.';
-
-  let image = 'https://www.votemyai.com/og-image.png';
-  if (track.thumbnail_url) {
-    image = track.thumbnail_url;
-  } else if (track.embed_url && track.embed_url.includes('suno.com')) {
-    const m = track.embed_url.match(/suno\.com\/(?:song|embed)\/([a-f0-9-]{36})/);
-    if (m) image = 'https://cdn2.suno.ai/image_' + m[1] + '.jpeg';
-  }
-
-  const pageUrl = 'https://www.votemyai.com/?track=' + trackId;
-
-  // Return HTML with OG tags + instant redirect for real users
+  // ALWAYS return 200 with OG tags — never redirect via HTTP
+  // Bots read the OG tags. Real users get redirected by JavaScript.
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -62,15 +65,18 @@ export default async function handler(request) {
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(desc)}">
 <meta property="og:image" content="${esc(image)}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta property="og:site_name" content="VoteMyAI">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${esc(title)}">
 <meta name="twitter:description" content="${esc(desc)}">
 <meta name="twitter:image" content="${esc(image)}">
-<meta http-equiv="refresh" content="0;url=${esc(pageUrl)}">
-<script>window.location.replace("${pageUrl}");<\/script>
+<script>window.location.replace("${pageUrl}");</script>
 </head>
-<body><p>Loading <a href="${esc(pageUrl)}">${esc(title)}</a>...</p></body>
+<body>
+<p>Loading <a href="${esc(pageUrl)}">${esc(title)}</a>...</p>
+</body>
 </html>`;
 
   return new Response(html, {
