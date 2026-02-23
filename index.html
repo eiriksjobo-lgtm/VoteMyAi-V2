@@ -1406,56 +1406,73 @@
     const leftArr = wrapper.querySelector('.scroll-arrow.left');
     const rightArr = wrapper.querySelector('.scroll-arrow.right');
     if (!scroll || !leftArr || !rightArr) return;
-    
+
     function updateArrows() {
       const canLeft = scroll.scrollLeft > 20;
       const canRight = scroll.scrollLeft < scroll.scrollWidth - scroll.clientWidth - 20;
       leftArr.classList.toggle('show', canLeft);
       rightArr.classList.toggle('show', canRight);
     }
-    
+
     leftArr.addEventListener('click', () => { scroll.scrollBy({ left: -600, behavior: 'smooth' }); });
     rightArr.addEventListener('click', () => { scroll.scrollBy({ left: 600, behavior: 'smooth' }); });
-    scroll.addEventListener('scroll', updateArrows);
+    scroll.addEventListener('scroll', updateArrows, { passive: true });
     updateArrows();
 
-    // Mouse drag to scroll with momentum (iOS-style)
+    // ─── Mouse drag with smooth momentum (optimized) ───
     let isDragging = false;
     let startX = 0;
     let scrollStart = 0;
     let hasDragged = false;
-    let velocity = 0;
-    let lastX = 0;
-    let lastTime = 0;
     let momentumId = null;
+    let velocitySamples = [];
+    const MAX_SAMPLES = 5;
+
+    function disableSnap() {
+      scroll.style.scrollSnapType = 'none';
+      scroll.style.scrollBehavior = 'auto';
+    }
+
+    function enableSnap() {
+      requestAnimationFrame(() => {
+        scroll.style.scrollSnapType = 'x proximity';
+        scroll.style.scrollBehavior = '';
+      });
+    }
+
+    function cancelMomentum() {
+      if (momentumId) {
+        cancelAnimationFrame(momentumId);
+        momentumId = null;
+      }
+    }
 
     scroll.addEventListener('mousedown', (e) => {
       if (e.target.closest('button, .bstar, a, .browse-card-footer, .comment-input, .comment-form, .comment-submit, .comments-panel, input, textarea')) return;
-      if (momentumId) { cancelAnimationFrame(momentumId); momentumId = null; }
+
+      cancelMomentum();
       isDragging = true;
       hasDragged = false;
       startX = e.pageX;
-      lastX = e.pageX;
-      lastTime = Date.now();
       scrollStart = scroll.scrollLeft;
-      velocity = 0;
+      velocitySamples = [];
+
+      disableSnap();
       scroll.style.cursor = 'grabbing';
-      scroll.style.scrollSnapType = 'none';
-      scroll.style.scrollBehavior = 'auto';
       e.preventDefault();
     });
 
     window.addEventListener('mousemove', (e) => {
       if (!isDragging) return;
-      const now = Date.now();
-      const dt = now - lastTime;
-      const dx = e.pageX - lastX;
-      if (dt > 0) velocity = dx / dt;
-      lastX = e.pageX;
-      lastTime = now;
-      const totalDx = e.pageX - startX;
-      if (Math.abs(totalDx) > 3) hasDragged = true;
-      scroll.scrollLeft = scrollStart - totalDx;
+
+      const dx = e.pageX - startX;
+      if (Math.abs(dx) > 3) hasDragged = true;
+
+      scroll.scrollLeft = scrollStart - dx;
+
+      const now = performance.now();
+      velocitySamples.push({ x: e.pageX, t: now });
+      while (velocitySamples.length > MAX_SAMPLES) velocitySamples.shift();
     });
 
     window.addEventListener('mouseup', () => {
@@ -1463,30 +1480,35 @@
       isDragging = false;
       scroll.style.cursor = '';
 
-      // Momentum coast
-      let v = -velocity * 1000; // px/sec
-      const friction = 0.95;
-      let last = performance.now();
-
-      function coast(now) {
-        const dt = (now - last) / 1000;
-        last = now;
-        v *= friction;
-        scroll.scrollLeft += v * dt;
-        if (Math.abs(v) > 10) {
-          momentumId = requestAnimationFrame(coast);
-        } else {
-          scroll.style.scrollSnapType = 'x proximity';
-          scroll.style.scrollBehavior = 'smooth';
-          momentumId = null;
+      let velocity = 0;
+      if (velocitySamples.length >= 2) {
+        const first = velocitySamples[0];
+        const last = velocitySamples[velocitySamples.length - 1];
+        const dt = last.t - first.t;
+        if (dt > 0 && dt < 300) {
+          velocity = (last.x - first.x) / dt;
         }
       }
 
-      if (Math.abs(v) > 50) {
+      const initialVelocity = -velocity * 16;
+      if (Math.abs(initialVelocity) > 0.5) {
+        let v = initialVelocity;
+        const FRICTION = 0.92;
+
+        function coast() {
+          v *= FRICTION;
+          scroll.scrollLeft += v;
+
+          if (Math.abs(v) > 0.3) {
+            momentumId = requestAnimationFrame(coast);
+          } else {
+            momentumId = null;
+            enableSnap();
+          }
+        }
         momentumId = requestAnimationFrame(coast);
       } else {
-        scroll.style.scrollSnapType = 'x proximity';
-        scroll.style.scrollBehavior = 'smooth';
+        enableSnap();
       }
 
       if (hasDragged) {
