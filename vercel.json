@@ -1,9 +1,4 @@
 {
-  "functions": {
-    "api/share.js": {
-      "runtime": "@vercel/node@3"
-    }
-  },
   "rewrites": [
     {
       "source": "/share/:id",
