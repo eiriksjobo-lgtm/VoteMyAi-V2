@@ -155,10 +155,9 @@
     .comment:last-child { border-bottom: none; }
     .comment-text { font-size: 0.82rem; color: var(--text-secondary); }
     .comment-author { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
-    .comment-form { display: flex; gap: 8px; margin-top: 10px; }
-    .comment-input { flex: 1; background: var(--surface-2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 0.8rem; outline: none; -webkit-appearance: none; appearance: none; cursor: text; position: relative; z-index: 10; -webkit-user-select: text; user-select: text; }
-    .comment-input:focus { border-color: var(--accent); }
     .comment-form { display: flex; gap: 8px; margin-top: 10px; position: relative; z-index: 10; }
+    .comment-input { flex: 1; background: var(--surface-2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 16px; outline: none; -webkit-appearance: none; appearance: none; cursor: text; position: relative; z-index: 10; -webkit-user-select: text; user-select: text; touch-action: manipulation; }
+    .comment-input:focus { border-color: var(--accent); }
     .comment-submit { background: var(--accent); color: var(--bg); border: none; padding: 8px 14px; border-radius: var(--radius-sm); font-weight: 700; font-size: 0.75rem; cursor: pointer; font-family: 'DM Sans', sans-serif; }
 
 
@@ -1429,7 +1428,7 @@
     let momentumId = null;
 
     scroll.addEventListener('mousedown', (e) => {
-      if (e.target.closest('button, .bstar, a, .browse-card-footer')) return;
+      if (e.target.closest('button, .bstar, a, .browse-card-footer, .comment-input, .comment-form, .comment-submit, .comments-panel, input, textarea')) return;
       if (momentumId) { cancelAnimationFrame(momentumId); momentumId = null; }
       isDragging = true;
       hasDragged = false;
