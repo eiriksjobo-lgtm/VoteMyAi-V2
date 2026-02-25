@@ -177,35 +177,40 @@
     document.getElementById(`tab-${tab}`).classList.add('active');
   };
 
-  // ─── LOGIN: paginate through ALL users ───
+  // ─── LOGIN: fetch ALL users (paginate through GoTrue's 50-per-page limit) ───
   window.login = async function() {
     adminPassword = document.getElementById('passwordInput').value;
     try {
-      // Fetch all users by paginating (GoTrue returns max 50 per page)
-      let allUsers = [];
-      let page = 1;
-      let hasMore = true;
-      while (hasMore) {
-        const res = await fetch(`${SUPABASE_URL}/functions/v1/admin-users?page=${page}&per_page=50`, {
-          headers: { 'x-admin-password': adminPassword }
-        });
-        if (!res.ok) {
-          if (page === 1) {
-            showStatus('loginStatus', 'Wrong password', 'error');
-            return;
-          }
-          break;
-        }
-        const data = await res.json();
-        const users = data.users || [];
-        allUsers = allUsers.concat(users);
-        // If we got fewer than per_page, we've reached the end
-        if (users.length < 50) {
-          hasMore = false;
-        } else {
-          page++;
+      // First call: authenticate + get first page
+      const firstRes = await fetch(`${SUPABASE_URL}/functions/v1/admin-users`, {
+        headers: { 'x-admin-password': adminPassword }
+      });
+      if (!firstRes.ok) {
+        showStatus('loginStatus', 'Wrong password', 'error');
+        return;
+      }
+      const firstData = await firstRes.json();
+      let allUsers = firstData.users || [];
+
+      // If we got exactly 50, there are likely more pages — keep fetching
+      if (allUsers.length >= 50) {
+        let page = 2;
+        while (true) {
+          try {
+            const res = await fetch(`${SUPABASE_URL}/functions/v1/admin-users?page=${page}&per_page=50`, {
+              headers: { 'x-admin-password': adminPassword }
+            });
+            if (!res.ok) break;
+            const data = await res.json();
+            const users = data.users || [];
+            if (users.length === 0) break;
+            allUsers = allUsers.concat(users);
+            if (users.length < 50) break;
+            page++;
+          } catch(e) { break; }
         }
       }
+
       authUsers = allUsers;
     } catch(e) {
       showStatus('loginStatus', 'Could not connect', 'error');
@@ -278,12 +283,16 @@
       document.getElementById('sAvg').textContent = avgRating;
 
       // Users table
-      document.getElementById('tab-users').innerHTML = `<div class="table-wrap"><table>
-        <tr><th>User</th><th>Email</th><th>Tracks</th><th>Comments</th><th>Joined</th><th>Actions</th></tr>
-        ${users.length ? users.map(u => {
+      document.getElementById('tab-users').innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <span style="font-size:0.82rem;color:var(--text-secondary);font-weight:600;">${users.length} registered users</span>
+        ${users.length >= 50 && users.length % 50 === 0 ? '<span style="font-size:0.72rem;color:var(--warn);font-weight:500;">⚠️ Showing first ' + users.length + ' — update admin-users edge function for full list</span>' : ''}
+      </div><div class="table-wrap"><table>
+        <tr><th style="width:40px;">#</th><th>User</th><th>Email</th><th>Tracks</th><th>Comments</th><th>Joined</th><th>Actions</th></tr>
+        ${users.length ? users.map((u, idx) => {
           const name = sanitize(u.name || 'No name');
           const avatarHtml = u.avatar ? `<img src="${sanitize(u.avatar)}" alt="">` : (u.name || u.email || '?').charAt(0).toUpperCase();
           return `<tr>
+            <td style="color:var(--muted);font-weight:600;font-size:0.75rem;">${idx + 1}</td>
             <td><span class="user-badge"><span class="user-avatar">${avatarHtml}</span>${name}</span></td>
             <td class="text-email">${sanitize(u.email)}</td>
             <td class="text-accent">${u.trackCount}</td>
@@ -291,7 +300,7 @@
             <td class="text-muted">${formatDate(u.created_at)}</td>
             <td><button class="btn-delete" onclick="deleteUser('${u.id}')">Delete</button></td>
           </tr>`;
-        }).join('') : '<tr><td colspan="6" class="empty-state">No users yet</td></tr>'}
+        }).join('') : '<tr><td colspan="7" class="empty-state">No users yet</td></tr>'}
       </table></div>`;
 
       // Tracks table
