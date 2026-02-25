@@ -185,7 +185,7 @@
 
     .tools-section { max-width: 1100px; margin: 0 auto; padding: 60px clamp(16px, 4vw, 40px) 40px; }
     .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
-    .tool-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 24px; text-decoration: none; color: var(--text); position: relative; overflow: hidden; transition: all 0.3s ease; display: block; }
+    .tool-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 24px; text-decoration: none; color: var(--text); position: relative; overflow: hidden; transition: border-color 0.2s, transform 0.2s; display: block; }
     .tool-card:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(0,0,0,0.35); border-color: var(--border-hover); }
     .tool-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
     .tool-card.suno::before { background: linear-gradient(90deg, #e8ff47, #a3e635); }
@@ -229,12 +229,12 @@
     .player-bar.active { display: flex; }
     .player-bar.playing .player-eq span { animation-play-state: running; }
     .player-eq { display: flex; align-items: flex-end; gap: 2px; height: 18px; flex-shrink: 0; }
-    .player-eq span { width: 3px; background: var(--accent); border-radius: 2px; animation: eqBounce 0.8s ease-in-out infinite alternate; animation-play-state: paused; }
-    .player-eq span:nth-child(1) { height: 8px; animation-delay: 0s; }
-    .player-eq span:nth-child(2) { height: 14px; animation-delay: 0.15s; }
-    .player-eq span:nth-child(3) { height: 6px; animation-delay: 0.3s; }
-    .player-eq span:nth-child(4) { height: 12px; animation-delay: 0.45s; }
-    @keyframes eqBounce { 0%{height:4px} 100%{height:18px} }
+    .player-eq span { width: 3px; background: var(--accent); border-radius: 2px; animation: eqBounce 1s ease-in-out infinite alternate; animation-play-state: paused; height: 18px; transform-origin: bottom; }
+    .player-eq span:nth-child(1) { animation-delay: 0s; }
+    .player-eq span:nth-child(2) { animation-delay: 0.2s; }
+    .player-eq span:nth-child(3) { animation-delay: 0.35s; }
+    .player-eq span:nth-child(4) { animation-delay: 0.5s; }
+    @keyframes eqBounce { 0%{transform:scaleY(0.25)} 100%{transform:scaleY(1)} }
     .player-embed-hidden { position: absolute; left: -9999px; top: -9999px; width: 320px; height: 180px; overflow: hidden; }
     .player-info { flex: 1; min-width: 0; }
     .player-title { font-weight: 600; font-size: 0.85rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -437,13 +437,13 @@
       align-items: center;
       justify-content: center;
       z-index: 10;
-      transition: all 0.25s;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      transition: opacity 0.2s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
       flex-shrink: 0;
       opacity: 0;
     }
     .genre-row:hover .scroll-arrow.show { opacity: 1; }
-    .scroll-arrow:hover { background: var(--accent); color: var(--bg); border-color: var(--accent); transform: scale(1.15); box-shadow: 0 0 20px rgba(232,255,71,0.3); }
+    .scroll-arrow:hover { background: var(--accent); color: var(--bg); }
     .scroll-arrow.left { margin-left: clamp(4px, 1vw, 12px); margin-right: -6px; }
     .scroll-arrow.right { margin-right: clamp(4px, 1vw, 12px); margin-left: -6px; }
     .scroll-arrow svg { width: 20px; height: 20px; fill: currentColor; }
@@ -452,12 +452,13 @@
     .browse-card {
       flex: 0 0 220px; background: var(--surface); border: 1px solid var(--border);
       border-radius: 12px; overflow: hidden;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
       scroll-snap-align: start; position: relative;
+      contain: layout style paint;
     }
     .browse-card:hover {
-      border-color: var(--accent); transform: translateY(-6px) scale(1.02);
-      box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(232,255,71,0.15); z-index: 5;
+      border-color: var(--accent); transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.4); z-index: 5;
     }
     .browse-card-thumb {
       position: relative; width: 100%; aspect-ratio: 16/10;
@@ -465,19 +466,18 @@
     }
     .browse-card-thumb img {
       width: 100%; height: 100%; object-fit: cover;
-      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .browse-card:hover .browse-card-thumb img { transform: scale(1.08); }
+    .browse-card:hover .browse-card-thumb img { transform: scale(1.04); }
     
     .browse-card-play {
       position: absolute; top: 50%; left: 50%;
-      transform: translate(-50%, -50%) scale(0.8);
+      transform: translate(-50%, -50%);
       width: 48px; height: 48px; border-radius: 50%;
       background: var(--accent); display: flex; align-items: center; justify-content: center;
-      opacity: 0; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      opacity: 0; transition: opacity 0.2s;
       box-shadow: 0 4px 24px rgba(232,255,71,0.4); cursor: pointer; border: none;
     }
-    .browse-card:hover .browse-card-play { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    .browse-card:hover .browse-card-play { opacity: 1; }
     .browse-card-play svg { width: 20px; height: 20px; fill: var(--bg); margin-left: 2px; }
 
     .browse-card-platform {
@@ -613,7 +613,7 @@
       width: 48px; height: 48px; border-radius: 50%;
       background: rgba(232,255,71,0.9); color: var(--bg);
       display: flex; align-items: center; justify-content: center;
-      opacity: 0; transition: all 0.25s; transform: scale(0.8);
+      opacity: 0; transition: opacity 0.2s, transform 0.2s; transform: scale(0.8);
       box-shadow: 0 4px 24px rgba(0,0,0,0.4);
     }
     .browse-stop-overlay:hover .browse-stop-btn { opacity: 1; transform: scale(1); }
@@ -623,12 +623,13 @@
     }
     .browse-eq-bars span {
       width: 3px; background: var(--accent); border-radius: 2px;
-      animation: eqBounce 0.8s ease-in-out infinite alternate;
+      height: 20px; transform-origin: bottom;
+      animation: eqBounce 1s ease-in-out infinite alternate;
     }
-    .browse-eq-bars span:nth-child(1) { height: 8px; animation-delay: 0s; }
-    .browse-eq-bars span:nth-child(2) { height: 14px; animation-delay: 0.15s; }
-    .browse-eq-bars span:nth-child(3) { height: 6px; animation-delay: 0.3s; }
-    .browse-eq-bars span:nth-child(4) { height: 12px; animation-delay: 0.45s; }
+    .browse-eq-bars span:nth-child(1) { animation-delay: 0s; }
+    .browse-eq-bars span:nth-child(2) { animation-delay: 0.2s; }
+    .browse-eq-bars span:nth-child(3) { animation-delay: 0.35s; }
+    .browse-eq-bars span:nth-child(4) { animation-delay: 0.5s; }
 
     /* Now Playing overlay for audio platforms (Suno, SoundCloud, Udio) */
     .browse-now-playing {
@@ -647,13 +648,14 @@
     }
     .bnp-eq span {
       width: 4px; background: var(--accent); border-radius: 2px;
-      animation: eqBounce 0.8s ease-in-out infinite alternate;
+      height: 28px; transform-origin: bottom;
+      animation: eqBounce 1s ease-in-out infinite alternate;
     }
-    .bnp-eq span:nth-child(1) { height: 10px; animation-delay: 0s; }
-    .bnp-eq span:nth-child(2) { height: 20px; animation-delay: 0.1s; }
-    .bnp-eq span:nth-child(3) { height: 28px; animation-delay: 0.2s; }
-    .bnp-eq span:nth-child(4) { height: 16px; animation-delay: 0.3s; }
-    .bnp-eq span:nth-child(5) { height: 12px; animation-delay: 0.4s; }
+    .bnp-eq span:nth-child(1) { animation-delay: 0s; }
+    .bnp-eq span:nth-child(2) { animation-delay: 0.15s; }
+    .bnp-eq span:nth-child(3) { animation-delay: 0.3s; }
+    .bnp-eq span:nth-child(4) { animation-delay: 0.4s; }
+    .bnp-eq span:nth-child(5) { animation-delay: 0.5s; }
     .bnp-title {
       font-size: 0.6rem; font-weight: 700; letter-spacing: 2px;
       text-transform: uppercase; color: var(--accent); margin-bottom: 4px;
@@ -1420,81 +1422,78 @@
     scroll.addEventListener('scroll', updateArrows);
     updateArrows();
 
-    // Mouse drag to scroll with momentum (iOS-style)
-    let isDragging = false;
-    let startX = 0;
-    let scrollStart = 0;
-    let hasDragged = false;
-    let velocity = 0;
-    let lastX = 0;
-    let lastTime = 0;
-    let momentumId = null;
+    // Mouse drag to scroll — single global handler (not per-row)
+    let dragState = null; // { scroll, startX, scrollStart, lastX, lastTime, velocity, hasDragged, momentumId }
 
     scroll.addEventListener('mousedown', (e) => {
       if (e.target.closest('button, .bstar, a, .browse-card-footer, .comment-input, .comment-form, .comment-submit, .comments-panel, input, textarea')) return;
-      if (momentumId) { cancelAnimationFrame(momentumId); momentumId = null; }
-      isDragging = true;
-      hasDragged = false;
-      startX = e.pageX;
-      lastX = e.pageX;
-      lastTime = Date.now();
-      scrollStart = scroll.scrollLeft;
-      velocity = 0;
+      if (dragState && dragState.momentumId) { cancelAnimationFrame(dragState.momentumId); }
+      dragState = {
+        scroll: scroll,
+        startX: e.pageX,
+        scrollStart: scroll.scrollLeft,
+        lastX: e.pageX,
+        lastTime: Date.now(),
+        velocity: 0,
+        hasDragged: false,
+        momentumId: null
+      };
       scroll.style.cursor = 'grabbing';
       scroll.style.scrollSnapType = 'none';
       scroll.style.scrollBehavior = 'auto';
       e.preventDefault();
     });
+  }
 
-    window.addEventListener('mousemove', (e) => {
-      if (!isDragging) return;
-      const now = Date.now();
-      const dt = now - lastTime;
-      const dx = e.pageX - lastX;
-      if (dt > 0) velocity = dx / dt;
-      lastX = e.pageX;
-      lastTime = now;
-      const totalDx = e.pageX - startX;
-      if (Math.abs(totalDx) > 3) hasDragged = true;
-      scroll.scrollLeft = scrollStart - totalDx;
-    });
+  // Single global mousemove/mouseup for drag scrolling
+  window.addEventListener('mousemove', (e) => {
+    if (!dragState) return;
+    const now = Date.now();
+    const dt = now - dragState.lastTime;
+    const dx = e.pageX - dragState.lastX;
+    if (dt > 0) dragState.velocity = dx / dt;
+    dragState.lastX = e.pageX;
+    dragState.lastTime = now;
+    const totalDx = e.pageX - dragState.startX;
+    if (Math.abs(totalDx) > 3) dragState.hasDragged = true;
+    dragState.scroll.scrollLeft = dragState.scrollStart - totalDx;
+  }, { passive: true });
 
-    window.addEventListener('mouseup', () => {
-      if (!isDragging) return;
-      isDragging = false;
-      scroll.style.cursor = '';
+  window.addEventListener('mouseup', () => {
+    if (!dragState) return;
+    const scroll = dragState.scroll;
+    scroll.style.cursor = '';
 
-      // Momentum coast
-      let v = -velocity * 1000; // px/sec
-      const friction = 0.95;
-      let last = performance.now();
+    let v = -dragState.velocity * 1000;
+    const friction = 0.95;
+    let last = performance.now();
 
-      function coast(now) {
-        const dt = (now - last) / 1000;
-        last = now;
-        v *= friction;
-        scroll.scrollLeft += v * dt;
-        if (Math.abs(v) > 10) {
-          momentumId = requestAnimationFrame(coast);
-        } else {
-          scroll.style.scrollSnapType = 'x proximity';
-          scroll.style.scrollBehavior = 'smooth';
-          momentumId = null;
-        }
-      }
-
-      if (Math.abs(v) > 50) {
-        momentumId = requestAnimationFrame(coast);
+    function coast(now) {
+      const dt = (now - last) / 1000;
+      last = now;
+      v *= friction;
+      scroll.scrollLeft += v * dt;
+      if (Math.abs(v) > 10) {
+        dragState.momentumId = requestAnimationFrame(coast);
       } else {
         scroll.style.scrollSnapType = 'x proximity';
         scroll.style.scrollBehavior = 'smooth';
+        dragState = null;
       }
+    }
 
-      if (hasDragged) {
-        scroll.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); }, { capture: true, once: true });
-      }
-    });
-  }
+    if (Math.abs(v) > 50) {
+      dragState.momentumId = requestAnimationFrame(coast);
+    } else {
+      scroll.style.scrollSnapType = 'x proximity';
+      scroll.style.scrollBehavior = 'smooth';
+      dragState = null;
+    }
+
+    if (dragState && dragState.hasDragged) {
+      scroll.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); }, { capture: true, once: true });
+    }
+  });
 
   // Search
   const browseSearchInput = document.getElementById('browseSearch');
