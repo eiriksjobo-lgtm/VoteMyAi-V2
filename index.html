@@ -2046,6 +2046,65 @@
   }
 
   function openUdioPlayer(udioId, trackTitle) {
+    // Try direct audio playback via Udio API (avoids iframe, enables autoplay)
+    tryUdioDirectPlay(udioId, trackTitle).catch(() => {
+      // Fallback: use iframe popup (requires manual play click)
+      openUdioIframePlayer(udioId, trackTitle);
+    });
+  }
+
+  // Hidden <audio> element for direct Udio playback
+  let _udioAudio = null;
+  let _udioAudioId = null;
+  
+  function tryUdioDirectPlay(udioId, trackTitle) {
+    return fetch('https://www.udio.com/api/songs?songIds=' + udioId, {
+      headers: { 'Accept': 'application/json' }
+    })
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(data => {
+      const song = data.songs && data.songs[0];
+      if (!song || !song.song_path) throw new Error('No song_path');
+      const audioUrl = song.song_path;
+      
+      // Create or reuse <audio> element
+      if (!_udioAudio) {
+        _udioAudio = document.createElement('audio');
+        _udioAudio.id = 'udio-direct-audio';
+        _udioAudio.preload = 'auto';
+        _udioAudio.addEventListener('ended', () => {
+          // Auto-stop when song finishes
+          if (activeBrowseUid) browseStop(activeBrowseUid);
+          playerBar.classList.remove('active', 'playing', 'udio-active');
+          document.body.classList.remove('player-active');
+          activePlayerTrackId = null;
+          activePlayerPlatform = null;
+        });
+        document.body.appendChild(_udioAudio);
+      }
+      
+      _udioAudio.src = audioUrl;
+      _udioAudioId = udioId;
+      _udioAudio.play();
+      
+      // Show minimized player bar (no popup needed!)
+      createUdioContainer();
+      udioContainer.querySelector('.udio-hdr-title').textContent = trackTitle || 'Udio Track';
+      // Keep it closed — we don't need the iframe popup
+      udioContainer.className = 'udio-closed';
+      udioState = 'closed';
+    });
+  }
+
+  function stopUdioDirectAudio() {
+    if (_udioAudio) {
+      _udioAudio.pause();
+      _udioAudio.src = '';
+      _udioAudioId = null;
+    }
+  }
+  
+  function openUdioIframePlayer(udioId, trackTitle) {
     createUdioContainer();
     
     // If same iframe already exists, just show popup
@@ -2097,6 +2156,9 @@
   }
   
   function destroyUdioPlayer() {
+    // Stop direct audio if playing
+    stopUdioDirectAudio();
+    // Destroy iframe container
     if (udioContainer) {
       // Kill iframe src first to stop audio immediately
       const iframes = udioContainer.querySelectorAll('iframe');
