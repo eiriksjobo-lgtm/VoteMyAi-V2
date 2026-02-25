@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   
   <!-- GA4 -->
   <script>if(localStorage.getItem('cookie_consent')==='declined'){window['ga-disable-G-KW4NR9QBWB']=true;}</script>
@@ -58,6 +58,7 @@
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    button, a, [data-action] { -webkit-tap-highlight-color: transparent; }
     html { scroll-behavior: smooth; }
     body {
       background: var(--bg);
@@ -163,7 +164,7 @@
 
     .leaderboard-section { max-width: 800px; margin: 0 auto; padding: 60px clamp(16px, 4vw, 40px) 40px; }
     .lb-tabs { display: flex; gap: 4px; justify-content: center; margin-bottom: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 3px; width: fit-content; margin-left: auto; margin-right: auto; }
-    .lb-tab { padding: 7px 20px; border-radius: 8px; border: none; background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+    .lb-tab { padding: 10px 20px; border-radius: 8px; border: none; background: transparent; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
     .lb-tab:hover { color: var(--text); }
     .lb-tab.active { background: var(--accent); color: var(--bg); }
     .section-header { text-align: center; margin-bottom: 32px; }
@@ -277,6 +278,23 @@
       .how-steps { gap: 16px; }
     }
 
+    /* ── Tablet breakpoint (641–960px) ── */
+    @media (min-width: 641px) and (max-width: 960px) {
+      .browse-card { flex: 0 0 200px; }
+      .genre-row-scroll { gap: 12px; }
+      .hero h1 { font-size: 2.4rem; }
+      .hero p { max-width: 420px; }
+      .browse-controls { padding: 0 20px 20px; }
+      .genre-row-header { padding: 14px 20px 8px; }
+      .genre-row-scroll { padding: 4px 20px 14px; }
+      .search-results-grid { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); padding: 0 20px 40px; }
+      .player-bar { padding: 0 16px; }
+      .leaderboard-section { padding: 50px 20px 30px; }
+      .how-steps { grid-template-columns: 1fr 1fr; }
+      .tools-grid { grid-template-columns: 1fr 1fr; }
+      .footer-inner { flex-wrap: wrap; gap: 24px; }
+    }
+
     @media (max-width: 640px) {
       nav { height: 54px; }
       .logo { font-size: 1.2rem; letter-spacing: 2px; }
@@ -336,18 +354,19 @@
       .footer-brand p { font-size: 0.74rem; }
       .footer-links { gap: 24px; }
       .footer-col h4 { font-size: 0.62rem; margin-bottom: 8px; }
-      .footer-col a { font-size: 0.76rem; padding: 5px 0; }
+      .footer-col a { font-size: 0.76rem; padding: 8px 0; min-height: 36px; display: flex; align-items: center; }
       .footer-bottom { flex-direction: column; align-items: center; text-align: center; gap: 8px; }
       .footer-copy { font-size: 0.68rem; }
       .footer-tools { gap: 12px; }
       .footer-tools a { font-size: 0.68rem; }
-      .player-bar { padding: 0 12px; height: 56px; gap: 10px; }
+      .player-bar { padding: 0 12px; height: 56px; gap: 8px; }
       body.player-active { padding-bottom: 56px; }
       body.player-active .page-frame { bottom: 56px; }
-      .player-title { font-size: 0.78rem; }
+      .player-title { font-size: 0.78rem; max-width: calc(100vw - 160px); }
       .player-meta { font-size: 0.62rem; }
-      .player-ctrl { width: 34px; height: 34px; }
-      .player-ctrl svg { width: 16px; height: 16px; }
+      .player-ctrl { width: 40px; height: 40px; }
+      .player-ctrl svg { width: 18px; height: 18px; }
+      .player-eq { gap: 1.5px; height: 14px; }
       .player-eq span { width: 2px; }
     }
 
@@ -356,6 +375,72 @@
       .hero-tools { gap: 6px; }
       .nav-link { padding: 6px 6px; font-size: 0.6rem; }
       .btn-submit { padding: 6px 10px; font-size: 0.6rem; }
+    }
+
+    /* ── Touch device optimizations ── */
+    @media (hover: none) and (pointer: coarse) {
+      /* Disable hover transforms that cause sticky states on touch */
+      .browse-card:hover { transform: none; box-shadow: none; border-color: var(--border); z-index: auto; }
+      .browse-card:hover .browse-card-thumb img { transform: none; }
+      .browse-card:hover .browse-card-play { opacity: 0; }
+      .tool-card:hover { transform: none; box-shadow: none; border-color: var(--border); }
+      .btn-submit:hover { transform: none; }
+      .comment-submit:hover { transform: none; }
+      .hero-cta:hover { transform: none; }
+      .hero-tool:hover { transform: none; border-color: var(--border); }
+      
+      /* Show play button always on touch (no hover to reveal it) */
+      .browse-card .browse-card-play { opacity: 0.85; }
+      
+      /* Show leaderboard play icon always on touch */
+      .lb-play-icon { opacity: 0.6 !important; }
+      
+      /* Bigger touch targets for stars */
+      .browse-card-stars .bstar { width: 36px; height: 36px; min-width: 36px; min-height: 36px; }
+      .browse-card-stars .bstar svg { width: 20px; height: 20px; }
+      .browse-card-stars .bstar:hover { transform: none; }
+      
+      /* Bigger touch targets for footer buttons */
+      .browse-card-footer button { padding: 6px 4px; min-height: 36px; font-size: 0.7rem; }
+      
+      /* Player bar touch targets */
+      .player-ctrl { width: 44px; height: 44px; }
+      .player-ctrl svg { width: 20px; height: 20px; }
+      
+      /* Leaderboard rows — bigger tap area */
+      .lb-row { min-height: 60px; padding: 16px 14px; }
+      
+      /* Disable hover highlight on rows */
+      .lb-row:hover { background: transparent; }
+      .lb-row:active { background: var(--accent-glow); }
+      
+      /* Browse card active state instead of hover */
+      .browse-card:active { border-color: var(--accent); }
+      
+      /* Comment panel — limit for shorter screens */
+      .comments-panel.open { max-height: 60vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+      
+      /* Note toggle — bigger touch target */
+      .browse-card-note-toggle { padding: 6px 0; display: inline-block; }
+    }
+    
+    /* ── iOS Safe Area ── */
+    @supports (padding-bottom: env(safe-area-inset-bottom)) {
+      .player-bar { padding-bottom: env(safe-area-inset-bottom); }
+      .player-bar.active { height: calc(68px + env(safe-area-inset-bottom)); }
+      body.player-active { padding-bottom: calc(68px + env(safe-area-inset-bottom)); }
+      nav { padding-top: env(safe-area-inset-top); }
+    }
+    @supports (padding-bottom: env(safe-area-inset-bottom)) {
+      @media (max-width: 640px) {
+        .player-bar.active { height: calc(56px + env(safe-area-inset-bottom)); }
+        body.player-active { padding-bottom: calc(56px + env(safe-area-inset-bottom)); }
+      }
+    }
+
+    /* ── Prevent iOS zoom on inputs (must be >= 16px) ── */
+    @media (max-width: 640px) {
+      .search-box input { font-size: 16px; }
     }
 
     /* ══════════════════════════════════ BROWSE (Netflix-style) ══════════════════════════════════ */
@@ -392,6 +477,13 @@
 
     /* Genre Row */
     .genre-row { margin-bottom: 4px; position: relative; }
+    /* Mobile: fade edge to hint at scrollable content */
+    @media (hover: none) and (pointer: coarse) {
+      .genre-row::after {
+        content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 32px;
+        background: linear-gradient(90deg, transparent, var(--bg)); pointer-events: none; z-index: 2;
+      }
+    }
     .genre-row-header {
       display: flex; align-items: center; gap: 12px;
       padding: 18px clamp(16px, 4vw, 48px) 10px;
@@ -687,26 +779,29 @@
 
 
     @media (max-width: 640px) {
-      .browse-card { flex: 0 0 170px; }
-      .browse-controls { flex-direction: column; align-items: stretch; gap: 8px; padding: 0 12px 16px; }
+      .browse-card { flex: 0 0 72vw; max-width: 280px; }
+      .browse-controls { flex-direction: column; align-items: stretch; gap: 8px; padding: 0 16px 16px; }
       .search-box { max-width: 100%; }
       .browse-count { display: none; }
-      .genre-row-header { padding: 12px 12px 6px; }
-      .genre-row-scroll { padding: 4px 12px 12px; gap: 10px; }
+      .genre-row-header { padding: 12px 16px 6px; }
+      .genre-row-scroll { padding: 4px 16px 12px; gap: 12px; scroll-snap-type: x proximity; scroll-padding-left: 16px; }
+      .genre-row-scroll > .browse-card { scroll-snap-align: start; }
       .genre-row-title { font-size: 1.1rem; }
       .scroll-arrow { display: none !important; }
       .browse-card-body { padding: 10px 12px 12px; }
-      .browse-card-title { font-size: 0.78rem; }
+      .browse-card-title { font-size: 0.82rem; }
       .browse-card-badge { font-size: 0.55rem; padding: 2px 6px; }
-      .browse-card-stars .bstar { width: 32px; height: 32px; }
-      .browse-card-stars .bstar svg { width: 18px; height: 18px; }
+      .browse-card-stars .bstar { width: 34px; height: 34px; }
+      .browse-card-stars .bstar svg { width: 20px; height: 20px; }
       .browse-card-score-num { font-size: 0.82rem; }
       .browse-card-score-count { font-size: 0.55rem; }
       .browse-card-rating { flex-direction: column; align-items: flex-start; gap: 4px; }
       .browse-card-score { display: flex; align-items: center; gap: 6px; text-align: left; }
       .browse-card-score-num { font-size: 0.78rem; }
       .browse-card-score-count { font-size: 0.6rem; }
-      .search-results-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; padding: 0 12px 30px; }
+      .search-results-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; padding: 0 16px 30px; }
+      /* Browse section bottom padding for player bar */
+      .browse-section { padding-bottom: 20px; }
     }
 
   </style>
@@ -2236,8 +2331,10 @@
     .player-bar.udio-active .player-eq span { background: #818cf8; }
 
     @media (max-width: 640px) {
-      .udio-popup #udio-wrapper { width: 96vw; }
+      .udio-popup #udio-wrapper { width: 96vw; max-height: 80vh; }
       #udio-iframe-box { height: 320px; }
+      .udio-hdr-title { font-size: 0.72rem; max-width: 50vw; }
+      .udio-hdr-btn { width: 36px; height: 36px; }
     }
   `;
   document.head.appendChild(udioStyles);
@@ -2402,8 +2499,10 @@
     .player-bar.sc-active { border-top-color: rgba(255,85,0,0.2); }
     .player-bar.sc-active .player-eq span { background: #ff5500; }
     @media (max-width: 640px) {
-      .sc-popup #sc-wrapper { width: 96vw; }
+      .sc-popup #sc-wrapper { width: 96vw; max-height: 80vh; }
       #sc-iframe-box { height: 320px; }
+      .sc-hdr-title { font-size: 0.72rem; max-width: 50vw; }
+      .sc-hdr-btn { width: 36px; height: 36px; }
     }
   `;
   document.head.appendChild(scStyles);
