@@ -71,9 +71,7 @@
     /* ══════════════════════════════════ NAV ══════════════════════════════════ */
     nav {
       position: sticky; top: 0; z-index: 200;
-      background: rgba(7,7,11,0.88);
-      backdrop-filter: blur(24px) saturate(1.4);
-      -webkit-backdrop-filter: blur(24px) saturate(1.4);
+      background: rgba(7,7,11,0.92);
       border-bottom: 1px solid rgba(26,26,38,0.6);
       height: 60px;
       display: flex; align-items: center; justify-content: space-between;
@@ -227,7 +225,7 @@
     .footer-tools a { color: var(--muted); text-decoration: none; font-size: 0.75rem; transition: color 0.2s; }
     .footer-tools a:hover { color: var(--accent); }
 
-    .player-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999; background: rgba(10,10,18,0.97); backdrop-filter: blur(20px); border-top: 1px solid var(--border); display: none; align-items: center; gap: 14px; padding: 0 20px; height: 68px; }
+    .player-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999; background: rgba(10,10,18,0.98); border-top: 1px solid var(--border); display: none; align-items: center; gap: 14px; padding: 0 20px; height: 68px; }
     .player-bar.active { display: flex; }
     .player-bar.playing .player-eq span { animation-play-state: running; }
     .player-eq { display: flex; align-items: flex-end; gap: 2px; height: 18px; flex-shrink: 0; }
@@ -258,7 +256,7 @@
       background: rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.15);
       color: #fff; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
-      transition: all 0.2s; backdrop-filter: blur(8px);
+      transition: all 0.2s;
       box-shadow: 0 4px 20px rgba(0,0,0,0.4);
     }
     .pf-close:hover { background: rgba(129,140,248,0.3); border-color: rgba(129,140,248,0.4); transform: scale(1.1); }
@@ -486,8 +484,7 @@
       position: absolute; bottom: 8px; left: 10px;
       font-size: 0.6rem; font-weight: 600; color: rgba(255,255,255,0.8);
       letter-spacing: 0.5px; text-transform: uppercase;
-      background: rgba(0,0,0,0.5); padding: 2px 8px; border-radius: 4px;
-      backdrop-filter: blur(4px);
+      background: rgba(0,0,0,0.6); padding: 2px 8px; border-radius: 4px;
     }
     
     .browse-card-hot {
@@ -641,12 +638,7 @@
     }
     .bnp-bg {
       position: absolute; inset: 0;
-      background: linear-gradient(135deg, rgba(232,255,71,0.15) 0%, rgba(7,7,11,0.95) 60%);
-      animation: bnpShift 4s ease-in-out infinite alternate;
-    }
-    @keyframes bnpShift {
-      0% { background: linear-gradient(135deg, rgba(232,255,71,0.15) 0%, rgba(7,7,11,0.95) 60%); }
-      100% { background: linear-gradient(225deg, rgba(232,255,71,0.1) 0%, rgba(7,7,11,0.95) 60%); }
+      background: linear-gradient(135deg, rgba(232,255,71,0.12) 0%, rgba(7,7,11,0.95) 60%);
     }
     .bnp-content { position: relative; z-index: 2; text-align: center; }
     .bnp-eq {
@@ -942,13 +934,13 @@
     const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([^&?\/#]+)/);
     if (ytMatch) return { platform: 'youtube', embedHtml: `<iframe src="https://www.youtube.com/embed/${ytMatch[1]}?rel=0&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}" allowfullscreen loading="lazy"></iframe>` };
     if (url.includes('soundcloud.com')) {
-      // Handle various SC URL formats
+      // Short links (on.soundcloud.com) can't be embedded - widget doesn't resolve them
+      if (url.includes('on.soundcloud.com')) {
+        return { platform: 'soundcloud', embedHtml: `<a href="${sanitizeAttr(url)}" target="_blank" rel="noopener" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;background:linear-gradient(135deg, rgba(255,85,0,0.1) 0%, var(--surface-2) 100%);color:var(--text);text-decoration:none;gap:8px;cursor:pointer;"><div style="width:52px;height:52px;border-radius:50%;background:rgba(255,85,0,0.9);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 24px rgba(255,85,0,0.4);"><svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><polygon points="6 3 20 12 6 21 6 3"/></svg></div><span style="font-weight:700;font-size:0.78rem;color:#ff5500;">Play on SoundCloud</span><span style="font-size:0.65rem;color:var(--muted);">Opens in new tab</span></a>` };
+      }
       let scTrackUrl = url;
-      // If it's already a widget/player URL, extract the track URL
       const widgetMatch = url.match(/w\.soundcloud\.com\/player\/?\?.*url=([^&]+)/);
       if (widgetMatch) scTrackUrl = decodeURIComponent(widgetMatch[1]);
-      // If it's an API URL, use it directly
-      // If it's a regular URL, use it directly (widget resolves it)
       return { platform: 'soundcloud', embedHtml: `<iframe src="https://w.soundcloud.com/player/?url=${encodeURIComponent(scTrackUrl)}&color=%23ff5500&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=true" scrolling="no" allow="autoplay" loading="lazy"></iframe>` };
     }
     if (url.includes('suno.com')) {
@@ -1021,7 +1013,7 @@
   // ─── Rate (via Edge Function) ───
   async function rateStar(trackId, score, container) { container.classList.add('rated'); container.querySelectorAll('.star').forEach(s => { s.classList.remove('hover-fill'); s.classList.toggle('filled', parseInt(s.dataset.score) <= score); }); userRatings[trackId] = score; gtag('event', 'rate', { track_id: trackId, score }); try { const res = await fetch(SUPABASE_URL + '/functions/v1/rate-track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ track_id: trackId, score: score, anon_token: getAnonToken() }) }); const data = await res.json(); if (!res.ok) { showToast(data.error || 'Kunne ikke rate'); return; } const t = allTracks.find(x => x.id === trackId); if (t) { t.avg_rating = data.avg_rating; t.rating_count = data.rating_count; } showToast(score >= 4 ? '\u2b50 ' + score + '/5 \u2014 Great taste!' : '\u2705 Rated ' + score + '/5'); const card = document.getElementById(`card-${trackId}`); if (card) { const se = card.querySelector('.rating-score'); const ce = card.querySelector('.rating-count'); if (se) se.textContent = data.avg_rating ? data.avg_rating.toFixed(1) : '\u2014'; if (ce) ce.textContent = `${data.rating_count||0} rating${(data.rating_count||0)!==1?'s':''}`; } document.querySelectorAll(`.browse-card[data-track-id="${trackId}"]`).forEach(bc => { const sn = bc.querySelector('.browse-card-score-num'); const sc = bc.querySelector('.browse-card-score-count'); if (sn) sn.textContent = data.avg_rating ? data.avg_rating.toFixed(1) : '\u2014'; if (sc) sc.textContent = (data.rating_count||0) + ' rating' + ((data.rating_count||0)!==1?'s':''); }); } catch(e) { showToast('Network error \u2014 try again'); } }
 
-  function showToast(msg) { let toast = document.getElementById('vote-toast'); if (!toast) { toast = document.createElement('div'); toast.id = 'vote-toast'; toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--surface);color:var(--text);padding:12px 24px;border-radius:12px;font-size:0.82rem;font-weight:600;z-index:9999;opacity:0;transition:opacity 0.3s,transform 0.3s;border:1px solid rgba(232,255,71,0.25);box-shadow:0 8px 32px rgba(0,0,0,0.5);backdrop-filter:blur(12px);'; document.body.appendChild(toast); } toast.textContent = msg; toast.style.opacity = '1'; toast.style.transform = 'translateX(-50%) translateY(0)'; setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(-50%) translateY(10px)'; }, 2500); }
+  function showToast(msg) { let toast = document.getElementById('vote-toast'); if (!toast) { toast = document.createElement('div'); toast.id = 'vote-toast'; toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--surface);color:var(--text);padding:12px 24px;border-radius:12px;font-size:0.82rem;font-weight:600;z-index:9999;opacity:0;transition:opacity 0.3s,transform 0.3s;border:1px solid rgba(232,255,71,0.25);box-shadow:0 8px 32px rgba(0,0,0,0.5);'; document.body.appendChild(toast); } toast.textContent = msg; toast.style.opacity = '1'; toast.style.transform = 'translateX(-50%) translateY(0)'; setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(-50%) translateY(10px)'; }, 2500); }
 
   // ─── Comments ───
   async function toggleComments(trackId, el) {
@@ -1179,7 +1171,7 @@
 
       const overlay = document.createElement('div');
       overlay.id = 'deeplink-overlay';
-      overlay.style.cssText = 'position:fixed;inset:0;z-index:9998;background:rgba(7,7,11,0.7);display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(4px);';
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:9998;background:rgba(7,7,11,0.8);display:flex;align-items:center;justify-content:center;cursor:pointer;';
       overlay.innerHTML = `<div style="text-align:center;"><div style="width:80px;height:80px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 0 40px rgba(232,255,71,0.4);animation:deepPulse 1.5s ease-in-out infinite;cursor:pointer;"><svg width="36" height="36" viewBox="0 0 24 24" fill="#07070b"><polygon points="6 3 20 12 6 21"/></svg></div><div style="color:var(--text);font-weight:700;font-size:1rem;margin-bottom:4px;">Tap to play</div><div style="color:var(--muted);font-size:0.8rem;">${sanitize(track.title || '')}</div></div>`;
 
       const style = document.createElement('style');
@@ -1617,9 +1609,14 @@
     const embed = getEmbedHtml(track);
     let embedHtml = embed.embedHtml;
     
-    // SoundCloud: use popup player (SC blocks audio in hidden iframes)
+    // SoundCloud: popup for full URLs, new tab for short links
     if (embed.platform === 'soundcloud') {
       const scUrl = track.embed_url || '';
+      if (scUrl.includes('on.soundcloud.com')) {
+        // Short link — can't embed, open in new tab
+        window.open(scUrl, '_blank');
+        return;
+      }
       openSoundCloudPlayer(scUrl, track.title);
       
       const thumbOrig = thumbContainer.innerHTML;
@@ -2214,7 +2211,7 @@
   checkAuth().then(loadTracks).then(handleDeepLink);
 </script>
 <!-- ═══ COOKIE CONSENT ═══ -->
-<div id="cookieBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:14px 24px;z-index:9999;font-size:0.82rem;color:var(--muted);backdrop-filter:blur(16px);">
+<div id="cookieBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:14px 24px;z-index:9999;font-size:0.82rem;color:var(--muted);">
   <div style="max-width:1000px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
     <span>We use cookies for analytics and to improve your experience. <a href="/privacy.html" style="color:var(--accent);">Privacy Policy</a></span>
     <div style="display:flex;gap:8px;flex-shrink:0;">
