@@ -114,6 +114,8 @@
     .table-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
     .table-header-left { font-size: 0.82rem; color: var(--text-secondary); font-weight: 600; }
     .table-header-right { font-size: 0.72rem; color: var(--warn); font-weight: 500; }
+    #adminSearch:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(232,255,71,0.08); }
+    .search-match { background: rgba(232,255,71,0.15); color: var(--accent); border-radius: 2px; padding: 0 2px; }
 
     @media (max-width: 768px) {
       .container { padding: 20px 12px; }
@@ -153,6 +155,10 @@
       <div class="stat-card"><div class="stat-label">Avg Rating</div><div class="stat-value" id="sAvg">—</div></div>
     </div>
 
+    <div style="margin-bottom:16px;">
+      <input type="text" id="adminSearch" placeholder="Search users, tracks, comments, messages..." style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 16px 10px 42px;border-radius:100px;font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;transition:border-color 0.2s;background-image:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%235c5c72%22 stroke-width=%222%22><circle cx=%2211%22 cy=%2211%22 r=%228%22/><line x1=%2221%22 y1=%2221%22 x2=%2216.65%22 y2=%2216.65%22/></svg>');background-repeat:no-repeat;background-position:14px center;">
+    </div>
+
     <div class="tabs">
       <button class="tab active" onclick="switchTab('users', this)">Users</button>
       <button class="tab" onclick="switchTab('tracks', this)">Tracks</button>
@@ -180,9 +186,28 @@
 
   // Pagination state per tab
   const pages = { users: 1, tracks: 1, comments: 1, messages: 1 };
+  let searchQuery = '';
 
   function sanitize(str) { if (!str) return ''; const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
   function formatDate(d) { if (!d) return '\u2014'; return new Date(d).toLocaleDateString('no-NO', { day: 'numeric', month: 'short', year: 'numeric' }); }
+
+  // Highlight matching text
+  function hl(text) {
+    if (!searchQuery || !text) return sanitize(text);
+    const safe = sanitize(text);
+    const q = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return safe.replace(new RegExp('(' + q + ')', 'gi'), '<span class="search-match">$1</span>');
+  }
+
+  // Search input handler
+  document.getElementById('adminSearch').addEventListener('input', function() {
+    clearTimeout(this._debounce);
+    this._debounce = setTimeout(() => {
+      searchQuery = this.value.trim().toLowerCase();
+      pages.users = 1; pages.tracks = 1; pages.comments = 1; pages.messages = 1;
+      renderTab('users'); renderTab('tracks'); renderTab('comments'); renderTab('messages');
+    }, 200);
+  });
 
   function showStatus(id, msg, type) {
     const el = document.getElementById(id);
@@ -321,67 +346,90 @@
   function renderTab(tab) {
     const container = document.getElementById(`tab-${tab}`);
     const page = pages[tab];
-    const start = (page - 1) * PAGE_SIZE;
-    const end = start + PAGE_SIZE;
+    const q = searchQuery;
 
     if (tab === 'users') {
-      const users = Object.values(userMap);
+      let users = Object.values(userMap);
       users.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      const slice = users.slice(start, end);
-      const warn = authUsers.length >= 50 && authUsers.length % 50 === 0;
+      if (q) users = users.filter(u => 
+        (u.name || '').toLowerCase().includes(q) || 
+        (u.email || '').toLowerCase().includes(q)
+      );
+      const total = users.length;
+      const start = (page - 1) * PAGE_SIZE;
+      const slice = users.slice(start, start + PAGE_SIZE);
+      const warn = !q && authUsers.length >= 50 && authUsers.length % 50 === 0;
 
       container.innerHTML = `<div class="table-header">
-        <span class="table-header-left">${users.length} registered users</span>
-        ${warn ? '<span class="table-header-right">⚠️ Showing first ' + users.length + ' — update edge function for full list</span>' : ''}
+        <span class="table-header-left">${total} ${q ? 'matching' : 'registered'} users</span>
+        ${warn ? '<span class="table-header-right">⚠️ Showing first ' + total + ' — update edge function for full list</span>' : ''}
       </div><div class="table-wrap"><table>
         <tr><th style="width:40px;">#</th><th>User</th><th>Email</th><th>Tracks</th><th>Comments</th><th>Joined</th><th>Actions</th></tr>
         ${slice.length ? slice.map((u, idx) => {
           const num = start + idx + 1;
-          const name = sanitize(u.name || 'No name');
           const avatarHtml = u.avatar ? `<img src="${sanitize(u.avatar)}" alt="">` : (u.name || u.email || '?').charAt(0).toUpperCase();
           return `<tr>
             <td style="color:var(--muted);font-weight:600;font-size:0.75rem;">${num}</td>
-            <td><span class="user-badge"><span class="user-avatar">${avatarHtml}</span>${name}</span></td>
-            <td class="text-email">${sanitize(u.email)}</td>
+            <td><span class="user-badge"><span class="user-avatar">${avatarHtml}</span>${hl(u.name || 'No name')}</span></td>
+            <td class="text-email">${hl(u.email)}</td>
             <td class="text-accent">${u.trackCount}</td>
             <td>${u.commentCount}</td>
             <td class="text-muted">${formatDate(u.created_at)}</td>
             <td><button class="btn-delete" onclick="deleteUser('${u.id}')">Delete</button></td>
           </tr>`;
-        }).join('') : '<tr><td colspan="7" class="empty-state">No users yet</td></tr>'}
-      </table></div>` + buildPagination('users', users.length);
+        }).join('') : '<tr><td colspan="7" class="empty-state">' + (q ? 'No users matching "' + sanitize(searchQuery) + '"' : 'No users yet') + '</td></tr>'}
+      </table></div>` + buildPagination('users', total);
     }
 
     if (tab === 'tracks') {
-      const slice = allTracks.slice(start, end);
+      let tracks = [...allTracks];
+      if (q) tracks = tracks.filter(t =>
+        (t.title || '').toLowerCase().includes(q) ||
+        (t.tool || '').toLowerCase().includes(q) ||
+        (t.genre || '').toLowerCase().includes(q) ||
+        ((userMap[t.user_id]?.name || userMap[t.user_id]?.email || '')).toLowerCase().includes(q)
+      );
+      const total = tracks.length;
+      const start = (page - 1) * PAGE_SIZE;
+      const slice = tracks.slice(start, start + PAGE_SIZE);
+
       container.innerHTML = `<div class="table-header">
-        <span class="table-header-left">${allTracks.length} tracks</span>
+        <span class="table-header-left">${total} ${q ? 'matching' : ''} tracks</span>
       </div><div class="table-wrap"><table>
         <tr><th style="width:40px;">#</th><th>Title</th><th>Submitted By</th><th>Tool</th><th>Genre</th><th>Avg</th><th>Ratings</th><th>Submitted</th><th>Actions</th></tr>
         ${slice.length ? slice.map((t, idx) => {
           const num = start + idx + 1;
           const user = t.user_id && userMap[t.user_id] ? userMap[t.user_id] : null;
-          const submitter = user ? sanitize(user.name || user.email || 'Unknown') : '<span class="text-muted">Unknown</span>';
+          const submitter = user ? hl(user.name || user.email || 'Unknown') : '<span class="text-muted">Unknown</span>';
           const avg = t.avg_rating ? parseFloat(t.avg_rating).toFixed(1) : '\u2014';
           return `<tr>
             <td style="color:var(--muted);font-weight:600;font-size:0.75rem;">${num}</td>
-            <td><strong>${sanitize(t.title)}</strong></td>
+            <td><strong>${hl(t.title)}</strong></td>
             <td class="text-sm">${submitter}</td>
-            <td>${sanitize(t.tool)}</td>
-            <td>${sanitize(t.genre)}</td>
+            <td>${hl(t.tool)}</td>
+            <td>${hl(t.genre)}</td>
             <td class="text-accent">${avg}</td>
             <td>${t.rating_count || 0}</td>
             <td class="text-muted">${formatDate(t.created_at)}</td>
             <td><button class="btn-delete" onclick="deleteTrack('${t.id}')">Delete</button></td>
           </tr>`;
-        }).join('') : '<tr><td colspan="9" class="empty-state">No tracks yet</td></tr>'}
-      </table></div>` + buildPagination('tracks', allTracks.length);
+        }).join('') : '<tr><td colspan="9" class="empty-state">' + (q ? 'No tracks matching "' + sanitize(searchQuery) + '"' : 'No tracks yet') + '</td></tr>'}
+      </table></div>` + buildPagination('tracks', total);
     }
 
     if (tab === 'comments') {
-      const slice = allComments.slice(start, end);
+      let comments = [...allComments];
+      if (q) comments = comments.filter(c =>
+        (c.content || '').toLowerCase().includes(q) ||
+        (c.author_name || '').toLowerCase().includes(q) ||
+        (c.tracks?.title || '').toLowerCase().includes(q)
+      );
+      const total = comments.length;
+      const start = (page - 1) * PAGE_SIZE;
+      const slice = comments.slice(start, start + PAGE_SIZE);
+
       container.innerHTML = `<div class="table-header">
-        <span class="table-header-left">${allComments.length} comments</span>
+        <span class="table-header-left">${total} ${q ? 'matching' : ''} comments</span>
       </div><div class="table-wrap"><table>
         <tr><th style="width:40px;">#</th><th>Track</th><th>Author</th><th>Email</th><th>Comment</th><th>Date</th><th>Actions</th></tr>
         ${slice.length ? slice.map((c, idx) => {
@@ -390,35 +438,44 @@
           const email = user ? sanitize(user.email) : '<span class="text-muted">\u2014</span>';
           return `<tr>
             <td style="color:var(--muted);font-weight:600;font-size:0.75rem;">${num}</td>
-            <td>${sanitize(c.tracks?.title || 'Unknown')}</td>
-            <td>${sanitize(c.author_name || 'Anonymous')}</td>
+            <td>${hl(c.tracks?.title || 'Unknown')}</td>
+            <td>${hl(c.author_name || 'Anonymous')}</td>
             <td class="text-email text-sm">${email}</td>
-            <td>${sanitize(c.content)}</td>
+            <td>${hl(c.content)}</td>
             <td class="text-muted">${formatDate(c.created_at)}</td>
             <td><button class="btn-delete" onclick="deleteComment('${c.id}')">Delete</button></td>
           </tr>`;
-        }).join('') : '<tr><td colspan="7" class="empty-state">No comments yet</td></tr>'}
-      </table></div>` + buildPagination('comments', allComments.length);
+        }).join('') : '<tr><td colspan="7" class="empty-state">' + (q ? 'No comments matching "' + sanitize(searchQuery) + '"' : 'No comments yet') + '</td></tr>'}
+      </table></div>` + buildPagination('comments', total);
     }
 
     if (tab === 'messages') {
-      const slice = allMessages.slice(start, end);
+      let messages = [...allMessages];
+      if (q) messages = messages.filter(m =>
+        (m.name || '').toLowerCase().includes(q) ||
+        (m.email || '').toLowerCase().includes(q) ||
+        (m.message || '').toLowerCase().includes(q)
+      );
+      const total = messages.length;
+      const start = (page - 1) * PAGE_SIZE;
+      const slice = messages.slice(start, start + PAGE_SIZE);
+
       container.innerHTML = `<div class="table-header">
-        <span class="table-header-left">${allMessages.length} messages</span>
+        <span class="table-header-left">${total} ${q ? 'matching' : ''} messages</span>
       </div><div class="table-wrap"><table>
         <tr><th style="width:40px;">#</th><th>Name</th><th>Email</th><th>Message</th><th>Date</th><th>Actions</th></tr>
         ${slice.length ? slice.map((m, idx) => {
           const num = start + idx + 1;
           return `<tr>
             <td style="color:var(--muted);font-weight:600;font-size:0.75rem;">${num}</td>
-            <td>${sanitize(m.name)}</td>
-            <td class="text-email">${sanitize(m.email)}</td>
-            <td>${sanitize(m.message)}</td>
+            <td>${hl(m.name)}</td>
+            <td class="text-email">${hl(m.email)}</td>
+            <td>${hl(m.message)}</td>
             <td class="text-muted">${formatDate(m.created_at)}</td>
             <td><button class="btn-delete" onclick="deleteMessage('${m.id}')">Delete</button></td>
           </tr>`;
-        }).join('') : '<tr><td colspan="6" class="empty-state">No messages yet</td></tr>'}
-      </table></div>` + buildPagination('messages', allMessages.length);
+        }).join('') : '<tr><td colspan="6" class="empty-state">' + (q ? 'No messages matching "' + sanitize(searchQuery) + '"' : 'No messages yet') + '</td></tr>'}
+      </table></div>` + buildPagination('messages', total);
     }
   }
 
