@@ -417,10 +417,13 @@
       flex: 1; min-width: 0; cursor: grab;
       user-select: none; -webkit-user-select: none;
       -webkit-overflow-scrolling: touch;
+      touch-action: pan-x;
     }
     .genre-row-scroll::-webkit-scrollbar { display: none; }
+    body.is-dragging .genre-row-scroll { cursor: grabbing; }
     body.is-dragging .browse-card { transition: none !important; transform: none !important; }
     body.is-dragging .browse-card * { transition: none !important; }
+    .browse-card { user-select: none; -webkit-user-select: none; }
 
     /* Scroll arrows — fixed outside cards */
     .genre-row-wrapper {
@@ -458,7 +461,9 @@
       transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
       position: relative;
       contain: layout style paint;
+      -webkit-user-drag: none; user-drag: none;
     }
+    .browse-card * { -webkit-user-drag: none; }
     .browse-card:hover {
       border-color: var(--accent); transform: translateY(-4px);
       box-shadow: 0 12px 32px rgba(0,0,0,0.4); z-index: 5;
@@ -466,9 +471,12 @@
     .browse-card-thumb {
       position: relative; width: 100%; aspect-ratio: 16/10;
       overflow: hidden; background: var(--surface-2);
+      -webkit-user-drag: none; user-drag: none;
     }
     .browse-card-thumb img {
       width: 100%; height: 100%; object-fit: cover;
+      -webkit-user-drag: none; user-drag: none;
+      pointer-events: none; draggable: false;
     }
     .browse-card:hover .browse-card-thumb img { transform: scale(1.04); }
     
@@ -1313,7 +1321,7 @@
 
     return '<div class="browse-card" id="' + uid + '" data-track-id="' + trackIdAttr + '" data-uid="' + uid + '">' +
       '<div class="browse-card-thumb" data-action="load-embed" data-uid="' + uid + '" data-track-id="' + trackIdAttr + '">' +
-        (thumbSrc ? '<img src="' + sanitizeAttr(thumbSrc) + '" alt="' + titleAttr + '" loading="lazy">' : '<div style="width:100%;height:100%;background:var(--surface-2);"></div>') +
+        (thumbSrc ? '<img src="' + sanitizeAttr(thumbSrc) + '" alt="' + titleAttr + '" loading="lazy" draggable="false">' : '<div style="width:100%;height:100%;background:var(--surface-2);"></div>') +
         '<button class="browse-card-play" data-action="load-embed" data-uid="' + uid + '" data-track-id="' + trackIdAttr + '"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></button>' +
         (plat ? '<span class="browse-card-platform">' + plat + '</span>' : '') +
         (isHot ? '<span class="browse-card-hot"><span class="dot"></span> HOT</span>' : '') +
@@ -1579,7 +1587,7 @@
   function onDragStart(e) {
     // Don't intercept interactive elements
     if (e.button !== 0) return;
-    if (e.target.closest('button, .bstar, a, .browse-card-footer, .comment-input, .comment-form, .comment-submit, .comments-panel, .browse-card-note, .browse-card-note-toggle, .browse-card-note-text, input, textarea')) return;
+    if (e.target.closest('button, .bstar, a, .browse-card-footer, .comment-input, .comment-form, .comment-submit, .comments-panel, .browse-card-note, .browse-card-note-toggle, .browse-card-note-text, .browse-card-play, input, textarea')) return;
     
     // Kill any previous drag/momentum
     cleanupDrag();
@@ -1657,10 +1665,17 @@
 
   document.addEventListener('mousemove', onGlobalMove, { passive: true });
   document.addEventListener('mouseup', onGlobalUp);
-  // Fallback: also listen for mouseleave on document (edge case: mouse leaves window)
   document.documentElement.addEventListener('mouseleave', onGlobalUp);
   window.addEventListener('blur', cleanupDrag);
   document.addEventListener('visibilitychange', () => { if (document.hidden) cleanupDrag(); });
+
+  // Kill ALL native browser drag within browse sections — this is what causes
+  // the "dragging the image" feel instead of scrolling
+  document.addEventListener('dragstart', (e) => {
+    if (e.target.closest('.genre-row-scroll, .search-results-grid, .browse-card')) {
+      e.preventDefault();
+    }
+  });
 
   // Search
   const browseSearchInput = document.getElementById('browseSearch');
