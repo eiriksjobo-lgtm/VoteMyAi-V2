@@ -1,44 +1,9 @@
 /* blog-footer.js — Auto-injects share buttons + related posts
+   Reads blog.html automatically — never needs manual updating.
    Usage: Add <script src="/blog-footer.js"></script> before </body> in each blog post */
 
 (function(){
-  const posts = [
-    { url:'/blog/state-of-ai-music-2026.html', emoji:'🌐', tag:'Industry', title:'The State of AI Music in 2026' },
-    { url:'/blog/suno-v5-vs-v4-5.html', emoji:'🆚', tag:'Review', title:'Suno v5 vs v4.5 — What Changed?' },
-    { url:'/blog/what-makes-a-top-rated-ai-song.html', emoji:'⭐', tag:'Creator Guide', title:'What Makes a Top-Rated AI Song?' },
-    { url:'/blog/can-ai-music-win-a-grammy.html', emoji:'🏆', tag:'Industry', title:'Can AI Music Win a Grammy?' },
-    { url:'/blog/ai-music-copyright-ownership-2026.html', emoji:'⚖️', tag:'Legal Guide', title:'AI Music Copyright & Ownership 2026' },
-    { url:'/blog/suno-vs-udio-vs-elevenlabs.html', emoji:'🎵', tag:'Comparison', title:'Suno vs Udio vs ElevenLabs' },
-    { url:'/blog/how-to-make-ai-music.html', emoji:'🚀', tag:'Guide', title:'How to Make AI Music — Beginner\'s Guide' },
-    { url:'/blog/best-free-ai-music-generators.html', emoji:'🆓', tag:'Roundup', title:'5 Best Free AI Music Generators' },
-    { url:'/blog/ai-music-prompt-tips.html', emoji:'✍️', tag:'Tips', title:'10 Tips for Better AI Music Prompts' },
-    { url:'/blog/what-is-ai-music.html', emoji:'🤖', tag:'Explainer', title:'What is AI-Generated Music?' }
-  ];
-
-  const related = {
-    '/blog/state-of-ai-music-2026.html': [1,3,4],
-    '/blog/suno-v5-vs-v4-5.html': [5,8,0],
-    '/blog/what-makes-a-top-rated-ai-song.html': [8,5,6],
-    '/blog/can-ai-music-win-a-grammy.html': [4,0,2],
-    '/blog/ai-music-copyright-ownership-2026.html': [3,0,7],
-    '/blog/suno-vs-udio-vs-elevenlabs.html': [1,7,6],
-    '/blog/how-to-make-ai-music.html': [8,5,9],
-    '/blog/best-free-ai-music-generators.html': [5,6,8],
-    '/blog/ai-music-prompt-tips.html': [6,2,5],
-    '/blog/what-is-ai-music.html': [6,4,5]
-  };
-
-  var path = window.location.pathname;
-  var current = posts.find(function(p){ return path.endsWith(p.url) || path.endsWith(p.url.replace('/blog/','')); });
-  if(!current) return;
-
-  var ids = related[current.url];
-  if(!ids) return;
-
-  var pageUrl = encodeURIComponent(window.location.href);
-  var pageTitle = encodeURIComponent(document.title);
-
-  /* Inject CSS */
+  /* Inject CSS immediately */
   var style = document.createElement('style');
   style.textContent = '\
 .bf-share{margin:48px 0 0;padding:32px 0 0;border-top:1px solid var(--border)}\
@@ -62,8 +27,11 @@
 ';
   document.head.appendChild(style);
 
-  /* Build HTML */
-  var html = '\
+  /* Inject share buttons immediately (no fetch needed) */
+  var pageUrl = encodeURIComponent(window.location.href);
+  var pageTitle = encodeURIComponent(document.title);
+
+  var shareHtml = '\
 <div class="bf-share">\
   <div class="bf-label">SHARE THIS ARTICLE</div>\
   <div class="bf-buttons">\
@@ -72,29 +40,14 @@
     <button class="bf-btn copy" id="bfCopy">\ud83d\udccb Copy link</button>\
   </div>\
 </div>\
-<div class="bf-related">\
-  <div class="bf-rlabel">KEEP READING</div>\
-  <div class="bf-grid">';
+<div class="bf-related" id="bfRelated"></div>';
 
-  ids.forEach(function(i){
-    var p = posts[i];
-    html += '\
-    <a href="'+p.url+'" class="bf-card">\
-      <div class="bf-em">'+p.emoji+'</div>\
-      <div class="bf-tg">'+p.tag+'</div>\
-      <div class="bf-tt">'+p.title+'</div>\
-    </a>';
-  });
-
-  html += '</div></div>';
-
-  /* Inject into page — after cta-box or at end of article-content */
   var target = document.querySelector('.cta-box');
   if(target && target.parentNode){
-    target.insertAdjacentHTML('afterend', html);
+    target.insertAdjacentHTML('afterend', shareHtml);
   } else {
     var content = document.querySelector('.article-content');
-    if(content) content.insertAdjacentHTML('beforeend', html);
+    if(content) content.insertAdjacentHTML('beforeend', shareHtml);
   }
 
   /* Copy link handler */
@@ -107,4 +60,82 @@
       });
     });
   }
+
+  /* Fetch blog.html and parse all posts */
+  fetch('/blog.html')
+    .then(function(r){ return r.text(); })
+    .then(function(html){
+      var parser = new DOMParser();
+      var doc = parser.parseFromString(html, 'text/html');
+      var cards = doc.querySelectorAll('.blog-card');
+      var posts = [];
+      var currentPath = window.location.pathname;
+
+      cards.forEach(function(card){
+        var link = card.querySelector('a');
+        var tagEl = card.querySelector('.blog-card-tag');
+        var titleEl = card.querySelector('.blog-card-title');
+        var imgEl = card.querySelector('.blog-card-img');
+        if(!link || !titleEl) return;
+
+        var href = link.getAttribute('href');
+        posts.push({
+          url: href,
+          tag: tagEl ? tagEl.textContent.trim() : '',
+          title: titleEl.textContent.trim(),
+          emoji: imgEl ? imgEl.textContent.trim() : '📄'
+        });
+      });
+
+      /* Find current post */
+      var current = null;
+      var currentIndex = -1;
+      posts.forEach(function(p, i){
+        if(currentPath.endsWith(p.url) || currentPath.endsWith(p.url.replace('/blog/',''))){
+          current = p;
+          currentIndex = i;
+        }
+      });
+
+      if(!current || posts.length < 2) return;
+
+      /* Pick 3 related posts: prioritize same tag, then nearest in list */
+      var others = [];
+      posts.forEach(function(p, i){
+        if(i === currentIndex) return;
+        others.push({
+          post: p,
+          score: (p.tag.toLowerCase() === current.tag.toLowerCase()) ? 10 : 0,
+          dist: Math.abs(i - currentIndex)
+        });
+      });
+
+      /* Sort: same tag first, then closest in list order */
+      others.sort(function(a, b){
+        if(b.score !== a.score) return b.score - a.score;
+        return a.dist - b.dist;
+      });
+
+      var picked = others.slice(0, 3);
+
+      /* Render related posts */
+      var container = document.getElementById('bfRelated');
+      if(!container || picked.length === 0) return;
+
+      var relHtml = '<div class="bf-rlabel">KEEP READING</div><div class="bf-grid">';
+      picked.forEach(function(item){
+        var p = item.post;
+        relHtml += '\
+        <a href="'+p.url+'" class="bf-card">\
+          <div class="bf-em">'+p.emoji+'</div>\
+          <div class="bf-tg">'+p.tag+'</div>\
+          <div class="bf-tt">'+p.title+'</div>\
+        </a>';
+      });
+      relHtml += '</div>';
+      container.innerHTML = relHtml;
+    })
+    .catch(function(e){
+      /* Silent fail — share buttons still work */
+    });
 })();
