@@ -140,7 +140,7 @@
       display: flex; flex-direction: column; align-items: center; gap: 4px;
       padding: 12px 24px; border-radius: 10px;
       background: var(--surface); border: 1px solid var(--border);
-      text-decoration: none; transition: all 0.25s;
+      text-decoration: none; transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
     }
     .hero-tool:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
     .hero-tool-name { font-weight: 700; font-size: 0.9rem; color: var(--text); }
@@ -149,8 +149,12 @@
     /* ══════════════════════════════════ TRACK GRID (removed — browse system active) ══════════════════════════════════ */
 
     .comments-panel { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; position: relative; z-index: 10; }
-    .comments-panel.open { max-height: 500px; overflow: visible; }
-    .comments-inner { padding: 12px 18px 16px; border-top: 1px solid var(--border); position: relative; z-index: 10; }
+    .comments-panel.open { max-height: 400px; overflow: hidden; }
+    .comments-inner { padding: 12px 18px 16px; border-top: 1px solid var(--border); position: relative; z-index: 10; max-height: 380px; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+    .comments-inner::-webkit-scrollbar { width: 5px; }
+    .comments-inner::-webkit-scrollbar-track { background: transparent; }
+    .comments-inner::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    .comments-inner::-webkit-scrollbar-thumb:hover { background: var(--muted); }
     .comment { padding: 8px 0; border-bottom: 1px solid rgba(26,26,38,0.4); }
     .comment:last-child { border-bottom: none; }
     .comment-text { font-size: 0.82rem; color: var(--text-secondary); }
@@ -187,7 +191,7 @@
 
     .tools-section { max-width: 1100px; margin: 0 auto; padding: 60px clamp(16px, 4vw, 40px) 40px; }
     .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
-    .tool-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 24px; text-decoration: none; color: var(--text); position: relative; overflow: hidden; transition: all 0.3s ease; display: block; }
+    .tool-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 24px; text-decoration: none; color: var(--text); position: relative; overflow: hidden; transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease; display: block; }
     .tool-card:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(0,0,0,0.35); border-color: var(--border-hover); }
     .tool-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
     .tool-card.suno::before { background: linear-gradient(90deg, #e8ff47, #a3e635); }
@@ -232,11 +236,12 @@
     .player-bar.playing .player-eq span { animation-play-state: running; }
     .player-eq { display: flex; align-items: flex-end; gap: 2px; height: 18px; flex-shrink: 0; }
     .player-eq span { width: 3px; background: var(--accent); border-radius: 2px; animation: eqBounce 0.8s ease-in-out infinite alternate; animation-play-state: paused; }
-    .player-eq span:nth-child(1) { height: 8px; animation-delay: 0s; }
-    .player-eq span:nth-child(2) { height: 14px; animation-delay: 0.15s; }
-    .player-eq span:nth-child(3) { height: 6px; animation-delay: 0.3s; }
-    .player-eq span:nth-child(4) { height: 12px; animation-delay: 0.45s; }
-    @keyframes eqBounce { 0%{height:4px} 100%{height:18px} }
+    .player-eq span:nth-child(1) { animation-delay: 0s; }
+    .player-eq span:nth-child(2) { animation-delay: 0.15s; }
+    .player-eq span:nth-child(3) { animation-delay: 0.3s; }
+    .player-eq span:nth-child(4) { animation-delay: 0.45s; }
+    @keyframes eqBounce { 0%{transform:scaleY(0.22)} 100%{transform:scaleY(1)} }
+    .player-eq span, .browse-eq-bars span, .bnp-eq span { transform-origin: bottom; will-change: transform; height: 18px; }
     .player-embed-hidden { position: absolute; left: -9999px; top: -9999px; width: 320px; height: 180px; overflow: hidden; }
     .player-info { flex: 1; min-width: 0; }
     .player-title { font-weight: 600; font-size: 0.85rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -418,6 +423,8 @@
       -ms-overflow-style: none; scrollbar-width: none; scroll-snap-type: x proximity;
       flex: 1; min-width: 0; cursor: grab;
       user-select: none; -webkit-user-select: none;
+      will-change: scroll-position;
+      -webkit-overflow-scrolling: touch;
     }
     .genre-row-scroll::-webkit-scrollbar { display: none; }
 
@@ -454,8 +461,10 @@
     .browse-card {
       flex: 0 0 220px; background: var(--surface); border: 1px solid var(--border);
       border-radius: 12px; overflow: hidden;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
       scroll-snap-align: start; position: relative;
+      contain: layout style paint;
+      will-change: transform;
     }
     .browse-card:hover {
       border-color: var(--accent); transform: translateY(-6px) scale(1.02);
@@ -467,9 +476,10 @@
     }
     .browse-card-thumb img {
       width: 100%; height: 100%; object-fit: cover;
-      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: transform 0.4s ease-out;
+      will-change: transform;
     }
-    .browse-card:hover .browse-card-thumb img { transform: scale(1.08); }
+    .browse-card:hover .browse-card-thumb img { transform: scale3d(1.08, 1.08, 1); }
     
     .browse-card-play {
       position: absolute; top: 50%; left: 50%;
@@ -628,10 +638,10 @@
       width: 3px; background: var(--accent); border-radius: 2px;
       animation: eqBounce 0.8s ease-in-out infinite alternate;
     }
-    .browse-eq-bars span:nth-child(1) { height: 8px; animation-delay: 0s; }
-    .browse-eq-bars span:nth-child(2) { height: 14px; animation-delay: 0.15s; }
-    .browse-eq-bars span:nth-child(3) { height: 6px; animation-delay: 0.3s; }
-    .browse-eq-bars span:nth-child(4) { height: 12px; animation-delay: 0.45s; }
+    .browse-eq-bars span:nth-child(1) { animation-delay: 0s; }
+    .browse-eq-bars span:nth-child(2) { animation-delay: 0.15s; }
+    .browse-eq-bars span:nth-child(3) { animation-delay: 0.3s; }
+    .browse-eq-bars span:nth-child(4) { animation-delay: 0.45s; }
 
     /* Now Playing overlay for audio platforms (Suno, SoundCloud, Udio) */
     .browse-now-playing {
@@ -657,11 +667,11 @@
       width: 4px; background: var(--accent); border-radius: 2px;
       animation: eqBounce 0.8s ease-in-out infinite alternate;
     }
-    .bnp-eq span:nth-child(1) { height: 10px; animation-delay: 0s; }
-    .bnp-eq span:nth-child(2) { height: 20px; animation-delay: 0.1s; }
-    .bnp-eq span:nth-child(3) { height: 28px; animation-delay: 0.2s; }
-    .bnp-eq span:nth-child(4) { height: 16px; animation-delay: 0.3s; }
-    .bnp-eq span:nth-child(5) { height: 12px; animation-delay: 0.4s; }
+    .bnp-eq span:nth-child(1) { animation-delay: 0s; }
+    .bnp-eq span:nth-child(2) { animation-delay: 0.1s; }
+    .bnp-eq span:nth-child(3) { animation-delay: 0.2s; }
+    .bnp-eq span:nth-child(4) { animation-delay: 0.3s; }
+    .bnp-eq span:nth-child(5) { animation-delay: 0.4s; }
     .bnp-title {
       font-size: 0.6rem; font-weight: 700; letter-spacing: 2px;
       text-transform: uppercase; color: var(--accent); margin-bottom: 4px;
@@ -1406,73 +1416,61 @@
     const leftArr = wrapper.querySelector('.scroll-arrow.left');
     const rightArr = wrapper.querySelector('.scroll-arrow.right');
     if (!scroll || !leftArr || !rightArr) return;
-
+    
+    let arrowRaf = null;
     function updateArrows() {
-      const canLeft = scroll.scrollLeft > 20;
-      const canRight = scroll.scrollLeft < scroll.scrollWidth - scroll.clientWidth - 20;
-      leftArr.classList.toggle('show', canLeft);
-      rightArr.classList.toggle('show', canRight);
+      if (arrowRaf) return;
+      arrowRaf = requestAnimationFrame(() => {
+        const canLeft = scroll.scrollLeft > 20;
+        const canRight = scroll.scrollLeft < scroll.scrollWidth - scroll.clientWidth - 20;
+        leftArr.classList.toggle('show', canLeft);
+        rightArr.classList.toggle('show', canRight);
+        arrowRaf = null;
+      });
     }
-
+    
     leftArr.addEventListener('click', () => { scroll.scrollBy({ left: -600, behavior: 'smooth' }); });
     rightArr.addEventListener('click', () => { scroll.scrollBy({ left: 600, behavior: 'smooth' }); });
-    scroll.addEventListener('scroll', updateArrows, { passive: true });
+    scroll.addEventListener('scroll', updateArrows);
     updateArrows();
 
-    // ─── Mouse drag with smooth momentum (optimized) ───
+    // Mouse drag to scroll with momentum (iOS-style)
     let isDragging = false;
     let startX = 0;
     let scrollStart = 0;
     let hasDragged = false;
+    let velocity = 0;
+    let lastX = 0;
+    let lastTime = 0;
     let momentumId = null;
-    let velocitySamples = [];
-    const MAX_SAMPLES = 5;
-
-    function disableSnap() {
-      scroll.style.scrollSnapType = 'none';
-      scroll.style.scrollBehavior = 'auto';
-    }
-
-    function enableSnap() {
-      requestAnimationFrame(() => {
-        scroll.style.scrollSnapType = 'x proximity';
-        scroll.style.scrollBehavior = '';
-      });
-    }
-
-    function cancelMomentum() {
-      if (momentumId) {
-        cancelAnimationFrame(momentumId);
-        momentumId = null;
-      }
-    }
 
     scroll.addEventListener('mousedown', (e) => {
       if (e.target.closest('button, .bstar, a, .browse-card-footer, .comment-input, .comment-form, .comment-submit, .comments-panel, input, textarea')) return;
-
-      cancelMomentum();
+      if (momentumId) { cancelAnimationFrame(momentumId); momentumId = null; }
       isDragging = true;
       hasDragged = false;
       startX = e.pageX;
+      lastX = e.pageX;
+      lastTime = Date.now();
       scrollStart = scroll.scrollLeft;
-      velocitySamples = [];
-
-      disableSnap();
+      velocity = 0;
       scroll.style.cursor = 'grabbing';
+      scroll.style.scrollSnapType = 'none';
+      scroll.style.scrollBehavior = 'auto';
       e.preventDefault();
     });
 
     window.addEventListener('mousemove', (e) => {
       if (!isDragging) return;
-
-      const dx = e.pageX - startX;
-      if (Math.abs(dx) > 3) hasDragged = true;
-
-      scroll.scrollLeft = scrollStart - dx;
-
-      const now = performance.now();
-      velocitySamples.push({ x: e.pageX, t: now });
-      while (velocitySamples.length > MAX_SAMPLES) velocitySamples.shift();
+      const now = Date.now();
+      const dt = now - lastTime;
+      const dx = e.pageX - lastX;
+      if (dt > 0) velocity = dx / dt;
+      lastX = e.pageX;
+      lastTime = now;
+      const totalDx = e.pageX - startX;
+      if (Math.abs(totalDx) > 3) hasDragged = true;
+      scroll.scrollLeft = scrollStart - totalDx;
     });
 
     window.addEventListener('mouseup', () => {
@@ -1480,35 +1478,30 @@
       isDragging = false;
       scroll.style.cursor = '';
 
-      let velocity = 0;
-      if (velocitySamples.length >= 2) {
-        const first = velocitySamples[0];
-        const last = velocitySamples[velocitySamples.length - 1];
-        const dt = last.t - first.t;
-        if (dt > 0 && dt < 300) {
-          velocity = (last.x - first.x) / dt;
+      // Momentum coast
+      let v = -velocity * 1000; // px/sec
+      const friction = 0.95;
+      let last = performance.now();
+
+      function coast(now) {
+        const dt = (now - last) / 1000;
+        last = now;
+        v *= friction;
+        scroll.scrollLeft += v * dt;
+        if (Math.abs(v) > 10) {
+          momentumId = requestAnimationFrame(coast);
+        } else {
+          scroll.style.scrollSnapType = 'x proximity';
+          scroll.style.scrollBehavior = 'smooth';
+          momentumId = null;
         }
       }
 
-      const initialVelocity = -velocity * 16;
-      if (Math.abs(initialVelocity) > 0.5) {
-        let v = initialVelocity;
-        const FRICTION = 0.92;
-
-        function coast() {
-          v *= FRICTION;
-          scroll.scrollLeft += v;
-
-          if (Math.abs(v) > 0.3) {
-            momentumId = requestAnimationFrame(coast);
-          } else {
-            momentumId = null;
-            enableSnap();
-          }
-        }
+      if (Math.abs(v) > 50) {
         momentumId = requestAnimationFrame(coast);
       } else {
-        enableSnap();
+        scroll.style.scrollSnapType = 'x proximity';
+        scroll.style.scrollBehavior = 'smooth';
       }
 
       if (hasDragged) {
@@ -2015,6 +2008,28 @@
   });
 
   // ─── Init ───
+  // Performance: Pause all CSS animations on cards that are off-screen
+  if ('IntersectionObserver' in window) {
+    const animObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.animationPlayState = '';
+          entry.target.querySelectorAll('.browse-card-hot .dot, .browse-card-play').forEach(el => el.style.animationPlayState = '');
+        } else {
+          entry.target.style.animationPlayState = 'paused';
+          entry.target.querySelectorAll('.browse-card-hot .dot, .browse-card-play').forEach(el => el.style.animationPlayState = 'paused');
+        }
+      });
+    }, { rootMargin: '200px' });
+    
+    // Observe cards after render
+    const _origRenderBrowse = renderBrowse;
+    renderBrowse = function() {
+      _origRenderBrowse();
+      document.querySelectorAll('.browse-card').forEach(card => animObserver.observe(card));
+    };
+  }
+
   checkAuth().then(loadTracks).then(handleDeepLink);
 </script>
 <!-- ═══ COOKIE CONSENT ═══ -->
