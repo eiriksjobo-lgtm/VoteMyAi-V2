@@ -1598,6 +1598,8 @@
 
   function onGlobalMove(e) {
     if (!_drag) return;
+    // If mouse button is not held down, cancel drag immediately
+    if (e.buttons === 0) { cleanupDrag(); return; }
     const now = performance.now();
     const dt = now - _drag.lastTime;
     const dx = e.clientX - _drag.lastX;
