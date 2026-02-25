@@ -2172,11 +2172,11 @@
     window._udioBlurHandler = onIframeClick;
     window.addEventListener('blur', onIframeClick);
     
-    // Also auto-minimize after 4s in case user already pressed play
+    // Also auto-minimize after 10s in case user already pressed play
     clearTimeout(window._udioAutoMin);
     window._udioAutoMin = setTimeout(() => {
       if (udioState === 'popup') minimizeUdio();
-    }, 4000);
+    }, 5000);
   }
   
   function minimizeUdio() {
@@ -2388,7 +2388,7 @@
     clearTimeout(window._scAutoMin);
     window._scAutoMin = setTimeout(() => {
       if (scState === 'popup') minimizeSc();
-    }, 4000);
+    }, 5000);
     
     function onScBlur() {
       if (scState === 'popup') {
