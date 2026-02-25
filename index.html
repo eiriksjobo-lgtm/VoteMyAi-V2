@@ -1504,6 +1504,9 @@
     const trackIds = genreTrackMap[genreKey];
     if (!trackIds) return;
     
+    // Mark that sort just changed — next action won't reset
+    sortJustChanged = true;
+    
     let tracks = trackIds.map(id => allTracks.find(t => t.id === id)).filter(Boolean);
     
     if (sortType === 'new') {
@@ -1541,12 +1544,18 @@
   };
 
   // Reset all sort buttons to default (Top) — called when playing a song or other actions
+  let sortJustChanged = false;
+  
   function resetAllSorts() {
+    // Skip reset if sort was just changed — allow one action after sorting
+    if (sortJustChanged) {
+      sortJustChanged = false;
+      return;
+    }
     document.querySelectorAll('.genre-sort').forEach(group => {
       const topBtn = group.querySelector('[data-sort="top"]');
       const newBtn = group.querySelector('[data-sort="new"]');
       if (topBtn && newBtn && newBtn.classList.contains('active')) {
-        // Only reset if not already on Top
         const genreKey = group.dataset.genreKey;
         if (topBtn) sortGenreRow(genreKey, 'top', topBtn);
       }
