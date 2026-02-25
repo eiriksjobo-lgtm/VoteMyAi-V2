@@ -416,6 +416,26 @@
     }
     .genre-row-line { flex: 1; height: 1px; background: linear-gradient(90deg, var(--border) 0%, transparent 100%); }
 
+    /* Genre sort toggles */
+    .genre-sort {
+      display: flex; gap: 2px; flex-shrink: 0;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 6px; padding: 2px; margin-left: 4px;
+    }
+    .genre-sort button {
+      background: none; border: none; color: var(--muted);
+      font-size: 0.58rem; font-weight: 600; font-family: 'DM Sans', sans-serif;
+      padding: 3px 8px; border-radius: 4px; cursor: pointer;
+      letter-spacing: 0.5px; text-transform: uppercase;
+      transition: all 0.15s; white-space: nowrap;
+    }
+    .genre-sort button:hover { color: var(--text); }
+    .genre-sort button.active { background: var(--accent); color: var(--bg); }
+
+    @media (max-width: 640px) {
+      .genre-sort button { font-size: 0.52rem; padding: 3px 6px; }
+    }
+
     /* Horizontal scroll */
     .genre-row-scroll {
       display: flex; gap: 14px; overflow-x: auto; overflow-y: hidden;
@@ -1424,14 +1444,14 @@
     
     // Trending row
     if (trending.length) {
-      html += buildGenreRow('🔥', 'Trending Now', trending);
+      html += buildGenreRow('🔥', 'Trending Now', trending, true);
     }
 
     // Recently added (if discover view)
     if (browseView === 'discover') {
       const recent = [...sorted].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 12);
       if (recent.length) {
-        html += buildGenreRow('🆕', 'Just Added', recent);
+        html += buildGenreRow('🆕', 'Just Added', recent, true);
       }
     }
 
@@ -1450,12 +1470,25 @@
     container.querySelectorAll('.genre-row').forEach(setupScrollArrows);
   }
 
-  function buildGenreRow(emoji, title, tracks) {
+  // Store genre track lists for re-sorting
+  const genreTrackMap = {};
+
+  function buildGenreRow(emoji, title, tracks, isSpecial) {
+    const genreKey = title.replace(/[^a-zA-Z0-9]/g, '_');
+    if (!isSpecial) genreTrackMap[genreKey] = tracks.map(t => t.id);
+    
     const cards = tracks.map(t => buildBrowseCard(t, getEmbedHtml(t))).join('');
-    return '<div class="genre-row">' +
+    const sortBtns = isSpecial ? '' :
+      '<div class="genre-sort" data-genre-key="' + genreKey + '">' +
+        '<button class="active" data-sort="top" onclick="sortGenreRow(\'' + genreKey + '\', \'top\', this)">⭐ Top</button>' +
+        '<button data-sort="new" onclick="sortGenreRow(\'' + genreKey + '\', \'new\', this)">🕐 New</button>' +
+      '</div>';
+    
+    return '<div class="genre-row" data-genre-key="' + genreKey + '">' +
       '<div class="genre-row-header">' +
         '<div class="genre-row-title"><span class="genre-emoji">' + emoji + '</span> ' + sanitize(title) + '</div>' +
         '<span class="genre-row-count">' + tracks.length + ' track' + (tracks.length !== 1 ? 's' : '') + '</span>' +
+        sortBtns +
         '<div class="genre-row-line"></div>' +
       '</div>' +
       '<div class="genre-row-wrapper">' +
@@ -1464,6 +1497,60 @@
         '<button class="scroll-arrow right show" aria-label="Scroll right"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></button>' +
       '</div>' +
     '</div>';
+  }
+
+  // Sort a genre row in-place without full re-render
+  window.sortGenreRow = function(genreKey, sortType, btn) {
+    const trackIds = genreTrackMap[genreKey];
+    if (!trackIds) return;
+    
+    let tracks = trackIds.map(id => allTracks.find(t => t.id === id)).filter(Boolean);
+    
+    if (sortType === 'new') {
+      tracks.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    } else {
+      tracks.sort((a, b) => wilsonScore(b.avg_rating||0, b.rating_count||0) - wilsonScore(a.avg_rating||0, a.rating_count||0));
+    }
+    
+    // Update active button
+    const sortGroup = btn.parentElement;
+    sortGroup.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    
+    // Rebuild cards in the scroll container
+    const row = document.querySelector('.genre-row[data-genre-key="' + genreKey + '"]');
+    if (!row) return;
+    const scroll = row.querySelector('.genre-row-scroll');
+    if (!scroll) return;
+    
+    // Preserve playing state
+    const playingUid = activeBrowseUid;
+    
+    scroll.innerHTML = tracks.map(t => buildBrowseCard(t, getEmbedHtml(t))).join('');
+    scroll.scrollLeft = 0;
+    
+    // Re-observe for animation pausing
+    if ('IntersectionObserver' in window) {
+      scroll.querySelectorAll('.browse-card').forEach(card => {
+        if (window._animObserver) window._animObserver.observe(card);
+      });
+    }
+    
+    // Re-setup scroll arrows for this row
+    setupScrollArrows(row);
+  };
+
+  // Reset all sort buttons to default (Top) — called when playing a song or other actions
+  function resetAllSorts() {
+    document.querySelectorAll('.genre-sort').forEach(group => {
+      const topBtn = group.querySelector('[data-sort="top"]');
+      const newBtn = group.querySelector('[data-sort="new"]');
+      if (topBtn && newBtn && newBtn.classList.contains('active')) {
+        // Only reset if not already on Top
+        const genreKey = group.dataset.genreKey;
+        if (topBtn) sortGenreRow(genreKey, 'top', topBtn);
+      }
+    });
   }
 
   function setupScrollArrows(row) {
@@ -1643,6 +1730,9 @@
 
     const track = allTracks.find(t => String(t.id) === String(trackId));
     if (!track) return;
+    
+    // Reset sort buttons back to default
+    resetAllSorts();
     
     // ── STOP EVERYTHING first ──
     // 1. Stop any browse card playing
@@ -2067,7 +2157,7 @@
   // ─── Init ───
   // Performance: Pause all CSS animations on cards that are off-screen
   if ('IntersectionObserver' in window) {
-    const animObserver = new IntersectionObserver((entries) => {
+    window._animObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           entry.target.style.animationPlayState = '';
@@ -2083,7 +2173,7 @@
     const _origRenderBrowse = renderBrowse;
     renderBrowse = function() {
       _origRenderBrowse();
-      document.querySelectorAll('.browse-card').forEach(card => animObserver.observe(card));
+      document.querySelectorAll('.browse-card').forEach(card => window._animObserver.observe(card));
     };
   }
 
