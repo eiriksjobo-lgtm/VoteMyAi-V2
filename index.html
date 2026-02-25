@@ -412,12 +412,15 @@
     /* Horizontal scroll */
     .genre-row-scroll {
       display: flex; gap: 14px; overflow-x: auto; overflow-y: hidden;
-      scroll-behavior: smooth; padding: 4px 8px 18px;
-      -ms-overflow-style: none; scrollbar-width: none; scroll-snap-type: x proximity;
+      padding: 4px 8px 18px;
+      -ms-overflow-style: none; scrollbar-width: none;
       flex: 1; min-width: 0; cursor: grab;
       user-select: none; -webkit-user-select: none;
+      -webkit-overflow-scrolling: touch;
     }
     .genre-row-scroll::-webkit-scrollbar { display: none; }
+    body.is-dragging .browse-card { transition: none !important; transform: none !important; }
+    body.is-dragging .browse-card * { transition: none !important; }
 
     /* Scroll arrows — fixed outside cards */
     .genre-row-wrapper {
@@ -453,7 +456,7 @@
       flex: 0 0 220px; background: var(--surface); border: 1px solid var(--border);
       border-radius: 12px; overflow: hidden;
       transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
-      scroll-snap-align: start; position: relative;
+      position: relative;
       contain: layout style paint;
     }
     .browse-card:hover {
@@ -1410,88 +1413,89 @@
     const rightArr = wrapper.querySelector('.scroll-arrow.right');
     if (!scroll || !leftArr || !rightArr) return;
     
+    let arrowRaf = null;
     function updateArrows() {
-      const canLeft = scroll.scrollLeft > 20;
-      const canRight = scroll.scrollLeft < scroll.scrollWidth - scroll.clientWidth - 20;
-      leftArr.classList.toggle('show', canLeft);
-      rightArr.classList.toggle('show', canRight);
+      if (arrowRaf) return;
+      arrowRaf = requestAnimationFrame(() => {
+        leftArr.classList.toggle('show', scroll.scrollLeft > 20);
+        rightArr.classList.toggle('show', scroll.scrollLeft < scroll.scrollWidth - scroll.clientWidth - 20);
+        arrowRaf = null;
+      });
     }
     
-    leftArr.addEventListener('click', () => { scroll.scrollBy({ left: -600, behavior: 'smooth' }); });
-    rightArr.addEventListener('click', () => { scroll.scrollBy({ left: 600, behavior: 'smooth' }); });
-    scroll.addEventListener('scroll', updateArrows);
+    leftArr.addEventListener('click', () => { scroll.scrollBy({ left: -500, behavior: 'auto' }); updateArrows(); });
+    rightArr.addEventListener('click', () => { scroll.scrollBy({ left: 500, behavior: 'auto' }); updateArrows(); });
+    scroll.addEventListener('scroll', updateArrows, { passive: true });
     updateArrows();
 
-    // Mouse drag to scroll — single global handler (not per-row)
-    let dragState = null; // { scroll, startX, scrollStart, lastX, lastTime, velocity, hasDragged, momentumId }
-
-    scroll.addEventListener('mousedown', (e) => {
-      if (e.target.closest('button, .bstar, a, .browse-card-footer, .comment-input, .comment-form, .comment-submit, .comments-panel, input, textarea')) return;
-      if (dragState && dragState.momentumId) { cancelAnimationFrame(dragState.momentumId); }
-      dragState = {
-        scroll: scroll,
-        startX: e.pageX,
-        scrollStart: scroll.scrollLeft,
-        lastX: e.pageX,
-        lastTime: Date.now(),
-        velocity: 0,
-        hasDragged: false,
-        momentumId: null
-      };
-      scroll.style.cursor = 'grabbing';
-      scroll.style.scrollSnapType = 'none';
-      scroll.style.scrollBehavior = 'auto';
-      e.preventDefault();
-    });
+    scroll.addEventListener('mousedown', onDragStart);
   }
 
-  // Single global mousemove/mouseup for drag scrolling
-  window.addEventListener('mousemove', (e) => {
-    if (!dragState) return;
-    const now = Date.now();
-    const dt = now - dragState.lastTime;
-    const dx = e.pageX - dragState.lastX;
-    if (dt > 0) dragState.velocity = dx / dt;
-    dragState.lastX = e.pageX;
-    dragState.lastTime = now;
-    const totalDx = e.pageX - dragState.startX;
-    if (Math.abs(totalDx) > 3) dragState.hasDragged = true;
-    dragState.scroll.scrollLeft = dragState.scrollStart - totalDx;
+  // ─── Single global drag system ───
+  let _drag = null;
+
+  function onDragStart(e) {
+    if (e.target.closest('button, .bstar, a, .browse-card-footer, .comment-input, .comment-form, .comment-submit, .comments-panel, input, textarea')) return;
+    const scroll = e.currentTarget;
+    if (_drag && _drag.rafId) cancelAnimationFrame(_drag.rafId);
+    _drag = {
+      el: scroll,
+      startX: e.pageX,
+      scrollStart: scroll.scrollLeft,
+      lastX: e.pageX,
+      lastTime: performance.now(),
+      velocity: 0,
+      hasDragged: false,
+      rafId: null
+    };
+    scroll.style.cursor = 'grabbing';
+    document.body.classList.add('is-dragging');
+    e.preventDefault();
+  }
+
+  document.addEventListener('mousemove', (e) => {
+    if (!_drag) return;
+    const now = performance.now();
+    const dt = now - _drag.lastTime;
+    const dx = e.pageX - _drag.lastX;
+    if (dt > 0) _drag.velocity = dx / dt;
+    _drag.lastX = e.pageX;
+    _drag.lastTime = now;
+    const totalDx = e.pageX - _drag.startX;
+    if (Math.abs(totalDx) > 3) _drag.hasDragged = true;
+    _drag.el.scrollLeft = _drag.scrollStart - totalDx;
   }, { passive: true });
 
-  window.addEventListener('mouseup', () => {
-    if (!dragState) return;
-    const scroll = dragState.scroll;
-    scroll.style.cursor = '';
+  document.addEventListener('mouseup', () => {
+    if (!_drag) return;
+    const el = _drag.el;
+    const hasDragged = _drag.hasDragged;
+    el.style.cursor = '';
+    document.body.classList.remove('is-dragging');
 
-    let v = -dragState.velocity * 1000;
-    const friction = 0.95;
-    let last = performance.now();
-
-    function coast(now) {
-      const dt = (now - last) / 1000;
-      last = now;
-      v *= friction;
-      scroll.scrollLeft += v * dt;
-      if (Math.abs(v) > 10) {
-        dragState.momentumId = requestAnimationFrame(coast);
-      } else {
-        scroll.style.scrollSnapType = 'x proximity';
-        scroll.style.scrollBehavior = 'smooth';
-        dragState = null;
+    // Momentum
+    let v = -_drag.velocity * 1000;
+    if (Math.abs(v) > 30) {
+      const friction = 0.94;
+      let last = performance.now();
+      function coast(now) {
+        const dt = (now - last) / 1000;
+        last = now;
+        v *= friction;
+        el.scrollLeft += v * dt;
+        if (Math.abs(v) > 8) {
+          _drag.rafId = requestAnimationFrame(coast);
+        } else {
+          _drag = null;
+        }
       }
-    }
-
-    if (Math.abs(v) > 50) {
-      dragState.momentumId = requestAnimationFrame(coast);
+      requestAnimationFrame(coast);
     } else {
-      scroll.style.scrollSnapType = 'x proximity';
-      scroll.style.scrollBehavior = 'smooth';
-      dragState = null;
+      _drag = null;
     }
 
-    if (dragState && dragState.hasDragged) {
-      scroll.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); }, { capture: true, once: true });
+    if (hasDragged) {
+      el.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); }, { capture: true, once: true });
     }
   });
 
