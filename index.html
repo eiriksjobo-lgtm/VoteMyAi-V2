@@ -417,16 +417,10 @@
       flex: 1; min-width: 0; cursor: grab;
       user-select: none; -webkit-user-select: none;
       -webkit-overflow-scrolling: touch;
-      will-change: scroll-position;
-      transform: translateZ(0);
     }
     .genre-row-scroll::-webkit-scrollbar { display: none; }
-    body.is-dragging .browse-card { transition: none !important; transform: none !important; pointer-events: none !important; }
-    body.is-dragging .browse-card * { transition: none !important; animation-play-state: paused !important; }
-    body.is-dragging .browse-card:hover { transform: none !important; box-shadow: none !important; border-color: var(--border) !important; }
-    body.is-dragging .browse-card-play { opacity: 0 !important; }
-    body.is-dragging { cursor: grabbing !important; user-select: none !important; }
-    body.is-dragging * { cursor: grabbing !important; }
+    body.is-dragging .browse-card { transition: none !important; transform: none !important; }
+    body.is-dragging .browse-card * { transition: none !important; }
 
     /* Scroll arrows — fixed outside cards */
     .genre-row-wrapper {
@@ -463,7 +457,7 @@
       border-radius: 12px; overflow: hidden;
       transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
       position: relative;
-      contain: style paint;
+      contain: layout style paint;
     }
     .browse-card:hover {
       border-color: var(--accent); transform: translateY(-4px);
@@ -475,8 +469,6 @@
     }
     .browse-card-thumb img {
       width: 100%; height: 100%; object-fit: cover;
-      transition: transform 0.25s ease;
-      will-change: transform;
     }
     .browse-card:hover .browse-card-thumb img { transform: scale(1.04); }
     
@@ -936,7 +928,7 @@
   async function loadAnonRatings() {
     const token = getAnonToken();
     try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/anonymous_ratings?anon_token=eq.${token}&select=track_id,score`, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } });
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/anonymous_ratings?anon_token=eq.${token}&select=track_id,score&limit=10000`, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } });
       if (res.ok) { (await res.json()).forEach(r => { userRatings[r.track_id] = r.score; }); }
     } catch(e) {}
   }
@@ -970,16 +962,55 @@
     return { platform: 'unknown', embedHtml: '' };
   }
 
+  const _embedCache = new Map();
   function getEmbedHtml(track) {
-    if (track.embed_url) return detectPlatform(track.embed_url);
-    if (track.yt_id) return { platform: 'youtube', embedHtml: `<iframe src="https://www.youtube.com/embed/${track.yt_id}?rel=0&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}" allowfullscreen loading="lazy"></iframe>` };
-    return { platform: 'unknown', embedHtml: '<div class="embed-placeholder" style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:0.8rem;">No preview available</div>' };
+    const key = track.id;
+    if (_embedCache.has(key)) return _embedCache.get(key);
+    let result;
+    if (track.embed_url) result = detectPlatform(track.embed_url);
+    else if (track.yt_id) result = { platform: 'youtube', embedHtml: `<iframe src="https://www.youtube.com/embed/${track.yt_id}?rel=0&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}" allowfullscreen loading="lazy"></iframe>` };
+    else result = { platform: 'unknown', embedHtml: '<div class="embed-placeholder" style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:0.8rem;">No preview available</div>' };
+    _embedCache.set(key, result);
+    return result;
   }
 
   function wilsonScore(avg, n) { if (n === 0) return 0; const p = (avg - 1) / 4; const z = 1.96; const z2 = z * z; return (p + z2 / (2 * n) - z * Math.sqrt((p * (1 - p) + z2 / (4 * n)) / n)) / (1 + z2 / n); }
 
+  // ─── Paginated Track Loading ───
+  const TRACK_FIELDS = 'id,title,yt_id,tool,genre,avg_rating,rating_count,embed_url,thumbnail_url,artist_note,created_at';
+  const PAGE_SIZE = 500;
+
   async function loadTracks() {
-    try { const res = await fetch(`${SUPABASE_URL}/rest/v1/tracks?select=*&order=created_at.desc`, { headers: { 'apikey': SUPABASE_KEY } }); if (!res.ok) throw new Error('HTTP ' + res.status); allTracks = await res.json(); renderTracks(); renderLeaderboard(); updateHeroStats(); } catch(e) { console.error('Load error:', e); document.getElementById('browseRows').innerHTML = '<div style="text-align:center;padding:60px 20px;"><p style="color:var(--muted);margin-bottom:12px;">Could not load tracks.</p><button onclick="location.reload()" style="background:var(--accent);color:var(--bg);border:none;padding:10px 24px;border-radius:8px;font-weight:700;cursor:pointer;">Retry</button></div>'; }
+    try {
+      // First page — fast initial render
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/tracks?select=${TRACK_FIELDS}&order=created_at.desc&limit=${PAGE_SIZE}&offset=0`, {
+        headers: { 'apikey': SUPABASE_KEY, 'Prefer': 'count=exact' }
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const totalCount = parseInt(res.headers.get('content-range')?.split('/')[1] || '0', 10);
+      allTracks = await res.json();
+      renderTracks(); renderLeaderboard(); updateHeroStats();
+
+      // Load remaining pages in background
+      if (totalCount > PAGE_SIZE) {
+        const pages = Math.ceil(totalCount / PAGE_SIZE);
+        for (let p = 1; p < pages; p++) {
+          const r = await fetch(`${SUPABASE_URL}/rest/v1/tracks?select=${TRACK_FIELDS}&order=created_at.desc&limit=${PAGE_SIZE}&offset=${p * PAGE_SIZE}`, {
+            headers: { 'apikey': SUPABASE_KEY }
+          });
+          if (r.ok) {
+            const batch = await r.json();
+            allTracks = allTracks.concat(batch);
+          }
+        }
+        // Re-index after all pages loaded
+        _trackIndex = null;
+        renderTracks(); renderLeaderboard();
+      }
+    } catch(e) {
+      console.error('Load error:', e);
+      document.getElementById('browseRows').innerHTML = '<div style="text-align:center;padding:60px 20px;"><p style="color:var(--muted);margin-bottom:12px;">Could not load tracks.</p><button onclick="location.reload()" style="background:var(--accent);color:var(--bg);border:none;padding:10px 24px;border-radius:8px;font-weight:700;cursor:pointer;">Retry</button></div>';
+    }
   }
 
   function updateHeroStats() {}
@@ -988,20 +1019,40 @@
   function renderLeaderboard(period) {
     if (period) currentLbPeriod = period;
     const lb = document.getElementById('leaderboardList');
-    let filtered = [...allTracks];
-    const now = new Date();
-    if (currentLbPeriod === 'week') { const cutoff = new Date(now - 7 * 24 * 60 * 60 * 1000); filtered = filtered.filter(t => new Date(t.created_at) >= cutoff); }
-    else if (currentLbPeriod === 'month') { const cutoff = new Date(now - 30 * 24 * 60 * 60 * 1000); filtered = filtered.filter(t => new Date(t.created_at) >= cutoff); }
-    const sorted = filtered.sort((a, b) => wilsonScore(b.avg_rating||0, b.rating_count||0) - wilsonScore(a.avg_rating||0, a.rating_count||0)).slice(0, 10);
+    let filtered = allTracks;
+    const now = Date.now();
+    if (currentLbPeriod === 'week') { const cutoff = now - 7 * 24 * 60 * 60 * 1000; filtered = allTracks.filter(t => new Date(t.created_at).getTime() >= cutoff); }
+    else if (currentLbPeriod === 'month') { const cutoff = now - 30 * 24 * 60 * 60 * 1000; filtered = allTracks.filter(t => new Date(t.created_at).getTime() >= cutoff); }
+    // Partial sort: only find top 10 instead of sorting entire array
+    const topN = 10;
+    const sorted = partialSort(filtered, topN, (a, b) => wilsonScore(b.avg_rating||0, b.rating_count||0) - wilsonScore(a.avg_rating||0, a.rating_count||0));
     if (!sorted.length) { lb.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted);">No tracks in this period</div>'; return; }
     const medals = ['\u{1F947}', '\u{1F948}', '\u{1F949}'];
     lb.innerHTML = sorted.map((t, i) => { const rank = i < 3 ? medals[i] : `#${i+1}`; const stars = (t.avg_rating||0) > 0 ? (t.avg_rating).toFixed(1)+' \u2605' : '\u2014'; return `<div class="lb-row" data-action="lb-play" data-track-id="${t.id}"><div class="lb-rank">${rank}</div><div class="lb-info"><div class="lb-title">${sanitize(t.title)}</div><div class="lb-meta">${sanitize(t.tool)} \u00b7 ${sanitize(t.genre)}</div></div><div class="lb-rating"><span class="lb-stars">${stars}</span><span class="lb-count">(${t.rating_count||0})</span></div><div class="lb-play-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="var(--accent)"><polygon points="6 3 20 12 6 21"/></svg></div></div>`; }).join('');
+  }
+  // Efficient partial sort: O(n) for finding top-k instead of O(n log n) full sort
+  function partialSort(arr, k, compareFn) {
+    if (arr.length <= k) return [...arr].sort(compareFn);
+    // Selection-based: maintain a sorted result of top k
+    const result = arr.slice(0, k).sort(compareFn);
+    for (let i = k; i < arr.length; i++) {
+      if (compareFn(arr[i], result[k - 1]) < 0) {
+        result[k - 1] = arr[i];
+        // Insert in correct position
+        let j = k - 1;
+        while (j > 0 && compareFn(result[j], result[j - 1]) < 0) {
+          const tmp = result[j]; result[j] = result[j - 1]; result[j - 1] = tmp;
+          j--;
+        }
+      }
+    }
+    return result;
   }
   document.querySelectorAll('.lb-tab').forEach(tab => { tab.addEventListener('click', () => { document.querySelectorAll('.lb-tab').forEach(t => t.classList.remove('active')); tab.classList.add('active'); renderLeaderboard(tab.dataset.period); }); });
 
   const TRACKS_PER_PAGE = 9; let visibleCount = TRACKS_PER_PAGE; let currentSorted = []; let activeEmbedTrackId = null;
 
-  function renderTracks() { currentSorted = [...allTracks]; }
+  function renderTracks() { currentSorted = [...allTracks]; _sortCache = { view: null, len: 0, result: null }; _trackIndex = null; }
 
   // ─── Lazy Thumbnails ───
   function getLazyThumb(track, embed) { const playSVG = '<svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>'; const platformLabel = embed.platform !== 'unknown' ? embed.platform.charAt(0).toUpperCase() + embed.platform.slice(1) : ''; if (track.thumbnail_url) { return `<div class="embed-thumb" data-action="load-embed" data-track-id="${track.id}"><img src="${sanitize(track.thumbnail_url)}" alt="${sanitize(track.title)}" loading="lazy"><div class="embed-thumb-overlay"><div class="play-circle">${playSVG}</div>${platformLabel ? `<span class="thumb-platform">${platformLabel}</span>` : ''}</div></div>`; } if (embed.platform === 'youtube') { const match = (track.embed_url || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([^&?\/#]+)/) || [null, track.yt_id]; const videoId = match[1] || track.yt_id; if (videoId) { return `<div class="embed-thumb" data-action="load-embed" data-track-id="${track.id}"><img src="https://img.youtube.com/vi/${videoId}/hqdefault.jpg" alt="${sanitize(track.title)}" loading="lazy"><div class="embed-thumb-overlay"><div class="play-circle">${playSVG}</div><span class="thumb-platform">YouTube</span></div></div>`; } } return embed.embedHtml; }
@@ -1014,7 +1065,8 @@
   function getEmbedHtmlById(trackId) { const track = currentSorted.find(t => t.id === trackId); if (!track) return null; return getEmbedHtml(track); }
   function getLazyThumbById(trackId) { const track = currentSorted.find(t => t.id === trackId); if (!track) return ''; return getLazyThumb(track, getEmbedHtml(track)); }
 
-  function sanitize(str) { if (!str) return ''; const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+  const _sanitizeEl = document.createElement('div');
+  function sanitize(str) { if (!str) return ''; _sanitizeEl.textContent = str; return _sanitizeEl.innerHTML; }
   function sanitizeAttr(str) { if (!str) return ''; return str.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
   // ─── Event Delegation ───
@@ -1030,28 +1082,22 @@
 
   // ─── Comments ───
   async function toggleComments(trackId, el) {
+    // Find the comments panel within the same card
     const card = el ? el.closest('.browse-card') : null;
-    if (!card) return;
-    let panel = card.querySelector('.comments-panel');
-    
-    // Create panel lazily if it doesn't exist
-    if (!panel) {
-      const uid = card.dataset.uid;
-      panel = document.createElement('div');
-      panel.className = 'comments-panel';
-      panel.id = 'cp-' + uid;
-      panel.innerHTML = '<div class="comments-inner"><div id="cc-' + uid + '" data-track-id="' + trackId + '"><span style="color:var(--muted);font-size:0.8rem;">Loading...</span></div>' +
-        (currentUser ? '<div class="comment-form"><textarea class="comment-input" id="ci-' + uid + '" data-track-id="' + sanitizeAttr(trackId) + '" placeholder="Write a comment..." rows="2"></textarea><div class="comment-form-actions"><button class="comment-submit" data-action="post-comment" data-track="' + sanitizeAttr(trackId) + '" data-uid="' + uid + '"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg> Send</button></div></div>' : '<p style="font-size:0.75rem;color:var(--muted);margin-top:8px;"><a href="/login.html" style="color:var(--accent);text-decoration:none;font-weight:600;">Log in</a> to comment</p>') +
-        '</div>';
-      card.appendChild(panel);
+    let panel;
+    if (card) {
+      panel = card.querySelector('.comments-panel');
+    } else {
+      panel = document.getElementById(`comments-${trackId}`);
     }
-    
+    if (!panel) return;
     const wasOpen = panel.classList.contains('open');
-    // Close any other open panels
     document.querySelectorAll('.comments-panel.open').forEach(x => x.classList.remove('open'));
     if (!wasOpen) {
       panel.classList.add('open');
-      await loadComments(trackId, panel);
+      const contentEl = panel.querySelector('[data-track-id]') || panel.querySelector('[id^="comments-content-"]') || panel.querySelector('[id^="cc-"]');
+      const tid = contentEl ? (contentEl.dataset.trackId || trackId) : trackId;
+      await loadComments(tid, panel);
     }
   }
   async function loadComments(trackId, panel) {
@@ -1288,24 +1334,45 @@
         '</div>' +
         (track.artist_note ? '<div class="browse-card-note"><div class="browse-card-note-toggle" data-action="toggle-note" data-uid="' + uid + '">📝 Artist\'s Note</div><div class="browse-card-note-text" id="note-' + uid + '">' + sanitize(track.artist_note) + '</div></div>' : '') +
         '<div class="browse-card-footer">' +
-          '<button data-action="comments" data-track="' + trackIdAttr + '" data-uid="' + uid + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Comments</button>' +
+          '<button data-action="comments" data-track="' + trackIdAttr + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Comments</button>' +
           '<button data-action="share" data-track="' + trackIdAttr + '" data-title="' + titleAttr + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Share</button>' +
         '</div>' +
       '</div>' +
+      '<div class="comments-panel" id="cp-' + uid + '"><div class="comments-inner"><div id="cc-' + uid + '" data-track-id="' + track.id + '"><span style="color:var(--muted);font-size:0.8rem;">Loading...</span></div>' +
+      (currentUser ? '<div class="comment-form"><textarea class="comment-input" id="ci-' + uid + '" data-track-id="' + trackIdAttr + '" placeholder="Write a comment..." rows="2"></textarea><div class="comment-form-actions"><button class="comment-submit" data-action="post-comment" data-track="' + trackIdAttr + '" data-uid="' + uid + '"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg> Send</button></div></div>' : '<p style="font-size:0.75rem;color:var(--muted);margin-top:8px;"><a href="/login.html" style="color:var(--accent);text-decoration:none;font-weight:600;">Log in</a> to comment</p>') +
+      '</div></div>' +
     '</div>';
   }
 
+  let _sortCache = { view: null, len: 0, result: null };
   function sortBrowseTracks(tracks) {
+    // Cache: re-sort only if view or track count changed
+    if (_sortCache.view === browseView && _sortCache.len === tracks.length && _sortCache.result) return _sortCache.result;
+    let result;
     switch (browseView) {
-      case 'top': return [...tracks].sort((a, b) => wilsonScore(b.avg_rating||0, b.rating_count||0) - wilsonScore(a.avg_rating||0, a.rating_count||0));
-      case 'new': return [...tracks].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      default: return [...tracks].sort((a, b) => {
+      case 'top': result = [...tracks].sort((a, b) => wilsonScore(b.avg_rating||0, b.rating_count||0) - wilsonScore(a.avg_rating||0, a.rating_count||0)); break;
+      case 'new': result = [...tracks].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); break;
+      default: result = [...tracks].sort((a, b) => {
         const ca = a.rating_count||0, cb = b.rating_count||0;
         if (ca <= 5 && cb > 5) return -1;
         if (cb <= 5 && ca > 5) return 1;
         return new Date(b.created_at) - new Date(a.created_at);
-      });
+      }); break;
     }
+    _sortCache = { view: browseView, len: tracks.length, result };
+    return result;
+  }
+
+  // ─── Search index for fast filtering ───
+  let _trackIndex = null;
+  function getTrackIndex() {
+    if (_trackIndex && _trackIndex.size === allTracks.length) return _trackIndex;
+    _trackIndex = new Map();
+    allTracks.forEach(t => {
+      const key = ((t.title || '') + ' ' + (t.genre || '') + ' ' + (t.tool || '')).toLowerCase();
+      _trackIndex.set(t.id, key);
+    });
+    return _trackIndex;
   }
 
   function renderBrowse() {
@@ -1320,13 +1387,22 @@
       container.style.display = 'none';
       searchContainer.style.display = 'grid';
       const q = searchQuery.toLowerCase();
-      const results = sorted.filter(t =>
-        (t.title || '').toLowerCase().includes(q) ||
-        (t.genre || '').toLowerCase().includes(q) ||
-        (t.tool || '').toLowerCase().includes(q)
-      );
+      const idx = getTrackIndex();
+      const results = [];
+      for (let i = 0; i < sorted.length && results.length < 60; i++) {
+        const t = sorted[i];
+        if ((idx.get(t.id) || '').includes(q)) results.push(t);
+      }
       if (results.length) {
-        searchContainer.innerHTML = results.map(t => buildBrowseCard(t, getEmbedHtml(t))).join('');
+        // Render search results with virtualization
+        searchContainer.innerHTML = '';
+        const frag = document.createDocumentFragment();
+        results.forEach(t => {
+          const div = document.createElement('div');
+          div.innerHTML = buildBrowseCard(t, getEmbedHtml(t));
+          frag.appendChild(div.firstChild);
+        });
+        searchContainer.appendChild(frag);
       } else {
         searchContainer.innerHTML = '<div class="search-results-empty"><p>No tracks found for "' + sanitize(searchQuery) + '"</p><span>Try a different search term</span></div>';
       }
@@ -1358,7 +1434,7 @@
       'World Music':'Other','Middle Eastern':'Other','Indian':'Other','Asian':'Other','Flamenco':'Other','Polka':'Other','Experimental':'Other','Noise':'Other'
     };
 
-    // Group by parent genre, keeping subgenre info
+    // Group by parent genre
     const genreMap = {};
     sorted.forEach(t => {
       const g = t.genre || 'Other';
@@ -1368,38 +1444,85 @@
     });
 
     // Build "Trending" row first (top rated across all genres)
-    const trending = [...sorted].sort((a, b) => wilsonScore(b.avg_rating||0, b.rating_count||0) - wilsonScore(a.avg_rating||0, a.rating_count||0)).slice(0, 10);
+    const trending = [...sorted].sort((a, b) => wilsonScore(b.avg_rating||0, b.rating_count||0) - wilsonScore(a.avg_rating||0, a.rating_count||0)).slice(0, 20);
 
-    let html = '';
+    // Prepare row data (don't render cards yet — lazy)
+    const rowData = [];
     
-    // Trending row
     if (trending.length) {
-      html += buildGenreRow('🔥', 'Trending Now', trending);
+      rowData.push({ emoji: '🔥', title: 'Trending Now', tracks: trending });
     }
 
-    // Recently added (if discover view)
     if (browseView === 'discover') {
-      const recent = [...sorted].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 10);
+      const recent = [...sorted].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 20);
       if (recent.length) {
-        html += buildGenreRow('🆕', 'Just Added', recent);
+        rowData.push({ emoji: '🆕', title: 'Just Added', tracks: recent });
       }
     }
 
-    // Genre rows (only show genres that have tracks, sorted by track count)
     const genreOrder = Object.entries(genreMap).sort((a, b) => b[1].length - a[1].length);
     genreOrder.forEach(([genre, tracks]) => {
       const emoji = GENRE_EMOJIS[genre] || '🎶';
-      // Sort within genre: best rated first (Wilson Score), cap at 15 per row
-      const genreSorted = [...tracks].sort((a, b) => wilsonScore(b.avg_rating||0, b.rating_count||0) - wilsonScore(a.avg_rating||0, a.rating_count||0)).slice(0, 15);
-      html += buildGenreRow(emoji, genre, genreSorted);
+      const genreSorted = [...tracks].sort((a, b) => wilsonScore(b.avg_rating||0, b.rating_count||0) - wilsonScore(a.avg_rating||0, a.rating_count||0));
+      // Only show max 50 cards per row to keep DOM manageable; rest accessible via search
+      rowData.push({ emoji, title: genre, tracks: genreSorted.slice(0, 50) });
     });
 
-    container.innerHTML = html;
-    
-    // Setup scroll arrows
-    container.querySelectorAll('.genre-row').forEach(setupScrollArrows);
+    // Render skeleton rows — actual cards are filled by IntersectionObserver
+    container.innerHTML = '';
+    const frag = document.createDocumentFragment();
+    rowData.forEach((rd, idx) => {
+      const row = document.createElement('div');
+      row.className = 'genre-row';
+      row.dataset.rowIdx = idx;
+      row.innerHTML =
+        '<div class="genre-row-header">' +
+          '<div class="genre-row-title"><span class="genre-emoji">' + rd.emoji + '</span> ' + sanitize(rd.title) + '</div>' +
+          '<span class="genre-row-count">' + rd.tracks.length + ' track' + (rd.tracks.length !== 1 ? 's' : '') + '</span>' +
+          '<div class="genre-row-line"></div>' +
+        '</div>' +
+        '<div class="genre-row-wrapper">' +
+          '<button class="scroll-arrow left" aria-label="Scroll left"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>' +
+          '<div class="genre-row-scroll"></div>' +
+          '<button class="scroll-arrow right show" aria-label="Scroll right"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></button>' +
+        '</div>';
+      frag.appendChild(row);
+    });
+    container.appendChild(frag);
+
+    // Store row data for lazy hydration
+    window._browseRowData = rowData;
+
+    // Observe rows — populate cards when they enter viewport
+    if (window._browseObserver) window._browseObserver.disconnect();
+    window._browseObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const row = entry.target;
+        if (row.dataset.hydrated) return;
+        row.dataset.hydrated = '1';
+        const idx = parseInt(row.dataset.rowIdx, 10);
+        const rd = window._browseRowData[idx];
+        if (!rd) return;
+        const scroll = row.querySelector('.genre-row-scroll');
+        if (!scroll || scroll.children.length > 0) return;
+        const cardFrag = document.createDocumentFragment();
+        rd.tracks.forEach(t => {
+          const div = document.createElement('div');
+          div.innerHTML = buildBrowseCard(t, getEmbedHtml(t));
+          cardFrag.appendChild(div.firstChild);
+        });
+        scroll.appendChild(cardFrag);
+        setupScrollArrows(row);
+      });
+    }, { rootMargin: '300px 0px' });
+
+    container.querySelectorAll('.genre-row').forEach(row => {
+      window._browseObserver.observe(row);
+    });
   }
 
+  // buildGenreRow kept for deep link / search card reuse — NOT called in renderBrowse anymore
   function buildGenreRow(emoji, title, tracks) {
     const cards = tracks.map(t => buildBrowseCard(t, getEmbedHtml(t))).join('');
     return '<div class="genre-row">' +
@@ -1442,67 +1565,50 @@
     scroll.addEventListener('mousedown', onDragStart);
   }
 
-  // ─── Single global drag system (FIXED) ───
+  // ─── Single global drag system ───
   let _drag = null;
-  let _coastRaf = null;
 
   function onDragStart(e) {
     if (e.target.closest('button, .bstar, a, .browse-card-footer, .comment-input, .comment-form, .comment-submit, .comments-panel, input, textarea')) return;
     const scroll = e.currentTarget;
-    if (_coastRaf) { cancelAnimationFrame(_coastRaf); _coastRaf = null; }
+    if (_drag && _drag.rafId) cancelAnimationFrame(_drag.rafId);
     _drag = {
       el: scroll,
       startX: e.pageX,
       scrollStart: scroll.scrollLeft,
       lastX: e.pageX,
-      lastPageX: e.pageX,
       lastTime: performance.now(),
       velocity: 0,
       hasDragged: false,
-      moveRaf: null
+      rafId: null
     };
     scroll.style.cursor = 'grabbing';
     document.body.classList.add('is-dragging');
     e.preventDefault();
   }
 
-  function _onDragMove(e) {
+  document.addEventListener('mousemove', (e) => {
     if (!_drag) return;
-    // Store latest position but only process in rAF
-    _drag.lastPageX = e.pageX;
-    if (!_drag.moveRaf) {
-      _drag.moveRaf = requestAnimationFrame(() => {
-        if (!_drag) return;
-        _drag.moveRaf = null;
-        const now = performance.now();
-        const dt = now - _drag.lastTime;
-        const dx = _drag.lastPageX - _drag.lastX;
-        if (dt > 0) _drag.velocity = dx / dt;
-        _drag.lastX = _drag.lastPageX;
-        _drag.lastTime = now;
-        const totalDx = _drag.lastPageX - _drag.startX;
-        if (Math.abs(totalDx) > 3) _drag.hasDragged = true;
-        _drag.el.scrollLeft = _drag.scrollStart - totalDx;
-      });
-    }
-  }
+    const now = performance.now();
+    const dt = now - _drag.lastTime;
+    const dx = e.pageX - _drag.lastX;
+    if (dt > 0) _drag.velocity = dx / dt;
+    _drag.lastX = e.pageX;
+    _drag.lastTime = now;
+    const totalDx = e.pageX - _drag.startX;
+    if (Math.abs(totalDx) > 3) _drag.hasDragged = true;
+    _drag.el.scrollLeft = _drag.scrollStart - totalDx;
+  }, { passive: true });
 
-  function _onDragEnd() {
+  document.addEventListener('mouseup', () => {
     if (!_drag) return;
     const el = _drag.el;
     const hasDragged = _drag.hasDragged;
-    const velocity = _drag.velocity;
-
-    // Cancel any pending rAF move
-    if (_drag.moveRaf) { cancelAnimationFrame(_drag.moveRaf); }
-
-    // CRITICAL: Clear drag state IMMEDIATELY so mousemove stops processing
     el.style.cursor = '';
     document.body.classList.remove('is-dragging');
-    _drag = null;
 
-    // Momentum coast — independent of _drag, uses separate _coastRaf
-    let v = -velocity * 1000;
+    // Momentum
+    let v = -_drag.velocity * 1000;
     if (Math.abs(v) > 30) {
       const friction = 0.94;
       let last = performance.now();
@@ -1512,23 +1618,20 @@
         v *= friction;
         el.scrollLeft += v * dt;
         if (Math.abs(v) > 8) {
-          _coastRaf = requestAnimationFrame(coast);
+          _drag.rafId = requestAnimationFrame(coast);
         } else {
-          _coastRaf = null;
+          _drag = null;
         }
       }
-      _coastRaf = requestAnimationFrame(coast);
+      requestAnimationFrame(coast);
+    } else {
+      _drag = null;
     }
 
     if (hasDragged) {
-      el.addEventListener('click', (ev) => { ev.stopPropagation(); ev.preventDefault(); }, { capture: true, once: true });
+      el.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); }, { capture: true, once: true });
     }
-  }
-
-  document.addEventListener('mousemove', _onDragMove, { passive: true });
-  document.addEventListener('mouseup', _onDragEnd);
-  document.addEventListener('mouseleave', _onDragEnd);
-  window.addEventListener('blur', () => { if (_drag) _onDragEnd(); });
+  });
 
   // Search
   const browseSearchInput = document.getElementById('browseSearch');
@@ -1540,7 +1643,7 @@
       searchQuery = browseSearchInput.value.trim();
       searchClearBtn.classList.toggle('show', searchQuery.length > 0);
       renderBrowse();
-    }, 250);
+    }, 350);
   });
   searchClearBtn.addEventListener('click', () => {
     browseSearchInput.value = '';
@@ -1608,16 +1711,29 @@
     const track = allTracks.find(t => String(t.id) === String(trackId));
     if (!track) return;
     
-    // ── STOP previous playback (targeted, no full DOM scan) ──
-    if (activeBrowseUid) {
-      browseStop(activeBrowseUid);
-      // Remove hidden player for previous card
-      const prevHidden = document.getElementById('hidden-player-' + activeBrowseUid);
-      if (prevHidden) prevHidden.remove();
-    }
+    // ── STOP EVERYTHING first ──
+    // 1. Stop any browse card playing
+    if (activeBrowseUid) browseStop(activeBrowseUid);
+    // 2. Kill any Udio iframe
     destroyUdioPlayer();
+    // 3. Kill any SoundCloud iframe
     destroySc();
+    // 4. Stop any vote-page embed
     if (activeEmbedTrackId) { stopEmbed(activeEmbedTrackId); activeEmbedTrackId = null; }
+    // 5. Remove ALL hidden players (nuclear cleanup)
+    document.querySelectorAll('[id^="hidden-player-"]').forEach(el => el.remove());
+    // 5. Remove ALL is-playing states from all cards
+    document.querySelectorAll('.browse-card.is-playing').forEach(c => c.classList.remove('is-playing'));
+    // 6. Restore ALL now-playing overlays to original thumbs
+    document.querySelectorAll('.browse-card-thumb').forEach(tc => {
+      if (tc.dataset.originalHtml) {
+        tc.innerHTML = tc.dataset.originalHtml;
+        delete tc.dataset.originalHtml;
+        tc.setAttribute('data-action', 'load-embed');
+        tc.style.aspectRatio = '16/10';
+      }
+    });
+    // 7. Reset state
     playerBar.classList.remove('udio-active', 'sc-active');
     activeBrowseUid = null;
     activeBrowseTrackId = null;
