@@ -37,7 +37,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://gezijezmsecbtzytotax.supabase.co">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700&display=swap" rel="stylesheet">
+  <link rel="dns-prefetch" href="https://img.youtube.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:opsz,wght@9..40,300;9..40,500;9..40,700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:opsz,wght@9..40,300;9..40,500;9..40,700&display=swap" rel="stylesheet"></noscript>
 
   <style>
     :root {
@@ -275,7 +277,6 @@
     .how-connector { position: absolute; top: 80px; right: -14px; color: var(--border); font-size: 1.2rem; font-weight: 300; }
 
     @media (max-width: 960px) {
-      .tracks-grid { grid-template-columns: repeat(2, 1fr); }
       .how-steps { gap: 16px; }
     }
 
@@ -964,7 +965,7 @@
 </footer>
 
 <!-- ═══ PAGE FRAME ═══ -->
-<div class="page-frame" id="pageFrame"><button class="pf-close" id="pfClose" title="Back to browse"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button><div class="pf-iframe-wrap"><iframe></iframe></div></div>
+<div class="page-frame" id="pageFrame"><button class="pf-close" id="pfClose" title="Back to browse" aria-label="Back to browse"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg></button><div class="pf-iframe-wrap"><iframe></iframe></div></div>
 
 <!-- ═══ PERSISTENT PLAYER BAR ═══ -->
 <div class="player-bar" id="playerBar">
@@ -975,8 +976,8 @@
     <div class="player-meta" id="playerMeta"></div>
   </div>
   <div class="player-controls">
-    <button class="player-ctrl locate" id="btnLocate" title="Find this track"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg></button>
-    <button class="player-ctrl cl" id="btnClose" title="Close player"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
+    <button class="player-ctrl locate" id="btnLocate" title="Find this track" aria-label="Find this track"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/></svg></button>
+    <button class="player-ctrl cl" id="btnClose" title="Close player" aria-label="Close player"><svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg></button>
   </div>
 </div>
 
@@ -1239,7 +1240,7 @@
     if (!contentEl) return;
     const limit = parseInt(contentEl.dataset.commentLimit || '30', 10);
     try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/comments?track_id=eq.${trackId}&select=*&order=created_at.desc&limit=${limit + 1}`, { headers: { 'apikey': SUPABASE_KEY } });
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/comments?track_id=eq.${trackId}&select=content,author_name,created_at&order=created_at.desc&limit=${limit + 1}`, { headers: { 'apikey': SUPABASE_KEY } });
       const c = await res.json();
       const hasMore = c.length > limit;
       const visible = hasMore ? c.slice(0, limit) : c;
@@ -2134,10 +2135,10 @@
           <div class="udio-hdr-badge"><span class="udio-hdr-dot"></span> UDIO</div>
           <div class="udio-hdr-title"></div>
           <div class="udio-hdr-btns">
-            <button class="udio-hdr-btn" id="udioMinBtn" title="Minimize — keep playing">
+            <button class="udio-hdr-btn" id="udioMinBtn" title="Minimize — keep playing" aria-label="Minimize player">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/></svg>
             </button>
-            <button class="udio-hdr-btn" id="udioCloseBtn" title="Stop & close">
+            <button class="udio-hdr-btn" id="udioCloseBtn" title="Stop & close" aria-label="Stop and close player">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
             </button>
           </div>
