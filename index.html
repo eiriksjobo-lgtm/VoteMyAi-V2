@@ -1504,9 +1504,6 @@
     const trackIds = genreTrackMap[genreKey];
     if (!trackIds) return;
     
-    // Mark that sort just changed — next action won't reset
-    sortJustChanged = true;
-    
     let tracks = trackIds.map(id => allTracks.find(t => t.id === id)).filter(Boolean);
     
     if (sortType === 'new') {
@@ -1543,15 +1540,8 @@
     setupScrollArrows(row);
   };
 
-  // Reset all sort buttons to default (Top) — called when playing a song or other actions
-  let sortJustChanged = false;
-  
+  // Reset all sort buttons to default (Top) — only on full re-render
   function resetAllSorts() {
-    // Skip reset if sort was just changed — allow one action after sorting
-    if (sortJustChanged) {
-      sortJustChanged = false;
-      return;
-    }
     document.querySelectorAll('.genre-sort').forEach(group => {
       const topBtn = group.querySelector('[data-sort="top"]');
       const newBtn = group.querySelector('[data-sort="new"]');
@@ -1739,9 +1729,6 @@
 
     const track = allTracks.find(t => String(t.id) === String(trackId));
     if (!track) return;
-    
-    // Reset sort buttons back to default
-    resetAllSorts();
     
     // ── STOP EVERYTHING first ──
     // 1. Stop any browse card playing
