@@ -36,6 +36,7 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://gezijezmsecbtzytotax.supabase.co">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700&display=swap" rel="stylesheet">
 
   <style>
@@ -1090,6 +1091,16 @@
 
   async function loadTracks() {
     try {
+      // Check sessionStorage cache (2 min TTL)
+      const cached = sessionStorage.getItem('vmai_tracks');
+      const cachedAt = parseInt(sessionStorage.getItem('vmai_tracks_ts') || '0', 10);
+      if (cached && (Date.now() - cachedAt < 120000)) {
+        allTracks = JSON.parse(cached);
+        rebuildTrackMap();
+        renderTracks(); renderLeaderboard(); updateHeroStats();
+        return;
+      }
+
       // First page — fast initial render
       const res = await fetch(`${SUPABASE_URL}/rest/v1/tracks?select=${TRACK_FIELDS}&order=created_at.desc&limit=${PAGE_SIZE}&offset=0`, {
         headers: { 'apikey': SUPABASE_KEY, 'Prefer': 'count=exact' }
@@ -1121,6 +1132,7 @@
           _trackIndex = null;
           _sortCache = { view: null, len: 0, result: null };
           renderTracks(); renderLeaderboard(); renderBrowse();
+          try { sessionStorage.setItem('vmai_tracks', JSON.stringify(allTracks)); sessionStorage.setItem('vmai_tracks_ts', String(Date.now())); } catch(e) {}
         };
         if (window.requestIdleCallback) { requestIdleCallback(finalize); } else { setTimeout(finalize, 50); }
       }
@@ -2555,12 +2567,11 @@
 <script>
 function acceptCookies() {
   localStorage.setItem('cookie_consent', 'accepted');
-  document.getElementById('cookieBanner').style.display = 'none';
+  document.getElementById('cookieBanner').remove();
 }
 function declineCookies() {
   localStorage.setItem('cookie_consent', 'declined');
-  document.getElementById('cookieBanner').style.display = 'none';
-  // Disable GA4
+  document.getElementById('cookieBanner').remove();
   window['ga-disable-G-KW4NR9QBWB'] = true;
 }
 (function() {
