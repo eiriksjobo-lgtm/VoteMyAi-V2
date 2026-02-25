@@ -1030,22 +1030,28 @@
 
   // ─── Comments ───
   async function toggleComments(trackId, el) {
-    // Find the comments panel within the same card
     const card = el ? el.closest('.browse-card') : null;
-    let panel;
-    if (card) {
-      panel = card.querySelector('.comments-panel');
-    } else {
-      panel = document.getElementById(`comments-${trackId}`);
+    if (!card) return;
+    let panel = card.querySelector('.comments-panel');
+    
+    // Create panel lazily if it doesn't exist
+    if (!panel) {
+      const uid = card.dataset.uid;
+      panel = document.createElement('div');
+      panel.className = 'comments-panel';
+      panel.id = 'cp-' + uid;
+      panel.innerHTML = '<div class="comments-inner"><div id="cc-' + uid + '" data-track-id="' + trackId + '"><span style="color:var(--muted);font-size:0.8rem;">Loading...</span></div>' +
+        (currentUser ? '<div class="comment-form"><textarea class="comment-input" id="ci-' + uid + '" data-track-id="' + sanitizeAttr(trackId) + '" placeholder="Write a comment..." rows="2"></textarea><div class="comment-form-actions"><button class="comment-submit" data-action="post-comment" data-track="' + sanitizeAttr(trackId) + '" data-uid="' + uid + '"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg> Send</button></div></div>' : '<p style="font-size:0.75rem;color:var(--muted);margin-top:8px;"><a href="/login.html" style="color:var(--accent);text-decoration:none;font-weight:600;">Log in</a> to comment</p>') +
+        '</div>';
+      card.appendChild(panel);
     }
-    if (!panel) return;
+    
     const wasOpen = panel.classList.contains('open');
+    // Close any other open panels
     document.querySelectorAll('.comments-panel.open').forEach(x => x.classList.remove('open'));
     if (!wasOpen) {
       panel.classList.add('open');
-      const contentEl = panel.querySelector('[data-track-id]') || panel.querySelector('[id^="comments-content-"]') || panel.querySelector('[id^="cc-"]');
-      const tid = contentEl ? (contentEl.dataset.trackId || trackId) : trackId;
-      await loadComments(tid, panel);
+      await loadComments(trackId, panel);
     }
   }
   async function loadComments(trackId, panel) {
@@ -1282,13 +1288,10 @@
         '</div>' +
         (track.artist_note ? '<div class="browse-card-note"><div class="browse-card-note-toggle" data-action="toggle-note" data-uid="' + uid + '">📝 Artist\'s Note</div><div class="browse-card-note-text" id="note-' + uid + '">' + sanitize(track.artist_note) + '</div></div>' : '') +
         '<div class="browse-card-footer">' +
-          '<button data-action="comments" data-track="' + trackIdAttr + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Comments</button>' +
+          '<button data-action="comments" data-track="' + trackIdAttr + '" data-uid="' + uid + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Comments</button>' +
           '<button data-action="share" data-track="' + trackIdAttr + '" data-title="' + titleAttr + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Share</button>' +
         '</div>' +
       '</div>' +
-      '<div class="comments-panel" id="cp-' + uid + '"><div class="comments-inner"><div id="cc-' + uid + '" data-track-id="' + track.id + '"><span style="color:var(--muted);font-size:0.8rem;">Loading...</span></div>' +
-      (currentUser ? '<div class="comment-form"><textarea class="comment-input" id="ci-' + uid + '" data-track-id="' + trackIdAttr + '" placeholder="Write a comment..." rows="2"></textarea><div class="comment-form-actions"><button class="comment-submit" data-action="post-comment" data-track="' + trackIdAttr + '" data-uid="' + uid + '"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg> Send</button></div></div>' : '<p style="font-size:0.75rem;color:var(--muted);margin-top:8px;"><a href="/login.html" style="color:var(--accent);text-decoration:none;font-weight:600;">Log in</a> to comment</p>') +
-      '</div></div>' +
     '</div>';
   }
 
@@ -1365,7 +1368,7 @@
     });
 
     // Build "Trending" row first (top rated across all genres)
-    const trending = [...sorted].sort((a, b) => wilsonScore(b.avg_rating||0, b.rating_count||0) - wilsonScore(a.avg_rating||0, a.rating_count||0)).slice(0, 12);
+    const trending = [...sorted].sort((a, b) => wilsonScore(b.avg_rating||0, b.rating_count||0) - wilsonScore(a.avg_rating||0, a.rating_count||0)).slice(0, 10);
 
     let html = '';
     
@@ -1376,7 +1379,7 @@
 
     // Recently added (if discover view)
     if (browseView === 'discover') {
-      const recent = [...sorted].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 12);
+      const recent = [...sorted].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 10);
       if (recent.length) {
         html += buildGenreRow('🆕', 'Just Added', recent);
       }
@@ -1386,8 +1389,8 @@
     const genreOrder = Object.entries(genreMap).sort((a, b) => b[1].length - a[1].length);
     genreOrder.forEach(([genre, tracks]) => {
       const emoji = GENRE_EMOJIS[genre] || '🎶';
-      // Sort within genre: best rated first (Wilson Score)
-      const genreSorted = [...tracks].sort((a, b) => wilsonScore(b.avg_rating||0, b.rating_count||0) - wilsonScore(a.avg_rating||0, a.rating_count||0));
+      // Sort within genre: best rated first (Wilson Score), cap at 15 per row
+      const genreSorted = [...tracks].sort((a, b) => wilsonScore(b.avg_rating||0, b.rating_count||0) - wilsonScore(a.avg_rating||0, a.rating_count||0)).slice(0, 15);
       html += buildGenreRow(emoji, genre, genreSorted);
     });
 
@@ -1605,29 +1608,16 @@
     const track = allTracks.find(t => String(t.id) === String(trackId));
     if (!track) return;
     
-    // ── STOP EVERYTHING first ──
-    // 1. Stop any browse card playing
-    if (activeBrowseUid) browseStop(activeBrowseUid);
-    // 2. Kill any Udio iframe
+    // ── STOP previous playback (targeted, no full DOM scan) ──
+    if (activeBrowseUid) {
+      browseStop(activeBrowseUid);
+      // Remove hidden player for previous card
+      const prevHidden = document.getElementById('hidden-player-' + activeBrowseUid);
+      if (prevHidden) prevHidden.remove();
+    }
     destroyUdioPlayer();
-    // 3. Kill any SoundCloud iframe
     destroySc();
-    // 4. Stop any vote-page embed
     if (activeEmbedTrackId) { stopEmbed(activeEmbedTrackId); activeEmbedTrackId = null; }
-    // 5. Remove ALL hidden players (nuclear cleanup)
-    document.querySelectorAll('[id^="hidden-player-"]').forEach(el => el.remove());
-    // 5. Remove ALL is-playing states from all cards
-    document.querySelectorAll('.browse-card.is-playing').forEach(c => c.classList.remove('is-playing'));
-    // 6. Restore ALL now-playing overlays to original thumbs
-    document.querySelectorAll('.browse-card-thumb').forEach(tc => {
-      if (tc.dataset.originalHtml) {
-        tc.innerHTML = tc.dataset.originalHtml;
-        delete tc.dataset.originalHtml;
-        tc.setAttribute('data-action', 'load-embed');
-        tc.style.aspectRatio = '16/10';
-      }
-    });
-    // 7. Reset state
     playerBar.classList.remove('udio-active', 'sc-active');
     activeBrowseUid = null;
     activeBrowseTrackId = null;
