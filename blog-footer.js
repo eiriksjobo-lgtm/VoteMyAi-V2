@@ -1,9 +1,41 @@
-/* blog-footer.js — Auto-injects share buttons + related posts
+/* blog-footer.js — Auto-injects share buttons + related posts + OG image
    Reads blog.html automatically — never needs manual updating.
+   OG images auto-resolve: /blog/my-post.html → /og/og-my-post.png
    Usage: Add <script src="/blog-footer.js"></script> before </body> in each blog post */
 
 (function(){
-  /* Inject CSS immediately */
+  /* Auto-set OG image based on filename */
+  var path = window.location.pathname;
+  var slug = path.split('/').pop().replace('.html','');
+  if(slug){
+    var ogUrl = 'https://www.votemyai.com/og/og-' + slug + '.png';
+    var existing = document.querySelector('meta[property="og:image"]');
+    if(existing){
+      existing.setAttribute('content', ogUrl);
+    } else {
+      var meta = document.createElement('meta');
+      meta.setAttribute('property','og:image');
+      meta.setAttribute('content', ogUrl);
+      document.head.appendChild(meta);
+    }
+    /* Also set twitter card image */
+    var twImg = document.querySelector('meta[name="twitter:image"]');
+    if(!twImg){
+      twImg = document.createElement('meta');
+      twImg.setAttribute('name','twitter:image');
+      twImg.setAttribute('content', ogUrl);
+      document.head.appendChild(twImg);
+    }
+    var twCard = document.querySelector('meta[name="twitter:card"]');
+    if(!twCard){
+      twCard = document.createElement('meta');
+      twCard.setAttribute('name','twitter:card');
+      twCard.setAttribute('content','summary_large_image');
+      document.head.appendChild(twCard);
+    }
+  }
+
+  /* Inject CSS */
   var style = document.createElement('style');
   style.textContent = '\
 .bf-share{margin:48px 0 0;padding:32px 0 0;border-top:1px solid var(--border)}\
@@ -27,7 +59,7 @@
 ';
   document.head.appendChild(style);
 
-  /* Inject share buttons immediately (no fetch needed) */
+  /* Inject share buttons */
   var pageUrl = encodeURIComponent(window.location.href);
   var pageTitle = encodeURIComponent(document.title);
 
@@ -61,7 +93,7 @@
     });
   }
 
-  /* Fetch blog.html and parse all posts */
+  /* Fetch blog.html and parse all posts for related */
   fetch('/blog.html')
     .then(function(r){ return r.text(); })
     .then(function(html){
@@ -78,16 +110,14 @@
         var imgEl = card.querySelector('.blog-card-img');
         if(!link || !titleEl) return;
 
-        var href = link.getAttribute('href');
         posts.push({
-          url: href,
+          url: link.getAttribute('href'),
           tag: tagEl ? tagEl.textContent.trim() : '',
           title: titleEl.textContent.trim(),
           emoji: imgEl ? imgEl.textContent.trim() : '📄'
         });
       });
 
-      /* Find current post */
       var current = null;
       var currentIndex = -1;
       posts.forEach(function(p, i){
@@ -99,7 +129,6 @@
 
       if(!current || posts.length < 2) return;
 
-      /* Pick 3 related posts: prioritize same tag, then nearest in list */
       var others = [];
       posts.forEach(function(p, i){
         if(i === currentIndex) return;
@@ -110,32 +139,26 @@
         });
       });
 
-      /* Sort: same tag first, then closest in list order */
       others.sort(function(a, b){
         if(b.score !== a.score) return b.score - a.score;
         return a.dist - b.dist;
       });
 
       var picked = others.slice(0, 3);
-
-      /* Render related posts */
       var container = document.getElementById('bfRelated');
       if(!container || picked.length === 0) return;
 
       var relHtml = '<div class="bf-rlabel">KEEP READING</div><div class="bf-grid">';
       picked.forEach(function(item){
         var p = item.post;
-        relHtml += '\
-        <a href="'+p.url+'" class="bf-card">\
-          <div class="bf-em">'+p.emoji+'</div>\
-          <div class="bf-tg">'+p.tag+'</div>\
-          <div class="bf-tt">'+p.title+'</div>\
-        </a>';
+        relHtml += '<a href="'+p.url+'" class="bf-card">';
+        relHtml += '<div class="bf-em">'+p.emoji+'</div>';
+        relHtml += '<div class="bf-tg">'+p.tag+'</div>';
+        relHtml += '<div class="bf-tt">'+p.title+'</div>';
+        relHtml += '</a>';
       });
       relHtml += '</div>';
       container.innerHTML = relHtml;
     })
-    .catch(function(e){
-      /* Silent fail — share buttons still work */
-    });
+    .catch(function(e){});
 })();
