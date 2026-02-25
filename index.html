@@ -1165,7 +1165,7 @@
 
   function activatePlayerBar(trackId, container, platform) { activePlayerTrackId = trackId; activePlayerPlatform = platform; playerTitle.textContent = container.dataset.trackTitle || 'Now Playing'; playerMeta.textContent = container.dataset.trackTool || ''; playerBar.classList.add('active', 'playing'); document.body.classList.add('player-active'); gtag('event', 'play_bar', { track_id: trackId, platform }); }
 
-  document.getElementById('btnClose').addEventListener('click', closePlayer);
+  document.getElementById('btnClose').addEventListener('click', () => closePlayer());
   document.getElementById('btnLocate').addEventListener('click', function() {
     const frame = document.getElementById('pageFrame');
     if (frame.classList.contains('active')) closePageFrame();
@@ -1953,9 +1953,17 @@
     const thumbContainer = card.querySelector('.browse-card-thumb');
     if (!thumbContainer) return;
     
-    // Remove hidden player if exists
+    // Remove hidden player if exists — kill iframe src first
     const hiddenPlayer = document.getElementById('hidden-player-' + uid);
-    if (hiddenPlayer) hiddenPlayer.remove();
+    if (hiddenPlayer) {
+      const iframes = hiddenPlayer.querySelectorAll('iframe');
+      iframes.forEach(f => { f.src = 'about:blank'; });
+      hiddenPlayer.remove();
+    }
+    
+    // Also kill any iframe inside the card thumb (YouTube embeds)
+    const thumbIframes = thumbContainer.querySelectorAll('iframe');
+    thumbIframes.forEach(f => { f.src = 'about:blank'; });
     
     if (thumbContainer.dataset.originalHtml) {
       thumbContainer.innerHTML = thumbContainer.dataset.originalHtml;
@@ -1974,15 +1982,25 @@
   // Override closePlayer to also stop browse embeds
   const _origClosePlayer = closePlayer;
   closePlayer = function() {
-    if (activeBrowseUid) {
-      browseStop(activeBrowseUid);
-    }
-    stopUdioFull();
+    // 1. Stop browse card
+    if (activeBrowseUid) browseStop(activeBrowseUid);
+    // 2. Kill Udio iframe completely
+    destroyUdioPlayer();
+    // 3. Kill SoundCloud iframe completely
     destroySc();
+    // 4. Stop old-style embeds
+    if (activeEmbedTrackId) { stopEmbed(activeEmbedTrackId); activeEmbedTrackId = null; }
+    // 5. Remove any stray hidden players
+    const hp = activeBrowseUid ? document.getElementById('hidden-player-' + activeBrowseUid) : null;
+    if (hp) hp.remove();
+    // 6. Reset all player state
     playerBar.classList.remove('active', 'playing', 'udio-active', 'sc-active');
     document.body.classList.remove('player-active');
     activePlayerTrackId = null;
     activePlayerPlatform = null;
+    activeBrowseUid = null;
+    activeBrowseTrackId = null;
+    // 7. Close page frame
     const frame = document.getElementById('pageFrame');
     if (frame) { frame.classList.remove('active'); frame.querySelector('iframe').src = ''; }
   };
@@ -2080,9 +2098,12 @@
   
   function destroyUdioPlayer() {
     if (udioContainer) {
-      udioContainer.className = 'udio-closed';
+      // Kill iframe src first to stop audio immediately
+      const iframes = udioContainer.querySelectorAll('iframe');
+      iframes.forEach(f => { f.src = 'about:blank'; f.remove(); });
       const box = document.getElementById('udio-iframe-box');
       if (box) box.innerHTML = '';
+      udioContainer.className = 'udio-closed';
       udioState = 'closed';
     }
     clearTimeout(window._udioAutoMin);
@@ -2297,9 +2318,12 @@
 
   function destroySc() {
     if (scContainer) {
-      scContainer.className = 'sc-closed';
+      // Kill iframe src first to stop audio immediately
+      const iframes = scContainer.querySelectorAll('iframe');
+      iframes.forEach(f => { f.src = 'about:blank'; f.remove(); });
       const box = document.getElementById('sc-iframe-box');
       if (box) box.innerHTML = '';
+      scContainer.className = 'sc-closed';
       scState = 'closed';
     }
     clearTimeout(window._scAutoMin);
