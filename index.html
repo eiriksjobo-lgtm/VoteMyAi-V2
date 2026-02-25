@@ -1465,7 +1465,7 @@
       const emoji = GENRE_EMOJIS[genre] || '🎶';
       const genreSorted = [...tracks].sort((a, b) => wilsonScore(b.avg_rating||0, b.rating_count||0) - wilsonScore(a.avg_rating||0, a.rating_count||0));
       // Only show max 50 cards per row to keep DOM manageable; rest accessible via search
-      rowData.push({ emoji, title: genre, tracks: genreSorted.slice(0, 50) });
+      rowData.push({ emoji, title: genre, tracks: genreSorted });
     });
 
     // Render skeleton rows — actual cards are filled by IntersectionObserver
@@ -1569,9 +1569,10 @@
   let _drag = null;
 
   function onDragStart(e) {
-    if (e.target.closest('button, .bstar, a, .browse-card-footer, .comment-input, .comment-form, .comment-submit, .comments-panel, input, textarea')) return;
+    if (e.target.closest('button, .bstar, a, .browse-card-footer, .comment-input, .comment-form, .comment-submit, .comments-panel, .browse-card-note, .browse-card-note-toggle, .browse-card-note-text, input, textarea')) return;
     const scroll = e.currentTarget;
-    if (_drag && _drag.rafId) cancelAnimationFrame(_drag.rafId);
+    // Cancel any existing momentum
+    if (_drag && _drag.rafId) { cancelAnimationFrame(_drag.rafId); _drag = null; }
     _drag = {
       el: scroll,
       startX: e.pageX,
@@ -1580,10 +1581,9 @@
       lastTime: performance.now(),
       velocity: 0,
       hasDragged: false,
-      rafId: null
+      rafId: null,
+      active: false
     };
-    scroll.style.cursor = 'grabbing';
-    document.body.classList.add('is-dragging');
     e.preventDefault();
   }
 
@@ -1596,8 +1596,16 @@
     _drag.lastX = e.pageX;
     _drag.lastTime = now;
     const totalDx = e.pageX - _drag.startX;
-    if (Math.abs(totalDx) > 3) _drag.hasDragged = true;
-    _drag.el.scrollLeft = _drag.scrollStart - totalDx;
+    // Only activate drag after 5px threshold to allow clicks through
+    if (!_drag.active && Math.abs(totalDx) > 5) {
+      _drag.active = true;
+      _drag.hasDragged = true;
+      _drag.el.style.cursor = 'grabbing';
+      document.body.classList.add('is-dragging');
+    }
+    if (_drag.active) {
+      _drag.el.scrollLeft = _drag.scrollStart - totalDx;
+    }
   }, { passive: true });
 
   document.addEventListener('mouseup', () => {
@@ -1607,34 +1615,55 @@
     el.style.cursor = '';
     document.body.classList.remove('is-dragging');
 
-    // Momentum
-    let v = -_drag.velocity * 1000;
-    if (Math.abs(v) > 30) {
-      const friction = 0.94;
-      let last = performance.now();
-      function coast(now) {
-        const dt = (now - last) / 1000;
-        last = now;
-        v *= friction;
-        el.scrollLeft += v * dt;
-        if (Math.abs(v) > 8) {
-          _drag.rafId = requestAnimationFrame(coast);
-        } else {
-          _drag = null;
+    // Momentum — only if actually dragged
+    if (hasDragged) {
+      let v = -_drag.velocity * 1000;
+      if (Math.abs(v) > 30) {
+        const friction = 0.94;
+        let last = performance.now();
+        const dragRef = _drag;
+        function coast(now) {
+          const dt = (now - last) / 1000;
+          last = now;
+          v *= friction;
+          el.scrollLeft += v * dt;
+          if (Math.abs(v) > 8) {
+            dragRef.rafId = requestAnimationFrame(coast);
+          } else {
+            if (_drag === dragRef) _drag = null;
+          }
         }
+        requestAnimationFrame(coast);
+      } else {
+        _drag = null;
       }
-      requestAnimationFrame(coast);
+
+      el.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); }, { capture: true, once: true });
     } else {
       _drag = null;
-    }
-
-    if (hasDragged) {
-      el.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); }, { capture: true, once: true });
     }
   });
 
   // Search
   const browseSearchInput = document.getElementById('browseSearch');
+
+  // Safety: reset drag on window blur/visibility change to prevent stuck drags
+  window.addEventListener('blur', () => {
+    if (_drag) {
+      if (_drag.rafId) cancelAnimationFrame(_drag.rafId);
+      if (_drag.el) _drag.el.style.cursor = '';
+      document.body.classList.remove('is-dragging');
+      _drag = null;
+    }
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && _drag) {
+      if (_drag.rafId) cancelAnimationFrame(_drag.rafId);
+      if (_drag.el) _drag.el.style.cursor = '';
+      document.body.classList.remove('is-dragging');
+      _drag = null;
+    }
+  });
   const searchClearBtn = document.getElementById('searchClear');
   let searchDebounce;
   browseSearchInput.addEventListener('input', () => {
