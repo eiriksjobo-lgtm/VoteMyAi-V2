@@ -177,49 +177,53 @@
     document.getElementById(`tab-${tab}`).classList.add('active');
   };
 
-  // ─── LOGIN: fetch ALL users (paginate through GoTrue's 50-per-page limit) ───
+  // ─── LOGIN: fast login, paginate users in background ───
   window.login = async function() {
     adminPassword = document.getElementById('passwordInput').value;
     try {
-      // First call: authenticate + get first page
-      const firstRes = await fetch(`${SUPABASE_URL}/functions/v1/admin-users`, {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/admin-users`, {
         headers: { 'x-admin-password': adminPassword }
       });
-      if (!firstRes.ok) {
+      if (!res.ok) {
         showStatus('loginStatus', 'Wrong password', 'error');
         return;
       }
-      const firstData = await firstRes.json();
-      let allUsers = firstData.users || [];
-
-      // If we got exactly 50, there are likely more pages — keep fetching
-      if (allUsers.length >= 50) {
-        let page = 2;
-        while (true) {
-          try {
-            const res = await fetch(`${SUPABASE_URL}/functions/v1/admin-users?page=${page}&per_page=50`, {
-              headers: { 'x-admin-password': adminPassword }
-            });
-            if (!res.ok) break;
-            const data = await res.json();
-            const users = data.users || [];
-            if (users.length === 0) break;
-            allUsers = allUsers.concat(users);
-            if (users.length < 50) break;
-            page++;
-          } catch(e) { break; }
-        }
-      }
-
-      authUsers = allUsers;
+      const data = await res.json();
+      authUsers = data.users || [];
     } catch(e) {
       showStatus('loginStatus', 'Could not connect', 'error');
       return;
     }
+    // Show panel immediately
     document.getElementById('loginSection').style.display = 'none';
     document.getElementById('adminPanel').style.display = 'block';
     loadData();
+
+    // Then try to fetch remaining pages in background (if edge function supports it)
+    if (authUsers.length >= 50) {
+      fetchRemainingUsers();
+    }
   };
+
+  async function fetchRemainingUsers() {
+    let page = 2;
+    while (true) {
+      try {
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/admin-users?page=${page}&per_page=50`, {
+          headers: { 'x-admin-password': adminPassword }
+        });
+        if (!res.ok) break;
+        const data = await res.json();
+        const users = data.users || [];
+        if (users.length === 0) break;
+        authUsers = authUsers.concat(users);
+        if (users.length < 50) break;
+        page++;
+      } catch(e) { break; }
+    }
+    // Refresh UI with full user list
+    if (authUsers.length > 50) loadData();
+  }
 
   async function loadData() {
     try {
