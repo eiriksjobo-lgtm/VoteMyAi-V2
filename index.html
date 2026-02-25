@@ -140,7 +140,7 @@
       display: flex; flex-direction: column; align-items: center; gap: 4px;
       padding: 12px 24px; border-radius: 10px;
       background: var(--surface); border: 1px solid var(--border);
-      text-decoration: none; transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+      text-decoration: none; transition: all 0.25s;
     }
     .hero-tool:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
     .hero-tool-name { font-weight: 700; font-size: 0.9rem; color: var(--text); }
@@ -149,12 +149,8 @@
     /* ══════════════════════════════════ TRACK GRID (removed — browse system active) ══════════════════════════════════ */
 
     .comments-panel { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; position: relative; z-index: 10; }
-    .comments-panel.open { max-height: 400px; overflow: hidden; }
-    .comments-inner { padding: 12px 18px 16px; border-top: 1px solid var(--border); position: relative; z-index: 10; max-height: 380px; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
-    .comments-inner::-webkit-scrollbar { width: 5px; }
-    .comments-inner::-webkit-scrollbar-track { background: transparent; }
-    .comments-inner::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-    .comments-inner::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+    .comments-panel.open { max-height: 500px; overflow: visible; }
+    .comments-inner { padding: 12px 18px 16px; border-top: 1px solid var(--border); position: relative; z-index: 10; }
     .comment { padding: 8px 0; border-bottom: 1px solid rgba(26,26,38,0.4); }
     .comment:last-child { border-bottom: none; }
     .comment-text { font-size: 0.82rem; color: var(--text-secondary); }
@@ -191,7 +187,7 @@
 
     .tools-section { max-width: 1100px; margin: 0 auto; padding: 60px clamp(16px, 4vw, 40px) 40px; }
     .tools-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
-    .tool-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 24px; text-decoration: none; color: var(--text); position: relative; overflow: hidden; transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease; display: block; }
+    .tool-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 24px; text-decoration: none; color: var(--text); position: relative; overflow: hidden; transition: all 0.3s ease; display: block; }
     .tool-card:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(0,0,0,0.35); border-color: var(--border-hover); }
     .tool-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
     .tool-card.suno::before { background: linear-gradient(90deg, #e8ff47, #a3e635); }
@@ -236,12 +232,11 @@
     .player-bar.playing .player-eq span { animation-play-state: running; }
     .player-eq { display: flex; align-items: flex-end; gap: 2px; height: 18px; flex-shrink: 0; }
     .player-eq span { width: 3px; background: var(--accent); border-radius: 2px; animation: eqBounce 0.8s ease-in-out infinite alternate; animation-play-state: paused; }
-    .player-eq span:nth-child(1) { animation-delay: 0s; }
-    .player-eq span:nth-child(2) { animation-delay: 0.15s; }
-    .player-eq span:nth-child(3) { animation-delay: 0.3s; }
-    .player-eq span:nth-child(4) { animation-delay: 0.45s; }
-    @keyframes eqBounce { 0%{transform:scaleY(0.22)} 100%{transform:scaleY(1)} }
-    .player-eq span, .browse-eq-bars span, .bnp-eq span { transform-origin: bottom; will-change: transform; height: 18px; }
+    .player-eq span:nth-child(1) { height: 8px; animation-delay: 0s; }
+    .player-eq span:nth-child(2) { height: 14px; animation-delay: 0.15s; }
+    .player-eq span:nth-child(3) { height: 6px; animation-delay: 0.3s; }
+    .player-eq span:nth-child(4) { height: 12px; animation-delay: 0.45s; }
+    @keyframes eqBounce { 0%{height:4px} 100%{height:18px} }
     .player-embed-hidden { position: absolute; left: -9999px; top: -9999px; width: 320px; height: 180px; overflow: hidden; }
     .player-info { flex: 1; min-width: 0; }
     .player-title { font-weight: 600; font-size: 0.85rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -416,26 +411,6 @@
     }
     .genre-row-line { flex: 1; height: 1px; background: linear-gradient(90deg, var(--border) 0%, transparent 100%); }
 
-    /* Genre sort toggles */
-    .genre-sort {
-      display: flex; gap: 2px; flex-shrink: 0;
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 6px; padding: 2px; margin-left: 4px;
-    }
-    .genre-sort button {
-      background: none; border: none; color: var(--muted);
-      font-size: 0.58rem; font-weight: 600; font-family: 'DM Sans', sans-serif;
-      padding: 3px 8px; border-radius: 4px; cursor: pointer;
-      letter-spacing: 0.5px; text-transform: uppercase;
-      transition: all 0.15s; white-space: nowrap;
-    }
-    .genre-sort button:hover { color: var(--text); }
-    .genre-sort button.active { background: var(--accent); color: var(--bg); }
-
-    @media (max-width: 640px) {
-      .genre-sort button { font-size: 0.52rem; padding: 3px 6px; }
-    }
-
     /* Horizontal scroll */
     .genre-row-scroll {
       display: flex; gap: 14px; overflow-x: auto; overflow-y: hidden;
@@ -443,8 +418,6 @@
       -ms-overflow-style: none; scrollbar-width: none; scroll-snap-type: x proximity;
       flex: 1; min-width: 0; cursor: grab;
       user-select: none; -webkit-user-select: none;
-      will-change: scroll-position;
-      -webkit-overflow-scrolling: touch;
     }
     .genre-row-scroll::-webkit-scrollbar { display: none; }
 
@@ -481,10 +454,8 @@
     .browse-card {
       flex: 0 0 220px; background: var(--surface); border: 1px solid var(--border);
       border-radius: 12px; overflow: hidden;
-      transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       scroll-snap-align: start; position: relative;
-      contain: layout style paint;
-      will-change: transform;
     }
     .browse-card:hover {
       border-color: var(--accent); transform: translateY(-6px) scale(1.02);
@@ -496,10 +467,9 @@
     }
     .browse-card-thumb img {
       width: 100%; height: 100%; object-fit: cover;
-      transition: transform 0.4s ease-out;
-      will-change: transform;
+      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .browse-card:hover .browse-card-thumb img { transform: scale3d(1.08, 1.08, 1); }
+    .browse-card:hover .browse-card-thumb img { transform: scale(1.08); }
     
     .browse-card-play {
       position: absolute; top: 50%; left: 50%;
@@ -658,10 +628,10 @@
       width: 3px; background: var(--accent); border-radius: 2px;
       animation: eqBounce 0.8s ease-in-out infinite alternate;
     }
-    .browse-eq-bars span:nth-child(1) { animation-delay: 0s; }
-    .browse-eq-bars span:nth-child(2) { animation-delay: 0.15s; }
-    .browse-eq-bars span:nth-child(3) { animation-delay: 0.3s; }
-    .browse-eq-bars span:nth-child(4) { animation-delay: 0.45s; }
+    .browse-eq-bars span:nth-child(1) { height: 8px; animation-delay: 0s; }
+    .browse-eq-bars span:nth-child(2) { height: 14px; animation-delay: 0.15s; }
+    .browse-eq-bars span:nth-child(3) { height: 6px; animation-delay: 0.3s; }
+    .browse-eq-bars span:nth-child(4) { height: 12px; animation-delay: 0.45s; }
 
     /* Now Playing overlay for audio platforms (Suno, SoundCloud, Udio) */
     .browse-now-playing {
@@ -687,11 +657,11 @@
       width: 4px; background: var(--accent); border-radius: 2px;
       animation: eqBounce 0.8s ease-in-out infinite alternate;
     }
-    .bnp-eq span:nth-child(1) { animation-delay: 0s; }
-    .bnp-eq span:nth-child(2) { animation-delay: 0.1s; }
-    .bnp-eq span:nth-child(3) { animation-delay: 0.2s; }
-    .bnp-eq span:nth-child(4) { animation-delay: 0.3s; }
-    .bnp-eq span:nth-child(5) { animation-delay: 0.4s; }
+    .bnp-eq span:nth-child(1) { height: 10px; animation-delay: 0s; }
+    .bnp-eq span:nth-child(2) { height: 20px; animation-delay: 0.1s; }
+    .bnp-eq span:nth-child(3) { height: 28px; animation-delay: 0.2s; }
+    .bnp-eq span:nth-child(4) { height: 16px; animation-delay: 0.3s; }
+    .bnp-eq span:nth-child(5) { height: 12px; animation-delay: 0.4s; }
     .bnp-title {
       font-size: 0.6rem; font-weight: 700; letter-spacing: 2px;
       text-transform: uppercase; color: var(--accent); margin-bottom: 4px;
@@ -1098,7 +1068,7 @@
     if (frame.classList.contains('active')) closePageFrame();
     else scrollToActiveCard();
   });
-  function closePlayer() { stopUdioFull(); if (activeEmbedTrackId) { stopEmbed(activeEmbedTrackId); activeEmbedTrackId = null; } if (activeBrowseUid) browseStop(activeBrowseUid); playerBar.classList.remove('active', 'playing', 'udio-active'); document.body.classList.remove('player-active'); activePlayerTrackId = null; activePlayerPlatform = null; closePageFrame(); }
+  function closePlayer() { stopUdioFull(); if (activeEmbedTrackId) { stopEmbed(activeEmbedTrackId); activeEmbedTrackId = null; } if (activeBrowseUid) browseStop(activeBrowseUid); playerBar.classList.remove('active', 'playing', 'udio-active', 'sc-active'); document.body.classList.remove('player-active'); activePlayerTrackId = null; activePlayerPlatform = null; closePageFrame(); }
 
   function navigateToPage(url) { if (!activePlayerTrackId) { window.location.href = url; return; } const frame = document.getElementById('pageFrame'); frame.querySelector('iframe').src = url; frame.classList.add('active'); }
   function closePageFrame() { 
@@ -1222,19 +1192,23 @@
 
   // ═══ BROWSE: Netflix-style genre rows ═══
   const GENRE_EMOJIS = {
-    'Pop': '🎵',
-    'Rock': '🎸',
-    'Hip-Hop & Rap': '🎤',
-    'Electronic & Dance': '⚡',
-    'R&B & Soul': '💜',
-    'Metal': '🤘',
-    'Jazz & Blues': '🎷',
-    'Classical & Cinematic': '🎻',
-    'Folk & Country': '🍂',
-    'Latin & Reggaeton': '💃',
-    'Ambient & Chill': '🌌',
-    'Reggae & Caribbean': '🌴',
-    'Afrobeat & African': '🌍',
+    'Pop': '🎵', 'Synth-Pop': '🎵', 'Indie Pop': '🎵', 'Electropop': '🎵', 'Dream Pop': '🎵', 'K-Pop': '✨', 'J-Pop': '✨', 'Art Pop': '🎵', 'Dance Pop': '🎵',
+    'Rock': '🎸', 'Indie Rock': '🎸', 'Alt Rock': '🎸', 'Punk Rock': '🎸', 'Post-Punk': '🎸', 'Garage Rock': '🎸', 'Psychedelic Rock': '🎸', 'Prog Rock': '🎸', 'Shoegaze': '🎸', 'Grunge': '🎸', 'Britpop': '🎸',
+    'Hip-Hop': '🎤', 'Trap': '🎤', 'Boom Bap': '🎤', 'Lo-Fi Hip-Hop': '🎤', 'Drill': '🎤', 'Conscious Rap': '🎤', 'Old School Hip-Hop': '🎤', 'Cloud Rap': '🎤',
+    'Electronic': '⚡', 'House': '⚡', 'Deep House': '⚡', 'Tech House': '⚡', 'Techno': '⚡', 'Trance': '⚡', 'Dubstep': '⚡', 'Drum & Bass': '🥁', 'IDM': '⚡', 'Breakbeat': '⚡', 'Garage': '⚡', 'Hardstyle': '⚡', 'Eurodance': '⚡', 'Italo Disco': '⚡', 'Synthwave': '⚡', 'Electro': '⚡', 'Future Bass': '⚡',
+    'R&B / Soul': '💜', 'Neo Soul': '💜', 'Contemporary R&B': '💜', 'Motown': '💜', 'Funk': '🕺', 'Disco': '🕺',
+    'Dance': '💃', 'EDM': '💃', 'Nu-Disco': '💃', 'Tropical House': '💃', 'Afro House': '💃', 'Dancehall': '💃',
+    'Metal': '🤘', 'Heavy Metal': '🤘', 'Death Metal': '🤘', 'Black Metal': '🤘', 'Doom Metal': '🤘', 'Thrash Metal': '🤘', 'Metalcore': '🤘', 'Nu Metal': '🤘', 'Power Metal': '🤘', 'Symphonic Metal': '🤘',
+    'Jazz': '🎷', 'Smooth Jazz': '🎷', 'Bebop': '🎷', 'Jazz Fusion': '🎷', 'Acid Jazz': '🎷', 'Nu Jazz': '🎷', 'Swing': '🎷',
+    'Classical': '🎻', 'Orchestral': '🎻', 'Cinematic': '🎬', 'Neoclassical': '🎻', 'Baroque': '🎻', 'Romantic': '🎻', 'Chamber Music': '🎻', 'Film Score': '🎬', 'Epic Orchestral': '🎬',
+    'Indie / Folk': '🍂', 'Folk': '🍂', 'Acoustic': '🍂', 'Singer-Songwriter': '🍂', 'Indie Folk': '🍂', 'Americana': '🍂', 'Bluegrass': '🍂', 'Celtic': '🍂',
+    'Latin': '💃', 'Reggaeton': '💃', 'Salsa': '💃', 'Bossa Nova': '💃', 'Latin Pop': '💃', 'Cumbia': '💃', 'Bachata': '💃', 'Merengue': '💃',
+    'Country': '🤠', 'Country Rock': '🤠', 'Outlaw Country': '🤠', 'Alt Country': '🤠', 'Honky Tonk': '🤠',
+    'Ambient': '🌌', 'Lo-Fi': '☕', 'Chillout': '☕', 'Chillwave': '☕', 'Downtempo': '☕', 'New Age': '🌌', 'Space Ambient': '🌌', 'Vaporwave': '☕',
+    'Reggae': '🌴', 'Dub': '🌴', 'Ska': '🌴', 'Rocksteady': '🌴', 'Soca': '🌴', 'Calypso': '🌴',
+    'Afrobeat': '🌍', 'Afrobeats': '🌍', 'Amapiano': '🌍', 'Highlife': '🌍', 'Juju': '🌍',
+    'Blues': '🎹', 'Delta Blues': '🎹', 'Chicago Blues': '🎹', 'Blues Rock': '🎹', 'Rhythm & Blues': '🎹',
+    'World Music': '🌎', 'Middle Eastern': '🌎', 'Indian': '🌎', 'Asian': '🌎', 'Flamenco': '🌎', 'Polka': '🌎', 'Experimental': '🔬', 'Noise': '🔬',
     'Other': '🎶'
   };
 
@@ -1347,85 +1321,24 @@
 
     // Map subgenres to parent categories for browse grouping
     const GENRE_PARENTS = {
-      // ── Pop ──
-      'Synth-Pop':'Pop','Indie Pop':'Pop','Electropop':'Pop','Dream Pop':'Pop',
-      'K-Pop':'Pop','J-Pop':'Pop','Art Pop':'Pop','Dance Pop':'Pop',
-      'Jazz Pop':'Pop',
-
-      // ── Rock ──
-      'Indie Rock':'Rock','Alt Rock':'Rock','Punk Rock':'Rock','Post-Punk':'Rock',
-      'Garage Rock':'Rock','Psychedelic Rock':'Rock','Prog Rock':'Rock',
-      'Shoegaze':'Rock','Grunge':'Rock','Britpop':'Rock','Symphonic Rock':'Rock',
-
-      // ── Hip-Hop & Rap ──
-      'Hip-Hop':'Hip-Hop & Rap','Trap':'Hip-Hop & Rap','Boom Bap':'Hip-Hop & Rap',
-      'Lo-Fi Hip-Hop':'Hip-Hop & Rap','Drill':'Hip-Hop & Rap','Conscious Rap':'Hip-Hop & Rap',
-      'Old School Hip-Hop':'Hip-Hop & Rap','Cloud Rap':'Hip-Hop & Rap',
-
-      // ── Electronic & Dance ──
-      'Electronic':'Electronic & Dance','House':'Electronic & Dance','Deep House':'Electronic & Dance',
-      'Tech House':'Electronic & Dance','Techno':'Electronic & Dance','Trance':'Electronic & Dance',
-      'Dubstep':'Electronic & Dance','Drum & Bass':'Electronic & Dance','IDM':'Electronic & Dance',
-      'Breakbeat':'Electronic & Dance','Garage':'Electronic & Dance','Hardstyle':'Electronic & Dance',
-      'Eurodance':'Electronic & Dance','Italo Disco':'Electronic & Dance','Synthwave':'Electronic & Dance',
-      'Electro':'Electronic & Dance','Future Bass':'Electronic & Dance',
-      'Dance':'Electronic & Dance','EDM':'Electronic & Dance','Nu-Disco':'Electronic & Dance',
-      'Tropical House':'Electronic & Dance','Afro House':'Electronic & Dance',
-
-      // ── R&B & Soul ──
-      'R&B / Soul':'R&B & Soul','Neo Soul':'R&B & Soul','Contemporary R&B':'R&B & Soul',
-      'Motown':'R&B & Soul','Funk':'R&B & Soul','Disco':'R&B & Soul',
-      'Rhythm & Blues':'R&B & Soul',
-
-      // ── Metal ──
-      'Heavy Metal':'Metal','Death Metal':'Metal','Black Metal':'Metal',
-      'Doom Metal':'Metal','Thrash Metal':'Metal','Metalcore':'Metal',
-      'Nu Metal':'Metal','Power Metal':'Metal','Symphonic Metal':'Metal',
-
-      // ── Jazz & Blues ──
-      'Jazz':'Jazz & Blues','Smooth Jazz':'Jazz & Blues','Bebop':'Jazz & Blues',
-      'Jazz Fusion':'Jazz & Blues','Acid Jazz':'Jazz & Blues','Nu Jazz':'Jazz & Blues',
-      'Swing':'Jazz & Blues','Blues':'Jazz & Blues','Delta Blues':'Jazz & Blues',
-      'Chicago Blues':'Jazz & Blues','Blues Rock':'Jazz & Blues',
-
-      // ── Classical & Cinematic ──
-      'Classical':'Classical & Cinematic','Orchestral':'Classical & Cinematic',
-      'Cinematic':'Classical & Cinematic','Neoclassical':'Classical & Cinematic',
-      'Baroque':'Classical & Cinematic','Romantic':'Classical & Cinematic',
-      'Chamber Music':'Classical & Cinematic','Film Score':'Classical & Cinematic',
-      'Epic Orchestral':'Classical & Cinematic',
-
-      // ── Folk & Country ──
-      'Indie / Folk':'Folk & Country','Folk':'Folk & Country','Acoustic':'Folk & Country',
-      'Singer-Songwriter':'Folk & Country','Indie Folk':'Folk & Country',
-      'Americana':'Folk & Country','Bluegrass':'Folk & Country','Celtic':'Folk & Country',
-      'Country':'Folk & Country','Country Rock':'Folk & Country',
-      'Outlaw Country':'Folk & Country','Alt Country':'Folk & Country','Honky Tonk':'Folk & Country',
-      'Christian':'Folk & Country',
-
-      // ── Latin & Reggaeton ──
-      'Latin':'Latin & Reggaeton','Reggaeton':'Latin & Reggaeton','Salsa':'Latin & Reggaeton',
-      'Bossa Nova':'Latin & Reggaeton','Latin Pop':'Latin & Reggaeton',
-      'Cumbia':'Latin & Reggaeton','Bachata':'Latin & Reggaeton','Merengue':'Latin & Reggaeton',
-
-      // ── Ambient & Chill ──
-      'Ambient':'Ambient & Chill','Lo-Fi':'Ambient & Chill','Chillout':'Ambient & Chill',
-      'Chillwave':'Ambient & Chill','Downtempo':'Ambient & Chill','New Age':'Ambient & Chill',
-      'Space Ambient':'Ambient & Chill','Vaporwave':'Ambient & Chill',
-      'sad':'Ambient & Chill',
-
-      // ── Reggae & Caribbean ──
-      'Reggae':'Reggae & Caribbean','Dub':'Reggae & Caribbean','Dancehall':'Reggae & Caribbean',
-      'Ska':'Reggae & Caribbean','Rocksteady':'Reggae & Caribbean',
-      'Soca':'Reggae & Caribbean','Calypso':'Reggae & Caribbean',
-
-      // ── Afrobeat & African ──
-      'Afrobeat':'Afrobeat & African','Afrobeats':'Afrobeat & African',
-      'Amapiano':'Afrobeat & African','Highlife':'Afrobeat & African','Juju':'Afrobeat & African',
-
-      // ── Other ──
-      'World Music':'Other','Middle Eastern':'Other','Indian':'Other','Asian':'Other',
-      'Flamenco':'Other','Polka':'Other','Experimental':'Other','Noise':'Other'
+      'Synth-Pop':'Pop','Indie Pop':'Pop','Electropop':'Pop','Dream Pop':'Pop','K-Pop':'Pop','J-Pop':'Pop','Art Pop':'Pop','Dance Pop':'Pop',
+      'Indie Rock':'Rock','Alt Rock':'Rock','Punk Rock':'Rock','Post-Punk':'Rock','Garage Rock':'Rock','Psychedelic Rock':'Rock','Prog Rock':'Rock','Shoegaze':'Rock','Grunge':'Rock','Britpop':'Rock',
+      'Trap':'Hip-Hop','Boom Bap':'Hip-Hop','Lo-Fi Hip-Hop':'Hip-Hop','Drill':'Hip-Hop','Conscious Rap':'Hip-Hop','Old School Hip-Hop':'Hip-Hop','Cloud Rap':'Hip-Hop',
+      'House':'Electronic','Deep House':'Electronic','Tech House':'Electronic','Techno':'Electronic','Trance':'Electronic','Dubstep':'Electronic','Drum & Bass':'Electronic','IDM':'Electronic','Breakbeat':'Electronic','Garage':'Electronic','Hardstyle':'Electronic','Eurodance':'Electronic','Italo Disco':'Electronic','Synthwave':'Electronic','Electro':'Electronic','Future Bass':'Electronic',
+      'Neo Soul':'R&B / Soul','Contemporary R&B':'R&B / Soul','Motown':'R&B / Soul',
+      'Dance':'Electronic','EDM':'Electronic','Nu-Disco':'Electronic','Tropical House':'Electronic','Afro House':'Electronic',
+      'Disco':'Funk','Funk':'Funk',
+      'Heavy Metal':'Metal','Death Metal':'Metal','Black Metal':'Metal','Doom Metal':'Metal','Thrash Metal':'Metal','Metalcore':'Metal','Nu Metal':'Metal','Power Metal':'Metal','Symphonic Metal':'Metal',
+      'Smooth Jazz':'Jazz','Bebop':'Jazz','Jazz Fusion':'Jazz','Acid Jazz':'Jazz','Nu Jazz':'Jazz','Swing':'Jazz',
+      'Orchestral':'Classical','Neoclassical':'Classical','Baroque':'Classical','Romantic':'Classical','Chamber Music':'Classical','Film Score':'Cinematic','Epic Orchestral':'Cinematic',
+      'Folk':'Indie / Folk','Acoustic':'Indie / Folk','Singer-Songwriter':'Indie / Folk','Indie Folk':'Indie / Folk','Americana':'Indie / Folk','Bluegrass':'Indie / Folk','Celtic':'Indie / Folk',
+      'Reggaeton':'Latin','Salsa':'Latin','Bossa Nova':'Latin','Latin Pop':'Latin','Cumbia':'Latin','Bachata':'Latin','Merengue':'Latin',
+      'Country Rock':'Country','Outlaw Country':'Country','Alt Country':'Country','Honky Tonk':'Country',
+      'Chillout':'Ambient','Chillwave':'Ambient','Downtempo':'Ambient','New Age':'Ambient','Space Ambient':'Ambient','Vaporwave':'Ambient',
+      'Dub':'Reggae','Dancehall':'Reggae','Ska':'Reggae','Rocksteady':'Reggae','Soca':'Reggae','Calypso':'Reggae',
+      'Afrobeats':'Afrobeat','Amapiano':'Afrobeat','Highlife':'Afrobeat','Juju':'Afrobeat',
+      'Delta Blues':'Blues','Chicago Blues':'Blues','Blues Rock':'Blues','Rhythm & Blues':'Blues',
+      'World Music':'Other','Middle Eastern':'Other','Indian':'Other','Asian':'Other','Flamenco':'Other','Polka':'Other','Experimental':'Other','Noise':'Other'
     };
 
     // Group by parent genre, keeping subgenre info
@@ -1444,14 +1357,14 @@
     
     // Trending row
     if (trending.length) {
-      html += buildGenreRow('🔥', 'Trending Now', trending, true);
+      html += buildGenreRow('🔥', 'Trending Now', trending);
     }
 
     // Recently added (if discover view)
     if (browseView === 'discover') {
       const recent = [...sorted].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 12);
       if (recent.length) {
-        html += buildGenreRow('🆕', 'Just Added', recent, true);
+        html += buildGenreRow('🆕', 'Just Added', recent);
       }
     }
 
@@ -1470,25 +1383,12 @@
     container.querySelectorAll('.genre-row').forEach(setupScrollArrows);
   }
 
-  // Store genre track lists for re-sorting
-  const genreTrackMap = {};
-
-  function buildGenreRow(emoji, title, tracks, isSpecial) {
-    const genreKey = title.replace(/[^a-zA-Z0-9]/g, '_');
-    if (!isSpecial) genreTrackMap[genreKey] = tracks.map(t => t.id);
-    
+  function buildGenreRow(emoji, title, tracks) {
     const cards = tracks.map(t => buildBrowseCard(t, getEmbedHtml(t))).join('');
-    const sortBtns = isSpecial ? '' :
-      '<div class="genre-sort" data-genre-key="' + genreKey + '">' +
-        '<button class="active" data-sort="top" onclick="sortGenreRow(\'' + genreKey + '\', \'top\', this)">⭐ Top</button>' +
-        '<button data-sort="new" onclick="sortGenreRow(\'' + genreKey + '\', \'new\', this)">🕐 New</button>' +
-      '</div>';
-    
-    return '<div class="genre-row" data-genre-key="' + genreKey + '">' +
+    return '<div class="genre-row">' +
       '<div class="genre-row-header">' +
         '<div class="genre-row-title"><span class="genre-emoji">' + emoji + '</span> ' + sanitize(title) + '</div>' +
         '<span class="genre-row-count">' + tracks.length + ' track' + (tracks.length !== 1 ? 's' : '') + '</span>' +
-        sortBtns +
         '<div class="genre-row-line"></div>' +
       '</div>' +
       '<div class="genre-row-wrapper">' +
@@ -1499,59 +1399,6 @@
     '</div>';
   }
 
-  // Sort a genre row in-place without full re-render
-  window.sortGenreRow = function(genreKey, sortType, btn) {
-    const trackIds = genreTrackMap[genreKey];
-    if (!trackIds) return;
-    
-    let tracks = trackIds.map(id => allTracks.find(t => t.id === id)).filter(Boolean);
-    
-    if (sortType === 'new') {
-      tracks.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-    } else {
-      tracks.sort((a, b) => wilsonScore(b.avg_rating||0, b.rating_count||0) - wilsonScore(a.avg_rating||0, a.rating_count||0));
-    }
-    
-    // Update active button
-    const sortGroup = btn.parentElement;
-    sortGroup.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    
-    // Rebuild cards in the scroll container
-    const row = document.querySelector('.genre-row[data-genre-key="' + genreKey + '"]');
-    if (!row) return;
-    const scroll = row.querySelector('.genre-row-scroll');
-    if (!scroll) return;
-    
-    // Preserve playing state
-    const playingUid = activeBrowseUid;
-    
-    scroll.innerHTML = tracks.map(t => buildBrowseCard(t, getEmbedHtml(t))).join('');
-    scroll.scrollLeft = 0;
-    
-    // Re-observe for animation pausing
-    if ('IntersectionObserver' in window) {
-      scroll.querySelectorAll('.browse-card').forEach(card => {
-        if (window._animObserver) window._animObserver.observe(card);
-      });
-    }
-    
-    // Re-setup scroll arrows for this row
-    setupScrollArrows(row);
-  };
-
-  // Reset all sort buttons to default (Top) — only on full re-render
-  function resetAllSorts() {
-    document.querySelectorAll('.genre-sort').forEach(group => {
-      const topBtn = group.querySelector('[data-sort="top"]');
-      const newBtn = group.querySelector('[data-sort="new"]');
-      if (topBtn && newBtn && newBtn.classList.contains('active')) {
-        const genreKey = group.dataset.genreKey;
-        if (topBtn) sortGenreRow(genreKey, 'top', topBtn);
-      }
-    });
-  }
-
   function setupScrollArrows(row) {
     const wrapper = row.querySelector('.genre-row-wrapper');
     if (!wrapper) return;
@@ -1560,16 +1407,11 @@
     const rightArr = wrapper.querySelector('.scroll-arrow.right');
     if (!scroll || !leftArr || !rightArr) return;
     
-    let arrowRaf = null;
     function updateArrows() {
-      if (arrowRaf) return;
-      arrowRaf = requestAnimationFrame(() => {
-        const canLeft = scroll.scrollLeft > 20;
-        const canRight = scroll.scrollLeft < scroll.scrollWidth - scroll.clientWidth - 20;
-        leftArr.classList.toggle('show', canLeft);
-        rightArr.classList.toggle('show', canRight);
-        arrowRaf = null;
-      });
+      const canLeft = scroll.scrollLeft > 20;
+      const canRight = scroll.scrollLeft < scroll.scrollWidth - scroll.clientWidth - 20;
+      leftArr.classList.toggle('show', canLeft);
+      rightArr.classList.toggle('show', canRight);
     }
     
     leftArr.addEventListener('click', () => { scroll.scrollBy({ left: -600, behavior: 'smooth' }); });
@@ -1720,7 +1562,8 @@
     if (activeBrowseUid === uid) {
       browseStop(uid);
       destroyUdioPlayer();
-      playerBar.classList.remove('active', 'playing', 'udio-active');
+      destroySc();
+      playerBar.classList.remove('active', 'playing', 'udio-active', 'sc-active');
       document.body.classList.remove('player-active');
       activePlayerTrackId = null;
       activePlayerPlatform = null;
@@ -1735,9 +1578,11 @@
     if (activeBrowseUid) browseStop(activeBrowseUid);
     // 2. Kill any Udio iframe
     destroyUdioPlayer();
-    // 3. Stop any vote-page embed
+    // 3. Kill any SoundCloud iframe
+    destroySc();
+    // 4. Stop any vote-page embed
     if (activeEmbedTrackId) { stopEmbed(activeEmbedTrackId); activeEmbedTrackId = null; }
-    // 4. Remove ALL hidden players (nuclear cleanup)
+    // 5. Remove ALL hidden players (nuclear cleanup)
     document.querySelectorAll('[id^="hidden-player-"]').forEach(el => el.remove());
     // 5. Remove ALL is-playing states from all cards
     document.querySelectorAll('.browse-card.is-playing').forEach(c => c.classList.remove('is-playing'));
@@ -1751,7 +1596,7 @@
       }
     });
     // 7. Reset state
-    playerBar.classList.remove('udio-active');
+    playerBar.classList.remove('udio-active', 'sc-active');
     activeBrowseUid = null;
     activeBrowseTrackId = null;
     
@@ -1763,6 +1608,38 @@
     const embed = getEmbedHtml(track);
     let embedHtml = embed.embedHtml;
     
+    // SoundCloud: use popup player (SC blocks audio in hidden iframes)
+    if (embed.platform === 'soundcloud') {
+      const scUrl = track.embed_url || '';
+      openSoundCloudPlayer(scUrl, track.title);
+      
+      const thumbOrig = thumbContainer.innerHTML;
+      thumbContainer.dataset.originalHtml = thumbOrig;
+      thumbContainer.innerHTML = 
+        '<div class="browse-now-playing" data-action="browse-stop" data-uid="' + uid + '" data-track-id="' + trackId + '">' +
+          '<div class="bnp-bg" style="background:linear-gradient(135deg, rgba(255,85,0,0.15) 0%, rgba(7,7,11,0.95) 60%);"></div>' +
+          '<div class="bnp-content">' +
+            '<div class="bnp-eq"><span style="background:#ff5500;"></span><span style="background:#ff5500;"></span><span style="background:#ff5500;"></span><span style="background:#ff5500;"></span><span style="background:#ff5500;"></span></div>' +
+            '<div class="bnp-title" style="color:#ff5500;">Now Playing</div>' +
+            '<div class="bnp-track">' + sanitize(track.title) + '</div>' +
+            '<div class="bnp-stop">Click to stop</div>' +
+          '</div>' +
+        '</div>';
+      thumbContainer.removeAttribute('data-action');
+      
+      playerTitle.textContent = track.title || 'Now Playing';
+      playerMeta.textContent = 'SoundCloud · ' + (track.genre || '');
+      playerBar.classList.add('active', 'playing', 'sc-active');
+      document.body.classList.add('player-active');
+      activePlayerTrackId = trackId;
+      activePlayerPlatform = 'soundcloud';
+      activeBrowseUid = uid;
+      activeBrowseTrackId = String(trackId);
+      card.classList.add('is-playing');
+      gtag('event', 'play_bar', { track_id: trackId, platform: 'soundcloud' });
+      return;
+    }
+
     // Udio: use popup player instead of iframe
     if (embed.platform === 'udio') {
       const udioId = embed.udioId;
@@ -1887,7 +1764,8 @@
       browseStop(activeBrowseUid);
     }
     stopUdioFull();
-    playerBar.classList.remove('active', 'playing', 'udio-active');
+    destroySc();
+    playerBar.classList.remove('active', 'playing', 'udio-active', 'sc-active');
     document.body.classList.remove('player-active');
     activePlayerTrackId = null;
     activePlayerPlatform = null;
@@ -2003,7 +1881,7 @@
     if (activeBrowseUid) {
       browseStop(activeBrowseUid);
     }
-    playerBar.classList.remove('active', 'playing', 'udio-active');
+    playerBar.classList.remove('active', 'playing', 'udio-active', 'sc-active');
     document.body.classList.remove('player-active');
     activePlayerTrackId = null;
     activePlayerPlatform = null;
@@ -2131,6 +2009,181 @@
 
   // Player bar expand button
   const udioExpandBtn = document.createElement('button');
+
+  // ─── SoundCloud Player (popup like Udio) ───
+  let scState = 'closed';
+  let scContainer = null;
+
+  function createScContainer() {
+    if (scContainer) return;
+    scContainer = document.createElement('div');
+    scContainer.id = 'sc-container';
+    scContainer.innerHTML = `
+      <div id="sc-backdrop"></div>
+      <div id="sc-wrapper">
+        <div class="sc-hdr">
+          <div class="sc-hdr-badge"><span class="sc-hdr-dot"></span> SOUNDCLOUD</div>
+          <div class="sc-hdr-title"></div>
+          <div class="sc-hdr-btns">
+            <button class="sc-hdr-btn" id="scMinBtn" title="Minimize — keep playing">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/></svg>
+            </button>
+            <button class="sc-hdr-btn" id="scCloseBtn" title="Stop & close">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+        </div>
+        <div id="sc-iframe-box"></div>
+        <div class="sc-hint">Press play, then minimize ▾ to keep listening</div>
+      </div>
+    `;
+    document.body.appendChild(scContainer);
+    document.getElementById('scMinBtn').addEventListener('click', minimizeSc);
+    document.getElementById('scCloseBtn').addEventListener('click', stopScFull);
+    document.getElementById('sc-backdrop').addEventListener('click', minimizeSc);
+  }
+
+  function openSoundCloudPlayer(scUrl, trackTitle) {
+    createScContainer();
+    const box = document.getElementById('sc-iframe-box');
+    const embedSrc = 'https://w.soundcloud.com/player/?url=' + encodeURIComponent(scUrl) + '&color=%23ff5500&auto_play=true&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=true';
+    box.innerHTML = '<iframe src="' + embedSrc + '" allow="autoplay; encrypted-media" style="width:100%;height:100%;border:none;" scrolling="no"></iframe>';
+    scContainer.querySelector('.sc-hdr-title').textContent = trackTitle || 'SoundCloud Track';
+    scContainer.className = 'sc-popup';
+    scState = 'popup';
+    
+    // Auto-minimize after user likely pressed play
+    clearTimeout(window._scAutoMin);
+    window._scAutoMin = setTimeout(() => {
+      if (scState === 'popup') minimizeSc();
+    }, 4000);
+    
+    function onScBlur() {
+      if (scState === 'popup') {
+        clearTimeout(window._scAutoMin);
+        setTimeout(minimizeSc, 500);
+      }
+      window.removeEventListener('blur', onScBlur);
+    }
+    window.removeEventListener('blur', window._scBlurHandler);
+    window._scBlurHandler = onScBlur;
+    window.addEventListener('blur', onScBlur);
+  }
+
+  function minimizeSc() {
+    if (!scContainer || scState === 'minimized') return;
+    scContainer.className = 'sc-minimized';
+    scState = 'minimized';
+  }
+
+  function expandSc() {
+    if (!scContainer || scState !== 'minimized') return;
+    scContainer.className = 'sc-popup';
+    scState = 'popup';
+  }
+
+  function destroySc() {
+    if (scContainer) {
+      scContainer.className = 'sc-closed';
+      const box = document.getElementById('sc-iframe-box');
+      if (box) box.innerHTML = '';
+      scState = 'closed';
+    }
+    clearTimeout(window._scAutoMin);
+    window.removeEventListener('blur', window._scBlurHandler);
+  }
+
+  function stopScFull() {
+    destroySc();
+    if (activeBrowseUid) browseStop(activeBrowseUid);
+    playerBar.classList.remove('active', 'playing', 'sc-active');
+    document.body.classList.remove('player-active');
+    activePlayerTrackId = null;
+    activePlayerPlatform = null;
+  }
+
+  // SC styles
+  const scStyles = document.createElement('style');
+  scStyles.textContent = `
+    #sc-container { pointer-events: none; }
+    #sc-container * { pointer-events: auto; }
+    #sc-backdrop {
+      position: fixed; inset: 0; z-index: 8000;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      opacity: 0; transition: opacity 0.35s; pointer-events: none;
+    }
+    .sc-popup #sc-backdrop { opacity: 1; pointer-events: auto; cursor: pointer; }
+    .sc-minimized #sc-backdrop, .sc-closed #sc-backdrop { opacity: 0; pointer-events: none; }
+    #sc-wrapper {
+      position: fixed; z-index: 8001;
+      background: #111118;
+      border: 1px solid rgba(255,85,0,0.2);
+      overflow: hidden;
+      box-shadow: 0 40px 120px rgba(0,0,0,0.8), 0 0 60px rgba(255,85,0,0.05);
+      transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
+      opacity: 0; pointer-events: none;
+    }
+    .sc-popup #sc-wrapper {
+      top: 50%; left: 50%; transform: translate(-50%, -50%);
+      width: min(500px, 94vw); height: auto;
+      border-radius: 18px; opacity: 1; pointer-events: auto;
+    }
+    .sc-minimized #sc-wrapper {
+      position: fixed; top: -9999px; left: -9999px;
+      width: 400px; height: 200px; opacity: 0; pointer-events: none;
+    }
+    .sc-closed #sc-wrapper { opacity: 0; pointer-events: none; top: -9999px; left: -9999px; width: 0; height: 0; }
+    .sc-hdr {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 14px; background: rgba(255,85,0,0.04);
+      border-bottom: 1px solid rgba(255,85,0,0.08);
+    }
+    .sc-hdr-badge {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 0.6rem; font-weight: 800;
+      letter-spacing: 2px; color: #ff5500; white-space: nowrap; flex-shrink: 0;
+    }
+    .sc-hdr-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #ff5500; box-shadow: 0 0 10px rgba(255,85,0,0.7);
+      animation: scDot 1.8s ease-in-out infinite;
+    }
+    @keyframes scDot { 0%,100%{opacity:1}50%{opacity:.35} }
+    .sc-hdr-title { flex: 1; font-size: 0.78rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sc-hdr-btns { display: flex; gap: 6px; flex-shrink: 0; }
+    .sc-hdr-btn {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.45); cursor: pointer;
+      display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+    }
+    .sc-hdr-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    #scMinBtn:hover { background: rgba(255,85,0,0.2); color: #ff5500; border-color: rgba(255,85,0,0.3); }
+    #sc-iframe-box { height: 380px; }
+    .sc-hint { padding: 6px 14px 10px; font-size: 0.62rem; color: rgba(255,85,0,0.45); text-align: center; letter-spacing: 0.3px; }
+    .player-bar.sc-active { border-top-color: rgba(255,85,0,0.2); }
+    .player-bar.sc-active .player-eq span { background: #ff5500; }
+    @media (max-width: 640px) {
+      .sc-popup #sc-wrapper { width: 96vw; }
+      #sc-iframe-box { height: 320px; }
+    }
+  `;
+  document.head.appendChild(scStyles);
+
+  // SC expand button for player bar
+  const scExpandBtn = document.createElement('button');
+  scExpandBtn.className = 'sc-expand-btn player-ctrl';
+  scExpandBtn.title = 'Show SoundCloud player';
+  scExpandBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8l-6 6h12z"/></svg>';
+  scExpandBtn.style.display = 'none';
+  scExpandBtn.addEventListener('click', expandSc);
+  document.querySelector('.player-controls').insertBefore(scExpandBtn, document.getElementById('btnClose'));
+
+  // Show/hide SC expand button based on player state
+  const _origScPlayerCheck = setInterval(() => {
+    if (scExpandBtn) scExpandBtn.style.display = (playerBar.classList.contains('sc-active') ? 'flex' : 'none');
+  }, 500);
   udioExpandBtn.className = 'udio-expand-btn player-ctrl';
   udioExpandBtn.title = 'Show Udio player';
   udioExpandBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8l-6 6h12z"/></svg>';
@@ -2151,28 +2204,6 @@
   });
 
   // ─── Init ───
-  // Performance: Pause all CSS animations on cards that are off-screen
-  if ('IntersectionObserver' in window) {
-    window._animObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.style.animationPlayState = '';
-          entry.target.querySelectorAll('.browse-card-hot .dot, .browse-card-play').forEach(el => el.style.animationPlayState = '');
-        } else {
-          entry.target.style.animationPlayState = 'paused';
-          entry.target.querySelectorAll('.browse-card-hot .dot, .browse-card-play').forEach(el => el.style.animationPlayState = 'paused');
-        }
-      });
-    }, { rootMargin: '200px' });
-    
-    // Observe cards after render
-    const _origRenderBrowse = renderBrowse;
-    renderBrowse = function() {
-      _origRenderBrowse();
-      document.querySelectorAll('.browse-card').forEach(card => window._animObserver.observe(card));
-    };
-  }
-
   checkAuth().then(loadTracks).then(handleDeepLink);
 </script>
 <!-- ═══ COOKIE CONSENT ═══ -->
