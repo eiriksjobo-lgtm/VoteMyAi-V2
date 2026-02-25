@@ -417,10 +417,16 @@
       flex: 1; min-width: 0; cursor: grab;
       user-select: none; -webkit-user-select: none;
       -webkit-overflow-scrolling: touch;
+      will-change: scroll-position;
+      transform: translateZ(0);
     }
     .genre-row-scroll::-webkit-scrollbar { display: none; }
-    body.is-dragging .browse-card { transition: none !important; transform: none !important; }
-    body.is-dragging .browse-card * { transition: none !important; }
+    body.is-dragging .browse-card { transition: none !important; transform: none !important; pointer-events: none !important; }
+    body.is-dragging .browse-card * { transition: none !important; animation-play-state: paused !important; }
+    body.is-dragging .browse-card:hover { transform: none !important; box-shadow: none !important; border-color: var(--border) !important; }
+    body.is-dragging .browse-card-play { opacity: 0 !important; }
+    body.is-dragging { cursor: grabbing !important; user-select: none !important; }
+    body.is-dragging * { cursor: grabbing !important; }
 
     /* Scroll arrows — fixed outside cards */
     .genre-row-wrapper {
@@ -469,6 +475,8 @@
     }
     .browse-card-thumb img {
       width: 100%; height: 100%; object-fit: cover;
+      transition: transform 0.25s ease;
+      will-change: transform;
     }
     .browse-card:hover .browse-card-thumb img { transform: scale(1.04); }
     
@@ -1444,9 +1452,11 @@
       startX: e.pageX,
       scrollStart: scroll.scrollLeft,
       lastX: e.pageX,
+      lastPageX: e.pageX,
       lastTime: performance.now(),
       velocity: 0,
-      hasDragged: false
+      hasDragged: false,
+      moveRaf: null
     };
     scroll.style.cursor = 'grabbing';
     document.body.classList.add('is-dragging');
@@ -1455,15 +1465,23 @@
 
   function _onDragMove(e) {
     if (!_drag) return;
-    const now = performance.now();
-    const dt = now - _drag.lastTime;
-    const dx = e.pageX - _drag.lastX;
-    if (dt > 0) _drag.velocity = dx / dt;
-    _drag.lastX = e.pageX;
-    _drag.lastTime = now;
-    const totalDx = e.pageX - _drag.startX;
-    if (Math.abs(totalDx) > 3) _drag.hasDragged = true;
-    _drag.el.scrollLeft = _drag.scrollStart - totalDx;
+    // Store latest position but only process in rAF
+    _drag.lastPageX = e.pageX;
+    if (!_drag.moveRaf) {
+      _drag.moveRaf = requestAnimationFrame(() => {
+        if (!_drag) return;
+        _drag.moveRaf = null;
+        const now = performance.now();
+        const dt = now - _drag.lastTime;
+        const dx = _drag.lastPageX - _drag.lastX;
+        if (dt > 0) _drag.velocity = dx / dt;
+        _drag.lastX = _drag.lastPageX;
+        _drag.lastTime = now;
+        const totalDx = _drag.lastPageX - _drag.startX;
+        if (Math.abs(totalDx) > 3) _drag.hasDragged = true;
+        _drag.el.scrollLeft = _drag.scrollStart - totalDx;
+      });
+    }
   }
 
   function _onDragEnd() {
@@ -1471,6 +1489,9 @@
     const el = _drag.el;
     const hasDragged = _drag.hasDragged;
     const velocity = _drag.velocity;
+
+    // Cancel any pending rAF move
+    if (_drag.moveRaf) { cancelAnimationFrame(_drag.moveRaf); }
 
     // CRITICAL: Clear drag state IMMEDIATELY so mousemove stops processing
     el.style.cursor = '';
