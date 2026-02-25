@@ -99,6 +99,22 @@
     .empty-state { text-align: center; padding: 48px; color: var(--muted); font-size: 0.85rem; }
     .loading { text-align: center; padding: 32px; color: var(--muted); font-size: 0.82rem; }
 
+    /* Pagination */
+    .pagination { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 16px; padding: 12px 0; }
+    .pagination button {
+      background: var(--surface); border: 1px solid var(--border); color: var(--text-secondary);
+      padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 0.78rem;
+      font-weight: 600; font-family: 'DM Sans', sans-serif; transition: all 0.2s;
+    }
+    .pagination button:hover { border-color: var(--accent); color: var(--accent); }
+    .pagination button.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+    .pagination button:disabled { opacity: 0.3; cursor: default; }
+    .pagination button:disabled:hover { border-color: var(--border); color: var(--text-secondary); }
+    .pagination .page-info { font-size: 0.72rem; color: var(--muted); padding: 0 8px; }
+    .table-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+    .table-header-left { font-size: 0.82rem; color: var(--text-secondary); font-weight: 600; }
+    .table-header-right { font-size: 0.72rem; color: var(--warn); font-weight: 500; }
+
     @media (max-width: 768px) {
       .container { padding: 20px 12px; }
       .stats-grid { grid-template-columns: repeat(2, 1fr); }
@@ -154,8 +170,16 @@
 <script>
   const SUPABASE_URL = 'https://gezijezmsecbtzytotax.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_hOOMtCz7gYsu_-CVD6lW9Q_SxtFlNhw';
+  const PAGE_SIZE = 100;
   let adminPassword = '';
   let authUsers = [];
+  let allTracks = [];
+  let allComments = [];
+  let allMessages = [];
+  let userMap = {};
+
+  // Pagination state per tab
+  const pages = { users: 1, tracks: 1, comments: 1, messages: 1 };
 
   function sanitize(str) { if (!str) return ''; const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
   function formatDate(d) { if (!d) return '\u2014'; return new Date(d).toLocaleDateString('no-NO', { day: 'numeric', month: 'short', year: 'numeric' }); }
@@ -170,6 +194,31 @@
     return { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' };
   }
 
+  function buildPagination(tab, totalItems) {
+    const totalPages = Math.ceil(totalItems / PAGE_SIZE);
+    if (totalPages <= 1) return '';
+    const current = pages[tab];
+    let html = '<div class="pagination">';
+    html += `<button ${current <= 1 ? 'disabled' : ''} onclick="goPage('${tab}', ${current - 1})">← Prev</button>`;
+    for (let p = 1; p <= totalPages; p++) {
+      if (totalPages > 7 && p > 2 && p < totalPages - 1 && Math.abs(p - current) > 1) {
+        if (p === 3 || p === totalPages - 2) html += '<span class="page-info">…</span>';
+        continue;
+      }
+      html += `<button class="${p === current ? 'active' : ''}" onclick="goPage('${tab}', ${p})">${p}</button>`;
+    }
+    html += `<button ${current >= totalPages ? 'disabled' : ''} onclick="goPage('${tab}', ${current + 1})">Next →</button>`;
+    html += `<span class="page-info">${totalItems} total</span>`;
+    html += '</div>';
+    return html;
+  }
+
+  window.goPage = function(tab, page) {
+    pages[tab] = page;
+    renderTab(tab);
+    document.getElementById(`tab-${tab}`).scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   window.switchTab = function(tab, el) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -177,7 +226,7 @@
     document.getElementById(`tab-${tab}`).classList.add('active');
   };
 
-  // ─── LOGIN: fast login, paginate users in background ───
+  // ─── LOGIN ───
   window.login = async function() {
     adminPassword = document.getElementById('passwordInput').value;
     try {
@@ -194,58 +243,45 @@
       showStatus('loginStatus', 'Could not connect', 'error');
       return;
     }
-    // Show panel immediately
     document.getElementById('loginSection').style.display = 'none';
     document.getElementById('adminPanel').style.display = 'block';
     loadData();
-
-    // Then try to fetch remaining pages in background (if edge function supports it)
-    if (authUsers.length >= 50) {
-      fetchRemainingUsers();
-    }
   };
 
-  async function fetchRemainingUsers() {
-    let page = 2;
-    while (true) {
-      try {
-        const res = await fetch(`${SUPABASE_URL}/functions/v1/admin-users?page=${page}&per_page=50`, {
-          headers: { 'x-admin-password': adminPassword }
-        });
-        if (!res.ok) break;
-        const data = await res.json();
-        const users = data.users || [];
-        if (users.length === 0) break;
-        authUsers = authUsers.concat(users);
-        if (users.length < 50) break;
-        page++;
-      } catch(e) { break; }
-    }
-    // Refresh UI with full user list
-    if (authUsers.length > 50) loadData();
+  function rebuildUserMap() {
+    userMap = {};
+    authUsers.forEach(u => {
+      userMap[u.id] = { ...u, trackCount: 0, ratingCount: 0, commentCount: 0 };
+    });
+    allTracks.forEach(t => {
+      if (t.user_id && userMap[t.user_id]) userMap[t.user_id].trackCount++;
+    });
+    allComments.forEach(c => {
+      if (c.user_id && userMap[c.user_id]) userMap[c.user_id].commentCount++;
+    });
   }
 
   async function loadData() {
     try {
-      // Fetch ALL tracks and comments (Supabase default limit is 1000, paginate if needed)
-      let allTracks = [];
-      let trackOffset = 0;
+      // Fetch all tracks (paginate past 1000 limit)
+      allTracks = [];
+      let offset = 0;
       while (true) {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/tracks?select=*&order=created_at.desc&offset=${trackOffset}&limit=1000`, { headers: headers() });
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/tracks?select=*&order=created_at.desc&offset=${offset}&limit=1000`, { headers: headers() });
         const batch = await res.json();
         allTracks = allTracks.concat(batch);
         if (batch.length < 1000) break;
-        trackOffset += 1000;
+        offset += 1000;
       }
 
-      let allComments = [];
-      let commentOffset = 0;
+      allComments = [];
+      offset = 0;
       while (true) {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/comments?select=*,tracks(title)&order=created_at.desc&offset=${commentOffset}&limit=1000`, { headers: headers() });
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/comments?select=*,tracks(title)&order=created_at.desc&offset=${offset}&limit=1000`, { headers: headers() });
         const batch = await res.json();
         allComments = allComments.concat(batch);
         if (batch.length < 1000) break;
-        commentOffset += 1000;
+        offset += 1000;
       }
 
       const [messagesRes, ratingsRes] = await Promise.all([
@@ -253,50 +289,58 @@
         fetch(`${SUPABASE_URL}/rest/v1/anonymous_ratings?select=*`, { headers: headers() })
       ]);
 
-      const tracks = allTracks;
-      const comments = allComments;
-      const messages = await messagesRes.json();
+      allMessages = await messagesRes.json();
       const ratings = await ratingsRes.json();
 
-      // Build user map from auth data
-      const userMap = {};
-      authUsers.forEach(u => {
-        userMap[u.id] = { ...u, trackCount: 0, ratingCount: 0, commentCount: 0 };
-      });
-
-      tracks.forEach(t => {
-        if (t.user_id && userMap[t.user_id]) userMap[t.user_id].trackCount++;
-      });
-      comments.forEach(c => {
-        if (c.user_id && userMap[c.user_id]) userMap[c.user_id].commentCount++;
-      });
-
-      const users = Object.values(userMap);
-      users.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      rebuildUserMap();
 
       // Stats
-      const totalRatings = tracks.reduce((s, t) => s + (t.rating_count || 0), 0);
-      const ratedTracks = tracks.filter(t => t.rating_count > 0);
+      const users = Object.values(userMap);
+      const totalRatings = allTracks.reduce((s, t) => s + (t.rating_count || 0), 0);
+      const ratedTracks = allTracks.filter(t => t.rating_count > 0);
       const avgRating = ratedTracks.length ? (ratedTracks.reduce((s, t) => s + (parseFloat(t.avg_rating) || 0), 0) / ratedTracks.length).toFixed(1) : '\u2014';
 
-      document.getElementById('sTracks').textContent = tracks.length;
+      document.getElementById('sTracks').textContent = allTracks.length;
       document.getElementById('sRatings').textContent = totalRatings;
-      document.getElementById('sComments').textContent = comments.length;
+      document.getElementById('sComments').textContent = allComments.length;
       document.getElementById('sUsers').textContent = users.length;
-      document.getElementById('sMessages').textContent = messages.length;
+      document.getElementById('sMessages').textContent = allMessages.length;
       document.getElementById('sAvg').textContent = avgRating;
 
-      // Users table
-      document.getElementById('tab-users').innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <span style="font-size:0.82rem;color:var(--text-secondary);font-weight:600;">${users.length} registered users</span>
-        ${users.length >= 50 && users.length % 50 === 0 ? '<span style="font-size:0.72rem;color:var(--warn);font-weight:500;">⚠️ Showing first ' + users.length + ' — update admin-users edge function for full list</span>' : ''}
+      renderTab('users');
+      renderTab('tracks');
+      renderTab('comments');
+      renderTab('messages');
+
+    } catch(err) {
+      console.error('Load error:', err);
+      showStatus('adminStatus', 'Failed to load data: ' + err.message, 'error');
+    }
+  }
+
+  function renderTab(tab) {
+    const container = document.getElementById(`tab-${tab}`);
+    const page = pages[tab];
+    const start = (page - 1) * PAGE_SIZE;
+    const end = start + PAGE_SIZE;
+
+    if (tab === 'users') {
+      const users = Object.values(userMap);
+      users.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      const slice = users.slice(start, end);
+      const warn = authUsers.length >= 50 && authUsers.length % 50 === 0;
+
+      container.innerHTML = `<div class="table-header">
+        <span class="table-header-left">${users.length} registered users</span>
+        ${warn ? '<span class="table-header-right">⚠️ Showing first ' + users.length + ' — update edge function for full list</span>' : ''}
       </div><div class="table-wrap"><table>
         <tr><th style="width:40px;">#</th><th>User</th><th>Email</th><th>Tracks</th><th>Comments</th><th>Joined</th><th>Actions</th></tr>
-        ${users.length ? users.map((u, idx) => {
+        ${slice.length ? slice.map((u, idx) => {
+          const num = start + idx + 1;
           const name = sanitize(u.name || 'No name');
           const avatarHtml = u.avatar ? `<img src="${sanitize(u.avatar)}" alt="">` : (u.name || u.email || '?').charAt(0).toUpperCase();
           return `<tr>
-            <td style="color:var(--muted);font-weight:600;font-size:0.75rem;">${idx + 1}</td>
+            <td style="color:var(--muted);font-weight:600;font-size:0.75rem;">${num}</td>
             <td><span class="user-badge"><span class="user-avatar">${avatarHtml}</span>${name}</span></td>
             <td class="text-email">${sanitize(u.email)}</td>
             <td class="text-accent">${u.trackCount}</td>
@@ -305,16 +349,22 @@
             <td><button class="btn-delete" onclick="deleteUser('${u.id}')">Delete</button></td>
           </tr>`;
         }).join('') : '<tr><td colspan="7" class="empty-state">No users yet</td></tr>'}
-      </table></div>`;
+      </table></div>` + buildPagination('users', users.length);
+    }
 
-      // Tracks table
-      document.getElementById('tab-tracks').innerHTML = `<div class="table-wrap"><table>
-        <tr><th>Title</th><th>Submitted By</th><th>Tool</th><th>Genre</th><th>Avg Rating</th><th>Ratings</th><th>Submitted</th><th>Actions</th></tr>
-        ${tracks.length ? tracks.map(t => {
+    if (tab === 'tracks') {
+      const slice = allTracks.slice(start, end);
+      container.innerHTML = `<div class="table-header">
+        <span class="table-header-left">${allTracks.length} tracks</span>
+      </div><div class="table-wrap"><table>
+        <tr><th style="width:40px;">#</th><th>Title</th><th>Submitted By</th><th>Tool</th><th>Genre</th><th>Avg</th><th>Ratings</th><th>Submitted</th><th>Actions</th></tr>
+        ${slice.length ? slice.map((t, idx) => {
+          const num = start + idx + 1;
           const user = t.user_id && userMap[t.user_id] ? userMap[t.user_id] : null;
           const submitter = user ? sanitize(user.name || user.email || 'Unknown') : '<span class="text-muted">Unknown</span>';
           const avg = t.avg_rating ? parseFloat(t.avg_rating).toFixed(1) : '\u2014';
           return `<tr>
+            <td style="color:var(--muted);font-weight:600;font-size:0.75rem;">${num}</td>
             <td><strong>${sanitize(t.title)}</strong></td>
             <td class="text-sm">${submitter}</td>
             <td>${sanitize(t.tool)}</td>
@@ -324,16 +374,22 @@
             <td class="text-muted">${formatDate(t.created_at)}</td>
             <td><button class="btn-delete" onclick="deleteTrack('${t.id}')">Delete</button></td>
           </tr>`;
-        }).join('') : '<tr><td colspan="8" class="empty-state">No tracks yet</td></tr>'}
-      </table></div>`;
+        }).join('') : '<tr><td colspan="9" class="empty-state">No tracks yet</td></tr>'}
+      </table></div>` + buildPagination('tracks', allTracks.length);
+    }
 
-      // Comments table
-      document.getElementById('tab-comments').innerHTML = `<div class="table-wrap"><table>
-        <tr><th>Track</th><th>Author</th><th>Email</th><th>Comment</th><th>Date</th><th>Actions</th></tr>
-        ${comments.length ? comments.map(c => {
+    if (tab === 'comments') {
+      const slice = allComments.slice(start, end);
+      container.innerHTML = `<div class="table-header">
+        <span class="table-header-left">${allComments.length} comments</span>
+      </div><div class="table-wrap"><table>
+        <tr><th style="width:40px;">#</th><th>Track</th><th>Author</th><th>Email</th><th>Comment</th><th>Date</th><th>Actions</th></tr>
+        ${slice.length ? slice.map((c, idx) => {
+          const num = start + idx + 1;
           const user = c.user_id && userMap[c.user_id] ? userMap[c.user_id] : null;
           const email = user ? sanitize(user.email) : '<span class="text-muted">\u2014</span>';
           return `<tr>
+            <td style="color:var(--muted);font-weight:600;font-size:0.75rem;">${num}</td>
             <td>${sanitize(c.tracks?.title || 'Unknown')}</td>
             <td>${sanitize(c.author_name || 'Anonymous')}</td>
             <td class="text-email text-sm">${email}</td>
@@ -341,31 +397,36 @@
             <td class="text-muted">${formatDate(c.created_at)}</td>
             <td><button class="btn-delete" onclick="deleteComment('${c.id}')">Delete</button></td>
           </tr>`;
-        }).join('') : '<tr><td colspan="6" class="empty-state">No comments yet</td></tr>'}
-      </table></div>`;
+        }).join('') : '<tr><td colspan="7" class="empty-state">No comments yet</td></tr>'}
+      </table></div>` + buildPagination('comments', allComments.length);
+    }
 
-      // Messages table
-      document.getElementById('tab-messages').innerHTML = `<div class="table-wrap"><table>
-        <tr><th>Name</th><th>Email</th><th>Message</th><th>Date</th><th>Actions</th></tr>
-        ${messages.length ? messages.map(m => `<tr>
+    if (tab === 'messages') {
+      const slice = allMessages.slice(start, end);
+      container.innerHTML = `<div class="table-header">
+        <span class="table-header-left">${allMessages.length} messages</span>
+      </div><div class="table-wrap"><table>
+        <tr><th style="width:40px;">#</th><th>Name</th><th>Email</th><th>Message</th><th>Date</th><th>Actions</th></tr>
+        ${slice.length ? slice.map((m, idx) => {
+          const num = start + idx + 1;
+          return `<tr>
+            <td style="color:var(--muted);font-weight:600;font-size:0.75rem;">${num}</td>
             <td>${sanitize(m.name)}</td>
             <td class="text-email">${sanitize(m.email)}</td>
             <td>${sanitize(m.message)}</td>
             <td class="text-muted">${formatDate(m.created_at)}</td>
             <td><button class="btn-delete" onclick="deleteMessage('${m.id}')">Delete</button></td>
-          </tr>`).join('') : '<tr><td colspan="5" class="empty-state">No messages yet</td></tr>'}
-      </table></div>`;
-
-    } catch(err) {
-      console.error('Load error:', err);
-      showStatus('adminStatus', 'Failed to load data: ' + err.message, 'error');
+          </tr>`;
+        }).join('') : '<tr><td colspan="6" class="empty-state">No messages yet</td></tr>'}
+      </table></div>` + buildPagination('messages', allMessages.length);
     }
   }
 
-  // ─── DELETE via Edge Function (bypasses RLS) ───
+  // ─── DELETE (try edge function, fallback to direct REST) ───
   async function adminDelete(table, id, label) {
     if (!confirm(`Delete this ${label}?`)) return;
     try {
+      // Try edge function first
       const res = await fetch(`${SUPABASE_URL}/functions/v1/admin-delete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
@@ -373,17 +434,17 @@
       });
       if (res.ok) {
         showStatus('adminStatus', `${label} deleted.`, 'success');
+        await loadData(); return;
+      }
+    } catch(e) {}
+    // Fallback: direct REST
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, { method: 'DELETE', headers: headers() });
+      if (res.ok || res.status === 204) {
+        showStatus('adminStatus', `${label} deleted.`, 'success');
         await loadData();
       } else {
-        const data = await res.json().catch(() => ({}));
-        // Fallback: try direct REST delete (works if RLS allows it)
-        const directRes = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, { method: 'DELETE', headers: headers() });
-        if (directRes.ok || directRes.status === 204) {
-          showStatus('adminStatus', `${label} deleted.`, 'success');
-          await loadData();
-        } else {
-          showStatus('adminStatus', data.error || `Failed to delete ${label}. You may need to deploy the admin-delete edge function.`, 'error');
-        }
+        showStatus('adminStatus', `Failed to delete ${label}. Check RLS policies or deploy admin-delete edge function.`, 'error');
       }
     } catch(err) { showStatus('adminStatus', `Error: ${err.message}`, 'error'); }
   }
@@ -395,9 +456,6 @@
   window.deleteUser = async function(userId) {
     if (!confirm('Delete this user and ALL their data (tracks, comments)?')) return;
     try {
-      // Delete user data via edge function or direct
-      await adminDelete('comments', null, 'user comments');
-      // Actually — do it properly: delete by user_id
       await fetch(`${SUPABASE_URL}/rest/v1/comments?user_id=eq.${userId}`, { method: 'DELETE', headers: headers() });
       await fetch(`${SUPABASE_URL}/rest/v1/tracks?user_id=eq.${userId}`, { method: 'DELETE', headers: headers() });
       showStatus('adminStatus', 'User data deleted.', 'success');
