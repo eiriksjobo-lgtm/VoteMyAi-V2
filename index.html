@@ -941,7 +941,16 @@
     if (!url) return { platform: 'unknown', embedHtml: '' };
     const ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([^&?\/#]+)/);
     if (ytMatch) return { platform: 'youtube', embedHtml: `<iframe src="https://www.youtube.com/embed/${ytMatch[1]}?rel=0&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}" allowfullscreen loading="lazy"></iframe>` };
-    if (url.includes('soundcloud.com')) return { platform: 'soundcloud', embedHtml: `<iframe src="https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&color=%23e8ff47&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false&visual=true" scrolling="no" loading="lazy"></iframe>` };
+    if (url.includes('soundcloud.com')) {
+      // Handle various SC URL formats
+      let scTrackUrl = url;
+      // If it's already a widget/player URL, extract the track URL
+      const widgetMatch = url.match(/w\.soundcloud\.com\/player\/?\?.*url=([^&]+)/);
+      if (widgetMatch) scTrackUrl = decodeURIComponent(widgetMatch[1]);
+      // If it's an API URL, use it directly
+      // If it's a regular URL, use it directly (widget resolves it)
+      return { platform: 'soundcloud', embedHtml: `<iframe src="https://w.soundcloud.com/player/?url=${encodeURIComponent(scTrackUrl)}&color=%23ff5500&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=true" scrolling="no" allow="autoplay" loading="lazy"></iframe>` };
+    }
     if (url.includes('suno.com')) {
       const sunoUUID = url.match(/suno\.com\/(?:song|embed)\/([a-f0-9-]{36})/);
       if (sunoUUID) return { platform: 'suno', embedHtml: `<iframe src="https://suno.com/embed/${sunoUUID[1]}" loading="lazy" style="border:none;"></iframe>` };
@@ -1896,8 +1905,7 @@
     /* Backdrop */
     #udio-backdrop {
       position: fixed; inset: 0; z-index: 8000;
-      background: rgba(0,0,0,0.7);
-      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      background: rgba(0,0,0,0.75);
       opacity: 0; transition: opacity 0.35s; pointer-events: none;
     }
     .udio-popup #udio-backdrop { opacity: 1; pointer-events: auto; cursor: pointer; }
@@ -1910,8 +1918,8 @@
       background: #111118;
       border: 1px solid rgba(129,140,248,0.2);
       overflow: hidden;
-      box-shadow: 0 40px 120px rgba(0,0,0,0.8), 0 0 60px rgba(129,140,248,0.05);
-      transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      transition: opacity 0.25s;
       opacity: 0; pointer-events: none;
     }
     
@@ -2109,8 +2117,7 @@
     #sc-container * { pointer-events: auto; }
     #sc-backdrop {
       position: fixed; inset: 0; z-index: 8000;
-      background: rgba(0,0,0,0.7);
-      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      background: rgba(0,0,0,0.75);
       opacity: 0; transition: opacity 0.35s; pointer-events: none;
     }
     .sc-popup #sc-backdrop { opacity: 1; pointer-events: auto; cursor: pointer; }
@@ -2120,8 +2127,8 @@
       background: #111118;
       border: 1px solid rgba(255,85,0,0.2);
       overflow: hidden;
-      box-shadow: 0 40px 120px rgba(0,0,0,0.8), 0 0 60px rgba(255,85,0,0.05);
-      transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      transition: opacity 0.25s;
       opacity: 0; pointer-events: none;
     }
     .sc-popup #sc-wrapper {
