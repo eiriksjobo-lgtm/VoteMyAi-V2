@@ -398,12 +398,12 @@
       .lb-play-icon { opacity: 0.6 !important; }
       
       /* Bigger touch targets for stars */
-      .browse-card-stars .bstar { width: 36px; height: 36px; min-width: 36px; min-height: 36px; }
-      .browse-card-stars .bstar svg { width: 20px; height: 20px; }
+      .browse-card-stars .bstar { width: 30px; height: 30px; min-width: 30px; min-height: 30px; }
+      .browse-card-stars .bstar svg { width: 18px; height: 18px; }
       .browse-card-stars .bstar:hover { transform: none; }
       
       /* Bigger touch targets for footer buttons */
-      .browse-card-footer button { padding: 6px 4px; min-height: 36px; font-size: 0.7rem; }
+      .browse-card-footer button { padding: 4px 2px; min-height: 30px; font-size: 0.65rem; }
       
       /* Player bar touch targets */
       .player-ctrl { width: 44px; height: 44px; }
@@ -794,26 +794,29 @@
 
 
     @media (max-width: 640px) {
-      .browse-card { flex: 0 0 72vw; max-width: 280px; }
+      .browse-card { flex: 0 0 60vw; max-width: 240px; }
       .browse-controls { flex-direction: column; align-items: stretch; gap: 8px; padding: 0 16px 16px; }
       .search-box { max-width: 100%; }
       .browse-count { display: none; }
       .genre-row-header { padding: 12px 16px 6px; }
-      .genre-row-scroll { padding: 4px 16px 12px; gap: 12px; scroll-snap-type: x proximity; scroll-padding-left: 16px; }
+      .genre-row-scroll { padding: 4px 16px 12px; gap: 10px; scroll-snap-type: x proximity; scroll-padding-left: 16px; }
       .genre-row-scroll > .browse-card { scroll-snap-align: start; }
       .genre-row-title { font-size: 1.1rem; }
       .scroll-arrow { display: none !important; }
-      .browse-card-body { padding: 10px 12px 12px; }
-      .browse-card-title { font-size: 0.82rem; }
-      .browse-card-badge { font-size: 0.55rem; padding: 2px 6px; }
-      .browse-card-stars .bstar { width: 34px; height: 34px; }
-      .browse-card-stars .bstar svg { width: 20px; height: 20px; }
-      .browse-card-score-num { font-size: 0.82rem; }
-      .browse-card-score-count { font-size: 0.55rem; }
-      .browse-card-rating { flex-direction: column; align-items: flex-start; gap: 4px; }
-      .browse-card-score { display: flex; align-items: center; gap: 6px; text-align: left; }
-      .browse-card-score-num { font-size: 0.78rem; }
-      .browse-card-score-count { font-size: 0.6rem; }
+      .browse-card-body { padding: 8px 10px 10px; }
+      .browse-card-title { font-size: 0.78rem; margin-bottom: 4px; }
+      .browse-card-meta { margin-bottom: 6px; }
+      .browse-card-badge { font-size: 0.52rem; padding: 2px 5px; }
+      .browse-card-stars .bstar { width: 28px; height: 28px; }
+      .browse-card-stars .bstar svg { width: 16px; height: 16px; }
+      .browse-card-rating { flex-direction: row; align-items: center; justify-content: space-between; gap: 0; }
+      .browse-card-score { display: flex; align-items: center; gap: 4px; text-align: right; }
+      .browse-card-score-num { font-size: 0.75rem; }
+      .browse-card-score-count { font-size: 0.52rem; }
+      .browse-card-footer { margin-top: 6px; padding-top: 6px; }
+      .browse-card-footer button { min-height: 28px; font-size: 0.62rem; }
+      .browse-card-note { padding: 0 10px; }
+      .browse-card-note-toggle { font-size: 0.65rem; }
       .search-results-grid { grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 10px; padding: 0 16px 30px; }
       .search-results-grid .browse-card-stars .bstar { width: 28px; height: 28px; min-width: 0; min-height: 0; }
       .search-results-grid .browse-card-stars .bstar svg { width: 17px; height: 17px; }
