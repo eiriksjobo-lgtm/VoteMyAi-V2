@@ -9,6 +9,15 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;500;700&display=swap" rel="stylesheet">
+  <script>
+    // Handle /share/{trackId} deep links — redirect to /?track={trackId}
+    (function() {
+      var match = window.location.pathname.match(/^\/share\/([a-f0-9-]{36})$/);
+      if (match) {
+        window.location.replace('/?track=' + match[1]);
+      }
+    })();
+  </script>
   <style>
     :root { --bg: #07070b; --surface: #0e0e14; --border: #1a1a26; --accent: #e8ff47; --text: #f2f2f4; --muted: #5c5c72; --radius: 14px; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
