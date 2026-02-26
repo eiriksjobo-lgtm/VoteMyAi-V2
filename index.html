@@ -2083,8 +2083,9 @@
     if (isIOS) {
       thumbContainer.dataset.originalHtml = thumbContainer.innerHTML;
 
-      let platformClass = embed.platform;
-      let eqColorClass = 'accent';
+      let iframeSrc = '';
+      let eqColor = 'var(--accent)';
+      let platformLabel = track.tool || '';
 
       if (embed.platform === 'soundcloud') {
         const scUrl = track.embed_url || '';
@@ -2092,35 +2093,48 @@
           window.open(scUrl, '_blank');
           return;
         }
-        const scSrc = 'https://w.soundcloud.com/player/?url=' + encodeURIComponent(scUrl) + '&color=%23ff5500&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=true';
-        embedHtml = '<iframe src="' + scSrc + '" allow="autoplay; encrypted-media" scrolling="no"></iframe>';
-        eqColorClass = 'soundcloud';
+        iframeSrc = 'https://w.soundcloud.com/player/?url=' + encodeURIComponent(scUrl) + '&color=%23ff5500&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=true';
+        eqColor = '#ff5500';
+        platformLabel = 'SoundCloud';
       } else if (embed.platform === 'udio') {
         const udioId = embed.udioId;
-        if (udioId) {
-          embedHtml = '<iframe src="https://www.udio.com/embed/' + udioId + '" allow="autoplay; encrypted-media"></iframe>';
-        }
-        eqColorClass = 'udio';
+        if (udioId) iframeSrc = 'https://www.udio.com/embed/' + udioId;
+        eqColor = '#818cf8';
+        platformLabel = 'Udio';
       } else if (embed.platform === 'youtube') {
-        embedHtml = embedHtml.replace(/<iframe /, '<iframe allow="autoplay; encrypted-media" playsinline ');
-        platformClass = 'youtube';
+        const ytMatch = (track.embed_url || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([^&?\/#]+)/) || [null, track.yt_id];
+        if (ytMatch[1]) iframeSrc = 'https://www.youtube.com/embed/' + ytMatch[1] + '?rel=0&playsinline=1';
+        platformLabel = 'YouTube';
       } else if (embed.platform === 'suno') {
-        embedHtml = embedHtml.replace(/<iframe /, '<iframe allow="autoplay; encrypted-media" ');
+        const sunoMatch = (track.embed_url || '').match(/suno\.com\/(?:song|embed)\/([a-f0-9-]{36})/);
+        if (sunoMatch) iframeSrc = 'https://suno.com/embed/' + sunoMatch[1];
+        platformLabel = track.tool || 'Suno';
       }
 
-      // Show the iframe directly in the card thumb area with EQ overlay
-      thumbContainer.style.aspectRatio = 'auto';
-      thumbContainer.style.position = 'relative';
+      // Show Now Playing overlay in the card — identical to desktop
       thumbContainer.innerHTML = 
-        '<div class="ios-embed-wrap ' + platformClass + '">' +
-          embedHtml +
-        '</div>' +
-        '<div class="ios-eq-overlay ' + eqColorClass + '">' +
-          '<span></span><span></span><span></span><span></span><span></span>' +
-        '</div>' +
-        '<button class="ios-stop-btn" data-action="browse-stop" data-uid="' + uid + '" data-track-id="' + trackId + '">' +
-          '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>' +
-        '</button>';
+        '<div class="browse-now-playing" data-action="browse-stop" data-uid="' + uid + '" data-track-id="' + trackId + '">' +
+          '<div class="bnp-bg"' + (embed.platform === 'soundcloud' ? ' style="background:linear-gradient(135deg, rgba(255,85,0,0.15) 0%, rgba(7,7,11,0.95) 60%);"' : '') + '></div>' +
+          '<div class="bnp-content">' +
+            '<div class="bnp-eq"><span' + (eqColor !== 'var(--accent)' ? ' style="background:' + eqColor + ';"' : '') + '></span><span' + (eqColor !== 'var(--accent)' ? ' style="background:' + eqColor + ';"' : '') + '></span><span' + (eqColor !== 'var(--accent)' ? ' style="background:' + eqColor + ';"' : '') + '></span><span' + (eqColor !== 'var(--accent)' ? ' style="background:' + eqColor + ';"' : '') + '></span><span' + (eqColor !== 'var(--accent)' ? ' style="background:' + eqColor + ';"' : '') + '></span></div>' +
+            '<div class="bnp-title"' + (eqColor !== 'var(--accent)' ? ' style="color:' + eqColor + ';"' : '') + '>Now Playing</div>' +
+            '<div class="bnp-track">' + sanitize(track.title) + '</div>' +
+            '<div class="bnp-stop">Tap to stop</div>' +
+          '</div>' +
+        '</div>';
+      thumbContainer.removeAttribute('data-action');
+
+      // Place iframe visibly in player bar (small but on-screen so Safari allows audio)
+      if (iframeSrc) {
+        let iosArea = document.getElementById('iosPlayerEmbed');
+        if (!iosArea) {
+          iosArea = document.createElement('div');
+          iosArea.id = 'iosPlayerEmbed';
+          iosArea.style.cssText = 'width:48px;height:48px;border-radius:10px;overflow:hidden;flex-shrink:0;background:var(--surface-2);border:1px solid var(--border);';
+          playerBar.insertBefore(iosArea, playerBar.querySelector('.player-info'));
+        }
+        iosArea.innerHTML = '<iframe src="' + iframeSrc + '" allow="autoplay; encrypted-media" style="width:100%;height:100%;border:none;" scrolling="no"></iframe>';
+      }
       thumbContainer.removeAttribute('data-action');
       
       card.classList.add('is-playing');
@@ -2287,6 +2301,14 @@
       hiddenPlayer.remove();
     }
     
+    // iOS: clean up player bar embed
+    const iosArea = document.getElementById('iosPlayerEmbed');
+    if (iosArea) {
+      const iframes = iosArea.querySelectorAll('iframe');
+      iframes.forEach(f => { f.src = 'about:blank'; });
+      iosArea.remove();
+    }
+    
     // Also kill any iframe inside the card thumb (YouTube embeds + iOS inline embeds)
     const thumbIframes = thumbContainer.querySelectorAll('iframe');
     thumbIframes.forEach(f => { f.src = 'about:blank'; });
@@ -2317,9 +2339,11 @@
     destroySc();
     // 4. Stop old-style embeds
     if (activeEmbedTrackId) { stopEmbed(activeEmbedTrackId); activeEmbedTrackId = null; }
-    // 5. Remove any stray hidden players
+    // 5. Remove any stray hidden players + iOS embed
     const hp = activeBrowseUid ? document.getElementById('hidden-player-' + activeBrowseUid) : null;
     if (hp) hp.remove();
+    const iosArea = document.getElementById('iosPlayerEmbed');
+    if (iosArea) { const f = iosArea.querySelectorAll('iframe'); f.forEach(i => { i.src = 'about:blank'; }); iosArea.remove(); }
     // 6. Reset all player state
     playerBar.classList.remove('active', 'playing', 'udio-active', 'sc-active');
     document.body.classList.remove('player-active');
