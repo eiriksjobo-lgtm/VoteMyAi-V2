@@ -824,6 +824,64 @@
       .browse-section { padding-bottom: 20px; }
     }
 
+    /* iOS inline embed playing state */
+    .ios-embed-wrap {
+      width: 100%; position: relative; overflow: hidden;
+      background: var(--surface-2);
+    }
+    .ios-embed-wrap iframe {
+      width: 100% !important; height: 100% !important; border: none !important;
+      display: block;
+    }
+    .ios-embed-wrap.suno { height: 180px; }
+    .ios-embed-wrap.udio { height: 200px; }
+    .ios-embed-wrap.soundcloud { height: 180px; }
+    .ios-embed-wrap.youtube { height: 0; padding-bottom: 56.25%; position: relative; }
+    .ios-embed-wrap.youtube iframe { position: absolute; top: 0; left: 0; }
+    
+    /* iOS EQ overlay — bottom-left of embed */
+    .ios-eq-overlay {
+      position: absolute; bottom: 8px; left: 10px; z-index: 5;
+      display: flex; align-items: flex-end; gap: 3px; height: 22px;
+      padding: 4px 8px; border-radius: 6px;
+      background: rgba(0,0,0,0.6); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+    }
+    .ios-eq-overlay span {
+      width: 3px; border-radius: 2px;
+      height: 18px; transform-origin: bottom;
+      animation: eqBounce 1s ease-in-out infinite alternate;
+    }
+    .ios-eq-overlay span:nth-child(1) { animation-delay: 0s; }
+    .ios-eq-overlay span:nth-child(2) { animation-delay: 0.15s; }
+    .ios-eq-overlay span:nth-child(3) { animation-delay: 0.3s; }
+    .ios-eq-overlay span:nth-child(4) { animation-delay: 0.4s; }
+    .ios-eq-overlay span:nth-child(5) { animation-delay: 0.5s; }
+    .ios-eq-overlay.accent span { background: var(--accent); }
+    .ios-eq-overlay.udio span { background: #818cf8; }
+    .ios-eq-overlay.soundcloud span { background: #ff5500; }
+    
+    /* iOS stop button */
+    .ios-stop-btn {
+      position: absolute; top: 8px; right: 8px; z-index: 10;
+      width: 32px; height: 32px; border-radius: 50%;
+      background: rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.15);
+      color: #fff; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: background 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .ios-stop-btn:active { background: rgba(232,255,71,0.3); }
+
+    /* iOS image rendering fix */
+    @supports (-webkit-touch-callout: none) {
+      .browse-card-thumb img {
+        width: 100%; height: 100%; object-fit: cover;
+        -webkit-transform: translateZ(0);
+      }
+      .browse-card-thumb {
+        -webkit-transform: translateZ(0);
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -2025,6 +2083,9 @@
     if (isIOS) {
       thumbContainer.dataset.originalHtml = thumbContainer.innerHTML;
 
+      let platformClass = embed.platform;
+      let eqColorClass = 'accent';
+
       if (embed.platform === 'soundcloud') {
         const scUrl = track.embed_url || '';
         if (scUrl.includes('on.soundcloud.com')) {
@@ -2032,30 +2093,33 @@
           return;
         }
         const scSrc = 'https://w.soundcloud.com/player/?url=' + encodeURIComponent(scUrl) + '&color=%23ff5500&auto_play=false&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=true';
-        embedHtml = '<iframe src="' + scSrc + '" allow="autoplay; encrypted-media" style="width:100%;height:100%;border:none;" scrolling="no"></iframe>';
+        embedHtml = '<iframe src="' + scSrc + '" allow="autoplay; encrypted-media" scrolling="no"></iframe>';
+        eqColorClass = 'soundcloud';
       } else if (embed.platform === 'udio') {
         const udioId = embed.udioId;
         if (udioId) {
-          embedHtml = '<iframe src="https://www.udio.com/embed/' + udioId + '" allow="autoplay; encrypted-media" style="width:100%;height:100%;border:none;"></iframe>';
+          embedHtml = '<iframe src="https://www.udio.com/embed/' + udioId + '" allow="autoplay; encrypted-media"></iframe>';
         }
+        eqColorClass = 'udio';
       } else if (embed.platform === 'youtube') {
-        // YouTube: load without autoplay, user taps play
-        embedHtml = embedHtml.replace(/<iframe /, '<iframe allow="autoplay; encrypted-media" playsinline style="width:100%;height:100%;border:none;position:absolute;top:0;left:0;" ');
+        embedHtml = embedHtml.replace(/<iframe /, '<iframe allow="autoplay; encrypted-media" playsinline ');
+        platformClass = 'youtube';
       } else if (embed.platform === 'suno') {
-        // Suno: load embed, user taps play inside it
-        embedHtml = embedHtml.replace(/<iframe /, '<iframe allow="autoplay; encrypted-media" style="width:100%;height:100%;border:none;" ');
+        embedHtml = embedHtml.replace(/<iframe /, '<iframe allow="autoplay; encrypted-media" ');
       }
 
-      // Show the iframe directly in the card thumb area
+      // Show the iframe directly in the card thumb area with EQ overlay
       thumbContainer.style.aspectRatio = 'auto';
-      thumbContainer.style.minHeight = '180px';
       thumbContainer.style.position = 'relative';
       thumbContainer.innerHTML = 
-        '<div style="width:100%;height:100%;min-height:180px;position:relative;">' +
+        '<div class="ios-embed-wrap ' + platformClass + '">' +
           embedHtml +
         '</div>' +
-        '<button class="ios-stop-btn" data-action="browse-stop" data-uid="' + uid + '" data-track-id="' + trackId + '" style="position:absolute;top:8px;right:8px;z-index:10;width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,0.7);border:1px solid rgba(255,255,255,0.15);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;">' +
-          '<svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2.5" fill="none"/></svg>' +
+        '<div class="ios-eq-overlay ' + eqColorClass + '">' +
+          '<span></span><span></span><span></span><span></span><span></span>' +
+        '</div>' +
+        '<button class="ios-stop-btn" data-action="browse-stop" data-uid="' + uid + '" data-track-id="' + trackId + '">' +
+          '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>' +
         '</button>';
       thumbContainer.removeAttribute('data-action');
       
