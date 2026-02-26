@@ -655,6 +655,7 @@
     .browse-card-stars .bstar:hover { transform: scale(1.25); }
     .browse-card-stars .bstar svg { width: 16px; height: 16px; fill: var(--star-empty); transition: fill 0.15s; }
     .browse-card-stars .bstar.filled svg { fill: var(--accent); }
+    .browse-card-stars .bstar.ghost svg { fill: var(--accent); opacity: 0.25; }
     .browse-card-stars .bstar.hover-fill svg { fill: var(--accent); opacity: 0.7; }
     .browse-card-stars.rated .bstar { cursor: default; }
     .browse-card-stars.rated .bstar:hover { transform: none; }
@@ -1366,6 +1367,27 @@
     if (twTitle) twTitle.content = `${track.title} — Rate this AI track on VoteMyAI`;
     if (twDesc) twDesc.content = `Made with ${track.tool}${track.genre ? ' · ' + track.genre : ''}. Listen and rate on VoteMyAI.`;
 
+    // Force-hydrate all genre rows so deep-link card exists in DOM
+    if (window._browseRowData) {
+      document.querySelectorAll('.genre-row').forEach(row => {
+        if (row.dataset.hydrated) return;
+        row.dataset.hydrated = '1';
+        const idx = parseInt(row.dataset.rowIdx, 10);
+        const rd = window._browseRowData[idx];
+        if (!rd) return;
+        const scroll = row.querySelector('.genre-row-scroll');
+        if (!scroll || scroll.children.length > 0) return;
+        const cardFrag = document.createDocumentFragment();
+        rd.tracks.forEach(t => {
+          const div = document.createElement('div');
+          div.innerHTML = buildBrowseCard(t, getEmbedHtml(t));
+          cardFrag.appendChild(div.firstChild);
+        });
+        scroll.appendChild(cardFrag);
+        setupScrollArrows(row);
+      });
+    }
+
     requestAnimationFrame(() => {
       // Find the card in its GENRE row, not in Trending/Just Added
       const genre = track.genre || 'Other';
@@ -1405,7 +1427,15 @@
       overlay.addEventListener('click', () => {
         overlay.remove();
         style.remove();
-        if (targetCard) { browsePlay(targetCard.dataset.uid, trackParam); }
+        if (targetCard) {
+          browsePlay(targetCard.dataset.uid, trackParam);
+        } else {
+          // Fallback: try to find card again after hydration, or build one
+          const fallbackCard = document.querySelector('.browse-card[data-track-id="' + trackParam + '"]');
+          if (fallbackCard) {
+            browsePlay(fallbackCard.dataset.uid, trackParam);
+          }
+        }
       }, { once: true });
 
       document.body.appendChild(overlay);
@@ -1466,8 +1496,10 @@
     }
     
     let starsHtml = '';
+    const avgRounded = Math.round(track.avg_rating || 0);
     for (let s = 1; s <= 5; s++) {
-      starsHtml += '<div class="bstar ' + (isRated && s <= userScore ? 'filled' : '') + '" data-track="' + trackIdAttr + '" data-score="' + s + '">' + starSVG + '</div>';
+      const cls = isRated && s <= userScore ? 'filled' : (!isRated && avgRounded > 0 && s <= avgRounded ? 'ghost' : '');
+      starsHtml += '<div class="bstar ' + cls + '" data-track="' + trackIdAttr + '" data-score="' + s + '">' + starSVG + '</div>';
     }
 
     return '<div class="browse-card" id="' + uid + '" data-track-id="' + trackIdAttr + '" data-uid="' + uid + '">' +
@@ -1920,6 +1952,7 @@
       setTimeout(() => container.classList.remove('just-rated'), 500);
       container.querySelectorAll('.bstar').forEach(s => {
         s.classList.remove('hover-fill');
+        s.classList.remove('ghost');
         s.classList.toggle('filled', parseInt(s.dataset.score) <= score);
       });
       // Also update the old stars if they exist
