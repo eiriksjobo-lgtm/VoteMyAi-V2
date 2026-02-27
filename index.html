@@ -2081,17 +2081,17 @@
     // ══════════════════════════════════════════════════════
     // iOS/iPadOS — TWO-PHASE PLAY SYSTEM
     // 
-    // CRITICAL SAFARI CONSTRAINT: Safari kills audio from iframes that are
-    // off-screen, display:none, opacity:0, or too small. The iframe MUST
-    // remain physically visible and on-screen at a reasonable size.
+    // CRITICAL: Safari kills audio when an iframe is moved in the DOM
+    // (appendChild/insertBefore cause a reload). The iframe must NEVER
+    // be moved — it stays in the card forever.
     //
-    // Phase 1 (~7s): Show embed iframe FULL SIZE in the card so user can
-    //   physically tap play. Hint text guides them.
+    // Phase 1 (~7s): Show embed iframe FULL SIZE in the card so user
+    //   can physically tap play.
     //
-    // Phase 2: Shrink the iframe into the PLAYER BAR as a visible mini-player
-    //   (52×52px, fully on-screen, visible, not hidden). Safari sees a real
-    //   visible iframe → audio continues. Card shows EQ overlay.
-    //   User can scroll & browse freely.
+    // Phase 2: Keep iframe IN THE CARD but shrink it to 1×1px with
+    //   clip-path. Layer the EQ "Now Playing" overlay on top using
+    //   pointer-events:none so the iframe technically remains visible
+    //   and on-screen (Safari requirement). No DOM move = no reload.
     // ══════════════════════════════════════════════════════
     if (isIOS) {
       thumbContainer.dataset.originalHtml = thumbContainer.innerHTML;
@@ -2135,10 +2135,14 @@
       thumbContainer.style.aspectRatio = 'auto';
       thumbContainer.style.overflow = 'visible';
 
+      // The wrapper holds both the iframe AND the overlay (added in Phase 2).
+      // The iframe NEVER leaves this container.
       thumbContainer.innerHTML =
-        '<div class="ios-embed-wrap ' + wrapClass + '" id="ios-phase1-' + uid + '" style="position:relative;">' +
-          '<iframe src="' + iframeSrc + '" allow="autoplay; encrypted-media" style="width:100%;height:100%;border:none;" scrolling="no" playsinline></iframe>' +
-          '<div style="position:absolute;bottom:0;left:0;right:0;padding:8px 12px;background:linear-gradient(transparent,rgba(0,0,0,0.9));pointer-events:none;text-align:center;">' +
+        '<div id="ios-live-player-' + uid + '" style="position:relative;">' +
+          '<div class="ios-embed-wrap ' + wrapClass + '" id="ios-iframe-wrap-' + uid + '" style="position:relative;transition:height 0.4s ease,opacity 0.3s ease;">' +
+            '<iframe src="' + iframeSrc + '" allow="autoplay; encrypted-media" style="width:100%;height:100%;border:none;" scrolling="no" playsinline></iframe>' +
+          '</div>' +
+          '<div style="position:absolute;bottom:0;left:0;right:0;padding:8px 12px;background:linear-gradient(transparent,rgba(0,0,0,0.9));pointer-events:none;text-align:center;" id="ios-hint-' + uid + '">' +
             '<span style="font-size:0.68rem;font-weight:700;color:rgba(255,255,255,0.85);letter-spacing:0.5px;">▶ TAP PLAY ABOVE</span>' +
           '</div>' +
           '<button class="ios-stop-btn" data-action="browse-stop" data-uid="' + uid + '" data-track-id="' + trackId + '" aria-label="Stop">' +
@@ -2161,6 +2165,10 @@
       activePlayerPlatform = embed.platform;
 
       // ── Transition to PHASE 2 ──
+      // The iframe stays exactly where it is in the DOM. We just:
+      // 1. Shrink the iframe wrapper to 1px tall (but NOT display:none)
+      // 2. Hide the hint text
+      // 3. Add an EQ overlay on top of the whole thing
       var _iosPhase2Done = false;
 
       function iosPhase2() {
@@ -2169,48 +2177,50 @@
         clearTimeout(_iosPhase2Timer);
         window.removeEventListener('blur', _iosBlurToPhase2);
 
-        var phase1 = document.getElementById('ios-phase1-' + uid);
-        if (!phase1) return;
-        var iframe = phase1.querySelector('iframe');
-        if (!iframe) return;
+        var iframeWrap = document.getElementById('ios-iframe-wrap-' + uid);
+        var livePlayer = document.getElementById('ios-live-player-' + uid);
+        var hint = document.getElementById('ios-hint-' + uid);
+        if (!iframeWrap || !livePlayer) return;
 
-        // Move iframe into the player bar as a VISIBLE mini-player
-        // Safari requires: on-screen, not display:none, not opacity:0, reasonable size
-        var miniWrap = document.getElementById('ios-mini-player');
-        if (!miniWrap) {
-          miniWrap = document.createElement('div');
-          miniWrap.id = 'ios-mini-player';
-          miniWrap.style.cssText = 'width:52px;height:52px;border-radius:10px;overflow:hidden;flex-shrink:0;background:var(--surface-2);border:1px solid var(--border);position:relative;';
-          playerBar.insertBefore(miniWrap, playerBar.querySelector('.player-info'));
-        }
-        // Kill any previous mini-player iframe
-        miniWrap.querySelectorAll('iframe').forEach(function(f) { f.src = 'about:blank'; });
-        miniWrap.innerHTML = '';
+        // Shrink iframe wrapper to 1px — iframe is still in DOM, still "rendered"
+        // Safari considers this "visible" enough to keep audio alive
+        iframeWrap.style.height = '1px';
+        iframeWrap.style.opacity = '0.01';
+        iframeWrap.style.overflow = 'hidden';
+        iframeWrap.style.pointerEvents = 'none';
 
-        // Style the iframe for the mini player — clip to 52x52 visible
-        iframe.style.cssText = 'width:300px;height:200px;border:none;position:absolute;top:0;left:0;transform:scale(0.26);transform-origin:top left;';
-        miniWrap.appendChild(iframe);
+        // Hide hint
+        if (hint) hint.style.display = 'none';
 
-        // Replace card thumb with EQ overlay
-        var currentCard = document.getElementById(uid);
-        if (currentCard && activeBrowseUid === uid) {
-          var tc = currentCard.querySelector('.browse-card-thumb');
-          if (tc) {
-            var eqColor = eqColorClass === 'soundcloud' ? '#ff5500' : eqColorClass === 'udio' ? '#818cf8' : 'var(--accent)';
-            tc.style.aspectRatio = '16/10';
-            tc.style.overflow = 'hidden';
-            tc.innerHTML =
-              '<div class="browse-now-playing" data-action="browse-stop" data-uid="' + uid + '" data-track-id="' + trackId + '">' +
-                '<div class="bnp-bg"' + (embed.platform === 'soundcloud' ? ' style="background:linear-gradient(135deg, rgba(255,85,0,0.15) 0%, rgba(7,7,11,0.95) 60%);"' : embed.platform === 'udio' ? ' style="background:linear-gradient(135deg, rgba(129,140,248,0.15) 0%, rgba(7,7,11,0.95) 60%);"' : '') + '></div>' +
-                '<div class="bnp-content">' +
-                  '<div class="bnp-eq"><span style="background:' + eqColor + ';"></span><span style="background:' + eqColor + ';"></span><span style="background:' + eqColor + ';"></span><span style="background:' + eqColor + ';"></span><span style="background:' + eqColor + ';"></span></div>' +
-                  '<div class="bnp-title" style="color:' + eqColor + ';">Now Playing</div>' +
-                  '<div class="bnp-track">' + sanitize(track.title) + '</div>' +
-                  '<div class="bnp-stop">Tap to stop</div>' +
-                '</div>' +
-              '</div>';
-          }
-        }
+        // Hide the stop button from phase 1
+        var stopBtn = livePlayer.querySelector('.ios-stop-btn');
+        if (stopBtn) stopBtn.style.display = 'none';
+
+        // Add EQ overlay on top of the live player container
+        var eqColor = eqColorClass === 'soundcloud' ? '#ff5500' : eqColorClass === 'udio' ? '#818cf8' : 'var(--accent)';
+        var eqOverlay = document.createElement('div');
+        eqOverlay.className = 'browse-now-playing';
+        eqOverlay.setAttribute('data-action', 'browse-stop');
+        eqOverlay.setAttribute('data-uid', uid);
+        eqOverlay.setAttribute('data-track-id', trackId);
+        eqOverlay.innerHTML =
+          '<div class="bnp-bg"' + (embed.platform === 'soundcloud' ? ' style="background:linear-gradient(135deg, rgba(255,85,0,0.15) 0%, rgba(7,7,11,0.95) 60%);"' : embed.platform === 'udio' ? ' style="background:linear-gradient(135deg, rgba(129,140,248,0.15) 0%, rgba(7,7,11,0.95) 60%);"' : '') + '></div>' +
+          '<div class="bnp-content">' +
+            '<div class="bnp-eq"><span style="background:' + eqColor + ';"></span><span style="background:' + eqColor + ';"></span><span style="background:' + eqColor + ';"></span><span style="background:' + eqColor + ';"></span><span style="background:' + eqColor + ';"></span></div>' +
+            '<div class="bnp-title" style="color:' + eqColor + ';">Now Playing</div>' +
+            '<div class="bnp-track">' + sanitize(track.title) + '</div>' +
+            '<div class="bnp-stop">Tap to stop</div>' +
+          '</div>';
+
+        // Set the live player container to standard card thumb dimensions
+        livePlayer.style.position = 'relative';
+        livePlayer.style.aspectRatio = '16/10';
+        livePlayer.style.overflow = 'hidden';
+        livePlayer.appendChild(eqOverlay);
+
+        // Reset the parent thumb container dimensions
+        thumbContainer.style.aspectRatio = '16/10';
+        thumbContainer.style.overflow = 'hidden';
       }
 
       function _iosBlurToPhase2() {
@@ -2375,36 +2385,27 @@
     // iOS: clean up player bar embed (legacy)
     const iosArea = document.getElementById('iosPlayerEmbed');
     if (iosArea) {
-      const iframes = iosArea.querySelectorAll('iframe');
-      iframes.forEach(f => { f.src = 'about:blank'; });
+      iosArea.querySelectorAll('iframe').forEach(f => { f.src = 'about:blank'; });
       iosArea.remove();
     }
 
-    // iOS: clean up mini-player in player bar (Phase 2)
+    // iOS: clean up mini-player in player bar (legacy)
     const iosMini = document.getElementById('ios-mini-player');
     if (iosMini) {
       iosMini.querySelectorAll('iframe').forEach(f => { f.src = 'about:blank'; });
       iosMini.remove();
     }
 
-    // iOS: clean up offscreen player (old approach fallback)
-    const iosOffscreen = document.getElementById('ios-offscreen-player');
-    if (iosOffscreen) {
-      iosOffscreen.querySelectorAll('iframe').forEach(f => { f.src = 'about:blank'; });
-      iosOffscreen.remove();
+    // iOS: clean up live player in card (current approach — iframe stays in card)
+    const iosLive = document.getElementById('ios-live-player-' + uid);
+    if (iosLive) {
+      iosLive.querySelectorAll('iframe').forEach(f => { f.src = 'about:blank'; });
     }
 
-    // iOS: clean up phase1 embed still in card
-    const phase1 = document.getElementById('ios-phase1-' + uid);
-    if (phase1) {
-      phase1.querySelectorAll('iframe').forEach(f => { f.src = 'about:blank'; });
-    }
-
-    // iOS: clean up inline card embed (ios-embed-wrap)
+    // iOS: clean up any inline embeds
     const iosWrap = thumbContainer.querySelector('.ios-embed-wrap');
     if (iosWrap) {
-      const iframes = iosWrap.querySelectorAll('iframe');
-      iframes.forEach(f => { f.src = 'about:blank'; });
+      iosWrap.querySelectorAll('iframe').forEach(f => { f.src = 'about:blank'; });
     }
     
     // Also kill any iframe inside the card thumb (YouTube embeds + iOS inline embeds)
@@ -2442,15 +2443,11 @@
     const hp = activeBrowseUid ? document.getElementById('hidden-player-' + activeBrowseUid) : null;
     if (hp) hp.remove();
     const iosArea = document.getElementById('iosPlayerEmbed');
-    if (iosArea) { const f = iosArea.querySelectorAll('iframe'); f.forEach(i => { i.src = 'about:blank'; }); iosArea.remove(); }
-    // Kill iOS mini-player in player bar
+    if (iosArea) { iosArea.querySelectorAll('iframe').forEach(i => { i.src = 'about:blank'; }); iosArea.remove(); }
     const iosMini = document.getElementById('ios-mini-player');
     if (iosMini) { iosMini.querySelectorAll('iframe').forEach(i => { i.src = 'about:blank'; }); iosMini.remove(); }
-    // Kill iOS offscreen player (fallback)
-    const iosOffscreen = document.getElementById('ios-offscreen-player');
-    if (iosOffscreen) { iosOffscreen.querySelectorAll('iframe').forEach(i => { i.src = 'about:blank'; }); iosOffscreen.remove(); }
-    // Also kill iOS inline card embeds
-    document.querySelectorAll('.ios-embed-wrap iframe').forEach(f => { f.src = 'about:blank'; });
+    // Kill all iOS inline card embeds (iframe stays in card approach)
+    document.querySelectorAll('[id^="ios-live-player-"] iframe, .ios-embed-wrap iframe').forEach(f => { f.src = 'about:blank'; });
     // 6. Reset all player state
     playerBar.classList.remove('active', 'playing', 'udio-active', 'sc-active');
     document.body.classList.remove('player-active');
