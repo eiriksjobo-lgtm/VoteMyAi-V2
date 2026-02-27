@@ -511,11 +511,27 @@
   window.deleteMessage = (id) => adminDelete('contact_messages', id, 'Message');
 
   window.deleteUser = async function(userId) {
-    if (!confirm('Delete this user and ALL their data (tracks, comments)?')) return;
+    if (!confirm('Delete this user and ALL their data (tracks, comments, ratings, auth account)?\n\nThis is permanent and cannot be undone.')) return;
+    showStatus('adminStatus', 'Deleting user data...', 'success');
     try {
+      // 1. Delete user's comments
       await fetch(`${SUPABASE_URL}/rest/v1/comments?user_id=eq.${userId}`, { method: 'DELETE', headers: headers() });
+      // 2. Delete user's tracks
       await fetch(`${SUPABASE_URL}/rest/v1/tracks?user_id=eq.${userId}`, { method: 'DELETE', headers: headers() });
-      showStatus('adminStatus', 'User data deleted.', 'success');
+      // 3. Delete user's ratings (if they have user-linked ratings)
+      await fetch(`${SUPABASE_URL}/rest/v1/anonymous_ratings?user_id=eq.${userId}`, { method: 'DELETE', headers: headers() });
+      // 4. Delete auth account via edge function
+      const authRes = await fetch(`${SUPABASE_URL}/functions/v1/admin-delete-user`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+        body: JSON.stringify({ user_id: userId })
+      });
+      if (authRes.ok) {
+        showStatus('adminStatus', 'User fully deleted (data + auth account).', 'success');
+      } else {
+        const err = await authRes.text();
+        showStatus('adminStatus', 'User data deleted, but auth account removal failed: ' + err + '. Delete manually in Supabase Dashboard → Authentication.', 'error');
+      }
       await loadData();
     } catch(err) { showStatus('adminStatus', `Error: ${err.message}`, 'error'); }
   };
