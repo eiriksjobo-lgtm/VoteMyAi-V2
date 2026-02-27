@@ -288,6 +288,17 @@
 
   async function loadData() {
     try {
+      // Refresh auth users list
+      try {
+        const authRes = await fetch(`${SUPABASE_URL}/functions/v1/admin-users`, {
+          headers: { 'x-admin-password': adminPassword }
+        });
+        if (authRes.ok) {
+          const authData = await authRes.json();
+          authUsers = authData.users || [];
+        }
+      } catch(e) { console.warn('Could not refresh auth users:', e); }
+
       // Fetch all tracks (paginate past 1000 limit)
       allTracks = [];
       let offset = 0;
