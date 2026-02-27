@@ -2164,7 +2164,15 @@
       activePlayerTrackId = trackId;
       activePlayerPlatform = embed.platform;
 
-      // ── Transition to PHASE 2 ──
+      // ── Transition to PHASE 2 (audio platforms only) ──
+      // YouTube: user watches the video — no Phase 2, embed stays visible.
+      // Suno/Udio/SoundCloud: collapse embed after user taps play, show EQ.
+      if (embed.platform === 'youtube') {
+        // YouTube stays in Phase 1 forever — no EQ overlay
+        gtag('event', 'play_bar', { track_id: trackId, platform: embed.platform });
+        return;
+      }
+
       // The iframe stays exactly where it is in the DOM. We just:
       // 1. Shrink the iframe wrapper to 1px tall (but NOT display:none)
       // 2. Hide the hint text
@@ -2224,11 +2232,13 @@
       }
 
       function _iosBlurToPhase2() {
-        setTimeout(iosPhase2, 800);
+        // 2.5s delay — let the song actually start playing before collapsing
+        setTimeout(iosPhase2, 2500);
       }
       window.addEventListener('blur', _iosBlurToPhase2);
 
-      var _iosPhase2Timer = setTimeout(iosPhase2, 7000);
+      // Fallback: auto-transition after 10 seconds
+      var _iosPhase2Timer = setTimeout(iosPhase2, 10000);
 
       gtag('event', 'play_bar', { track_id: trackId, platform: embed.platform });
       return;
