@@ -2079,12 +2079,15 @@
     let embedHtml = embed.embedHtml;
 
     // ══════════════════════════════════════════════════════
-    // iOS/iPadOS: Show embed VISIBLY in the card at full size
-    // Safari REQUIRES the user to physically tap play inside
-    // the iframe — hidden/tiny iframes will NEVER produce audio.
-    // Strategy: replace the thumbnail with a full-size visible
-    // iframe embed + a stop button overlay so the user can tap
-    // play directly on the Suno/Udio/SoundCloud/YouTube player.
+    // iOS/iPadOS — TWO-PHASE PLAY SYSTEM
+    // Phase 1: Show the embed iframe VISIBLY inside the card
+    //          so the user can physically tap play (Safari requires this).
+    //          After ~7s OR when Safari focus leaves (= user tapped play
+    //          inside the iframe), we move to Phase 2.
+    // Phase 2: Move the iframe OFF-SCREEN but keep it alive in the DOM
+    //          (position:fixed; left:-9999px — Safari keeps audio going).
+    //          Show the Now Playing EQ overlay in the card thumbnail +
+    //          activate the player bar. User can scroll & browse freely.
     // ══════════════════════════════════════════════════════
     if (isIOS) {
       thumbContainer.dataset.originalHtml = thumbContainer.innerHTML;
@@ -2092,7 +2095,7 @@
       let iframeSrc = '';
       let eqColorClass = 'accent';
       let platformLabel = track.tool || '';
-      let wrapClass = 'suno'; // default wrap class for sizing
+      let wrapClass = 'suno';
 
       if (embed.platform === 'soundcloud') {
         const scUrl = track.embed_url || '';
@@ -2122,17 +2125,19 @@
         wrapClass = 'suno';
       }
 
-      if (!iframeSrc) return; // No valid embed — bail
+      if (!iframeSrc) return;
 
-      // Build the visible embed directly inside the card thumbnail area.
-      // The user taps play INSIDE the iframe — this is the only way iOS Safari allows audio.
+      // ── PHASE 1: Show embed visibly in card ──
       thumbContainer.style.aspectRatio = 'auto';
-      thumbContainer.style.minHeight = '0';
+      thumbContainer.style.overflow = 'visible';
+
+      // Build visible iframe + a hint overlay
       thumbContainer.innerHTML =
-        '<div class="ios-embed-wrap ' + wrapClass + '" style="position:relative;">' +
+        '<div class="ios-embed-wrap ' + wrapClass + '" id="ios-phase1-' + uid + '" style="position:relative;">' +
           '<iframe src="' + iframeSrc + '" allow="autoplay; encrypted-media" style="width:100%;height:100%;border:none;" scrolling="no" playsinline></iframe>' +
-          '<div class="ios-eq-overlay ' + eqColorClass + '">' +
-            '<span></span><span></span><span></span><span></span><span></span>' +
+          '<div class="ios-phase1-hint" style="position:absolute;bottom:0;left:0;right:0;padding:6px 10px;background:linear-gradient(transparent,rgba(0,0,0,0.85));display:flex;align-items:center;justify-content:space-between;pointer-events:none;">' +
+            '<span style="font-size:0.62rem;font-weight:600;color:rgba(255,255,255,0.7);letter-spacing:0.5px;">TAP PLAY IN THE PLAYER ▲</span>' +
+            '<span class="ios-phase1-dots" style="font-size:0.62rem;color:rgba(255,255,255,0.4);">⏳</span>' +
           '</div>' +
           '<button class="ios-stop-btn" data-action="browse-stop" data-uid="' + uid + '" data-track-id="' + trackId + '" aria-label="Stop">' +
             '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>' +
@@ -2144,14 +2149,76 @@
       activeBrowseUid = uid;
       activeBrowseTrackId = String(trackId);
 
+      // Player bar — show immediately
       playerTitle.textContent = track.title || 'Now Playing';
-      playerMeta.textContent = (embed.platform === 'soundcloud' ? 'SoundCloud' : embed.platform === 'udio' ? 'Udio' : (track.tool || '')) + ' · ' + (track.genre || '');
+      playerMeta.textContent = (embed.platform === 'soundcloud' ? 'SoundCloud' : embed.platform === 'udio' ? 'Udio' : platformLabel) + ' · ' + (track.genre || '');
       playerBar.classList.add('active', 'playing');
       if (embed.platform === 'udio') playerBar.classList.add('udio-active');
       if (embed.platform === 'soundcloud') playerBar.classList.add('sc-active');
       document.body.classList.add('player-active');
       activePlayerTrackId = trackId;
       activePlayerPlatform = embed.platform;
+
+      // ── Transition to PHASE 2 ──
+      // Triggers: (a) window blur = user tapped inside iframe, or (b) 7 second timeout
+      var _iosPhase2Done = false;
+      function iosPhase2() {
+        if (_iosPhase2Done) return;
+        _iosPhase2Done = true;
+        clearTimeout(_iosPhase2Timer);
+        window.removeEventListener('blur', _iosBlurToPhase2);
+
+        // Grab the iframe before we change anything
+        var phase1 = document.getElementById('ios-phase1-' + uid);
+        if (!phase1) return;
+        var iframe = phase1.querySelector('iframe');
+        if (!iframe) return;
+
+        // Move iframe to a persistent off-screen container (keeps audio alive)
+        var offscreen = document.getElementById('ios-offscreen-player');
+        if (!offscreen) {
+          offscreen = document.createElement('div');
+          offscreen.id = 'ios-offscreen-player';
+          offscreen.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:320px;height:200px;overflow:hidden;pointer-events:none;z-index:-1;opacity:0.01;';
+          document.body.appendChild(offscreen);
+        }
+        // Kill any previous offscreen iframe
+        offscreen.querySelectorAll('iframe').forEach(function(f) { f.src = 'about:blank'; });
+        offscreen.innerHTML = '';
+        offscreen.appendChild(iframe);
+
+        // If card is still the active one, show EQ overlay in the card
+        var currentCard = document.getElementById(uid);
+        if (currentCard && activeBrowseUid === uid) {
+          var tc = currentCard.querySelector('.browse-card-thumb');
+          if (tc) {
+            var eqColor = eqColorClass === 'soundcloud' ? '#ff5500' : eqColorClass === 'udio' ? '#818cf8' : 'var(--accent)';
+            tc.style.aspectRatio = '16/10';
+            tc.style.overflow = 'hidden';
+            tc.innerHTML =
+              '<div class="browse-now-playing" data-action="browse-stop" data-uid="' + uid + '" data-track-id="' + trackId + '">' +
+                '<div class="bnp-bg"' + (embed.platform === 'soundcloud' ? ' style="background:linear-gradient(135deg, rgba(255,85,0,0.15) 0%, rgba(7,7,11,0.95) 60%);"' : embed.platform === 'udio' ? ' style="background:linear-gradient(135deg, rgba(129,140,248,0.15) 0%, rgba(7,7,11,0.95) 60%);"' : '') + '></div>' +
+                '<div class="bnp-content">' +
+                  '<div class="bnp-eq"><span style="background:' + eqColor + ';"></span><span style="background:' + eqColor + ';"></span><span style="background:' + eqColor + ';"></span><span style="background:' + eqColor + ';"></span><span style="background:' + eqColor + ';"></span></div>' +
+                  '<div class="bnp-title" style="color:' + eqColor + ';">Now Playing</div>' +
+                  '<div class="bnp-track">' + sanitize(track.title) + '</div>' +
+                  '<div class="bnp-stop">Tap to stop</div>' +
+                '</div>' +
+              '</div>';
+          }
+        }
+      }
+
+      // Trigger Phase 2 on blur (user tapped play in iframe)
+      function _iosBlurToPhase2() {
+        // Small delay to make sure audio has started
+        setTimeout(iosPhase2, 800);
+      }
+      window.addEventListener('blur', _iosBlurToPhase2);
+
+      // Fallback: auto-transition after 7 seconds
+      var _iosPhase2Timer = setTimeout(iosPhase2, 7000);
+
       gtag('event', 'play_bar', { track_id: trackId, platform: embed.platform });
       return;
     }
@@ -2304,12 +2371,25 @@
       hiddenPlayer.remove();
     }
     
-    // iOS: clean up player bar embed
+    // iOS: clean up player bar embed (legacy)
     const iosArea = document.getElementById('iosPlayerEmbed');
     if (iosArea) {
       const iframes = iosArea.querySelectorAll('iframe');
       iframes.forEach(f => { f.src = 'about:blank'; });
       iosArea.remove();
+    }
+
+    // iOS: clean up offscreen player (Phase 2)
+    const iosOffscreen = document.getElementById('ios-offscreen-player');
+    if (iosOffscreen) {
+      iosOffscreen.querySelectorAll('iframe').forEach(f => { f.src = 'about:blank'; });
+      iosOffscreen.remove();
+    }
+
+    // iOS: clean up phase1 embed still in card
+    const phase1 = document.getElementById('ios-phase1-' + uid);
+    if (phase1) {
+      phase1.querySelectorAll('iframe').forEach(f => { f.src = 'about:blank'; });
     }
 
     // iOS: clean up inline card embed (ios-embed-wrap)
@@ -2355,6 +2435,9 @@
     if (hp) hp.remove();
     const iosArea = document.getElementById('iosPlayerEmbed');
     if (iosArea) { const f = iosArea.querySelectorAll('iframe'); f.forEach(i => { i.src = 'about:blank'; }); iosArea.remove(); }
+    // Kill iOS offscreen player
+    const iosOffscreen = document.getElementById('ios-offscreen-player');
+    if (iosOffscreen) { iosOffscreen.querySelectorAll('iframe').forEach(i => { i.src = 'about:blank'; }); iosOffscreen.remove(); }
     // Also kill iOS inline card embeds
     document.querySelectorAll('.ios-embed-wrap iframe').forEach(f => { f.src = 'about:blank'; });
     // 6. Reset all player state
