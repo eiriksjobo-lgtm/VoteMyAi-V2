@@ -299,6 +299,89 @@
     }
     .cta-btn:hover { box-shadow: 0 8px 32px rgba(232,255,71,0.25); transform: translateY(-2px); text-decoration: none; }
 
+    /* SHARE BAR */
+    .share-bar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 24px 0;
+      margin: 40px 0 0;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .share-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .share-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+    .share-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px; border-radius: var(--radius-sm);
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text-secondary); text-decoration: none;
+      font-size: 0.78rem; font-weight: 600;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .share-btn:hover { border-color: var(--accent); color: var(--text); background: var(--accent-glow); }
+    .share-btn span { pointer-events: none; }
+
+    /* RELATED ARTICLES */
+    .related-articles { margin-top: 48px; }
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-top: 4px;
+    }
+    .related-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      text-decoration: none;
+      color: var(--text);
+      transition: all 0.25s;
+      display: block;
+    }
+    .related-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 36px rgba(0,0,0,0.3);
+      text-decoration: none;
+    }
+    .related-badge {
+      display: inline-block;
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-dim);
+      padding: 3px 10px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    .related-card h3 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin: 0 0 8px;
+      line-height: 1.3;
+    }
+    .related-card p {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+    .related-meta {
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
     /* FOOTER */
     footer {
       max-width: 760px;
@@ -448,7 +531,7 @@
         <tr>
           <td class="feature-name">Legal Status</td>
           <td>Warner settled. Training data unclear</td>
-          <td>UMG settled. Licensing transition</td>
+          <td>UMG + Warner settled. Licensing transition</td>
           <td class="winner">Clean. Licensed training data</td>
           <td>Clean. SACEM registered</td>
           <td>Unknown training data</td>
@@ -483,7 +566,7 @@
       <p>The inpainting feature (re-generating specific sections) remains best-in-class, and the 30-second extension workflow gives producers a level of control that Suno doesn't offer. If you work by assembling songs segment by segment in a DAW, Udio's approach might still appeal. But for most users, the inability to export your work makes it hard to recommend over Suno in 2026.</p>
       <div class="pros-cons">
         <div class="pros"><strong>✓ Strengths</strong><br>Pristine instrumental quality. Best inpainting/remix tools. Creative arrangements. Segment-based workflow.</div>
-        <div class="cons"><strong>✗ Weaknesses</strong><br>Can't download tracks. Vocal quality inconsistent. Quality regression reported. UMG lawsuit settled but licensing transition ongoing.</div>
+        <div class="cons"><strong>✗ Weaknesses</strong><br>Can't download tracks. Vocal quality inconsistent. Quality regression reported. UMG + Warner lawsuits settled but licensing transition ongoing.</div>
       </div>
     </div>
 
@@ -579,7 +662,7 @@
 
     <h2>The Elephant in the Room: Copyright</h2>
 
-    <p>Let's address this directly. Suno and Udio both face (or have faced) lawsuits from major labels over their training data. Warner has settled with Suno; UMG has settled with Udio. Both are moving toward licensed training data. But the current models were likely trained on copyrighted music — and the "clean" models that replace them may not sound as good.</p>
+    <p>Let's address this directly. Suno and Udio both face (or have faced) lawsuits from major labels over their training data. Warner has settled with Suno; UMG and Warner have both settled with Udio. Both are moving toward licensed training data. But the current models were likely trained on copyrighted music — and the "clean" models that replace them may not sound as good.</p>
 
     <p>ElevenLabs and AIVA are the only platforms in this comparison with fully transparent, licensed training data. If legal safety is your priority, they're the obvious choices. If you care more about output quality and are comfortable with some legal ambiguity, Suno is the winner.</p>
 
@@ -594,6 +677,45 @@
     <p>That's the fun part.</p>
 
     <p>Want to hear what the community thinks is the best AI music out there? <a href="/">Browse the top-rated tracks on VoteMyAI</a> — every track is rated by real listeners, not algorithms.</p>
+
+    <!-- SHARE -->
+    <div class="share-bar">
+      <span class="share-label">Share this article</span>
+      <div class="share-buttons">
+        <a href="https://twitter.com/intent/tweet?text=I%20Tested%20Every%20AI%20Music%20Generator%20So%20You%20Don%27t%20Have%20To&url=https://www.votemyai.com/blog/best-ai-music-generator-2026.html" target="_blank" rel="noopener" class="share-btn x" aria-label="Share on X">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </a>
+        <a href="https://www.reddit.com/submit?url=https://www.votemyai.com/blog/best-ai-music-generator-2026.html&title=I%20Tested%20Every%20AI%20Music%20Generator%20So%20You%20Don%27t%20Have%20To" target="_blank" rel="noopener" class="share-btn reddit" aria-label="Share on Reddit">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/></svg>
+        </a>
+        <a href="https://www.facebook.com/sharer/sharer.php?u=https://www.votemyai.com/blog/best-ai-music-generator-2026.html" target="_blank" rel="noopener" class="share-btn fb" aria-label="Share on Facebook">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+        </a>
+        <button class="share-btn copy" onclick="navigator.clipboard.writeText('https://www.votemyai.com/blog/best-ai-music-generator-2026.html');this.querySelector('span').textContent='Copied!';setTimeout(()=>this.querySelector('span').textContent='Copy link',2000)" aria-label="Copy link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          <span>Copy link</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- RELATED ARTICLES -->
+    <div class="related-articles">
+      <h2>Read More</h2>
+      <div class="related-grid">
+        <a href="/blog/suno-v5-vs-v4-5.html" class="related-card">
+          <div class="related-badge">Comparison</div>
+          <h3>Suno v5 vs v4.5 — What Changed and Is It Worth Upgrading?</h3>
+          <p>Feature-by-feature breakdown of Suno's latest model. Audio quality, vocals, editor tools, and who should upgrade.</p>
+          <span class="related-meta">7 min read</span>
+        </a>
+        <a href="/blog/ai-music-prompt-tips.html" class="related-card">
+          <div class="related-badge">Guide</div>
+          <h3>10 Tips for Writing Better AI Music Prompts</h3>
+          <p>Get better output from Suno, Udio, and ElevenLabs with these prompt techniques tested on hundreds of tracks.</p>
+          <span class="related-meta">5 min read</span>
+        </a>
+      </div>
+    </div>
 
     <div class="cta-box">
       <h3>Made Something With AI?</h3>
