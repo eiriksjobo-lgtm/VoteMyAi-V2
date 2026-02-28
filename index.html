@@ -1775,31 +1775,81 @@
 
     // Map subgenres to parent categories for browse grouping
     const GENRE_PARENTS = {
+      // Pop
       'Synth-Pop':'Pop','Indie Pop':'Pop','Electropop':'Pop','Dream Pop':'Pop','K-Pop':'Pop','J-Pop':'Pop','Art Pop':'Pop','Dance Pop':'Pop',
+      'Pop Rock':'Pop','Power Pop':'Pop','Bedroom Pop':'Pop','Bubblegum Pop':'Pop','Teen Pop':'Pop','Sophisti-Pop':'Pop','Chamber Pop':'Pop','Baroque Pop':'Pop','Noise Pop':'Pop',
+      // Rock
       'Indie Rock':'Rock','Alt Rock':'Rock','Punk Rock':'Rock','Post-Punk':'Rock','Garage Rock':'Rock','Psychedelic Rock':'Rock','Prog Rock':'Rock','Shoegaze':'Rock','Grunge':'Rock','Britpop':'Rock',
+      'Alternative':'Rock','Alternative Rock':'Rock','Classic Rock':'Rock','Hard Rock':'Rock','Soft Rock':'Rock','Progressive Rock':'Rock','Emo':'Rock','Post-Rock':'Rock','Stoner Rock':'Rock','Southern Rock':'Rock','Surf Rock':'Rock','Art Rock':'Rock','Math Rock':'Rock','Noise Rock':'Rock','Space Rock':'Rock','Glam Rock':'Rock',
+      // Hip-Hop
       'Trap':'Hip-Hop','Boom Bap':'Hip-Hop','Lo-Fi Hip-Hop':'Hip-Hop','Drill':'Hip-Hop','Conscious Rap':'Hip-Hop','Old School Hip-Hop':'Hip-Hop','Cloud Rap':'Hip-Hop',
+      'Rap':'Hip-Hop','Hip Hop':'Hip-Hop','Hiphop':'Hip-Hop','HipHop':'Hip-Hop','Gangsta Rap':'Hip-Hop','Mumble Rap':'Hip-Hop','Emo Rap':'Hip-Hop','G-Funk':'Hip-Hop','Crunk':'Hip-Hop','Grime':'Hip-Hop','UK Rap':'Hip-Hop','Freestyle':'Hip-Hop','Phonk':'Hip-Hop',
+      // Electronic
       'House':'Electronic','Deep House':'Electronic','Tech House':'Electronic','Techno':'Electronic','Trance':'Electronic','Dubstep':'Electronic','Drum & Bass':'Electronic','IDM':'Electronic','Breakbeat':'Electronic','Garage':'Electronic','Hardstyle':'Electronic','Eurodance':'Electronic','Italo Disco':'Electronic','Synthwave':'Electronic','Electro':'Electronic','Future Bass':'Electronic',
-      'Neo Soul':'R&B / Soul','Contemporary R&B':'R&B / Soul','Motown':'R&B / Soul',
       'Dance':'Electronic','EDM':'Electronic','Nu-Disco':'Electronic','Tropical House':'Electronic','Afro House':'Electronic',
-      'Disco':'Funk','Funk':'Funk',
+      'Electronica':'Electronic','Progressive House':'Electronic','Melodic Techno':'Electronic','Minimal':'Electronic','Lo-Fi House':'Electronic','Glitch':'Electronic','Bass Music':'Electronic','Chillstep':'Electronic','Future House':'Electronic','Big Room':'Electronic','UK Garage':'Electronic','Jersey Club':'Electronic','Jungle':'Electronic','Happy Hardcore':'Electronic','Gabber':'Electronic','Psytrance':'Electronic','Melodic House':'Electronic',
+      // R&B / Soul
+      'Neo Soul':'R&B / Soul','Contemporary R&B':'R&B / Soul','Motown':'R&B / Soul',
+      'R&B':'R&B / Soul','RnB':'R&B / Soul','Soul':'R&B / Soul','R&B/Soul':'R&B / Soul','Rhythm and Blues':'R&B / Soul','Quiet Storm':'R&B / Soul','New Jack Swing':'R&B / Soul',
+      // Funk
+      'Disco':'Funk','Funk':'Funk','Boogie':'Funk','P-Funk':'Funk',
+      // Metal
       'Heavy Metal':'Metal','Death Metal':'Metal','Black Metal':'Metal','Doom Metal':'Metal','Thrash Metal':'Metal','Metalcore':'Metal','Nu Metal':'Metal','Power Metal':'Metal','Symphonic Metal':'Metal',
-      'Smooth Jazz':'Jazz','Bebop':'Jazz','Jazz Fusion':'Jazz','Acid Jazz':'Jazz','Nu Jazz':'Jazz','Swing':'Jazz',
-      'Orchestral':'Classical','Neoclassical':'Classical','Baroque':'Classical','Romantic':'Classical','Chamber Music':'Classical','Film Score':'Cinematic','Epic Orchestral':'Cinematic',
+      'Progressive Metal':'Metal','Industrial Metal':'Metal','Industrial':'Metal','Djent':'Metal','Deathcore':'Metal','Post-Metal':'Metal','Sludge Metal':'Metal','Speed Metal':'Metal','Groove Metal':'Metal','Folk Metal':'Metal','Viking Metal':'Metal','Melodic Death Metal':'Metal','Gothic Metal':'Metal',
+      // Jazz
+      'Smooth Jazz':'Jazz','Bebop':'Jazz','Jazz Fusion':'Jazz','Acid Jazz':'Jazz','Nu Jazz':'Jazz','Swing':'Jazz','Cool Jazz':'Jazz','Free Jazz':'Jazz','Modal Jazz':'Jazz','Gypsy Jazz':'Jazz','Jazz Rap':'Jazz',
+      // Classical & Cinematic
+      'Orchestral':'Classical','Neoclassical':'Classical','Baroque':'Classical','Romantic':'Classical','Chamber Music':'Classical',
+      'Film Score':'Cinematic','Epic Orchestral':'Cinematic','Soundtrack':'Cinematic','Film Music':'Cinematic','Epic':'Cinematic','Trailer Music':'Cinematic','Score':'Cinematic','Cinematic Orchestra':'Cinematic',
+      // Indie / Folk
       'Folk':'Indie / Folk','Acoustic':'Indie / Folk','Singer-Songwriter':'Indie / Folk','Indie Folk':'Indie / Folk','Americana':'Indie / Folk','Bluegrass':'Indie / Folk','Celtic':'Indie / Folk',
-      'Reggaeton':'Latin','Salsa':'Latin','Bossa Nova':'Latin','Latin Pop':'Latin','Cumbia':'Latin','Bachata':'Latin','Merengue':'Latin',
-      'Country Rock':'Country','Outlaw Country':'Country','Alt Country':'Country','Honky Tonk':'Country',
+      'Indie':'Indie / Folk','Folk Rock':'Indie / Folk','Chamber Folk':'Indie / Folk','Freak Folk':'Indie / Folk','Neofolk':'Indie / Folk',
+      // Latin
+      'Reggaeton':'Latin','Salsa':'Latin','Bossa Nova':'Latin','Latin Pop':'Latin','Cumbia':'Latin','Bachata':'Latin','Merengue':'Latin','Tango':'Latin','Samba':'Latin','Mariachi':'Latin','Norteño':'Latin','Corrido':'Latin','Latin Trap':'Latin',
+      // Country
+      'Country Rock':'Country','Outlaw Country':'Country','Alt Country':'Country','Honky Tonk':'Country','Country Pop':'Country','Americana Country':'Country','Nashville Sound':'Country','Bluegrass Country':'Country',
+      // Ambient / Chill
       'Chillout':'Ambient','Chillwave':'Ambient','Downtempo':'Ambient','New Age':'Ambient','Space Ambient':'Ambient','Vaporwave':'Ambient','Lo-Fi':'Ambient',
-      'Dub':'Reggae','Dancehall':'Reggae','Ska':'Reggae','Rocksteady':'Reggae','Soca':'Reggae','Calypso':'Reggae',
-      'Afrobeats':'Afrobeat','Amapiano':'Afrobeat','Highlife':'Afrobeat','Juju':'Afrobeat',
-      'Delta Blues':'Blues','Chicago Blues':'Blues','Blues Rock':'Blues','Rhythm & Blues':'Blues',
-      'World Music':'Other','Middle Eastern':'Other','Indian':'Other','Asian':'Other','Flamenco':'Other','Polka':'Other','Experimental':'Other','Noise':'Other'
+      'Chill':'Ambient','Lofi':'Ambient','LoFi':'Ambient','Chillhop':'Ambient','Ambient Electronic':'Ambient','Dark Ambient':'Ambient','Drone':'Ambient','Meditation':'Ambient',
+      // Reggae
+      'Dub':'Reggae','Dancehall':'Reggae','Ska':'Reggae','Rocksteady':'Reggae','Soca':'Reggae','Calypso':'Reggae','Lovers Rock':'Reggae','Roots Reggae':'Reggae',
+      // Afrobeat
+      'Afrobeats':'Afrobeat','Amapiano':'Afrobeat','Highlife':'Afrobeat','Juju':'Afrobeat','Afro Pop':'Afrobeat','Afro Fusion':'Afrobeat','Afropop':'Afrobeat',
+      // Blues
+      'Delta Blues':'Blues','Chicago Blues':'Blues','Blues Rock':'Blues','Rhythm & Blues':'Blues','Electric Blues':'Blues','Acoustic Blues':'Blues','Country Blues':'Blues',
+      // Punk (→ Rock)
+      'Punk':'Rock','Hardcore':'Rock','Post-Hardcore':'Rock','Pop Punk':'Rock','Ska Punk':'Rock','Hardcore Punk':'Rock','Crust Punk':'Rock','Anarcho-Punk':'Rock',
+      // Dark / Gothic (→ Electronic)
+      'Dark':'Electronic','Gothic':'Electronic','Goth':'Electronic','Dark Wave':'Electronic','Darkwave':'Electronic','EBM':'Electronic','Industrial Dance':'Electronic','Witch House':'Electronic',
+      // Gospel / Spiritual
+      'Gospel':'R&B / Soul','Christian':'R&B / Soul','Worship':'R&B / Soul','Spiritual':'R&B / Soul','CCM':'R&B / Soul',
+      // Other
+      'World Music':'Other','Middle Eastern':'Other','Indian':'Other','Asian':'Other','Flamenco':'Other','Polka':'Other','Experimental':'Other','Noise':'Other','Spoken Word':'Other','Podcast':'Other','Comedy':'Other','ASMR':'Other','Progressive':'Rock'
     };
+
+    // Build case-insensitive genre lookup
+    const _genreLookup = {};
+    Object.entries(GENRE_PARENTS).forEach(([sub, parent]) => { _genreLookup[sub.toLowerCase().trim()] = parent; });
+    function resolveGenre(g) {
+      if (!g) return 'Other';
+      const key = g.trim();
+      // Exact match first (parent genres map to themselves)
+      const parents = ['Pop','Rock','Hip-Hop','Electronic','R&B / Soul','Funk','Metal','Jazz','Classical','Cinematic','Indie / Folk','Latin','Country','Ambient','Reggae','Afrobeat','Blues','Other'];
+      if (parents.includes(key)) return key;
+      // Case-insensitive lookup
+      const lower = key.toLowerCase();
+      if (_genreLookup[lower]) return _genreLookup[lower];
+      // Partial match — check if genre contains a known parent
+      for (const p of parents) {
+        if (lower.includes(p.toLowerCase())) return p;
+      }
+      return key;
+    }
 
     // Group by parent genre
     const genreMap = {};
     sorted.forEach(t => {
-      const g = t.genre || 'Other';
-      const parent = GENRE_PARENTS[g] || g;
+      const parent = resolveGenre(t.genre);
       if (!genreMap[parent]) genreMap[parent] = [];
       genreMap[parent].push(t);
     });
