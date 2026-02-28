@@ -302,32 +302,42 @@
         }
       } catch(e) { console.warn('Could not refresh auth users:', e); }
 
-      // Fetch all tracks (paginate past 1000 limit) — only needed fields
+      // Fetch tracks, comments and messages in parallel
       const TRACK_FIELDS = 'id,title,user_id,tool,genre,avg_rating,rating_count,created_at';
-      allTracks = [];
-      let offset = 0;
-      while (true) {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/tracks?select=${TRACK_FIELDS}&order=created_at.desc&offset=${offset}&limit=1000`, { headers: headers() });
-        const batch = await res.json();
-        allTracks = allTracks.concat(batch);
-        if (batch.length < 1000) break;
-        offset += 1000;
-      }
+      
+      const [tracksResult, commentsResult, messagesRes] = await Promise.all([
+        // Tracks
+        (async () => {
+          let result = [];
+          let off = 0;
+          while (true) {
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/tracks?select=${TRACK_FIELDS}&order=created_at.desc&offset=${off}&limit=1000`, { headers: headers() });
+            const batch = await res.json();
+            result = result.concat(batch);
+            if (batch.length < 1000) break;
+            off += 1000;
+          }
+          return result;
+        })(),
+        // Comments
+        (async () => {
+          let result = [];
+          let off = 0;
+          while (true) {
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/comments?select=id,content,author_name,user_id,track_id,created_at,tracks(title)&order=created_at.desc&offset=${off}&limit=1000`, { headers: headers() });
+            const batch = await res.json();
+            result = result.concat(batch);
+            if (batch.length < 1000) break;
+            off += 1000;
+          }
+          return result;
+        })(),
+        // Messages
+        fetch(`${SUPABASE_URL}/rest/v1/contact_messages?select=*&order=created_at.desc`, { headers: headers() })
+      ]);
 
-      // Fetch comments and messages in parallel (paginate comments)
-      const messagesPromise = fetch(`${SUPABASE_URL}/rest/v1/contact_messages?select=*&order=created_at.desc`, { headers: headers() });
-
-      allComments = [];
-      offset = 0;
-      while (true) {
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/comments?select=id,content,author_name,user_id,track_id,created_at,tracks(title)&order=created_at.desc&offset=${offset}&limit=1000`, { headers: headers() });
-        const batch = await res.json();
-        allComments = allComments.concat(batch);
-        if (batch.length < 1000) break;
-        offset += 1000;
-      }
-
-      const messagesRes = await messagesPromise;
+      allTracks = tracksResult;
+      allComments = commentsResult;
       allMessages = await messagesRes.json();
 
       rebuildUserMap();
@@ -346,9 +356,6 @@
       document.getElementById('sAvg').textContent = avgRating;
 
       renderTab('users');
-      renderTab('tracks');
-      renderTab('comments');
-      renderTab('messages');
 
     } catch(err) {
       console.error('Load error:', err);
@@ -394,7 +401,7 @@
       </table></div>` + buildPagination('users', total);
     }
 
-    if (tab === 'tracks') {
+    else if (tab === 'tracks') {
       let tracks = [...allTracks];
       if (q) tracks = tracks.filter(t =>
         (t.title || '').toLowerCase().includes(q) ||
@@ -430,7 +437,7 @@
       </table></div>` + buildPagination('tracks', total);
     }
 
-    if (tab === 'comments') {
+    else if (tab === 'comments') {
       let comments = [...allComments];
       if (q) comments = comments.filter(c =>
         (c.content || '').toLowerCase().includes(q) ||
@@ -462,7 +469,7 @@
       </table></div>` + buildPagination('comments', total);
     }
 
-    if (tab === 'messages') {
+    else if (tab === 'messages') {
       let messages = [...allMessages];
       if (q) messages = messages.filter(m =>
         (m.name || '').toLowerCase().includes(q) ||
