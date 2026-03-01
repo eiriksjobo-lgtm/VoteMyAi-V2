@@ -996,7 +996,6 @@ function updateNowPlaying(track) {
   document.getElementById('npGenre').textContent = track.genre;
   document.getElementById('npPlatform').textContent = track.platform.toUpperCase();
   document.getElementById('npRating').textContent = track.avg_rating ? track.avg_rating.toFixed(1) : '—';
-  document.getElementById('npVotes').textContent = track.num_ratings || 0;
   document.getElementById('timeDuration').textContent =
     track.duration_seconds ? formatTime(track.duration_seconds) : '—';
   document.getElementById('timeElapsed').textContent = '0:00';
