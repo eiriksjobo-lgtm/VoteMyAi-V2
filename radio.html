@@ -80,6 +80,7 @@ body {
 .container {
   max-width: 600px; margin: 0 auto; padding: 20px;
   min-height: 100vh; display: flex; flex-direction: column;
+  overflow-anchor: none;
 }
 
 /* Header */
@@ -178,8 +179,13 @@ body {
 /* Artist Note */
 .artist-note {
   background: var(--surface2); border-left: 3px solid var(--accent2);
-  padding: 14px 16px; border-radius: 0 12px 12px 0;
-  margin-top: 16px; display: none;
+  padding: 0 16px; border-radius: 0 12px 12px 0;
+  margin-top: 0; max-height: 0; overflow: hidden; opacity: 0;
+  transition: all 0.4s ease;
+}
+.artist-note.visible {
+  padding: 14px 16px; margin-top: 16px;
+  max-height: 200px; opacity: 1;
 }
 .artist-note .label {
   font-size: 0.7rem; color: var(--accent2);
@@ -197,7 +203,17 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 20px; padding: 24px;
-  margin-bottom: 20px; display: none;
+  margin-bottom: 20px;
+  opacity: 0;
+  max-height: 0; overflow: hidden;
+  transition: opacity 0.4s ease, max-height 0.4s ease, padding 0.4s ease, margin 0.4s ease;
+  padding: 0 24px; margin-bottom: 0;
+}
+.host-msg.visible {
+  opacity: 1;
+  max-height: 300px;
+  padding: 24px;
+  margin-bottom: 20px;
 }
 .host-msg .host-header {
   display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
@@ -602,6 +618,12 @@ async function startRadio() {
   document.getElementById('statusText').textContent = 'LIVE';
   isPlaying = true;
   currentTrackIndex = -1;
+
+  // Preload TTS voices (Chrome loads them async)
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.getVoices();
+  }
+
   playNext();
 }
 
@@ -615,25 +637,66 @@ function playNext() {
 
   const track = schedule[currentTrackIndex];
 
-  // Show host intro
-  showHostMessage(track);
+  // Show host intro and speak it
+  const introText = showHostMessage(track);
 
-  // After a brief delay (simulating TTS), play the track
-  // In production: play actual TTS audio clip, then onended -> playTrack
-  setTimeout(() => {
-    playTrack(track);
-  }, 2000); // 2s simulated host intro
+  // Use Web Speech API for AI host voice
+  if ('speechSynthesis' in window) {
+    // Cancel any ongoing speech
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(introText);
+    utterance.rate = 1.05;
+    utterance.pitch = 1.0;
+    utterance.volume = document.getElementById('volumeSlider').value / 100;
+
+    // Try to pick a good English voice
+    const voices = window.speechSynthesis.getVoices();
+    const preferred = voices.find(v =>
+      v.name.includes('Google') && v.lang.startsWith('en')
+    ) || voices.find(v =>
+      v.lang.startsWith('en') && v.name.includes('Female')
+    ) || voices.find(v => v.lang.startsWith('en'));
+    if (preferred) utterance.voice = preferred;
+
+    utterance.onend = () => {
+      playTrack(track);
+    };
+    utterance.onerror = () => {
+      // Fallback: just play after short delay
+      setTimeout(() => playTrack(track), 500);
+    };
+
+    // Small pause before speaking for dramatic effect
+    setTimeout(() => {
+      window.speechSynthesis.speak(utterance);
+    }, 400);
+
+    // Safety fallback: if speech takes longer than 20s, play anyway
+    setTimeout(() => {
+      if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.cancel();
+        playTrack(track);
+      }
+    }, 20000);
+  } else {
+    // No speech synthesis — play after short delay
+    setTimeout(() => playTrack(track), 1500);
+  }
 }
 
 function showHostMessage(track) {
   const msg = generateHostIntro(track);
+  const el = document.getElementById('hostMsg');
   document.getElementById('hostText').textContent = msg;
-  document.getElementById('hostMsg').style.display = 'block';
+  el.classList.add('visible');
 
-  // Auto-hide after track starts
+  // Smooth hide after track starts
   setTimeout(() => {
-    document.getElementById('hostMsg').style.display = 'none';
-  }, 8000);
+    el.classList.remove('visible');
+  }, 12000);
+
+  return msg; // Return for TTS
 }
 
 function playTrack(track) {
@@ -777,12 +840,23 @@ function playSoundCloudTrack(track) {
 }
 
 // --- On Track Ended (Central Flow) ---
+let isTransitioning = false;
 function onTrackEnded() {
+  if (isTransitioning) return; // Debounce
+  isTransitioning = true;
+
   if (progressInterval) clearInterval(progressInterval);
   clearFallbackTimer();
   document.getElementById('progressBar').style.width = '0%';
+
   if (isPlaying) {
-    playNext();
+    // Small delay to prevent rapid-fire transitions
+    setTimeout(() => {
+      isTransitioning = false;
+      playNext();
+    }, 300);
+  } else {
+    isTransitioning = false;
   }
 }
 
@@ -790,12 +864,14 @@ function onTrackEnded() {
 function stopAllPlayers() {
   clearFallbackTimer();
 
-  // Stop <audio>
+  // Stop <audio> — use pause + removeAttribute to avoid layout thrash
   const audio = document.getElementById('audioPlayer');
   audio.pause();
   audio.onended = null;
   audio.ontimeupdate = null;
-  audio.src = '';
+  audio.onerror = null;
+  audio.removeAttribute('src');
+  audio.load(); // reset without triggering visible changes
 
   // Stop YouTube
   if (ytPlayer && ytPlayer.stopVideo) {
@@ -825,9 +901,9 @@ function updateNowPlaying(track) {
   const noteEl = document.getElementById('artistNote');
   if (track.artist_note) {
     document.getElementById('artistNoteText').textContent = track.artist_note;
-    noteEl.style.display = 'block';
+    noteEl.classList.add('visible');
   } else {
-    noteEl.style.display = 'none';
+    noteEl.classList.remove('visible');
   }
 }
 
@@ -872,6 +948,8 @@ function updatePlayButton(playing) {
 function togglePlay() {
   if (isPlaying) {
     isPlaying = false;
+    // Cancel any TTS
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     // Pause current player
     const audio = document.getElementById('audioPlayer');
     if (!audio.paused) audio.pause();
@@ -899,6 +977,7 @@ function togglePlay() {
 }
 
 function skipTrack() {
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
   onTrackEnded();
 }
 
