@@ -386,16 +386,15 @@ body {
       <h1>VoteMyAI <span>Radio</span></h1>
     </div>
 
-    <!-- Host Message -->
+    <!-- Host Speaking Indicator -->
     <div class="host-msg" id="hostMsg">
       <div class="host-header">
         <div class="host-avatar">🎙️</div>
         <div>
           <div class="host-name">DJ VoteBot</div>
-          <div class="host-role">AI HOST</div>
+          <div class="host-role">SPEAKING...</div>
         </div>
       </div>
-      <div class="host-text" id="hostText"></div>
     </div>
 
     <!-- Now Playing -->
@@ -407,7 +406,6 @@ body {
       </div>
       <div class="np-stats">
         <div class="np-stat">⭐ <span class="val" id="npRating">—</span></div>
-        <div class="np-stat">🗳️ <span class="val" id="npVotes">—</span> votes</div>
       </div>
       <div class="progress-wrap">
         <div class="progress-bar" id="progressBar"></div>
@@ -559,20 +557,20 @@ async function fetchSchedule() {
 }
 
 // --- Host personality lines ---
-function generateHostIntro(track, nextTrack) {
-  const stars = track.avg_rating ? track.avg_rating.toFixed(1) : '?';
-  const ratings = track.num_ratings || 0;
-  const note = track.artist_note ? track.artist_note : null;
+function generateHostIntro(track) {
+  const stars = track.avg_rating ? track.avg_rating.toFixed(1) : null;
+  const note = track.artist_note || null;
+  const ratingStr = stars ? `, rated ${stars} stars` : '';
   const noteStr = note ? ` The artist says: "${note}"` : '';
 
   const intros = [
-    `Yo what's good! Next up we got "${track.title}" — a ${track.genre} track sitting at ${stars} stars from ${ratings} blind votes.${noteStr} Let's see if it hits different...`,
-    `Alright alright, keep it locked! This one's called "${track.title}", ${track.genre} vibes all the way. ${ratings} people rated this and gave it ${stars} stars.${noteStr} Here we go!`,
-    `Oooh, this next one — "${track.title}", ${track.genre}, currently rated ${stars} by ${ratings} listeners.${noteStr} You be the judge!`,
-    `Switching it up! "${track.title}" coming at you in the ${track.genre} lane. ${stars} stars, ${ratings} ratings on VoteMyAI.${noteStr} Let's gooo!`,
-    `Oh snap, we got "${track.title}" — pure ${track.genre} energy! The community gave this ${stars} stars from ${ratings} blind votes.${noteStr} No clout bias here, just vibes!`,
-    `This is VoteMyAI Radio and you're about to hear "${track.title}" — ${track.genre} all day! Rated ${stars} by ${ratings} listeners.${noteStr} Turn it up!`,
-    `New one spinning up — "${track.title}", straight ${track.genre}. The people have spoken: ${stars} stars from ${ratings} votes.${noteStr} Let the music do the talking!`,
+    `Next up, "${track.title}" — ${track.genre}${ratingStr}.${noteStr} Here we go!`,
+    `Keep it locked! "${track.title}", pure ${track.genre}${ratingStr}.${noteStr}`,
+    `Coming in hot — "${track.title}", ${track.genre} vibes${ratingStr}.${noteStr} Let's hear it!`,
+    `Switching it up! "${track.title}" in the ${track.genre} lane${ratingStr}.${noteStr}`,
+    `"${track.title}" — ${track.genre}${ratingStr}.${noteStr} No clout bias, just vibes!`,
+    `This is VoteMyAI Radio. "${track.title}", ${track.genre}${ratingStr}.${noteStr}`,
+    `New one spinning — "${track.title}", ${track.genre}${ratingStr}.${noteStr}`,
   ];
   return intros[Math.floor(Math.random() * intros.length)];
 }
@@ -617,13 +615,39 @@ async function startRadio() {
     return;
   }
 
-  document.getElementById('statusText').textContent = 'LIVE';
+  document.getElementById('statusText').textContent = 'LOADING...';
   isPlaying = true;
   currentTrackIndex = -1;
 
-  // Preload TTS voices (Chrome loads them async via event)
+  // Preload TTS voices
   await loadVoices();
 
+  // Pre-validate all Suno tracks — remove broken ones BEFORE radio starts
+  document.getElementById('statusText').textContent = 'CHECKING TRACKS...';
+  console.log(`🔍 Validating ${schedule.length} tracks...`);
+  const validated = [];
+  for (const track of schedule) {
+    if (track.platform === 'suno' && track.audio_url) {
+      const ok = await testAudioUrl(track.audio_url);
+      if (ok) {
+        validated.push(track);
+      } else {
+        console.log(`❌ Removed broken: "${track.title}"`);
+      }
+    } else if (track.youtube_id || track.soundcloud_url) {
+      validated.push(track);
+    }
+  }
+  schedule = validated;
+  console.log(`✅ ${schedule.length} playable tracks confirmed`);
+
+  if (schedule.length === 0) {
+    document.getElementById('statusText').textContent = 'NO TRACKS';
+    alert('No working tracks found!');
+    return;
+  }
+
+  document.getElementById('statusText').textContent = 'LIVE';
   playNext();
 }
 
@@ -715,43 +739,12 @@ function speakText(text) {
 
 // --- Core Playback Flow ---
 async function playNext() {
-  // Find next playable track (skip broken ones silently)
-  let track = null;
-  let attempts = 0;
-  const maxAttempts = schedule.length;
-
-  while (attempts < maxAttempts) {
-    currentTrackIndex++;
-    if (currentTrackIndex >= schedule.length) {
-      currentTrackIndex = 0;
-    }
-    attempts++;
-
-    const candidate = schedule[currentTrackIndex];
-
-    // For Suno tracks: verify the audio URL works before committing
-    if (candidate.audio_url && candidate.platform === 'suno') {
-      const works = await testAudioUrl(candidate.audio_url);
-      if (works) {
-        track = candidate;
-        break;
-      } else {
-        console.log(`⏭️ Skipping broken track: "${candidate.title}" (403/404)`);
-        continue;
-      }
-    } else if (candidate.youtube_id || candidate.soundcloud_url) {
-      // YT/SC — harder to pre-test, just try them
-      track = candidate;
-      break;
-    }
+  currentTrackIndex++;
+  if (currentTrackIndex >= schedule.length) {
+    currentTrackIndex = 0;
   }
 
-  if (!track) {
-    console.error('📻 No playable tracks found after checking all!');
-    document.getElementById('statusText').textContent = 'NO TRACKS';
-    return;
-  }
-
+  const track = schedule[currentTrackIndex];
   console.log(`📻 Now playing [${currentTrackIndex + 1}/${schedule.length}]: "${track.title}" (${track.platform})`);
 
   // Show host intro and speak it
@@ -762,51 +755,45 @@ async function playNext() {
   // Speak the intro, then play the track
   await speakText(introText);
 
-  console.log('📻 TTS finished, now calling playTrack for:', track.title, 'platform:', track.platform);
+  console.log('📻 TTS finished, now playing:', track.title);
+
+  // Hide host speaking indicator
+  document.getElementById('hostMsg').classList.remove('visible');
 
   if (isPlaying) {
     playTrack(track);
   }
 }
 
-// Test if an audio URL is accessible (HEAD request)
-function testAudioUrl(url) {
-  return new Promise(resolve => {
-    const audio = new Audio();
-    audio.preload = 'metadata';
-
-    const timeout = setTimeout(() => {
-      audio.src = '';
-      resolve(false);
-    }, 4000);
-
-    audio.onloadedmetadata = () => {
-      clearTimeout(timeout);
-      audio.src = '';
-      resolve(true);
-    };
-
-    audio.onerror = () => {
-      clearTimeout(timeout);
-      resolve(false);
-    };
-
-    audio.src = url;
-  });
+// Test if an audio URL is accessible (fetch HEAD request)
+async function testAudioUrl(url) {
+  try {
+    const res = await fetch(url, { method: 'HEAD', mode: 'cors' });
+    return res.ok; // true for 200, false for 403/404/etc
+  } catch (e) {
+    // CORS might block HEAD — try with Audio element as fallback
+    return new Promise(resolve => {
+      const audio = new Audio();
+      const timeout = setTimeout(() => { resolve(false); }, 5000);
+      audio.oncanplaythrough = () => { clearTimeout(timeout); resolve(true); };
+      audio.onerror = () => { clearTimeout(timeout); resolve(false); };
+      audio.preload = 'auto';
+      audio.src = url;
+    });
+  }
 }
 
 function showHostMessage(track) {
   const msg = generateHostIntro(track);
   const el = document.getElementById('hostMsg');
-  document.getElementById('hostText').textContent = msg;
   el.classList.add('visible');
 
-  // Smooth hide after track starts
+  // Hide when TTS is done (will also be hidden by speakText completing)
   setTimeout(() => {
     el.classList.remove('visible');
   }, 12000);
 
-  return msg; // Return for TTS
+  return msg;
 }
 
 function playTrack(track) {
