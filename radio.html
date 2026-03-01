@@ -479,72 +479,82 @@ let progressInterval = null;
 let trackStartTime = 0;
 let scWidgetObj = null;
 
-// --- Mock Schedule (Replace with Supabase fetch) ---
-// This simulates what the radio_schedule table + tracks join would return
-const MOCK_SCHEDULE = [
-  {
-    id: 'mock-1',
-    title: 'Neon Drift',
-    genre: 'Electronic',
-    platform: 'suno',
-    artist_note: 'Made this while watching Blade Runner at 2am. The synths just happened.',
-    avg_rating: 4.3,
-    num_ratings: 52,
-    duration_seconds: 45, // short clips for testing
-    // For Suno: direct audio URL via CDN
-    audio_url: 'https://cdn1.suno.ai/demo-test.mp3', // placeholder
-    suno_id: 'demo-test',
-    embed_url: null,
-  },
-  {
-    id: 'mock-2',
-    title: 'Concrete Jungle Lullaby',
-    genre: 'Hip-Hop',
-    platform: 'youtube',
-    artist_note: 'NYC subway sounds + trap beats = this.',
-    avg_rating: 3.8,
-    num_ratings: 31,
-    duration_seconds: 180,
-    audio_url: null,
-    youtube_id: 'dQw4w9WgXcQ', // placeholder, replace with real track
-    embed_url: null,
-  },
-  {
-    id: 'mock-3',
-    title: 'Velvet Sunrise',
-    genre: 'R&B / Soul',
-    platform: 'suno',
-    artist_note: 'For everyone who\'s ever watched the sun come up alone.',
-    avg_rating: 4.7,
-    num_ratings: 89,
-    duration_seconds: 60,
-    audio_url: 'https://cdn1.suno.ai/demo-test2.mp3', // placeholder
-    suno_id: 'demo-test2',
-    embed_url: null,
-  },
-  {
-    id: 'mock-4',
-    title: 'Pixel Dreams',
-    genre: 'Ambient',
-    platform: 'soundcloud',
-    artist_note: 'Retro gaming vibes meet lo-fi beats.',
-    avg_rating: 4.1,
-    num_ratings: 44,
-    duration_seconds: 200,
-    audio_url: null,
-    soundcloud_url: 'https://soundcloud.com/placeholder/track', // placeholder
-    embed_url: null,
-  },
-];
+// --- Supabase Config ---
+const SUPABASE_URL = 'https://gezijezmsecbtzytotax.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlemlqZXptc2VjYnR6eXRvdGF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0MDQxMDIsImV4cCI6MjA4Njk4MDEwMn0.4Ky7xz__U3bX5hFJJCYKlDptT29qsMQKbQk0KnPZODk';
+
+// Fetch tracks from Supabase and normalize for radio
+async function fetchSchedule() {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/tracks?select=*&order=avg_rating.desc&limit=100`,
+    { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+  );
+  const tracks = await res.json();
+
+  // Shuffle with weighted randomness (higher rated = more likely to be early)
+  const shuffled = tracks
+    .map(t => ({ ...t, sort: Math.random() * (t.avg_rating || 1) }))
+    .sort((a, b) => b.sort - a.sort);
+
+  return shuffled.map(t => {
+    // Extract platform-specific IDs from embed_url
+    const platform = (t.tool || '').toLowerCase();
+    let suno_id = null;
+    let youtube_id = t.yt_id || null;
+    let soundcloud_url = null;
+    let audio_url = null;
+
+    if (platform === 'suno' && t.embed_url) {
+      // Extract Suno ID: https://suno.com/song/12882a1a-aaaa-4f8b-bc5a-b305283e4b9d
+      const match = t.embed_url.match(/suno\.com\/song\/([a-f0-9-]+)/i);
+      if (match) {
+        suno_id = match[1];
+        audio_url = `https://cdn1.suno.ai/${suno_id}.mp3`;
+      }
+    } else if (platform === 'youtube' && !youtube_id && t.embed_url) {
+      const match = t.embed_url.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/);
+      if (match) youtube_id = match[1];
+    } else if (platform === 'soundcloud' && t.embed_url) {
+      soundcloud_url = t.embed_url;
+    } else if (platform === 'udio' && t.embed_url) {
+      // Udio: for now skip or use timer fallback
+      // Will add direct_audio_url support later
+    }
+
+    return {
+      id: t.id,
+      title: t.title || 'Untitled',
+      genre: t.genre || 'Unknown',
+      platform: platform,
+      artist_note: t.artist_note || null,
+      avg_rating: t.avg_rating || 0,
+      num_ratings: t.rating_count || 0,
+      votes: t.votes || 0,
+      thumbnail_url: t.thumbnail_url || null,
+      embed_url: t.embed_url || null,
+      audio_url: audio_url,
+      suno_id: suno_id,
+      youtube_id: youtube_id,
+      soundcloud_url: soundcloud_url,
+    };
+  }).filter(t => t.audio_url || t.youtube_id || t.soundcloud_url); // Only playable tracks
+}
 
 // --- Host personality lines ---
 function generateHostIntro(track, nextTrack) {
+  const stars = track.avg_rating ? track.avg_rating.toFixed(1) : '?';
+  const ratings = track.num_ratings || 0;
+  const note = track.artist_note ? track.artist_note : null;
+  const noteStr = note ? ` The artist says: "${note}"` : '';
+
   const intros = [
-    `Yo what's good! Next up we got "${track.title}" — a ${track.genre} track sitting at ${track.avg_rating} stars from ${track.num_ratings} votes. ${track.artist_note ? `The artist says: "${track.artist_note}"` : ''} Let's see if it hits different...`,
-    `Alright alright, keep it locked! This one's called "${track.title}", ${track.genre} vibes all the way. ${track.num_ratings} people rated this and gave it ${track.avg_rating} stars. ${track.artist_note ? `Artist note: "${track.artist_note}"` : ''} Here we go!`,
-    `Oooh, this next one is fire — or is it? "${track.title}", ${track.genre}, currently rated ${track.avg_rating} by ${track.num_ratings} listeners. ${track.artist_note ? `The creator wrote: "${track.artist_note}"` : ''} You be the judge!`,
-    `Switching it up! "${track.title}" coming at you in the ${track.genre} lane. ${track.avg_rating} stars, ${track.num_ratings} ratings on VoteMyAI. ${track.artist_note ? `Here's what the artist had to say: "${track.artist_note}"` : ''} Let's gooo!`,
-    `Oh snap, we got "${track.title}" — pure ${track.genre} energy! The community gave this ${track.avg_rating} stars from ${track.num_ratings} blind votes. ${track.artist_note ? `The artist left a note: "${track.artist_note}"` : ''} No clout bias here, just vibes!`,
+    `Yo what's good! Next up we got "${track.title}" — a ${track.genre} track sitting at ${stars} stars from ${ratings} blind votes.${noteStr} Let's see if it hits different...`,
+    `Alright alright, keep it locked! This one's called "${track.title}", ${track.genre} vibes all the way. ${ratings} people rated this and gave it ${stars} stars.${noteStr} Here we go!`,
+    `Oooh, this next one — "${track.title}", ${track.genre}, currently rated ${stars} by ${ratings} listeners.${noteStr} You be the judge!`,
+    `Switching it up! "${track.title}" coming at you in the ${track.genre} lane. ${stars} stars, ${ratings} ratings on VoteMyAI.${noteStr} Let's gooo!`,
+    `Oh snap, we got "${track.title}" — pure ${track.genre} energy! The community gave this ${stars} stars from ${ratings} blind votes.${noteStr} No clout bias here, just vibes!`,
+    `This is VoteMyAI Radio and you're about to hear "${track.title}" — ${track.genre} all day! Rated ${stars} by ${ratings} listeners.${noteStr} Turn it up!`,
+    `New one spinning up — "${track.title}", straight ${track.genre}. The people have spoken: ${stars} stars from ${ratings} votes.${noteStr} Let the music do the talking!`,
   ];
   return intros[Math.floor(Math.random() * intros.length)];
 }
@@ -566,18 +576,32 @@ document.getElementById('pwInput').addEventListener('keydown', e => {
 });
 
 // --- Start Radio (user interaction gate for autoplay) ---
-function startRadio() {
+async function startRadio() {
   document.getElementById('startOverlay').style.display = 'none';
-  document.getElementById('statusText').textContent = 'LIVE';
-  isPlaying = true;
+  document.getElementById('statusText').textContent = 'LOADING...';
 
   // Init SC Widget
   scWidgetObj = SC.Widget(document.getElementById('scWidget'));
 
-  // Load schedule (mock for now, replace with Supabase fetch)
-  schedule = [...MOCK_SCHEDULE];
-  currentTrackIndex = -1;
+  // Fetch real tracks from Supabase
+  try {
+    schedule = await fetchSchedule();
+    if (schedule.length === 0) {
+      document.getElementById('statusText').textContent = 'NO TRACKS';
+      alert('No playable tracks found in the database!');
+      return;
+    }
+    console.log(`📻 Radio loaded ${schedule.length} playable tracks`);
+  } catch (err) {
+    console.error('Failed to fetch schedule:', err);
+    document.getElementById('statusText').textContent = 'ERROR';
+    alert('Could not load tracks. Check console.');
+    return;
+  }
 
+  document.getElementById('statusText').textContent = 'LIVE';
+  isPlaying = true;
+  currentTrackIndex = -1;
   playNext();
 }
 
@@ -642,25 +666,52 @@ function playTrack(track) {
   updatePlayButton(true);
 }
 
+// --- Fallback timer (skips if track fails or hangs) ---
+let fallbackTimer = null;
+function setFallbackTimer(seconds) {
+  clearFallbackTimer();
+  const timeout = (seconds || 300) + 10; // track duration + 10s buffer, max 5min
+  fallbackTimer = setTimeout(() => {
+    console.warn('⏭️ Fallback timer triggered — skipping to next');
+    onTrackEnded();
+  }, timeout * 1000);
+}
+function clearFallbackTimer() {
+  if (fallbackTimer) { clearTimeout(fallbackTimer); fallbackTimer = null; }
+}
+
 // --- Platform Players ---
 
 function playSunoTrack(track) {
   const audio = document.getElementById('audioPlayer');
-  const url = track.direct_audio_url || track.audio_url ||
-    `https://cdn1.suno.ai/${track.suno_id}.mp3`;
+  const url = track.audio_url || track.direct_audio_url ||
+    (track.suno_id ? `https://cdn1.suno.ai/${track.suno_id}.mp3` : null);
+
+  if (!url) {
+    console.warn('No audio URL for track:', track.title);
+    setTimeout(() => onTrackEnded(), 500);
+    return;
+  }
+
   audio.src = url;
   audio.volume = document.getElementById('volumeSlider').value / 100;
   audio.play().catch(err => {
-    console.warn('Audio play failed:', err);
-    // Skip to next on error
+    console.warn('Audio play failed:', err, '— skipping');
     setTimeout(() => onTrackEnded(), 1000);
   });
 
   audio.onended = () => onTrackEnded();
+  audio.onerror = () => {
+    console.warn('Audio error for:', track.title, '— skipping');
+    setTimeout(() => onTrackEnded(), 1000);
+  };
   audio.ontimeupdate = () => updateProgress(audio.currentTime, audio.duration);
   audio.onloadedmetadata = () => {
     document.getElementById('timeDuration').textContent = formatTime(audio.duration);
+    setFallbackTimer(audio.duration);
   };
+  // Fallback if metadata never loads
+  setFallbackTimer(300);
 }
 
 function playYouTubeTrack(track) {
@@ -679,13 +730,22 @@ function playYouTubeTrack(track) {
       const current = ytPlayer.getCurrentTime();
       const duration = ytPlayer.getDuration();
       updateProgress(current, duration);
+      if (duration > 0 && !fallbackTimer) setFallbackTimer(duration);
     }
   }, 500);
+
+  // Fallback in case YT never reports duration
+  setFallbackTimer(360);
 }
 
 function playSoundCloudTrack(track) {
-  const iframe = document.getElementById('scWidget');
   const scUrl = track.soundcloud_url || track.embed_url;
+
+  if (!scUrl || !scWidgetObj) {
+    console.warn('No SC URL or widget, skipping');
+    setTimeout(() => onTrackEnded(), 500);
+    return;
+  }
 
   scWidgetObj.load(scUrl, {
     auto_play: true,
@@ -703,6 +763,7 @@ function playSoundCloudTrack(track) {
   scWidgetObj.bind(SC.Widget.Events.PLAY_PROGRESS, (data) => {
     scWidgetObj.getDuration(duration => {
       updateProgress(data.currentPosition / 1000, duration / 1000);
+      if (duration > 0 && !fallbackTimer) setFallbackTimer(duration / 1000);
     });
   });
 
@@ -710,11 +771,15 @@ function playSoundCloudTrack(track) {
     console.warn('SC Widget error, skipping');
     onTrackEnded();
   });
+
+  // Fallback
+  setFallbackTimer(360);
 }
 
 // --- On Track Ended (Central Flow) ---
 function onTrackEnded() {
   if (progressInterval) clearInterval(progressInterval);
+  clearFallbackTimer();
   document.getElementById('progressBar').style.width = '0%';
   if (isPlaying) {
     playNext();
@@ -723,6 +788,8 @@ function onTrackEnded() {
 
 // --- Stop All Players ---
 function stopAllPlayers() {
+  clearFallbackTimer();
+
   // Stop <audio>
   const audio = document.getElementById('audioPlayer');
   audio.pause();
@@ -747,8 +814,8 @@ function updateNowPlaying(track) {
   document.getElementById('npTitle').textContent = track.title;
   document.getElementById('npGenre').textContent = track.genre;
   document.getElementById('npPlatform').textContent = track.platform.toUpperCase();
-  document.getElementById('npRating').textContent = track.avg_rating.toFixed(1);
-  document.getElementById('npVotes').textContent = track.num_ratings;
+  document.getElementById('npRating').textContent = track.avg_rating ? track.avg_rating.toFixed(1) : '—';
+  document.getElementById('npVotes').textContent = track.num_ratings || 0;
   document.getElementById('timeDuration').textContent =
     track.duration_seconds ? formatTime(track.duration_seconds) : '—';
   document.getElementById('timeElapsed').textContent = '0:00';
