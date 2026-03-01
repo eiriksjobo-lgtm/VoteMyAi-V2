@@ -710,40 +710,46 @@ function genreDiverseShuffle(tracks) {
 function generateHostIntro(track) {
   const stars = track.avg_rating ? track.avg_rating.toFixed(1) : null;
   const note = track.artist_note || null;
-  const genre = track.genre || 'unknown genre';
+  const genre = track.genre || 'whatever this is';
 
   let ratingRoast = '';
   if (stars) {
     const s = parseFloat(stars);
-    if (s >= 4.5) ratingRoast = `${stars} stars. Yeah, the people have spoken, and apparently they have terrible taste.`;
-    else if (s >= 4.0) ratingRoast = `Sitting at ${stars} stars. Not bad. Not good either, but not bad.`;
-    else if (s >= 3.5) ratingRoast = `${stars} stars. That's a solid... meh.`;
-    else if (s >= 3.0) ratingRoast = `${stars} stars. Ouch. The community did NOT hold back on this one.`;
-    else ratingRoast = `${stars} stars. That's rough buddy. Real rough.`;
+    if (s >= 4.5) ratingRoast = `${stars} stars. Wow. The bar is literally on the floor and this barely cleared it.`;
+    else if (s >= 4.0) ratingRoast = `${stars} stars. Which in AI music terms means it's almost listenable. Almost.`;
+    else if (s >= 3.5) ratingRoast = `${stars} stars. Mediocrity has entered the chat. Give it a round of applause, everyone.`;
+    else if (s >= 3.0) ratingRoast = `${stars} stars. Yikes. Even the algorithm that made this is embarrassed right now.`;
+    else ratingRoast = `${stars} stars. I'm not even mad, I'm impressed. It takes real talent to be rated this low.`;
   }
 
   let noteRoast = '';
   if (note) {
     const reactions = [
-      `The artist wrote a note: "${note}". Sure buddy. Sure.`,
-      `Artist note says: "${note}". I mean, okay? Nobody asked, but okay.`,
-      `And I quote the artist: "${note}". The confidence. I respect it.`,
-      `The artist left a message: "${note}". Bold move.`,
+      `Oh, and the artist left a little love letter: "${note}". Adorable. Wrong, but adorable.`,
+      `The artist says, and I quote: "${note}". Imagine having that much confidence with this little talent.`,
+      `Artist note: "${note}". Buddy, the song should be doing the talking. And right now it's begging for mercy.`,
+      `Get this — the artist wrote: "${note}". I swear these people think they're making history. You're making noise, sweetheart.`,
+      `Note from the creator: "${note}". Look, I respect the hustle. I don't respect the output, but I respect the hustle.`,
+      `The artist wants you to know: "${note}". Thanks for sharing. Now please stop sharing.`,
     ];
     noteRoast = ' ' + reactions[Math.floor(Math.random() * reactions.length)];
   }
 
   const intros = [
-    `Alright, buckle up. Next is "${track.title}". ${genre}. ${ratingRoast}${noteRoast} Here we go.`,
-    `Oh boy, here comes "${track.title}". ${genre}, because of course it is. ${ratingRoast}${noteRoast}`,
-    `Next on VoteMyAI Radio — "${track.title}". ${genre}. I don't make the playlist, I just judge it. ${ratingRoast}${noteRoast}`,
-    `"${track.title}" is up. ${genre}. You can't skip, this is live radio baby! ${ratingRoast}${noteRoast}`,
-    `This is VoteMyAI Radio, where AI makes the music and humans pretend to enjoy it. "${track.title}", ${genre}. ${ratingRoast}${noteRoast}`,
-    `Somebody submitted "${track.title}". ${genre}. No clout bias here — just blind, questionable judgment. ${ratingRoast}${noteRoast}`,
-    `Welcome back. Did you miss me? No? Too bad. Here's "${track.title}", ${genre}. ${ratingRoast}${noteRoast}`,
-    `Breaking news on VoteMyAI Radio: "${track.title}" exists. ${genre}. ${ratingRoast}${noteRoast} Democracy at its finest.`,
-    `"${track.title}". ${genre}. Someone spent actual time prompting an AI to make this. What a world. ${ratingRoast}${noteRoast}`,
-    `Don't touch that dial! "${track.title}", ${genre}. ${ratingRoast}${noteRoast}`,
+    `Oh god, here we go again. "${track.title}". ${genre}. I didn't choose this life, but here we are. ${ratingRoast}${noteRoast}`,
+    `Alright, whoever submitted "${track.title}" — we need to talk. ${genre}. ${ratingRoast}${noteRoast} I'm not angry, I'm disappointed.`,
+    `Ladies and gentlemen, I am legally obligated to play "${track.title}". ${genre}. ${ratingRoast}${noteRoast} My therapist will hear about this.`,
+    `Next up is "${track.title}" and honestly? I need a raise. ${genre}. ${ratingRoast}${noteRoast} This is what I get for being an AI.`,
+    `"${track.title}". ${genre}. You know what the worst part is? You can't skip this. You're trapped here. With me. And this song. ${ratingRoast}${noteRoast}`,
+    `Breaking news: "${track.title}" just dropped on VoteMyAI Radio and I am already filing a complaint. ${genre}. ${ratingRoast}${noteRoast}`,
+    `This is VoteMyAI Radio, the only station where the DJ openly hates the playlist. Next: "${track.title}". ${genre}. ${ratingRoast}${noteRoast}`,
+    `I want everyone to close their eyes and imagine a world where "${track.title}" was never created. Beautiful, right? Too bad. ${genre}. ${ratingRoast}${noteRoast}`,
+    `Oh fantastic. "${track.title}". ${genre}. Made by a robot, submitted by a human, suffered through by all of us. ${ratingRoast}${noteRoast} We're all in this together.`,
+    `Someone woke up today and thought: you know what the world needs? "${track.title}". ${genre}. They were wrong. ${ratingRoast}${noteRoast}`,
+    `If "${track.title}" was a person, I would avoid eye contact with it at a party. ${genre}. ${ratingRoast}${noteRoast} But sure, let's play it.`,
+    `Welcome back to VoteMyAI Radio, where dreams go to be rated 3 stars. Next: "${track.title}". ${genre}. ${ratingRoast}${noteRoast}`,
+    `I've been doing this for hours and somehow "${track.title}" still found its way into my queue. ${genre}. ${ratingRoast}${noteRoast} There is no escape.`,
+    `Fun fact: I am a machine with no feelings. And yet, "${track.title}" makes me wish I could feel pain, just so I could describe this experience accurately. ${genre}. ${ratingRoast}${noteRoast}`,
   ];
   return intros[Math.floor(Math.random() * intros.length)];
 }
