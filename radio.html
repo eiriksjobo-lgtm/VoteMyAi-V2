@@ -504,7 +504,7 @@ async function fetchSchedule() {
     .map(t => ({ ...t, sort: Math.random() * (t.avg_rating || 1) }))
     .sort((a, b) => b.sort - a.sort);
 
-  return shuffled.map(t => {
+  const mapped = shuffled.map(t => {
     // Extract platform-specific IDs from embed_url
     const platform = (t.tool || '').toLowerCase();
     let suno_id = null;
@@ -563,10 +563,37 @@ async function fetchSchedule() {
     };
   }).filter(t => {
     // Only include tracks with direct audio (Suno CDN mp3)
-    // YouTube/SoundCloud/Udio disabled — can't pre-verify, causes failed intros
-    // Re-enable when direct_audio_url is populated for these tracks
     return !!t.audio_url;
   });
+
+  // Genre-diverse reorder: never play same genre twice in a row
+  // Also avoids same title back-to-back (duplicate submissions)
+  const reordered = [];
+  const remaining = [...mapped];
+  let lastGenre = '';
+  let lastTitle = '';
+
+  while (remaining.length > 0) {
+    // Find a track with a different genre AND different title
+    let idx = remaining.findIndex(t => 
+      t.genre.toLowerCase() !== lastGenre.toLowerCase() && 
+      t.title.toLowerCase() !== lastTitle.toLowerCase()
+    );
+    // Fallback: just different title
+    if (idx === -1) idx = remaining.findIndex(t => 
+      t.title.toLowerCase() !== lastTitle.toLowerCase()
+    );
+    // Last resort: take whatever's left
+    if (idx === -1) idx = 0;
+
+    const track = remaining.splice(idx, 1)[0];
+    reordered.push(track);
+    lastGenre = track.genre;
+    lastTitle = track.title;
+  }
+
+  console.log(`📻 Genre-diverse schedule: ${reordered.length} tracks`);
+  return reordered;
 }
 
 // --- Host personality lines ---
