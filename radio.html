@@ -553,7 +553,11 @@ async function fetchSchedule() {
       youtube_id: youtube_id,
       soundcloud_url: soundcloud_url,
     };
-  }).filter(t => t.audio_url || t.youtube_id || t.soundcloud_url); // Only playable tracks
+  }).filter(t => {
+    // Only include playable tracks (exclude Udio for now)
+    if (t.platform === 'udio') return false;
+    return t.audio_url || t.youtube_id || t.soundcloud_url;
+  });
 }
 
 // --- Host personality lines ---
