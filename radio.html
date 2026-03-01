@@ -512,32 +512,44 @@ async function fetchSchedule() {
     let soundcloud_url = null;
     let audio_url = null;
 
-    if (platform === 'suno' && t.embed_url) {
-      // Extract Suno ID: https://suno.com/song/12882a1a-aaaa-4f8b-bc5a-b305283e4b9d
-      const match = t.embed_url.match(/suno\.com\/song\/([a-f0-9-]+)/i);
-      if (match) {
+    // Detect platform from ACTUAL URL content, not the tool field
+    // This handles cases where tool="Suno" but embed_url is actually YouTube
+    if (t.embed_url) {
+      const url = t.embed_url;
+
+      if (url.match(/suno\.com\/song\/([a-f0-9-]+)/i)) {
+        // Suno song URL
+        const match = url.match(/suno\.com\/song\/([a-f0-9-]+)/i);
         suno_id = match[1];
         audio_url = `https://cdn1.suno.ai/${suno_id}.mp3`;
-      }
-    } else if ((platform === 'youtube' || (!youtube_id && t.embed_url && t.embed_url.match(/youtu/))) && t.embed_url) {
-      const match = t.embed_url.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/);
-      if (match) youtube_id = match[1];
-    } else if ((platform === 'soundcloud' || (!soundcloud_url && t.embed_url && t.embed_url.includes('soundcloud'))) && t.embed_url) {
-      soundcloud_url = t.embed_url;
-    } else if (t.embed_url && t.embed_url.match(/suno\.com\/song\//)) {
-      // "Other" or "Gemini" platform but embed_url is Suno
-      const match = t.embed_url.match(/suno\.com\/song\/([a-f0-9-]+)/i);
-      if (match) {
-        suno_id = match[1];
-        audio_url = `https://cdn1.suno.ai/${suno_id}.mp3`;
+      } else if (url.match(/youtu\.?be/)) {
+        // YouTube URL (youtu.be or youtube.com)
+        const match = url.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/);
+        if (match) youtube_id = match[1];
+      } else if (url.includes('soundcloud.com')) {
+        // SoundCloud URL
+        soundcloud_url = url;
+      } else if (url.match(/udio\.com/)) {
+        // Udio — skip for now
       }
     }
+
+    // Also check yt_id field as fallback
+    if (!youtube_id && t.yt_id) {
+      youtube_id = t.yt_id;
+    }
+
+    // Determine actual platform from what we found
+    let actualPlatform = platform;
+    if (audio_url && suno_id) actualPlatform = 'suno';
+    else if (youtube_id) actualPlatform = 'youtube';
+    else if (soundcloud_url) actualPlatform = 'soundcloud';
 
     return {
       id: t.id,
       title: t.title || 'Untitled',
       genre: t.genre || 'Unknown',
-      platform: platform,
+      platform: actualPlatform,
       artist_note: t.artist_note || null,
       avg_rating: t.avg_rating || 0,
       num_ratings: t.rating_count || 0,
