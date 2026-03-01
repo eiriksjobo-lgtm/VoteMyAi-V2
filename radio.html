@@ -1066,11 +1066,10 @@ async function playVerifiedTrack(track) {
   stopAllPlayers();
 
   if (track.platform === 'suno' && track.audio_url) {
-    // Transfer buffered audio to the main player
+    // Play using direct audio URL
     const audio = document.getElementById('audioPlayer');
-    audio.src = bufferAudio.src;
+    audio.src = track.audio_url;
     audio.volume = document.getElementById('volumeSlider').value / 100;
-    audio.currentTime = 0;
 
     audio.onended = () => onTrackEnded();
     audio.onerror = () => {
@@ -1327,6 +1326,12 @@ function stopAllPlayers() {
   audio.onerror = null;
   audio.removeAttribute('src');
   audio.load(); // reset without triggering visible changes
+
+  // Stop buffer audio too
+  try {
+    bufferAudio.pause();
+    bufferAudio.removeAttribute('src');
+  } catch (e) {}
 
   // Stop YouTube
   if (ytPlayer && ytPlayer.stopVideo) {
