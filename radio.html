@@ -562,8 +562,9 @@ async function fetchSchedule() {
       soundcloud_url: soundcloud_url,
     };
   }).filter(t => {
-    // Only include playable tracks (exclude Udio for now)
+    // Exclude Udio (no direct audio support yet)
     if (t.platform === 'udio') return false;
+    // Must have some playable source
     return t.audio_url || t.youtube_id || t.soundcloud_url;
   });
 }
@@ -956,12 +957,23 @@ function clearFallbackTimer() {
 
 function playYouTubeTrack(track) {
   if (!ytPlayer || !ytPlayer.loadVideoById) {
-    console.warn('YT Player not ready, skipping');
-    setTimeout(() => onTrackEnded(), 1000);
+    console.warn('📺 YT Player not ready, skipping');
+    setTimeout(() => onTrackEnded(), 500);
     return;
   }
+
+  console.log('📺 Loading YouTube:', track.youtube_id);
   ytPlayer.loadVideoById(track.youtube_id);
   ytPlayer.setVolume(document.getElementById('volumeSlider').value);
+
+  // Quick check: if YT hasn't started playing within 10s, skip
+  let ytStarted = false;
+  const ytQuickCheck = setTimeout(() => {
+    if (!ytStarted) {
+      console.warn('📺 YouTube failed to start within 10s, skipping:', track.title);
+      onTrackEnded();
+    }
+  }, 10000);
 
   // Progress tracking for YT
   if (progressInterval) clearInterval(progressInterval);
@@ -969,23 +981,38 @@ function playYouTubeTrack(track) {
     if (ytPlayer && ytPlayer.getCurrentTime) {
       const current = ytPlayer.getCurrentTime();
       const duration = ytPlayer.getDuration();
+      if (current > 0.5) {
+        ytStarted = true;
+        clearTimeout(ytQuickCheck);
+      }
       updateProgress(current, duration);
       if (duration > 0 && !fallbackTimer) setFallbackTimer(duration);
     }
   }, 500);
 
-  // Fallback in case YT never reports duration
-  setFallbackTimer(360);
+  // Max fallback
+  setFallbackTimer(300);
 }
 
 function playSoundCloudTrack(track) {
   const scUrl = track.soundcloud_url || track.embed_url;
 
   if (!scUrl || !scWidgetObj) {
-    console.warn('No SC URL or widget, skipping');
+    console.warn('🔊 No SC URL or widget, skipping');
     setTimeout(() => onTrackEnded(), 500);
     return;
   }
+
+  console.log('🔊 Loading SoundCloud:', scUrl);
+
+  // Quick check: if SC hasn't started within 10s, skip
+  let scStarted = false;
+  const scQuickCheck = setTimeout(() => {
+    if (!scStarted) {
+      console.warn('🔊 SoundCloud failed to start within 10s, skipping:', track.title);
+      onTrackEnded();
+    }
+  }, 10000);
 
   scWidgetObj.load(scUrl, {
     auto_play: true,
@@ -1001,6 +1028,10 @@ function playSoundCloudTrack(track) {
   });
 
   scWidgetObj.bind(SC.Widget.Events.PLAY_PROGRESS, (data) => {
+    if (!scStarted) {
+      scStarted = true;
+      clearTimeout(scQuickCheck);
+    }
     scWidgetObj.getDuration(duration => {
       updateProgress(data.currentPosition / 1000, duration / 1000);
       if (duration > 0 && !fallbackTimer) setFallbackTimer(duration / 1000);
