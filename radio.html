@@ -702,7 +702,7 @@ function speakText(text) {
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'en-US';
-    utterance.rate = 1.05;
+    utterance.rate = 1.1;  // Slightly faster for radio feel
     utterance.pitch = 1.05;
     utterance.volume = document.getElementById('volumeSlider').value / 100;
 
@@ -716,6 +716,7 @@ function speakText(text) {
     const done = (reason) => {
       if (resolved) return;
       resolved = true;
+      clearInterval(watchdog);
       console.log('🎙️ TTS done, reason:', reason || 'onend');
       resolve();
     };
@@ -726,21 +727,28 @@ function speakText(text) {
       done('error');
     };
 
-    // Safety timeout — 8s max, then move on
-    setTimeout(() => done('timeout'), 8000);
+    // Safety timeout — 12s max for longer intros
+    setTimeout(() => done('timeout'), 12000);
 
     console.log('🎙️ Speaking:', text.substring(0, 60) + '...');
     window.speechSynthesis.speak(utterance);
 
-    // Chrome bug workaround
-    const resumeInterval = setInterval(() => {
-      if (!window.speechSynthesis.speaking || resolved) {
-        clearInterval(resumeInterval);
-        return;
+    // AGGRESSIVE Chrome bug workaround:
+    // Chrome pauses speechSynthesis after ~15s. We resume every 3s.
+    // Also detect if speech stopped without firing onend.
+    const watchdog = setInterval(() => {
+      if (resolved) { clearInterval(watchdog); return; }
+
+      if (window.speechSynthesis.speaking) {
+        // Still speaking — do the pause/resume trick
+        window.speechSynthesis.pause();
+        window.speechSynthesis.resume();
+      } else {
+        // Speech stopped but onend didn't fire — Chrome bug
+        console.log('🎙️ Speech stopped silently, continuing');
+        done('silent-end');
       }
-      window.speechSynthesis.pause();
-      window.speechSynthesis.resume();
-    }, 5000);
+    }, 2000);
   });
 }
 
