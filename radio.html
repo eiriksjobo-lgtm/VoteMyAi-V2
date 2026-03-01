@@ -521,14 +521,18 @@ async function fetchSchedule() {
         suno_id = match[1];
         audio_url = `https://cdn1.suno.ai/${suno_id}.mp3`;
       }
-    } else if (platform === 'youtube' && !youtube_id && t.embed_url) {
+    } else if ((platform === 'youtube' || (!youtube_id && t.embed_url && t.embed_url.match(/youtu/))) && t.embed_url) {
       const match = t.embed_url.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/);
       if (match) youtube_id = match[1];
-    } else if (platform === 'soundcloud' && t.embed_url) {
+    } else if ((platform === 'soundcloud' || (!soundcloud_url && t.embed_url && t.embed_url.includes('soundcloud'))) && t.embed_url) {
       soundcloud_url = t.embed_url;
-    } else if (platform === 'udio' && t.embed_url) {
-      // Udio: for now skip or use timer fallback
-      // Will add direct_audio_url support later
+    } else if (t.embed_url && t.embed_url.match(/suno\.com\/song\//)) {
+      // "Other" or "Gemini" platform but embed_url is Suno
+      const match = t.embed_url.match(/suno\.com\/song\/([a-f0-9-]+)/i);
+      if (match) {
+        suno_id = match[1];
+        audio_url = `https://cdn1.suno.ai/${suno_id}.mp3`;
+      }
     }
 
     return {
@@ -996,50 +1000,10 @@ function updateProgress(current, duration) {
 }
 
 function updatePlayButton(playing) {
-  const icon = document.getElementById('playIcon');
-  if (playing) {
-    icon.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
-  } else {
-    icon.innerHTML = '<polygon points="5,3 19,12 5,21"/>';
-  }
+  // Play button removed for live radio mode — no-op
 }
 
-// --- Controls ---
-function togglePlay() {
-  if (isPlaying) {
-    isPlaying = false;
-    // Cancel any TTS
-    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-    // Pause current player
-    const audio = document.getElementById('audioPlayer');
-    if (!audio.paused) audio.pause();
-    if (ytPlayer && ytPlayer.pauseVideo) try { ytPlayer.pauseVideo(); } catch(e) {}
-    if (scWidgetObj) try { scWidgetObj.pause(); } catch(e) {}
-    updatePlayButton(false);
-    document.getElementById('statusText').textContent = 'PAUSED';
-  } else {
-    isPlaying = true;
-    // Resume current player
-    const track = schedule[currentTrackIndex];
-    if (track) {
-      const audio = document.getElementById('audioPlayer');
-      if (track.platform === 'suno' || track.platform === 'udio' || track.platform === 'elevenlabs') {
-        if (audio.src) audio.play();
-      } else if (track.platform === 'youtube') {
-        if (ytPlayer && ytPlayer.playVideo) ytPlayer.playVideo();
-      } else if (track.platform === 'soundcloud') {
-        if (scWidgetObj) scWidgetObj.play();
-      }
-    }
-    updatePlayButton(true);
-    document.getElementById('statusText').textContent = 'LIVE';
-  }
-}
-
-function skipTrack() {
-  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-  onTrackEnded();
-}
+// --- Controls removed for live radio mode ---
 
 // Volume
 document.getElementById('volumeSlider').addEventListener('input', function() {
