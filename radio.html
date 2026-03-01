@@ -678,24 +678,26 @@ function speakText(text) {
     }
 
     let resolved = false;
-    const done = () => {
+    const done = (reason) => {
       if (resolved) return;
       resolved = true;
+      console.log('🎙️ TTS done, reason:', reason || 'onend');
       resolve();
     };
 
-    utterance.onend = done;
+    utterance.onend = () => done('onend');
     utterance.onerror = (e) => {
       console.warn('🎙️ TTS error:', e);
-      done();
+      done('error');
     };
 
-    // Safety timeout — if speech hangs, continue after 15s
-    setTimeout(done, 15000);
+    // Safety timeout — 8s max, then move on
+    setTimeout(() => done('timeout'), 8000);
 
-    // Chrome bug workaround: speechSynthesis can pause indefinitely
-    // Resume it periodically
+    console.log('🎙️ Speaking:', text.substring(0, 60) + '...');
     window.speechSynthesis.speak(utterance);
+
+    // Chrome bug workaround
     const resumeInterval = setInterval(() => {
       if (!window.speechSynthesis.speaking || resolved) {
         clearInterval(resumeInterval);
@@ -723,9 +725,13 @@ async function playNext() {
   // Speak the intro, then play the track
   await speakText(introText);
 
-  // Only play if still in playing state (user might have paused during TTS)
+  console.log('📻 TTS finished, now calling playTrack for:', track.title, 'platform:', track.platform);
+
+  // Only play if still in playing state
   if (isPlaying) {
     playTrack(track);
+  } else {
+    console.warn('📻 Not playing anymore, skipping playTrack');
   }
 }
 
@@ -744,33 +750,35 @@ function showHostMessage(track) {
 }
 
 function playTrack(track) {
+  console.log('📻 playTrack called:', track.title, 'platform:', track.platform, 'audio_url:', track.audio_url);
   updateNowPlaying(track);
   updateUpNext();
   stopAllPlayers();
 
-  switch (track.platform) {
+  const p = track.platform;
+  switch (p) {
     case 'suno':
-    case 'udio':
     case 'elevenlabs':
+      console.log('📻 → playSunoTrack');
       playSunoTrack(track);
       break;
     case 'youtube':
+      console.log('📻 → playYouTubeTrack');
       playYouTubeTrack(track);
       break;
     case 'soundcloud':
+      console.log('📻 → playSoundCloudTrack');
       playSoundCloudTrack(track);
       break;
     default:
-      // Fallback: try direct audio if available
       if (track.audio_url || track.direct_audio_url) {
-        playSunoTrack(track); // same <audio> logic
+        console.log('📻 → fallback playSunoTrack for platform:', p);
+        playSunoTrack(track);
       } else {
-        console.warn('Unknown platform, skipping:', track.platform);
+        console.warn('📻 Unknown platform, no audio URL, skipping:', p);
         onTrackEnded();
       }
   }
-
-  updatePlayButton(true);
 }
 
 // --- Fallback timer (skips if track fails or hangs) ---
@@ -794,18 +802,26 @@ function playSunoTrack(track) {
   const url = track.audio_url || track.direct_audio_url ||
     (track.suno_id ? `https://cdn1.suno.ai/${track.suno_id}.mp3` : null);
 
+  console.log('🎵 playSunoTrack URL:', url);
+
   if (!url) {
-    console.warn('No audio URL for track:', track.title);
+    console.warn('🎵 No audio URL for track:', track.title);
     setTimeout(() => onTrackEnded(), 500);
     return;
   }
 
   audio.src = url;
   audio.volume = document.getElementById('volumeSlider').value / 100;
-  audio.play().catch(err => {
-    console.warn('Audio play failed:', err, '— skipping');
-    setTimeout(() => onTrackEnded(), 1000);
-  });
+
+  const playPromise = audio.play();
+  if (playPromise) {
+    playPromise.then(() => {
+      console.log('🎵 Audio playing successfully!');
+    }).catch(err => {
+      console.warn('🎵 Audio play failed:', err.message, '— skipping');
+      setTimeout(() => onTrackEnded(), 1000);
+    });
+  }
 
   audio.onended = () => onTrackEnded();
   audio.onerror = () => {
