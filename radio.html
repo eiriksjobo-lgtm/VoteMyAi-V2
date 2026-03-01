@@ -562,10 +562,10 @@ async function fetchSchedule() {
       soundcloud_url: soundcloud_url,
     };
   }).filter(t => {
-    // Exclude Udio (no direct audio support yet)
-    if (t.platform === 'udio') return false;
-    // Must have some playable source
-    return t.audio_url || t.youtube_id || t.soundcloud_url;
+    // Only include tracks with direct audio (Suno CDN mp3)
+    // YouTube/SoundCloud/Udio disabled — can't pre-verify, causes failed intros
+    // Re-enable when direct_audio_url is populated for these tracks
+    return !!t.audio_url;
   });
 }
 
