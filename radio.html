@@ -622,33 +622,27 @@ async function startRadio() {
   // Preload TTS voices
   await loadVoices();
 
-  // Pre-validate all Suno tracks — remove broken ones BEFORE radio starts
-  document.getElementById('statusText').textContent = 'CHECKING TRACKS...';
-  console.log(`🔍 Validating ${schedule.length} tracks...`);
-  const validated = [];
-  for (const track of schedule) {
-    if (track.platform === 'suno' && track.audio_url) {
-      const ok = await testAudioUrl(track.audio_url);
-      if (ok) {
-        validated.push(track);
-      } else {
-        console.log(`❌ Removed broken: "${track.title}"`);
-      }
-    } else if (track.youtube_id || track.soundcloud_url) {
-      validated.push(track);
-    }
-  }
-  schedule = validated;
-  console.log(`✅ ${schedule.length} playable tracks confirmed`);
+  // No pre-validation — we use the buffer approach instead
+  console.log(`📻 Radio loaded ${schedule.length} tracks, starting with buffer approach`);
 
   if (schedule.length === 0) {
     document.getElementById('statusText').textContent = 'NO TRACKS';
-    alert('No working tracks found!');
+    alert('No playable tracks found!');
+    return;
+  }
+
+  document.getElementById('statusText').textContent = 'TUNING IN...';
+
+  // Find first working track and start
+  const firstTrack = await findNextWorkingTrack();
+  if (!firstTrack) {
+    document.getElementById('statusText').textContent = 'NO TRACKS';
+    alert('Could not find any working tracks!');
     return;
   }
 
   document.getElementById('statusText').textContent = 'LIVE';
-  playNext();
+  await playVerifiedTrack(firstTrack);
 }
 
 // --- TTS Voice Loading ---
@@ -737,50 +731,182 @@ function speakText(text) {
   });
 }
 
-// --- Core Playback Flow ---
-async function playNext() {
-  currentTrackIndex++;
-  if (currentTrackIndex >= schedule.length) {
-    currentTrackIndex = 0;
-  }
+// --- Core Playback: Pre-Buffer Architecture ---
+// The key idea: NEVER talk about a song until it's actually loaded and ready to play.
+// 1. Try loading next track's audio in a buffer Audio element
+// 2. If it loads (canplaythrough) → it's verified. Show host intro, speak, then play.
+// 3. If it fails → silently skip to next, try again. No TTS, no UI update.
 
-  const track = schedule[currentTrackIndex];
+let bufferAudio = new Audio(); // Dedicated buffer for pre-loading
+bufferAudio.preload = 'auto';
+
+// Find the next track that actually loads successfully
+async function findNextWorkingTrack() {
+  let attempts = 0;
+  const maxAttempts = schedule.length;
+
+  while (attempts < maxAttempts) {
+    currentTrackIndex++;
+    if (currentTrackIndex >= schedule.length) currentTrackIndex = 0;
+    attempts++;
+
+    const candidate = schedule[currentTrackIndex];
+
+    if (candidate.platform === 'suno' && candidate.audio_url) {
+      const loaded = await bufferLoadAudio(candidate.audio_url);
+      if (loaded) {
+        console.log(`✅ Buffered: "${candidate.title}"`);
+        return candidate;
+      } else {
+        console.log(`⏭️ Silent skip (won't load): "${candidate.title}"`);
+        continue;
+      }
+    } else if (candidate.youtube_id) {
+      // YT can't easily be pre-tested, trust it
+      console.log(`✅ YouTube track queued: "${candidate.title}"`);
+      return candidate;
+    } else if (candidate.soundcloud_url) {
+      console.log(`✅ SoundCloud track queued: "${candidate.title}"`);
+      return candidate;
+    }
+  }
+  return null; // Nothing works
+}
+
+// Try to load audio into buffer — returns true if canplaythrough fires
+function bufferLoadAudio(url) {
+  return new Promise(resolve => {
+    // Reset buffer
+    bufferAudio.pause();
+    bufferAudio.removeAttribute('src');
+
+    let resolved = false;
+    const done = (result) => {
+      if (resolved) return;
+      resolved = true;
+      resolve(result);
+    };
+
+    bufferAudio.oncanplaythrough = () => done(true);
+    bufferAudio.onerror = () => done(false);
+    bufferAudio.onstalled = () => {}; // ignore stalls, wait for timeout
+
+    // Timeout: if not loaded in 6 seconds, skip
+    setTimeout(() => done(false), 6000);
+
+    bufferAudio.src = url;
+    bufferAudio.load();
+  });
+}
+
+// Play a track that has already been verified/buffered
+async function playVerifiedTrack(track) {
   console.log(`📻 Now playing [${currentTrackIndex + 1}/${schedule.length}]: "${track.title}" (${track.platform})`);
 
-  // Show host intro and speak it
-  const introText = showHostMessage(track);
+  // Update UI
   updateNowPlaying(track);
   updateUpNext();
 
-  // Speak the intro, then play the track
+  // Show host speaking indicator + speak intro
+  const introText = showHostMessage(track);
   await speakText(introText);
-
-  console.log('📻 TTS finished, now playing:', track.title);
-
-  // Hide host speaking indicator
   document.getElementById('hostMsg').classList.remove('visible');
 
-  if (isPlaying) {
-    playTrack(track);
+  if (!isPlaying) return;
+
+  // Play the track
+  stopAllPlayers();
+
+  if (track.platform === 'suno' && track.audio_url) {
+    // Transfer buffered audio to the main player
+    const audio = document.getElementById('audioPlayer');
+    audio.src = bufferAudio.src;
+    audio.volume = document.getElementById('volumeSlider').value / 100;
+    audio.currentTime = 0;
+
+    audio.onended = () => onTrackEnded();
+    audio.onerror = () => {
+      console.warn('🎵 Playback error, skipping');
+      onTrackEnded();
+    };
+    audio.ontimeupdate = () => updateProgress(audio.currentTime, audio.duration);
+    audio.onloadedmetadata = () => {
+      document.getElementById('timeDuration').textContent = formatTime(audio.duration);
+      setFallbackTimer(audio.duration);
+    };
+    setFallbackTimer(300);
+
+    audio.play().then(() => {
+      console.log('🎵 Playing:', track.title);
+    }).catch(err => {
+      console.warn('🎵 Play failed:', err.message);
+      onTrackEnded();
+    });
+
+  } else if (track.platform === 'youtube' || track.youtube_id) {
+    playYouTubeTrack(track);
+  } else if (track.platform === 'soundcloud' || track.soundcloud_url) {
+    playSoundCloudTrack(track);
+  } else if (track.audio_url) {
+    // Generic audio fallback
+    const audio = document.getElementById('audioPlayer');
+    audio.src = track.audio_url;
+    audio.volume = document.getElementById('volumeSlider').value / 100;
+    audio.onended = () => onTrackEnded();
+    audio.onerror = () => onTrackEnded();
+    audio.ontimeupdate = () => updateProgress(audio.currentTime, audio.duration);
+    setFallbackTimer(300);
+    audio.play().catch(() => onTrackEnded());
+  } else {
+    onTrackEnded();
   }
+
+  // Start pre-buffering next track in background
+  preBufferNext();
 }
 
-// Test if an audio URL is accessible (fetch HEAD request)
-async function testAudioUrl(url) {
-  try {
-    const res = await fetch(url, { method: 'HEAD', mode: 'cors' });
-    return res.ok; // true for 200, false for 403/404/etc
-  } catch (e) {
-    // CORS might block HEAD — try with Audio element as fallback
-    return new Promise(resolve => {
-      const audio = new Audio();
-      const timeout = setTimeout(() => { resolve(false); }, 5000);
-      audio.oncanplaythrough = () => { clearTimeout(timeout); resolve(true); };
-      audio.onerror = () => { clearTimeout(timeout); resolve(false); };
-      audio.preload = 'auto';
-      audio.src = url;
-    });
+// Pre-buffer next working track while current is playing
+let nextBufferedTrack = null;
+async function preBufferNext() {
+  nextBufferedTrack = null;
+  let tempIndex = currentTrackIndex;
+  let attempts = 0;
+
+  while (attempts < schedule.length) {
+    tempIndex++;
+    if (tempIndex >= schedule.length) tempIndex = 0;
+    attempts++;
+
+    const candidate = schedule[tempIndex];
+
+    if (candidate.platform === 'suno' && candidate.audio_url) {
+      // Use a separate Audio element for pre-buffering
+      const testAudio = new Audio();
+      testAudio.preload = 'auto';
+      const works = await new Promise(resolve => {
+        let done = false;
+        testAudio.oncanplaythrough = () => { if (!done) { done = true; resolve(true); } };
+        testAudio.onerror = () => { if (!done) { done = true; resolve(false); } };
+        setTimeout(() => { if (!done) { done = true; resolve(false); } }, 6000);
+        testAudio.src = candidate.audio_url;
+        testAudio.load();
+      });
+
+      if (works) {
+        nextBufferedTrack = { track: candidate, index: tempIndex };
+        console.log(`🔮 Pre-buffered next: "${candidate.title}"`);
+        return;
+      } else {
+        console.log(`⏭️ Pre-buffer skip: "${candidate.title}"`);
+        continue;
+      }
+    } else if (candidate.youtube_id || candidate.soundcloud_url) {
+      nextBufferedTrack = { track: candidate, index: tempIndex };
+      console.log(`🔮 Next queued (${candidate.platform}): "${candidate.title}"`);
+      return;
+    }
   }
+  console.warn('🔮 No next track could be pre-buffered');
 }
 
 function showHostMessage(track) {
@@ -796,35 +922,7 @@ function showHostMessage(track) {
   return msg;
 }
 
-function playTrack(track) {
-  console.log('📻 playTrack called:', track.title, 'platform:', track.platform, 'audio_url:', track.audio_url);
-  stopAllPlayers();
-
-  const p = track.platform;
-  switch (p) {
-    case 'suno':
-    case 'elevenlabs':
-      console.log('📻 → playSunoTrack');
-      playSunoTrack(track);
-      break;
-    case 'youtube':
-      console.log('📻 → playYouTubeTrack');
-      playYouTubeTrack(track);
-      break;
-    case 'soundcloud':
-      console.log('📻 → playSoundCloudTrack');
-      playSoundCloudTrack(track);
-      break;
-    default:
-      if (track.audio_url || track.direct_audio_url) {
-        console.log('📻 → fallback playSunoTrack for platform:', p);
-        playSunoTrack(track);
-      } else {
-        console.warn('📻 Unknown platform, no audio URL, skipping:', p);
-        onTrackEnded();
-      }
-  }
-}
+// (playTrack replaced by playVerifiedTrack above)
 
 // --- Fallback timer (skips if track fails or hangs) ---
 let fallbackTimer = null;
@@ -842,45 +940,7 @@ function clearFallbackTimer() {
 
 // --- Platform Players ---
 
-function playSunoTrack(track) {
-  const audio = document.getElementById('audioPlayer');
-  const url = track.audio_url || track.direct_audio_url ||
-    (track.suno_id ? `https://cdn1.suno.ai/${track.suno_id}.mp3` : null);
-
-  console.log('🎵 playSunoTrack URL:', url);
-
-  if (!url) {
-    console.warn('🎵 No audio URL for track:', track.title);
-    setTimeout(() => onTrackEnded(), 500);
-    return;
-  }
-
-  audio.src = url;
-  audio.volume = document.getElementById('volumeSlider').value / 100;
-
-  const playPromise = audio.play();
-  if (playPromise) {
-    playPromise.then(() => {
-      console.log('🎵 Audio playing successfully!');
-    }).catch(err => {
-      console.warn('🎵 Audio play failed:', err.message, '— skipping');
-      setTimeout(() => onTrackEnded(), 1000);
-    });
-  }
-
-  audio.onended = () => onTrackEnded();
-  audio.onerror = () => {
-    console.warn('Audio error for:', track.title, '— skipping');
-    setTimeout(() => onTrackEnded(), 1000);
-  };
-  audio.ontimeupdate = () => updateProgress(audio.currentTime, audio.duration);
-  audio.onloadedmetadata = () => {
-    document.getElementById('timeDuration').textContent = formatTime(audio.duration);
-    setFallbackTimer(audio.duration);
-  };
-  // Fallback if metadata never loads
-  setFallbackTimer(300);
-}
+// (playSunoTrack logic moved into playVerifiedTrack)
 
 function playYouTubeTrack(track) {
   if (!ytPlayer || !ytPlayer.loadVideoById) {
@@ -946,22 +1006,34 @@ function playSoundCloudTrack(track) {
 
 // --- On Track Ended (Central Flow) ---
 let isTransitioning = false;
-function onTrackEnded() {
-  if (isTransitioning) return; // Debounce
+async function onTrackEnded() {
+  if (isTransitioning) return;
   isTransitioning = true;
 
   if (progressInterval) clearInterval(progressInterval);
   clearFallbackTimer();
   document.getElementById('progressBar').style.width = '0%';
 
-  if (isPlaying) {
-    // Small delay to prevent rapid-fire transitions
-    setTimeout(() => {
-      isTransitioning = false;
-      playNext();
-    }, 300);
+  if (!isPlaying) { isTransitioning = false; return; }
+
+  // Use pre-buffered track if available, otherwise find one
+  let nextTrack;
+  if (nextBufferedTrack) {
+    currentTrackIndex = nextBufferedTrack.index;
+    nextTrack = nextBufferedTrack.track;
+    nextBufferedTrack = null;
+    console.log(`📻 Using pre-buffered: "${nextTrack.title}"`);
   } else {
-    isTransitioning = false;
+    nextTrack = await findNextWorkingTrack();
+  }
+
+  isTransitioning = false;
+
+  if (nextTrack) {
+    await playVerifiedTrack(nextTrack);
+  } else {
+    console.error('📻 No more playable tracks');
+    document.getElementById('statusText').textContent = 'NO TRACKS';
   }
 }
 
