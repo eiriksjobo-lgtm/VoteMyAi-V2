@@ -306,6 +306,58 @@ body {
   font-size: 0.8rem; color: var(--accent2);
 }
 
+/* Channel Grid */
+.channel-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 10px 0;
+  max-width: 400px;
+  margin: 0 auto;
+}
+.channel-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+.channel-card:hover {
+  border-color: var(--accent);
+  background: rgba(255, 61, 90, 0.08);
+  transform: translateY(-2px);
+}
+.channel-icon {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+.channel-name {
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--text-bright);
+  letter-spacing: 0.5px;
+}
+.channel-desc {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  font-family: 'Space Mono', monospace;
+}
+.channel-card.trending {
+  border-color: var(--accent2);
+  background: rgba(255, 107, 61, 0.06);
+}
+@media (max-width: 400px) {
+  .channel-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 /* Hidden players */
 #hiddenPlayers {
   position: fixed; top: -9999px; left: -9999px;
@@ -367,14 +419,58 @@ body {
 <div id="radioApp">
   <div class="radio-bg"></div>
 
-  <!-- Start overlay (needs user interaction for autoplay) -->
+  <!-- Channel Picker -->
   <div id="startOverlay">
     <h2>📻 VoteMyAI Radio</h2>
     <p>AI-hosted radio playing community-submitted tracks</p>
-    <button class="start-btn" onclick="startRadio()">
-      <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
-    </button>
-    <p style="font-size: 0.75rem; color: var(--text-dim);">Tap to tune in</p>
+    <div class="channel-grid">
+      <button class="channel-card" onclick="startRadio('all')">
+        <span class="channel-icon">📻</span>
+        <span class="channel-name">The Blind Mix</span>
+        <span class="channel-desc">No clout, all vibes</span>
+      </button>
+      <button class="channel-card trending" onclick="startRadio('trending')">
+        <span class="channel-icon">🔥</span>
+        <span class="channel-name">Trending</span>
+        <span class="channel-desc">Top rated hits</span>
+      </button>
+      <button class="channel-card" onclick="startRadio('pop')">
+        <span class="channel-icon">🎤</span>
+        <span class="channel-name">Pop</span>
+        <span class="channel-desc">Catchy & melodic</span>
+      </button>
+      <button class="channel-card" onclick="startRadio('rock')">
+        <span class="channel-icon">🎸</span>
+        <span class="channel-name">Rock</span>
+        <span class="channel-desc">Riffs & power</span>
+      </button>
+      <button class="channel-card" onclick="startRadio('hip-hop')">
+        <span class="channel-icon">🎧</span>
+        <span class="channel-name">Hip-Hop</span>
+        <span class="channel-desc">Beats & bars</span>
+      </button>
+      <button class="channel-card" onclick="startRadio('metal')">
+        <span class="channel-icon">🤘</span>
+        <span class="channel-name">Metal</span>
+        <span class="channel-desc">Heavy & brutal</span>
+      </button>
+      <button class="channel-card" onclick="startRadio('electronic')">
+        <span class="channel-icon">🎛️</span>
+        <span class="channel-name">Electronic</span>
+        <span class="channel-desc">Synths & drops</span>
+      </button>
+      <button class="channel-card" onclick="startRadio('country')">
+        <span class="channel-icon">🤠</span>
+        <span class="channel-name">Country</span>
+        <span class="channel-desc">Twang & soul</span>
+      </button>
+      <button class="channel-card" onclick="startRadio('chill')">
+        <span class="channel-icon">🧘</span>
+        <span class="channel-name">Chill</span>
+        <span class="channel-desc">Lo-Fi & ambient</span>
+      </button>
+    </div>
+    <p style="font-size: 0.75rem; color: var(--text-dim); margin-top: 16px;">Pick a channel to tune in</p>
   </div>
 
   <div class="container">
@@ -563,15 +659,37 @@ async function fetchSchedule() {
     };
   }).filter(t => {
     // Only include tracks with direct audio (Suno CDN mp3)
-    return !!t.audio_url;
+    if (!t.audio_url) return false;
+    return true;
   });
 
+  // Apply channel filter
+  let filtered = mapped;
+  if (currentChannel === 'trending') {
+    // Top 50 by rating
+    filtered = [...mapped].sort((a, b) => (b.avg_rating || 0) - (a.avg_rating || 0)).slice(0, 50);
+  } else if (CHANNEL_GENRES[currentChannel]) {
+    const genres = CHANNEL_GENRES[currentChannel];
+    filtered = mapped.filter(t => {
+      const g = (t.genre || '').toLowerCase();
+      return genres.some(genre => g.includes(genre));
+    });
+  }
+
+  // Fallback: if channel has too few tracks, add from all
+  if (filtered.length < 10 && currentChannel !== 'all') {
+    console.warn(`📻 Only ${filtered.length} tracks for channel "${currentChannel}", padding with other tracks`);
+    const existing = new Set(filtered.map(t => t.id));
+    const extras = mapped.filter(t => !existing.has(t.id)).slice(0, 30);
+    filtered = [...filtered, ...extras];
+  }
+
   // Store all tracks for re-shuffling on loop
-  allTracks = [...mapped];
+  allTracks = [...filtered];
 
   // Initial genre-diverse shuffle with top-100 boost
-  const reordered = genreDiverseShuffle(mapped);
-  console.log(`📻 Genre-diverse schedule: ${reordered.length} tracks (top 100 boosted 3x)`);
+  const reordered = genreDiverseShuffle(allTracks);
+  console.log(`📻 Channel "${currentChannel}": ${reordered.length} tracks (from ${mapped.length} total)`);
   return reordered;
 }
 
@@ -638,8 +756,24 @@ document.getElementById('pwInput').addEventListener('keydown', e => {
   if (e.key === 'Enter') checkPassword();
 });
 
+// --- Genre mapping for channels ---
+const CHANNEL_GENRES = {
+  'all': null, // no filter
+  'trending': '__trending__', // special: top 50 by rating
+  'pop': ['pop', 'indie pop', 'k-pop', 'synth-pop', 'dream pop', 'art pop'],
+  'rock': ['rock', 'indie rock', 'alternative rock', 'punk rock', 'classic rock', 'garage rock', 'post-punk', 'punk', 'grunge'],
+  'hip-hop': ['hip-hop', 'hip hop', 'rap', 'trap', 'boom bap', 'r&b', 'rnb'],
+  'metal': ['metal', 'heavy metal', 'death metal', 'black metal', 'thrash metal', 'doom metal', 'metalcore', 'nu-metal', 'progressive metal'],
+  'electronic': ['electronic', 'edm', 'techno', 'house', 'trance', 'dubstep', 'drum and bass', 'dnb', 'synthwave', 'electro'],
+  'country': ['country', 'folk', 'bluegrass', 'americana', 'country rock'],
+  'chill': ['lo-fi', 'lofi', 'ambient', 'chillwave', 'downtempo', 'jazz', 'bossa nova', 'acoustic', 'singer-songwriter', 'soul'],
+};
+
+let currentChannel = 'all';
+
 // --- Start Radio (user interaction gate for autoplay) ---
-async function startRadio() {
+async function startRadio(channel = 'all') {
+  currentChannel = channel;
   document.getElementById('startOverlay').style.display = 'none';
   document.getElementById('statusText').textContent = 'LOADING...';
 
@@ -655,6 +789,15 @@ async function startRadio() {
       return;
     }
     console.log(`📻 Radio loaded ${schedule.length} playable tracks`);
+    
+    // Show channel name in header
+    const channelNames = {
+      'all': 'The Blind Mix', 'trending': 'Trending', 'pop': 'Pop',
+      'rock': 'Rock', 'hip-hop': 'Hip-Hop', 'metal': 'Metal',
+      'electronic': 'Electronic', 'country': 'Country', 'chill': 'Chill'
+    };
+    document.querySelector('.header h1').innerHTML = 
+      `VoteMyAI <span>Radio</span><div style="font-size:0.5em;color:var(--accent2);font-weight:400;margin-top:4px;">${channelNames[currentChannel] || 'All Tracks'}</div>`;
   } catch (err) {
     console.error('Failed to fetch schedule:', err);
     document.getElementById('statusText').textContent = 'ERROR';
