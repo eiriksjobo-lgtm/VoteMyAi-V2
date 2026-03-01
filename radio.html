@@ -715,28 +715,85 @@ function speakText(text) {
 
 // --- Core Playback Flow ---
 async function playNext() {
-  currentTrackIndex++;
-  if (currentTrackIndex >= schedule.length) {
-    currentTrackIndex = 0;
+  // Find next playable track (skip broken ones silently)
+  let track = null;
+  let attempts = 0;
+  const maxAttempts = schedule.length;
+
+  while (attempts < maxAttempts) {
+    currentTrackIndex++;
+    if (currentTrackIndex >= schedule.length) {
+      currentTrackIndex = 0;
+    }
+    attempts++;
+
+    const candidate = schedule[currentTrackIndex];
+
+    // For Suno tracks: verify the audio URL works before committing
+    if (candidate.audio_url && candidate.platform === 'suno') {
+      const works = await testAudioUrl(candidate.audio_url);
+      if (works) {
+        track = candidate;
+        break;
+      } else {
+        console.log(`⏭️ Skipping broken track: "${candidate.title}" (403/404)`);
+        continue;
+      }
+    } else if (candidate.youtube_id || candidate.soundcloud_url) {
+      // YT/SC — harder to pre-test, just try them
+      track = candidate;
+      break;
+    }
   }
 
-  const track = schedule[currentTrackIndex];
+  if (!track) {
+    console.error('📻 No playable tracks found after checking all!');
+    document.getElementById('statusText').textContent = 'NO TRACKS';
+    return;
+  }
+
   console.log(`📻 Now playing [${currentTrackIndex + 1}/${schedule.length}]: "${track.title}" (${track.platform})`);
 
   // Show host intro and speak it
   const introText = showHostMessage(track);
+  updateNowPlaying(track);
+  updateUpNext();
 
   // Speak the intro, then play the track
   await speakText(introText);
 
   console.log('📻 TTS finished, now calling playTrack for:', track.title, 'platform:', track.platform);
 
-  // Only play if still in playing state
   if (isPlaying) {
     playTrack(track);
-  } else {
-    console.warn('📻 Not playing anymore, skipping playTrack');
   }
+}
+
+// Test if an audio URL is accessible (HEAD request)
+function testAudioUrl(url) {
+  return new Promise(resolve => {
+    const audio = new Audio();
+    audio.preload = 'metadata';
+
+    const timeout = setTimeout(() => {
+      audio.src = '';
+      resolve(false);
+    }, 4000);
+
+    audio.onloadedmetadata = () => {
+      clearTimeout(timeout);
+      audio.src = '';
+      resolve(true);
+    };
+
+    audio.onerror = () => {
+      clearTimeout(timeout);
+      resolve(false);
+    };
+
+    audio.src = url;
+  });
+}
 }
 
 function showHostMessage(track) {
@@ -755,8 +812,6 @@ function showHostMessage(track) {
 
 function playTrack(track) {
   console.log('📻 playTrack called:', track.title, 'platform:', track.platform, 'audio_url:', track.audio_url);
-  updateNowPlaying(track);
-  updateUpNext();
   stopAllPlayers();
 
   const p = track.platform;
