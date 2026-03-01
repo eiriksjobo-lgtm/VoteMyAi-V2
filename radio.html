@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VoteMyAI Radio 📻</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #12121a;
+  --surface2: #1a1a26;
+  --accent: #ff3d5a;
+  --accent2: #ff6b3d;
+  --accent-glow: rgba(255, 61, 90, 0.3);
+  --text: #e8e6f0;
+  --text-dim: #7a7890;
+  --text-bright: #ffffff;
+  --border: #2a2a3a;
+  --green: #3dff8f;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* === PASSWORD GATE === */
+#passwordGate {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 24px;
+}
+#passwordGate h1 {
+  font-size: 2rem; font-weight: 900;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+#passwordGate input {
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text); padding: 14px 20px; border-radius: 12px;
+  font-size: 1rem; width: 280px; text-align: center;
+  font-family: 'Space Mono', monospace;
+  outline: none; transition: border-color 0.2s;
+}
+#passwordGate input:focus { border-color: var(--accent); }
+#passwordGate button {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: white; border: none; padding: 14px 40px; border-radius: 12px;
+  font-size: 1rem; font-weight: 600; cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+#passwordGate button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px var(--accent-glow);
+}
+#passwordGate .error {
+  color: var(--accent); font-size: 0.85rem;
+  opacity: 0; transition: opacity 0.3s;
+}
+#passwordGate .error.show { opacity: 1; }
+
+/* === MAIN RADIO UI === */
+#radioApp { display: none; }
+
+.radio-bg {
+  position: fixed; inset: 0; z-index: -1;
+  background: radial-gradient(ellipse at 50% 0%, rgba(255,61,90,0.08) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 100%, rgba(255,107,61,0.05) 0%, transparent 50%),
+              var(--bg);
+}
+
+.container {
+  max-width: 600px; margin: 0 auto; padding: 20px;
+  min-height: 100vh; display: flex; flex-direction: column;
+}
+
+/* Header */
+.header {
+  text-align: center; padding: 40px 0 30px;
+}
+.header .badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--surface2); border: 1px solid var(--border);
+  padding: 6px 14px; border-radius: 100px;
+  font-size: 0.75rem; color: var(--text-dim);
+  font-family: 'Space Mono', monospace;
+  margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px;
+}
+.header .badge .live-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--green);
+  animation: pulse 1.5s ease infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(61,255,143,0.4); }
+  50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(61,255,143,0); }
+}
+.header h1 {
+  font-size: 2.2rem; font-weight: 900; letter-spacing: -1px;
+  background: linear-gradient(135deg, var(--text-bright), var(--text));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.header h1 span {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+/* Now Playing Card */
+.now-playing {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px; padding: 28px;
+  margin-bottom: 20px;
+  position: relative; overflow: hidden;
+}
+.now-playing::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent));
+  background-size: 200% 100%;
+  animation: shimmer 3s ease infinite;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.np-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem; color: var(--accent);
+  text-transform: uppercase; letter-spacing: 2px;
+  margin-bottom: 14px;
+}
+.np-title {
+  font-size: 1.5rem; font-weight: 800; color: var(--text-bright);
+  margin-bottom: 6px; line-height: 1.2;
+}
+.np-meta {
+  font-size: 0.9rem; color: var(--text-dim); margin-bottom: 16px;
+}
+.np-meta .platform {
+  display: inline-block; padding: 2px 8px; border-radius: 6px;
+  background: var(--surface2); font-size: 0.75rem;
+  font-family: 'Space Mono', monospace;
+  border: 1px solid var(--border);
+}
+.np-stats {
+  display: flex; gap: 16px; margin-bottom: 18px;
+}
+.np-stat {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.85rem; color: var(--text-dim);
+}
+.np-stat .val { color: var(--text-bright); font-weight: 600; }
+
+/* Progress bar */
+.progress-wrap {
+  width: 100%; height: 4px; background: var(--surface2);
+  border-radius: 10px; overflow: hidden; margin-bottom: 8px;
+}
+.progress-bar {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 10px; transition: width 0.5s linear;
+}
+.progress-time {
+  display: flex; justify-content: space-between;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.7rem; color: var(--text-dim);
+}
+
+/* Artist Note */
+.artist-note {
+  background: var(--surface2); border-left: 3px solid var(--accent2);
+  padding: 14px 16px; border-radius: 0 12px 12px 0;
+  margin-top: 16px; display: none;
+}
+.artist-note .label {
+  font-size: 0.7rem; color: var(--accent2);
+  text-transform: uppercase; letter-spacing: 1px;
+  font-family: 'Space Mono', monospace;
+  margin-bottom: 6px;
+}
+.artist-note .text {
+  font-size: 0.9rem; color: var(--text); font-style: italic;
+  line-height: 1.5;
+}
+
+/* Host Message */
+.host-msg {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px; padding: 24px;
+  margin-bottom: 20px; display: none;
+}
+.host-msg .host-header {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+}
+.host-msg .host-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem;
+}
+.host-msg .host-name {
+  font-weight: 700; font-size: 0.95rem; color: var(--text-bright);
+}
+.host-msg .host-role {
+  font-size: 0.7rem; color: var(--text-dim);
+  font-family: 'Space Mono', monospace;
+}
+.host-msg .host-text {
+  font-size: 0.95rem; color: var(--text); line-height: 1.6;
+}
+
+/* Controls */
+.controls {
+  display: flex; align-items: center; justify-content: center;
+  gap: 20px; padding: 20px 0;
+}
+.btn-play {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 4px 20px var(--accent-glow);
+}
+.btn-play:hover {
+  transform: scale(1.08);
+  box-shadow: 0 8px 40px var(--accent-glow);
+}
+.btn-play svg { fill: white; }
+.btn-skip {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--surface2); border: 1px solid var(--border);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+.btn-skip:hover { background: var(--surface); }
+.btn-skip svg { fill: var(--text-dim); width: 18px; }
+
+.volume-wrap {
+  display: flex; align-items: center; gap: 8px;
+}
+.volume-wrap svg { fill: var(--text-dim); width: 18px; }
+.volume-wrap input[type="range"] {
+  width: 80px; accent-color: var(--accent);
+}
+
+/* Listeners */
+.listeners {
+  text-align: center; padding: 10px 0;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem; color: var(--text-dim);
+}
+
+/* Up Next */
+.up-next {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 20px 24px; margin-bottom: 20px;
+}
+.up-next h3 {
+  font-size: 0.7rem; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 2px;
+  font-family: 'Space Mono', monospace;
+  margin-bottom: 14px;
+}
+.up-next-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.up-next-item:last-child { border-bottom: none; }
+.up-next-num {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem; color: var(--text-dim);
+  width: 20px; text-align: center;
+}
+.up-next-info { flex: 1; }
+.up-next-title { font-weight: 600; font-size: 0.9rem; color: var(--text-bright); }
+.up-next-genre { font-size: 0.75rem; color: var(--text-dim); }
+.up-next-rating {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.8rem; color: var(--accent2);
+}
+
+/* Hidden players */
+#hiddenPlayers {
+  position: fixed; top: -9999px; left: -9999px;
+  width: 1px; height: 1px; overflow: hidden;
+}
+
+/* Start overlay */
+#startOverlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(10,10,15,0.95);
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 24px;
+  backdrop-filter: blur(20px);
+}
+#startOverlay h2 {
+  font-size: 1.8rem; font-weight: 900;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+#startOverlay p { color: var(--text-dim); font-size: 0.95rem; }
+#startOverlay .start-btn {
+  width: 100px; height: 100px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 60px var(--accent-glow);
+  transition: transform 0.2s, box-shadow 0.2s;
+  animation: breathe 2s ease infinite;
+}
+@keyframes breathe {
+  0%, 100% { box-shadow: 0 0 40px var(--accent-glow); }
+  50% { box-shadow: 0 0 80px var(--accent-glow); }
+}
+#startOverlay .start-btn:hover {
+  transform: scale(1.1);
+}
+#startOverlay .start-btn svg { fill: white; width: 40px; height: 40px; }
+
+/* Responsive */
+@media (max-width: 480px) {
+  .header h1 { font-size: 1.6rem; }
+  .np-title { font-size: 1.2rem; }
+  .container { padding: 12px; }
+}
+</style>
+</head>
+<body>
+
+<!-- PASSWORD GATE -->
+<div id="passwordGate">
+  <h1>📻 VoteMyAI Radio</h1>
+  <p style="color: var(--text-dim); font-size: 0.9rem;">Invite only — enter the code</p>
+  <input type="password" id="pwInput" placeholder="••••••••" autofocus>
+  <button onclick="checkPassword()">Enter</button>
+  <div class="error" id="pwError">Wrong code, try again</div>
+</div>
+
+<!-- RADIO APP -->
+<div id="radioApp">
+  <div class="radio-bg"></div>
+
+  <!-- Start overlay (needs user interaction for autoplay) -->
+  <div id="startOverlay">
+    <h2>📻 VoteMyAI Radio</h2>
+    <p>AI-hosted radio playing community-submitted tracks</p>
+    <button class="start-btn" onclick="startRadio()">
+      <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+    </button>
+    <p style="font-size: 0.75rem; color: var(--text-dim);">Tap to tune in</p>
+  </div>
+
+  <div class="container">
+    <div class="header">
+      <div class="badge">
+        <span class="live-dot"></span>
+        <span id="statusText">OFFLINE</span>
+      </div>
+      <h1>VoteMyAI <span>Radio</span></h1>
+    </div>
+
+    <!-- Host Message -->
+    <div class="host-msg" id="hostMsg">
+      <div class="host-header">
+        <div class="host-avatar">🎙️</div>
+        <div>
+          <div class="host-name">DJ VoteBot</div>
+          <div class="host-role">AI HOST</div>
+        </div>
+      </div>
+      <div class="host-text" id="hostText"></div>
+    </div>
+
+    <!-- Now Playing -->
+    <div class="now-playing" id="nowPlaying">
+      <div class="np-label">▶ Now Playing</div>
+      <div class="np-title" id="npTitle">—</div>
+      <div class="np-meta">
+        <span id="npGenre">—</span> · <span class="platform" id="npPlatform">—</span>
+      </div>
+      <div class="np-stats">
+        <div class="np-stat">⭐ <span class="val" id="npRating">—</span></div>
+        <div class="np-stat">🗳️ <span class="val" id="npVotes">—</span> votes</div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+      <div class="progress-time">
+        <span id="timeElapsed">0:00</span>
+        <span id="timeDuration">0:00</span>
+      </div>
+      <div class="artist-note" id="artistNote">
+        <div class="label">Artist Note</div>
+        <div class="text" id="artistNoteText"></div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <div class="volume-wrap">
+        <svg viewBox="0 0 24 24" width="18"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0014 8.5v7a4.47 4.47 0 002.5-3.5z"/></svg>
+        <input type="range" id="volumeSlider" min="0" max="100" value="80">
+      </div>
+      <button class="btn-play" id="btnPlay" onclick="togglePlay()">
+        <svg viewBox="0 0 24 24" width="28" id="playIcon"><polygon points="5,3 19,12 5,21"/></svg>
+      </button>
+      <button class="btn-skip" onclick="skipTrack()" title="Skip">
+        <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+      </button>
+    </div>
+
+    <div class="listeners" id="listenersCount">—</div>
+
+    <!-- Up Next -->
+    <div class="up-next" id="upNext">
+      <h3>Up Next</h3>
+      <div id="upNextList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden players -->
+<div id="hiddenPlayers">
+  <audio id="audioPlayer" preload="auto"></audio>
+  <audio id="ttsPlayer" preload="auto"></audio>
+  <div id="ytPlayerContainer"></div>
+  <iframe id="scWidget" width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay"
+    src="about:blank"></iframe>
+</div>
+
+<!-- SoundCloud Widget API -->
+<script src="https://w.soundcloud.com/player/api.js"></script>
+
+<!-- YouTube IFrame API -->
+<script>
+  var tag = document.createElement('script');
+  tag.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(tag);
+  var ytPlayer = null;
+  function onYouTubeIframeAPIReady() {
+    ytPlayer = new YT.Player('ytPlayerContainer', {
+      height: '1', width: '1',
+      playerVars: { autoplay: 0, controls: 0 },
+      events: {
+        onStateChange: onYTStateChange
+      }
+    });
+  }
+  function onYTStateChange(event) {
+    if (event.data === YT.PlayerState.ENDED) {
+      onTrackEnded();
+    }
+  }
+</script>
+
+<script>
+// ============================================================
+// VoteMyAI Radio — Core Engine
+// ============================================================
+
+const RADIO_PASSWORD = 'satansatan123!';
+
+// --- State ---
+let isPlaying = false;
+let currentTrackIndex = -1;
+let schedule = [];
+let progressInterval = null;
+let trackStartTime = 0;
+let scWidgetObj = null;
+
+// --- Mock Schedule (Replace with Supabase fetch) ---
+// This simulates what the radio_schedule table + tracks join would return
+const MOCK_SCHEDULE = [
+  {
+    id: 'mock-1',
+    title: 'Neon Drift',
+    genre: 'Electronic',
+    platform: 'suno',
+    artist_note: 'Made this while watching Blade Runner at 2am. The synths just happened.',
+    avg_rating: 4.3,
+    num_ratings: 52,
+    duration_seconds: 45, // short clips for testing
+    // For Suno: direct audio URL via CDN
+    audio_url: 'https://cdn1.suno.ai/demo-test.mp3', // placeholder
+    suno_id: 'demo-test',
+    embed_url: null,
+  },
+  {
+    id: 'mock-2',
+    title: 'Concrete Jungle Lullaby',
+    genre: 'Hip-Hop',
+    platform: 'youtube',
+    artist_note: 'NYC subway sounds + trap beats = this.',
+    avg_rating: 3.8,
+    num_ratings: 31,
+    duration_seconds: 180,
+    audio_url: null,
+    youtube_id: 'dQw4w9WgXcQ', // placeholder, replace with real track
+    embed_url: null,
+  },
+  {
+    id: 'mock-3',
+    title: 'Velvet Sunrise',
+    genre: 'R&B / Soul',
+    platform: 'suno',
+    artist_note: 'For everyone who\'s ever watched the sun come up alone.',
+    avg_rating: 4.7,
+    num_ratings: 89,
+    duration_seconds: 60,
+    audio_url: 'https://cdn1.suno.ai/demo-test2.mp3', // placeholder
+    suno_id: 'demo-test2',
+    embed_url: null,
+  },
+  {
+    id: 'mock-4',
+    title: 'Pixel Dreams',
+    genre: 'Ambient',
+    platform: 'soundcloud',
+    artist_note: 'Retro gaming vibes meet lo-fi beats.',
+    avg_rating: 4.1,
+    num_ratings: 44,
+    duration_seconds: 200,
+    audio_url: null,
+    soundcloud_url: 'https://soundcloud.com/placeholder/track', // placeholder
+    embed_url: null,
+  },
+];
+
+// --- Host personality lines ---
+function generateHostIntro(track, nextTrack) {
+  const intros = [
+    `Yo what's good! Next up we got "${track.title}" — a ${track.genre} track sitting at ${track.avg_rating} stars from ${track.num_ratings} votes. ${track.artist_note ? `The artist says: "${track.artist_note}"` : ''} Let's see if it hits different...`,
+    `Alright alright, keep it locked! This one's called "${track.title}", ${track.genre} vibes all the way. ${track.num_ratings} people rated this and gave it ${track.avg_rating} stars. ${track.artist_note ? `Artist note: "${track.artist_note}"` : ''} Here we go!`,
+    `Oooh, this next one is fire — or is it? "${track.title}", ${track.genre}, currently rated ${track.avg_rating} by ${track.num_ratings} listeners. ${track.artist_note ? `The creator wrote: "${track.artist_note}"` : ''} You be the judge!`,
+    `Switching it up! "${track.title}" coming at you in the ${track.genre} lane. ${track.avg_rating} stars, ${track.num_ratings} ratings on VoteMyAI. ${track.artist_note ? `Here's what the artist had to say: "${track.artist_note}"` : ''} Let's gooo!`,
+    `Oh snap, we got "${track.title}" — pure ${track.genre} energy! The community gave this ${track.avg_rating} stars from ${track.num_ratings} blind votes. ${track.artist_note ? `The artist left a note: "${track.artist_note}"` : ''} No clout bias here, just vibes!`,
+  ];
+  return intros[Math.floor(Math.random() * intros.length)];
+}
+
+// --- Password ---
+function checkPassword() {
+  const input = document.getElementById('pwInput').value;
+  if (input === RADIO_PASSWORD) {
+    document.getElementById('passwordGate').style.display = 'none';
+    document.getElementById('radioApp').style.display = 'block';
+  } else {
+    document.getElementById('pwError').classList.add('show');
+    document.getElementById('pwInput').value = '';
+    setTimeout(() => document.getElementById('pwError').classList.remove('show'), 2000);
+  }
+}
+document.getElementById('pwInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkPassword();
+});
+
+// --- Start Radio (user interaction gate for autoplay) ---
+function startRadio() {
+  document.getElementById('startOverlay').style.display = 'none';
+  document.getElementById('statusText').textContent = 'LIVE';
+  isPlaying = true;
+
+  // Init SC Widget
+  scWidgetObj = SC.Widget(document.getElementById('scWidget'));
+
+  // Load schedule (mock for now, replace with Supabase fetch)
+  schedule = [...MOCK_SCHEDULE];
+  currentTrackIndex = -1;
+
+  playNext();
+}
+
+// --- Core Playback Flow ---
+function playNext() {
+  currentTrackIndex++;
+  if (currentTrackIndex >= schedule.length) {
+    // Loop back (in production: fetch new schedule)
+    currentTrackIndex = 0;
+  }
+
+  const track = schedule[currentTrackIndex];
+
+  // Show host intro
+  showHostMessage(track);
+
+  // After a brief delay (simulating TTS), play the track
+  // In production: play actual TTS audio clip, then onended -> playTrack
+  setTimeout(() => {
+    playTrack(track);
+  }, 2000); // 2s simulated host intro
+}
+
+function showHostMessage(track) {
+  const msg = generateHostIntro(track);
+  document.getElementById('hostText').textContent = msg;
+  document.getElementById('hostMsg').style.display = 'block';
+
+  // Auto-hide after track starts
+  setTimeout(() => {
+    document.getElementById('hostMsg').style.display = 'none';
+  }, 8000);
+}
+
+function playTrack(track) {
+  updateNowPlaying(track);
+  updateUpNext();
+  stopAllPlayers();
+
+  switch (track.platform) {
+    case 'suno':
+    case 'udio':
+    case 'elevenlabs':
+      playSunoTrack(track);
+      break;
+    case 'youtube':
+      playYouTubeTrack(track);
+      break;
+    case 'soundcloud':
+      playSoundCloudTrack(track);
+      break;
+    default:
+      // Fallback: try direct audio if available
+      if (track.audio_url || track.direct_audio_url) {
+        playSunoTrack(track); // same <audio> logic
+      } else {
+        console.warn('Unknown platform, skipping:', track.platform);
+        onTrackEnded();
+      }
+  }
+
+  updatePlayButton(true);
+}
+
+// --- Platform Players ---
+
+function playSunoTrack(track) {
+  const audio = document.getElementById('audioPlayer');
+  const url = track.direct_audio_url || track.audio_url ||
+    `https://cdn1.suno.ai/${track.suno_id}.mp3`;
+  audio.src = url;
+  audio.volume = document.getElementById('volumeSlider').value / 100;
+  audio.play().catch(err => {
+    console.warn('Audio play failed:', err);
+    // Skip to next on error
+    setTimeout(() => onTrackEnded(), 1000);
+  });
+
+  audio.onended = () => onTrackEnded();
+  audio.ontimeupdate = () => updateProgress(audio.currentTime, audio.duration);
+  audio.onloadedmetadata = () => {
+    document.getElementById('timeDuration').textContent = formatTime(audio.duration);
+  };
+}
+
+function playYouTubeTrack(track) {
+  if (!ytPlayer || !ytPlayer.loadVideoById) {
+    console.warn('YT Player not ready, skipping');
+    setTimeout(() => onTrackEnded(), 1000);
+    return;
+  }
+  ytPlayer.loadVideoById(track.youtube_id);
+  ytPlayer.setVolume(document.getElementById('volumeSlider').value);
+
+  // Progress tracking for YT
+  if (progressInterval) clearInterval(progressInterval);
+  progressInterval = setInterval(() => {
+    if (ytPlayer && ytPlayer.getCurrentTime) {
+      const current = ytPlayer.getCurrentTime();
+      const duration = ytPlayer.getDuration();
+      updateProgress(current, duration);
+    }
+  }, 500);
+}
+
+function playSoundCloudTrack(track) {
+  const iframe = document.getElementById('scWidget');
+  const scUrl = track.soundcloud_url || track.embed_url;
+
+  scWidgetObj.load(scUrl, {
+    auto_play: true,
+    show_artwork: false,
+    show_user: false,
+    hide_related: true,
+    visual: false
+  });
+
+  // Rebind events after load
+  scWidgetObj.bind(SC.Widget.Events.FINISH, () => {
+    onTrackEnded();
+  });
+
+  scWidgetObj.bind(SC.Widget.Events.PLAY_PROGRESS, (data) => {
+    scWidgetObj.getDuration(duration => {
+      updateProgress(data.currentPosition / 1000, duration / 1000);
+    });
+  });
+
+  scWidgetObj.bind(SC.Widget.Events.ERROR, () => {
+    console.warn('SC Widget error, skipping');
+    onTrackEnded();
+  });
+}
+
+// --- On Track Ended (Central Flow) ---
+function onTrackEnded() {
+  if (progressInterval) clearInterval(progressInterval);
+  document.getElementById('progressBar').style.width = '0%';
+  if (isPlaying) {
+    playNext();
+  }
+}
+
+// --- Stop All Players ---
+function stopAllPlayers() {
+  // Stop <audio>
+  const audio = document.getElementById('audioPlayer');
+  audio.pause();
+  audio.onended = null;
+  audio.ontimeupdate = null;
+  audio.src = '';
+
+  // Stop YouTube
+  if (ytPlayer && ytPlayer.stopVideo) {
+    try { ytPlayer.stopVideo(); } catch (e) {}
+  }
+  if (progressInterval) clearInterval(progressInterval);
+
+  // Stop SoundCloud
+  if (scWidgetObj) {
+    try { scWidgetObj.pause(); } catch (e) {}
+  }
+}
+
+// --- UI Updates ---
+function updateNowPlaying(track) {
+  document.getElementById('npTitle').textContent = track.title;
+  document.getElementById('npGenre').textContent = track.genre;
+  document.getElementById('npPlatform').textContent = track.platform.toUpperCase();
+  document.getElementById('npRating').textContent = track.avg_rating.toFixed(1);
+  document.getElementById('npVotes').textContent = track.num_ratings;
+  document.getElementById('timeDuration').textContent =
+    track.duration_seconds ? formatTime(track.duration_seconds) : '—';
+  document.getElementById('timeElapsed').textContent = '0:00';
+  document.getElementById('progressBar').style.width = '0%';
+
+  // Artist note
+  const noteEl = document.getElementById('artistNote');
+  if (track.artist_note) {
+    document.getElementById('artistNoteText').textContent = track.artist_note;
+    noteEl.style.display = 'block';
+  } else {
+    noteEl.style.display = 'none';
+  }
+}
+
+function updateUpNext() {
+  const list = document.getElementById('upNextList');
+  list.innerHTML = '';
+  for (let i = 1; i <= 3; i++) {
+    const idx = (currentTrackIndex + i) % schedule.length;
+    const track = schedule[idx];
+    const item = document.createElement('div');
+    item.className = 'up-next-item';
+    item.innerHTML = `
+      <div class="up-next-num">${i}</div>
+      <div class="up-next-info">
+        <div class="up-next-title">${track.title}</div>
+        <div class="up-next-genre">${track.genre} · ${track.platform.toUpperCase()}</div>
+      </div>
+      <div class="up-next-rating">★ ${track.avg_rating.toFixed(1)}</div>
+    `;
+    list.appendChild(item);
+  }
+}
+
+function updateProgress(current, duration) {
+  if (!duration || duration <= 0) return;
+  const pct = Math.min((current / duration) * 100, 100);
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('timeElapsed').textContent = formatTime(current);
+  document.getElementById('timeDuration').textContent = formatTime(duration);
+}
+
+function updatePlayButton(playing) {
+  const icon = document.getElementById('playIcon');
+  if (playing) {
+    icon.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+  } else {
+    icon.innerHTML = '<polygon points="5,3 19,12 5,21"/>';
+  }
+}
+
+// --- Controls ---
+function togglePlay() {
+  if (isPlaying) {
+    isPlaying = false;
+    // Pause current player
+    const audio = document.getElementById('audioPlayer');
+    if (!audio.paused) audio.pause();
+    if (ytPlayer && ytPlayer.pauseVideo) try { ytPlayer.pauseVideo(); } catch(e) {}
+    if (scWidgetObj) try { scWidgetObj.pause(); } catch(e) {}
+    updatePlayButton(false);
+    document.getElementById('statusText').textContent = 'PAUSED';
+  } else {
+    isPlaying = true;
+    // Resume current player
+    const track = schedule[currentTrackIndex];
+    if (track) {
+      const audio = document.getElementById('audioPlayer');
+      if (track.platform === 'suno' || track.platform === 'udio' || track.platform === 'elevenlabs') {
+        if (audio.src) audio.play();
+      } else if (track.platform === 'youtube') {
+        if (ytPlayer && ytPlayer.playVideo) ytPlayer.playVideo();
+      } else if (track.platform === 'soundcloud') {
+        if (scWidgetObj) scWidgetObj.play();
+      }
+    }
+    updatePlayButton(true);
+    document.getElementById('statusText').textContent = 'LIVE';
+  }
+}
+
+function skipTrack() {
+  onTrackEnded();
+}
+
+// Volume
+document.getElementById('volumeSlider').addEventListener('input', function() {
+  const vol = this.value / 100;
+  document.getElementById('audioPlayer').volume = vol;
+  if (ytPlayer && ytPlayer.setVolume) ytPlayer.setVolume(this.value);
+  if (scWidgetObj) scWidgetObj.setVolume(this.value);
+});
+
+// --- Helpers ---
+function formatTime(seconds) {
+  if (!seconds || isNaN(seconds)) return '0:00';
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return m + ':' + (s < 10 ? '0' : '') + s;
+}
+
+// --- Fake listeners count ---
+setInterval(() => {
+  if (isPlaying) {
+    const count = Math.floor(Math.random() * 8) + 3;
+    document.getElementById('listenersCount').textContent = `${count} listeners tuned in`;
+  }
+}, 10000);
+</script>
+
+</body>
+</html>
