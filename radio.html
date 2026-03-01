@@ -676,12 +676,9 @@ async function fetchSchedule() {
     });
   }
 
-  // Fallback: if channel has too few tracks, add from all
-  if (filtered.length < 10 && currentChannel !== 'all') {
-    console.warn(`📻 Only ${filtered.length} tracks for channel "${currentChannel}", padding with other tracks`);
-    const existing = new Set(filtered.map(t => t.id));
-    const extras = mapped.filter(t => !existing.has(t.id)).slice(0, 30);
-    filtered = [...filtered, ...extras];
+  // Fallback: if channel has too few tracks, tell user
+  if (filtered.length < 3 && currentChannel !== 'all') {
+    console.warn(`📻 Only ${filtered.length} tracks for channel "${currentChannel}"`);
   }
 
   // Store all tracks for re-shuffling on loop
@@ -941,13 +938,18 @@ let allTracks = []; // Store all tracks for re-shuffling
 
 // Genre-diverse reorder function (reusable for re-shuffles)
 function genreDiverseShuffle(tracks) {
-  // Top 100 by rating get 3x weight (appear ~3x more often)
-  const sorted = [...tracks].sort((a, b) => (b.avg_rating || 0) - (a.avg_rating || 0));
-  const top100 = sorted.slice(0, 100);
-  const rest = sorted.slice(100);
-
-  // Build weighted pool: top 100 appear 3x
-  const pool = [...top100, ...top100, ...top100, ...rest];
+  let pool;
+  
+  if (currentChannel === 'trending') {
+    // Trending is already the top tracks — no boost needed, just shuffle
+    pool = [...tracks];
+  } else {
+    // Top 100 by rating get 3x weight (appear ~3x more often)
+    const sorted = [...tracks].sort((a, b) => (b.avg_rating || 0) - (a.avg_rating || 0));
+    const top100 = sorted.slice(0, 100);
+    const rest = sorted.slice(100);
+    pool = [...top100, ...top100, ...top100, ...rest];
+  }
 
   // Shuffle the pool
   const shuffled = pool
