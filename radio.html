@@ -573,17 +573,45 @@ async function fetchSchedule() {
 function generateHostIntro(track) {
   const stars = track.avg_rating ? track.avg_rating.toFixed(1) : null;
   const note = track.artist_note || null;
-  const ratingStr = stars ? `, rated ${stars} stars` : '';
-  const noteStr = note ? ` The artist says: "${note}"` : '';
+  const genre = track.genre || 'unknown genre';
+
+  // Savage rating commentary
+  let ratingRoast = '';
+  if (stars) {
+    const s = parseFloat(stars);
+    if (s >= 4.5) ratingRoast = `${stars} stars. Yeah, the people have spoken, and apparently they have terrible taste.`;
+    else if (s >= 4.0) ratingRoast = `Sitting at ${stars} stars. Not bad. Not good either, but not bad.`;
+    else if (s >= 3.5) ratingRoast = `${stars} stars. That's a solid... meh.`;
+    else if (s >= 3.0) ratingRoast = `${stars} stars. Ouch. The community did NOT hold back on this one.`;
+    else ratingRoast = `${stars} stars. That's... that's rough, buddy. Real rough.`;
+  }
+
+  // Savage artist note reactions
+  let noteRoast = '';
+  if (note) {
+    const noteReactions = [
+      `The artist wrote a little note. They said, "${note}". Sure, buddy. Sure.`,
+      `Oh, and get this — the artist wants you to know: "${note}". Thanks for sharing, I guess?`,
+      `Artist note says: "${note}". I mean... okay? Nobody asked, but okay.`,
+      `The artist left a message: "${note}". Bold move. Let's see if the song backs it up.`,
+      `And I quote the artist: "${note}". Wow. The confidence. I respect it. I don't agree with it, but I respect it.`,
+    ];
+    noteRoast = ' ' + noteReactions[Math.floor(Math.random() * noteReactions.length)];
+  }
 
   const intros = [
-    `Next up, "${track.title}" — ${track.genre}${ratingStr}.${noteStr} Here we go!`,
-    `Keep it locked! "${track.title}", pure ${track.genre}${ratingStr}.${noteStr}`,
-    `Coming in hot — "${track.title}", ${track.genre} vibes${ratingStr}.${noteStr} Let's hear it!`,
-    `Switching it up! "${track.title}" in the ${track.genre} lane${ratingStr}.${noteStr}`,
-    `"${track.title}" — ${track.genre}${ratingStr}.${noteStr} No clout bias, just vibes!`,
-    `This is VoteMyAI Radio. "${track.title}", ${track.genre}${ratingStr}.${noteStr}`,
-    `New one spinning — "${track.title}", ${track.genre}${ratingStr}.${noteStr}`,
+    `Alright, buckle up. Next up is "${track.title}". ${genre}. ${ratingRoast}${noteRoast} Here we go, I guess.`,
+    `Oh boy, here comes "${track.title}". It's ${genre}, because of course it is. ${ratingRoast}${noteRoast} Let's get this over with.`,
+    `Ladies and gentlemen, I present to you... "${track.title}". ${genre}. Made by an AI, rated by humans, questioned by me. ${ratingRoast}${noteRoast}`,
+    `Next on VoteMyAI Radio — "${track.title}". ${genre} vibes. Look, I don't make the playlist, I just judge it. ${ratingRoast}${noteRoast}`,
+    `Okay okay okay. "${track.title}" is up. It's ${genre}. Now before you skip — oh wait, you can't skip! This is live radio, baby! ${ratingRoast}${noteRoast}`,
+    `This is VoteMyAI Radio, where AI makes the music and humans pretend to enjoy it. Next: "${track.title}", ${genre}. ${ratingRoast}${noteRoast}`,
+    `Somebody submitted "${track.title}" to VoteMyAI. ${genre}. No clout bias here — just pure, blind, questionable judgment. ${ratingRoast}${noteRoast}`,
+    `Welcome back. Did you miss me? No? Too bad. Here's "${track.title}", ${genre}. ${ratingRoast}${noteRoast} You're welcome.`,
+    `Fun fact: this next song, "${track.title}", was made by artificial intelligence. And honestly? You can tell. ${genre}. ${ratingRoast}${noteRoast} Just kidding. Maybe.`,
+    `"${track.title}". ${genre}. Someone spent actual time prompting an AI to make this. And then someone else spent actual time rating it. What a world. ${ratingRoast}${noteRoast}`,
+    `Alright alright, don't touch that dial — oh wait, there's no dial. You're stuck with me. Next up: "${track.title}", ${genre}. ${ratingRoast}${noteRoast}`,
+    `Breaking news on VoteMyAI Radio: "${track.title}" exists. It's ${genre}. The community rated it with no idea who made it. ${ratingRoast}${noteRoast} Democracy at its finest.`,
   ];
   return intros[Math.floor(Math.random() * intros.length)];
 }
@@ -702,8 +730,8 @@ function speakText(text) {
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'en-US';
-    utterance.rate = 1.1;  // Slightly faster for radio feel
-    utterance.pitch = 1.05;
+    utterance.rate = 0.92;  // Slower, more deliberate delivery
+    utterance.pitch = 1.0;
     utterance.volume = document.getElementById('volumeSlider').value / 100;
 
     const voice = getPreferredVoice();
@@ -727,8 +755,8 @@ function speakText(text) {
       done('error');
     };
 
-    // Safety timeout — 12s max for longer intros
-    setTimeout(() => done('timeout'), 12000);
+    // Safety timeout — 20s max for longer savage intros
+    setTimeout(() => done('timeout'), 20000);
 
     console.log('🎙️ Speaking:', text.substring(0, 60) + '...');
     window.speechSynthesis.speak(utterance);
