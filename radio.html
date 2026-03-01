@@ -619,69 +619,115 @@ async function startRadio() {
   isPlaying = true;
   currentTrackIndex = -1;
 
-  // Preload TTS voices (Chrome loads them async)
-  if ('speechSynthesis' in window) {
-    window.speechSynthesis.getVoices();
-  }
+  // Preload TTS voices (Chrome loads them async via event)
+  await loadVoices();
 
   playNext();
 }
 
+// --- TTS Voice Loading ---
+let ttsVoices = [];
+function loadVoices() {
+  return new Promise(resolve => {
+    if (!('speechSynthesis' in window)) { resolve(); return; }
+    ttsVoices = window.speechSynthesis.getVoices();
+    if (ttsVoices.length > 0) {
+      console.log('🎙️ TTS voices loaded:', ttsVoices.length);
+      resolve();
+      return;
+    }
+    // Chrome loads voices async
+    window.speechSynthesis.onvoiceschanged = () => {
+      ttsVoices = window.speechSynthesis.getVoices();
+      console.log('🎙️ TTS voices loaded (async):', ttsVoices.length);
+      resolve();
+    };
+    // Timeout fallback
+    setTimeout(resolve, 3000);
+  });
+}
+
+function getPreferredVoice() {
+  if (ttsVoices.length === 0) ttsVoices = window.speechSynthesis.getVoices();
+  return ttsVoices.find(v => v.name.includes('Google') && v.lang.startsWith('en'))
+    || ttsVoices.find(v => v.lang.startsWith('en-') && v.name.includes('Female'))
+    || ttsVoices.find(v => v.lang.startsWith('en-'))
+    || ttsVoices.find(v => v.lang.startsWith('en'))
+    || ttsVoices[0] || null;
+}
+
+function speakText(text) {
+  return new Promise(resolve => {
+    if (!('speechSynthesis' in window) || ttsVoices.length === 0) {
+      console.warn('🎙️ No TTS available, skipping voice intro');
+      resolve();
+      return;
+    }
+
+    // Chrome bug: cancel any stuck speech
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'en-US';
+    utterance.rate = 1.05;
+    utterance.pitch = 1.05;
+    utterance.volume = document.getElementById('volumeSlider').value / 100;
+
+    const voice = getPreferredVoice();
+    if (voice) {
+      utterance.voice = voice;
+      console.log('🎙️ Using voice:', voice.name);
+    }
+
+    let resolved = false;
+    const done = () => {
+      if (resolved) return;
+      resolved = true;
+      resolve();
+    };
+
+    utterance.onend = done;
+    utterance.onerror = (e) => {
+      console.warn('🎙️ TTS error:', e);
+      done();
+    };
+
+    // Safety timeout — if speech hangs, continue after 15s
+    setTimeout(done, 15000);
+
+    // Chrome bug workaround: speechSynthesis can pause indefinitely
+    // Resume it periodically
+    window.speechSynthesis.speak(utterance);
+    const resumeInterval = setInterval(() => {
+      if (!window.speechSynthesis.speaking || resolved) {
+        clearInterval(resumeInterval);
+        return;
+      }
+      window.speechSynthesis.pause();
+      window.speechSynthesis.resume();
+    }, 5000);
+  });
+}
+
 // --- Core Playback Flow ---
-function playNext() {
+async function playNext() {
   currentTrackIndex++;
   if (currentTrackIndex >= schedule.length) {
-    // Loop back (in production: fetch new schedule)
     currentTrackIndex = 0;
   }
 
   const track = schedule[currentTrackIndex];
+  console.log(`📻 Now playing [${currentTrackIndex + 1}/${schedule.length}]: "${track.title}" (${track.platform})`);
 
   // Show host intro and speak it
   const introText = showHostMessage(track);
 
-  // Use Web Speech API for AI host voice
-  if ('speechSynthesis' in window) {
-    // Cancel any ongoing speech
-    window.speechSynthesis.cancel();
+  // Speak the intro, then play the track
+  await speakText(introText);
 
-    const utterance = new SpeechSynthesisUtterance(introText);
-    utterance.rate = 1.05;
-    utterance.pitch = 1.0;
-    utterance.volume = document.getElementById('volumeSlider').value / 100;
-
-    // Try to pick a good English voice
-    const voices = window.speechSynthesis.getVoices();
-    const preferred = voices.find(v =>
-      v.name.includes('Google') && v.lang.startsWith('en')
-    ) || voices.find(v =>
-      v.lang.startsWith('en') && v.name.includes('Female')
-    ) || voices.find(v => v.lang.startsWith('en'));
-    if (preferred) utterance.voice = preferred;
-
-    utterance.onend = () => {
-      playTrack(track);
-    };
-    utterance.onerror = () => {
-      // Fallback: just play after short delay
-      setTimeout(() => playTrack(track), 500);
-    };
-
-    // Small pause before speaking for dramatic effect
-    setTimeout(() => {
-      window.speechSynthesis.speak(utterance);
-    }, 400);
-
-    // Safety fallback: if speech takes longer than 20s, play anyway
-    setTimeout(() => {
-      if (window.speechSynthesis.speaking) {
-        window.speechSynthesis.cancel();
-        playTrack(track);
-      }
-    }, 20000);
-  } else {
-    // No speech synthesis — play after short delay
-    setTimeout(() => playTrack(track), 1500);
+  // Only play if still in playing state (user might have paused during TTS)
+  if (isPlaying) {
+    playTrack(track);
   }
 }
 
