@@ -494,7 +494,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 // Fetch tracks from Supabase and normalize for radio
 async function fetchSchedule() {
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/tracks?select=*&order=avg_rating.desc&limit=100`,
+    `${SUPABASE_URL}/rest/v1/tracks?select=*&order=avg_rating.desc&limit=500`,
     { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
   );
   const tracks = await res.json();
@@ -566,33 +566,12 @@ async function fetchSchedule() {
     return !!t.audio_url;
   });
 
-  // Genre-diverse reorder: never play same genre twice in a row
-  // Also avoids same title back-to-back (duplicate submissions)
-  const reordered = [];
-  const remaining = [...mapped];
-  let lastGenre = '';
-  let lastTitle = '';
+  // Store all tracks for re-shuffling on loop
+  allTracks = [...mapped];
 
-  while (remaining.length > 0) {
-    // Find a track with a different genre AND different title
-    let idx = remaining.findIndex(t => 
-      t.genre.toLowerCase() !== lastGenre.toLowerCase() && 
-      t.title.toLowerCase() !== lastTitle.toLowerCase()
-    );
-    // Fallback: just different title
-    if (idx === -1) idx = remaining.findIndex(t => 
-      t.title.toLowerCase() !== lastTitle.toLowerCase()
-    );
-    // Last resort: take whatever's left
-    if (idx === -1) idx = 0;
-
-    const track = remaining.splice(idx, 1)[0];
-    reordered.push(track);
-    lastGenre = track.genre;
-    lastTitle = track.title;
-  }
-
-  console.log(`📻 Genre-diverse schedule: ${reordered.length} tracks`);
+  // Initial genre-diverse shuffle with top-100 boost
+  const reordered = genreDiverseShuffle(mapped);
+  console.log(`📻 Genre-diverse schedule: ${reordered.length} tracks (top 100 boosted 3x)`);
   return reordered;
 }
 
@@ -815,6 +794,47 @@ function speakText(text) {
 
 let bufferAudio = new Audio(); // Dedicated buffer for pre-loading
 bufferAudio.preload = 'auto';
+let allTracks = []; // Store all tracks for re-shuffling
+
+// Genre-diverse reorder function (reusable for re-shuffles)
+function genreDiverseShuffle(tracks) {
+  // Top 100 by rating get 3x weight (appear ~3x more often)
+  const sorted = [...tracks].sort((a, b) => (b.avg_rating || 0) - (a.avg_rating || 0));
+  const top100 = sorted.slice(0, 100);
+  const rest = sorted.slice(100);
+
+  // Build weighted pool: top 100 appear 3x
+  const pool = [...top100, ...top100, ...top100, ...rest];
+
+  // Shuffle the pool
+  const shuffled = pool
+    .map(t => ({ ...t, _sort: Math.random() }))
+    .sort((a, b) => a._sort - b._sort);
+
+  // Genre-diverse reorder + dedupe consecutive same title
+  const reordered = [];
+  const remaining = [...shuffled];
+  let lastGenre = '';
+  let lastTitle = '';
+
+  while (remaining.length > 0) {
+    let idx = remaining.findIndex(t =>
+      t.genre.toLowerCase() !== lastGenre.toLowerCase() &&
+      t.title.toLowerCase() !== lastTitle.toLowerCase()
+    );
+    if (idx === -1) idx = remaining.findIndex(t =>
+      t.title.toLowerCase() !== lastTitle.toLowerCase()
+    );
+    if (idx === -1) idx = 0;
+
+    const track = remaining.splice(idx, 1)[0];
+    reordered.push(track);
+    lastGenre = track.genre;
+    lastTitle = track.title;
+  }
+
+  return reordered;
+}
 
 // Find the next track that actually loads successfully
 async function findNextWorkingTrack() {
@@ -823,7 +843,14 @@ async function findNextWorkingTrack() {
 
   while (attempts < maxAttempts) {
     currentTrackIndex++;
-    if (currentTrackIndex >= schedule.length) currentTrackIndex = 0;
+
+    // Loop: re-shuffle when we reach the end
+    if (currentTrackIndex >= schedule.length) {
+      console.log('🔄 Playlist complete! Re-shuffling with fresh order...');
+      schedule = genreDiverseShuffle(allTracks);
+      currentTrackIndex = 0;
+    }
+
     attempts++;
 
     const candidate = schedule[currentTrackIndex];
