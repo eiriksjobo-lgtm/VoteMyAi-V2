@@ -5,11 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
 <title>VoteMyAI Radio 📻</title>
 <meta name="robots" content="noindex, nofollow">
-<link rel="manifest" href="/manifest.webmanifest">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="VoteMyAI Radio">
-<link rel="apple-touch-icon" href="/favicon-512x512.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -232,9 +227,11 @@ body {
 }
 .host-msg.visible {
   opacity: 1;
-  max-height: 100px;
+  max-height: 400px;
   padding: 24px;
   margin-bottom: 20px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .host-msg .host-header {
   display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
@@ -252,46 +249,8 @@ body {
   font-size: 0.7rem; color: var(--text-dim);
   font-family: 'Space Mono', monospace;
 }
-
-/* Channel Switcher (inline) */
-.channel-switcher {
-  margin-bottom: 20px;
-}
-.channel-switcher h3 {
-  font-size: 0.7rem; color: var(--text-dim);
-  text-transform: uppercase; letter-spacing: 2px;
-  font-family: 'Space Mono', monospace;
-  margin-bottom: 10px;
-}
-.channel-strip {
-  display: flex; flex-wrap: wrap; gap: 8px;
-  justify-content: center;
-}
-.channel-chip {
-  display: flex; align-items: center; gap: 5px;
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 100px; padding: 8px 14px;
-  cursor: pointer; transition: all 0.2s;
-  font-family: 'Outfit', sans-serif; font-size: 0.8rem;
-  color: var(--text-dim); white-space: nowrap;
-}
-.channel-chip .chip-icon { font-size: 1rem; line-height: 1; }
-.channel-chip .chip-name { font-weight: 600; }
-@media (hover: hover) {
-  .channel-chip:hover {
-    border-color: var(--accent);
-    color: var(--text-bright);
-    background: rgba(255, 61, 90, 0.06);
-  }
-}
-.channel-chip:active {
-  transform: scale(0.95);
-  border-color: var(--accent);
-}
-.channel-chip.active {
-  border-color: var(--accent);
-  background: rgba(255, 61, 90, 0.12);
-  color: var(--text-bright);
+.host-msg .host-text {
+  font-size: 0.95rem; color: var(--text); line-height: 1.6;
 }
 
 /* Controls */
@@ -460,148 +419,10 @@ body {
   .channel-desc { font-size: 0.6rem; }
 }
 
-/* Share Section */
-.share-section {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 24px;
-  margin-bottom: 20px;
-  text-align: center;
-}
-.share-section h3 {
-  font-size: 0.7rem; color: var(--text-dim);
-  text-transform: uppercase; letter-spacing: 2px;
-  font-family: 'Space Mono', monospace;
-  margin-bottom: 6px;
-}
-.share-section .share-subtitle {
-  font-size: 0.78rem; color: var(--text-dim);
-  margin-bottom: 18px; line-height: 1.5;
-}
-.share-buttons {
-  display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
-}
-.share-btn {
-  display: inline-flex; align-items: center; gap: 7px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 100px;
-  padding: 10px 18px;
-  color: var(--text);
-  font-family: 'Outfit', sans-serif;
-  font-size: 0.8rem; font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  text-decoration: none;
-  -webkit-user-select: none; user-select: none;
-}
-.share-btn svg { width: 16px; height: 16px; fill: currentColor; flex-shrink: 0; }
-@media (hover: hover) {
-  .share-btn:hover {
-    border-color: var(--accent);
-    background: rgba(255, 61, 90, 0.08);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-  }
-}
-.share-btn:active {
-  transform: scale(0.95);
-  border-color: var(--accent);
-}
-.share-btn.copied {
-  border-color: var(--green);
-  color: var(--green);
-  background: rgba(61, 255, 143, 0.08);
-}
-.share-btn--primary {
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  border-color: transparent;
-  color: white;
-  font-weight: 600;
-}
-@media (hover: hover) {
-  .share-btn--primary:hover {
-    border-color: transparent;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    box-shadow: 0 4px 20px var(--accent-glow);
-    transform: translateY(-1px);
-  }
-}
-.share-btn--primary:active { border-color: transparent; }
-.share-btn--native {
-  border-color: var(--accent);
-  color: var(--accent);
-  background: rgba(255, 61, 90, 0.06);
-}
-@media (hover: hover) {
-  .share-btn--native:hover {
-    background: rgba(255, 61, 90, 0.14);
-    box-shadow: 0 4px 16px var(--accent-glow);
-  }
-}
-.share-btn--primary.copied {
-  background: rgba(61, 255, 143, 0.12);
-  border-color: var(--green); color: var(--green);
-}
-
-/* Radio Footer */
-.radio-footer {
-  text-align: center;
-  padding: 30px 0 10px;
-  border-top: 1px solid var(--border);
-  margin-top: 10px;
-}
-.radio-footer .footer-brand {
-  font-family: 'Outfit', sans-serif;
-  font-weight: 800; font-size: 0.9rem;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 6px;
-}
-.radio-footer .footer-tagline {
-  font-family: 'Space Mono', monospace;
-  font-size: 0.65rem; color: var(--text-dim);
-  letter-spacing: 0.5px; margin-bottom: 12px;
-}
-.radio-footer .footer-link {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-family: 'Space Mono', monospace;
-  font-size: 0.68rem; color: var(--text-dim);
-  text-decoration: none; transition: color 0.2s;
-  padding: 6px 14px; border-radius: 100px;
-  border: 1px solid transparent;
-}
-@media (hover: hover) {
-  .radio-footer .footer-link:hover {
-    color: var(--accent);
-    border-color: var(--border);
-  }
-}
-.radio-footer .footer-divider {
-  width: 40px; height: 2px; margin: 0 auto 14px;
-  border-radius: 2px;
-  background: linear-gradient(90deg, transparent, var(--border), transparent);
-}
-
-/* Share responsive */
-@media (max-width: 480px) {
-  .share-section { padding: 18px 16px; }
-  .share-buttons { gap: 8px; }
-  .share-btn { padding: 9px 14px; font-size: 0.75rem; }
-  .share-btn svg { width: 14px; height: 14px; }
-}
-@media (max-width: 375px) {
-  .share-buttons { gap: 6px; }
-  .share-btn { padding: 8px 12px; font-size: 0.7rem; gap: 5px; }
-}
-
 /* Hidden players */
 #hiddenPlayers {
-  position: fixed; top: 0; left: 0;
-  width: 0; height: 0; overflow: hidden;
-  opacity: 0; pointer-events: none; z-index: -1;
+  position: fixed; top: -9999px; left: -9999px;
+  width: 1px; height: 1px; overflow: hidden;
 }
 
 /* Start overlay */
@@ -672,10 +493,6 @@ body {
   .up-next-title { font-size: 0.85rem; }
   .up-next-rating { font-size: 0.75rem; }
   .artist-note .text { font-size: 0.85rem; }
-  .channel-switcher { margin-bottom: 14px; }
-  .channel-strip { gap: 6px; }
-  .channel-chip { padding: 6px 10px; font-size: 0.72rem; gap: 4px; }
-  .channel-chip .chip-icon { font-size: 0.85rem; }
 }
 
 /* Small phones (iPhone SE, Galaxy S series) */
@@ -687,9 +504,6 @@ body {
   .controls { gap: 12px; padding: 12px 0; }
   .btn-play { width: 52px; height: 52px; }
   .volume-wrap input[type="range"] { width: 80px; }
-  .channel-strip { gap: 5px; }
-  .channel-chip { padding: 5px 8px; font-size: 0.68rem; gap: 3px; }
-  .channel-chip .chip-icon { font-size: 0.8rem; }
 }
 
 /* Landscape mobile */
@@ -821,6 +635,7 @@ body {
           <div class="host-role">SPEAKING...</div>
         </div>
       </div>
+      <div class="host-text" id="hostText"></div>
     </div>
 
     <!-- Now Playing -->
@@ -861,89 +676,16 @@ body {
       <h3>Up Next</h3>
       <div id="upNextList"></div>
     </div>
-
-    <!-- Channel Switcher -->
-    <div class="channel-switcher" id="channelSwitcher">
-      <h3>Channels</h3>
-      <div class="channel-strip" id="channelStrip"></div>
-    </div>
-
-    <!-- Share -->
-    <div class="share-section" id="shareSection">
-      <h3>Share this station</h3>
-      <p class="share-subtitle">Invite friends to listen along</p>
-      <div class="share-buttons">
-        <button class="share-btn share-btn--primary" id="shareCopyBtn" onclick="shareRadio('copy')">
-          <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
-          <span>Copy link</span>
-        </button>
-        <button class="share-btn share-btn--native" id="shareNativeBtn" onclick="shareRadio('native')" style="display:none">
-          <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
-          <span>Share</span>
-        </button>
-        <button class="share-btn" onclick="shareRadio('facebook')">
-          <svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-          <span>Facebook</span>
-        </button>
-        <button class="share-btn" onclick="shareRadio('x')">
-          <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-          <span>X</span>
-        </button>
-        <button class="share-btn" onclick="shareRadio('reddit')">
-          <svg viewBox="0 0 24 24"><path d="M12 0A12 12 0 000 12a12 12 0 0012 12 12 12 0 0012-12A12 12 0 0012 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 01-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 01.042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 014.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 01.14-.197.35.35 0 01.238-.042l2.906.617a1.214 1.214 0 011.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 00-.231.094.33.33 0 000 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 000-.463.327.327 0 00-.462 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 00-.205-.094z"/></svg>
-          <span>Reddit</span>
-        </button>
-        <button class="share-btn" onclick="shareRadio('threads')">
-          <svg viewBox="0 0 24 24"><path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.03-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.59 12c.025 3.086.718 5.496 2.057 7.164 1.432 1.781 3.632 2.695 6.54 2.717 2.227-.017 4.07-.55 5.478-1.586 1.557-1.147 2.383-2.792 2.456-4.89-.048-1.36-.457-2.415-1.215-3.134-.718-.683-1.725-1.058-2.994-1.116a7.4 7.4 0 00-.147 1.592c0 .478-.032.956-.095 1.427-.2 1.47-.754 2.602-1.647 3.363-.873.744-2.012 1.122-3.384 1.122-1.588 0-2.904-.543-3.912-1.615-1.007-1.073-1.52-2.46-1.52-4.124 0-1.665.513-3.052 1.52-4.124 1.008-1.073 2.324-1.616 3.912-1.616.9 0 1.724.19 2.448.565.686.355 1.256.868 1.694 1.524l.034-.002c.803.028 1.538.158 2.19.389.766.272 1.42.685 1.942 1.227 1.08 1.122 1.635 2.674 1.65 4.617-.085 2.757-1.18 4.98-3.254 6.61-1.774 1.393-4.07 2.108-6.822 2.128zm-.09-15.7c-1.12 0-2.028.376-2.697 1.118-.657.73-.99 1.71-.99 2.912 0 1.2.333 2.18.99 2.912.669.742 1.577 1.118 2.697 1.118.877 0 1.6-.246 2.148-.732.568-.504.898-1.276 1.04-2.295.047-.367.07-.74.07-1.112 0-.372-.023-.744-.07-1.112-.14-1.018-.47-1.79-1.04-2.295-.548-.486-1.27-.732-2.148-.732z"/></svg>
-          <span>Threads</span>
-        </button>
-        <button class="share-btn" onclick="shareRadio('linkedin')">
-          <svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-          <span>LinkedIn</span>
-        </button>
-        <button class="share-btn" onclick="shareRadio('whatsapp')">
-          <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-          <span>WhatsApp</span>
-        </button>
-        <button class="share-btn" onclick="shareRadio('telegram')">
-          <svg viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 000 12a12 12 0 0012 12 12 12 0 0012-12A12 12 0 0012 0a12 12 0 00-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 01.171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.479.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
-          <span>Telegram</span>
-        </button>
-        <button class="share-btn" onclick="shareRadio('discord')">
-          <svg viewBox="0 0 24 24"><path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189z"/></svg>
-          <span>Discord</span>
-        </button>
-        <button class="share-btn" onclick="shareRadio('pinterest')">
-          <svg viewBox="0 0 24 24"><path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.162-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 01.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12.017 24c6.624 0 11.99-5.367 11.99-11.988C24.007 5.367 18.641 0 12.017 0z"/></svg>
-          <span>Pinterest</span>
-        </button>
-        <button class="share-btn" onclick="shareRadio('email')">
-          <svg viewBox="0 0 24 24"><path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 010 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/></svg>
-          <span>Email</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Footer -->
-    <footer class="radio-footer">
-      <div class="footer-divider"></div>
-      <div class="footer-brand">VoteMyAI Radio</div>
-      <div class="footer-tagline">AI-generated music, rated blind by humans</div>
-      <a href="https://votemyai.com" target="_blank" rel="noopener" class="footer-link">
-        <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M10 6V8H5V19H16V14H18V20C18 20.5523 17.5523 21 17 21H4C3.44772 21 3 20.5523 3 20V7C3 6.44772 3.44772 6 4 6H10ZM21 3V11H19V6.413L11.2071 14.2071L9.79289 12.7929L17.585 5H13V3H21Z"/></svg>
-        votemyai.com
-      </a>
-    </footer>
   </div>
 </div>
 
 <!-- Hidden players -->
 <div id="hiddenPlayers">
-  <audio id="audioPlayer" preload="auto" playsinline></audio>
-  <audio id="ttsPlayer" preload="auto" playsinline></audio>
+  <audio id="audioPlayer" preload="auto"></audio>
+  <audio id="ttsPlayer" preload="auto"></audio>
   <div id="ytPlayerContainer"></div>
-  <iframe id="scWidget" width="100%" height="166" scrolling="no" frameborder="no"
-    allow="autoplay; encrypted-media" playsinline src="about:blank"></iframe>
+  <iframe id="scWidget" width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay"
+    src="about:blank"></iframe>
 </div>
 
 <!-- SoundCloud Widget API -->
@@ -955,49 +697,18 @@ body {
   tag.src = 'https://www.youtube.com/iframe_api';
   document.head.appendChild(tag);
   var ytPlayer = null;
-  var _ytUnlocked = false;
   function onYouTubeIframeAPIReady() {
     ytPlayer = new YT.Player('ytPlayerContainer', {
       height: '1', width: '1',
-      playerVars: {
-        autoplay: 0,
-        controls: 0,
-        playsinline: 1,
-        origin: window.location.origin,
-        rel: 0,
-        modestbranding: 1
-      },
+      playerVars: { autoplay: 0, controls: 0 },
       events: {
-        onReady: function(event) {
-          // Ensure iframe has autoplay + playsinline permissions
-          var iframe = document.querySelector('#ytPlayerContainer iframe');
-          if (iframe) {
-            iframe.setAttribute('allow', 'autoplay; encrypted-media; playsinline');
-            iframe.setAttribute('playsinline', '');
-          }
-          console.log('📺 YT Player ready');
-          // If radio already started, warm up the player
-          if (window._ytNeedsUnlock) {
-            window._ytNeedsUnlock = false;
-            _ytUnlocked = true;
-          }
-        },
         onStateChange: onYTStateChange
       }
     });
   }
-  let _ytPauseRetried = false;
   function onYTStateChange(event) {
     if (event.data === YT.PlayerState.ENDED) {
-      _ytPauseRetried = false;
       onTrackEnded();
-    } else if (event.data === YT.PlayerState.PAUSED && typeof _isMobile !== 'undefined' && _isMobile && !_ytPauseRetried) {
-      // Mobile "paused to save power" — retry once
-      _ytPauseRetried = true;
-      console.log('📺 YouTube paused on mobile, retrying playback once');
-      try { ytPlayer.playVideo(); } catch(e) {}
-    } else if (event.data === YT.PlayerState.PLAYING) {
-      _ytPauseRetried = false;
     }
   }
 </script>
@@ -1008,11 +719,6 @@ body {
 // ============================================================
 
 const RADIO_PASSWORD = 'satansatan123!';
-
-// --- Platform Detection ---
-const _isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-const _isMobile = _isIOS || /Android/i.test(navigator.userAgent);
 
 // --- State ---
 let isPlaying = false;
@@ -1064,9 +770,8 @@ async function fetchSchedule() {
       } else if (url.includes('soundcloud.com')) {
         // SoundCloud URL
         soundcloud_url = url;
-      } else if (url.match(/udio\.com\/songs\//)) {
-        // Udio — resolved via Edge Function at playback time
-        audio_url = '__udio__'; // placeholder, resolved in playUdioTrack()
+      } else if (url.match(/udio\.com/)) {
+        // Udio — skip for now
       }
     }
 
@@ -1077,8 +782,7 @@ async function fetchSchedule() {
 
     // Determine actual platform from what we found
     let actualPlatform = platform;
-    if (audio_url === '__udio__') actualPlatform = 'udio';
-    else if (audio_url && suno_id) actualPlatform = 'suno';
+    if (audio_url && suno_id) actualPlatform = 'suno';
     else if (youtube_id) actualPlatform = 'youtube';
     else if (soundcloud_url) actualPlatform = 'soundcloud';
 
@@ -1098,10 +802,13 @@ async function fetchSchedule() {
       youtube_id: youtube_id,
       soundcloud_url: soundcloud_url,
     };
-  }).filter(t => t.audio_url || t.youtube_id || t.soundcloud_url);
+  }).filter(t => {
+    // Only include tracks with direct audio (Suno CDN mp3)
+    if (!t.audio_url) return false;
+    return true;
+  });
 
   // Apply channel filter
-  console.log(`📻 fetchSchedule: filtering for channel="${currentChannel}", ${mapped.length} total tracks`);
   let filtered = mapped;
   if (currentChannel === 'trending') {
     // Top 50 by rating
@@ -1112,18 +819,14 @@ async function fetchSchedule() {
       const g = (t.genre || '').toLowerCase();
       return genres.some(genre => g.includes(genre));
     });
-    console.log(`📻 fetchSchedule: genre filter [${genres.join(', ')}] → ${filtered.length} matches`);
   }
 
-  // STRICT: No fallback. If genre has 0 tracks, return empty — callers show "NO TRACKS".
-  // Even 1 track is fine — it will loop that single track.
-  if (filtered.length === 0 && currentChannel !== 'all') {
-    console.warn(`📻 0 tracks for channel "${currentChannel}" — NO TRACKS`);
-    allTracks = [];
-    return [];
+  // Fallback: if channel has too few tracks, tell user
+  if (filtered.length < 3 && currentChannel !== 'all') {
+    console.warn(`📻 Only ${filtered.length} tracks for channel "${currentChannel}"`);
   }
 
-  // Store ONLY the genre-filtered tracks for re-shuffling on loop
+  // Store all tracks for re-shuffling on loop
   allTracks = [...filtered];
 
   // Initial genre-diverse shuffle with top-100 boost
@@ -1132,47 +835,51 @@ async function fetchSchedule() {
   return reordered;
 }
 
-// --- Anti-repetition utility ---
-const _used = {};
-function pickFresh(arr, key) {
-  if (!_used[key]) _used[key] = [];
-  if (_used[key].length >= arr.length - 1) _used[key] = [];
-  let idx;
-  do { idx = Math.floor(Math.random() * arr.length); } while (_used[key].includes(idx));
-  _used[key].push(idx);
-  return arr[idx];
-}
-
 // --- Host personality lines ---
-let _songsSincePromo = 0;
-let _songsSinceSponsor = 0;
-let _isDJZeroPromo = false;
-const ACTIVE_SPONSORS = ['ElevenLabs'];
-
 function generateHostIntro(track) {
-  _isDJZeroPromo = false;
-  _songsSincePromo++;
-  _songsSinceSponsor++;
+  const stars = track.avg_rating ? track.avg_rating.toFixed(1) : null;
+  const note = track.artist_note || null;
+  const genre = track.genre || 'unknown genre';
 
-  const djZero = CHANNEL_HOSTS['all'];
+  // Savage rating commentary
+  let ratingRoast = '';
+  if (stars) {
+    const s = parseFloat(stars);
+    if (s >= 4.5) ratingRoast = `${stars} stars. Yeah, the people have spoken, and apparently they have terrible taste.`;
+    else if (s >= 4.0) ratingRoast = `Sitting at ${stars} stars. Not bad. Not good either, but not bad.`;
+    else if (s >= 3.5) ratingRoast = `${stars} stars. That's a solid... meh.`;
+    else if (s >= 3.0) ratingRoast = `${stars} stars. Ouch. The community did NOT hold back on this one.`;
+    else ratingRoast = `${stars} stars. That's... that's rough, buddy. Real rough.`;
+  }
 
-  // Sponsor every 7th song — always DJ Zero
-  if (_songsSinceSponsor >= 7 && ACTIVE_SPONSORS.length > 0) {
-    _songsSinceSponsor = 0;
-    _songsSincePromo = 0;
-    _isDJZeroPromo = true;
-    const sponsor = ACTIVE_SPONSORS[Math.floor(Math.random() * ACTIVE_SPONSORS.length)];
-    return pickFresh(djZero.sponsors, 'all_sponsor').replace(/\{sponsor\}/g, sponsor);
+  // Savage artist note reactions
+  let noteRoast = '';
+  if (note) {
+    const noteReactions = [
+      `The artist wrote a little note. They said, "${note}". Sure, buddy. Sure.`,
+      `Oh, and get this — the artist wants you to know: "${note}". Thanks for sharing, I guess?`,
+      `Artist note says: "${note}". I mean... okay? Nobody asked, but okay.`,
+      `The artist left a message: "${note}". Bold move. Let's see if the song backs it up.`,
+      `And I quote the artist: "${note}". Wow. The confidence. I respect it. I don't agree with it, but I respect it.`,
+    ];
+    noteRoast = ' ' + noteReactions[Math.floor(Math.random() * noteReactions.length)];
   }
-  // Promo every 3-4 songs (randomised) — always DJ Zero
-  const promoThreshold = 3 + Math.floor(Math.random() * 2); // 3 or 4
-  if (_songsSincePromo >= promoThreshold) {
-    _songsSincePromo = 0;
-    _isDJZeroPromo = true;
-    return pickFresh(djZero.promos, 'all_promo');
-  }
-  // No TTS — just play the song
-  return '';
+
+  const intros = [
+    `Alright, buckle up. Next up is "${track.title}". ${genre}. ${ratingRoast}${noteRoast} Here we go, I guess.`,
+    `Oh boy, here comes "${track.title}". It's ${genre}, because of course it is. ${ratingRoast}${noteRoast} Let's get this over with.`,
+    `Ladies and gentlemen, I present to you... "${track.title}". ${genre}. Made by an AI, rated by humans, questioned by me. ${ratingRoast}${noteRoast}`,
+    `Next on VoteMyAI Radio — "${track.title}". ${genre} vibes. Look, I don't make the playlist, I just judge it. ${ratingRoast}${noteRoast}`,
+    `Okay okay okay. "${track.title}" is up. It's ${genre}. Now before you skip — oh wait, you can't skip! This is live radio, baby! ${ratingRoast}${noteRoast}`,
+    `This is VoteMyAI Radio, where AI makes the music and humans pretend to enjoy it. Next: "${track.title}", ${genre}. ${ratingRoast}${noteRoast}`,
+    `Somebody submitted "${track.title}" to VoteMyAI. ${genre}. No clout bias here — just pure, blind, questionable judgment. ${ratingRoast}${noteRoast}`,
+    `Welcome back. Did you miss me? No? Too bad. Here's "${track.title}", ${genre}. ${ratingRoast}${noteRoast} You're welcome.`,
+    `Fun fact: this next song, "${track.title}", was made by artificial intelligence. And honestly? You can tell. ${genre}. ${ratingRoast}${noteRoast} Just kidding. Maybe.`,
+    `"${track.title}". ${genre}. Someone spent actual time prompting an AI to make this. And then someone else spent actual time rating it. What a world. ${ratingRoast}${noteRoast}`,
+    `Alright alright, don't touch that dial — oh wait, there's no dial. You're stuck with me. Next up: "${track.title}", ${genre}. ${ratingRoast}${noteRoast}`,
+    `Breaking news on VoteMyAI Radio: "${track.title}" exists. It's ${genre}. The community rated it with no idea who made it. ${ratingRoast}${noteRoast} Democracy at its finest.`,
+  ];
+  return intros[Math.floor(Math.random() * intros.length)];
 }
 
 // --- Password ---
@@ -1200,132 +907,8 @@ const CHANNEL_GENRES = {
   'hip-hop': ['hip-hop', 'hip hop', 'rap', 'trap', 'boom bap', 'r&b', 'rnb'],
   'metal': ['metal', 'heavy metal', 'death metal', 'black metal', 'thrash metal', 'doom metal', 'metalcore', 'nu-metal', 'progressive metal'],
   'electronic': ['electronic', 'edm', 'techno', 'house', 'trance', 'dubstep', 'drum and bass', 'dnb', 'synthwave', 'electro'],
-  'country': ['country', 'bluegrass', 'americana', 'country rock'],
+  'country': ['country', 'folk', 'bluegrass', 'americana', 'country rock'],
   'chill': ['lo-fi', 'lofi', 'ambient', 'chillwave', 'downtempo', 'jazz', 'bossa nova', 'acoustic', 'singer-songwriter', 'soul'],
-};
-
-// --- Per-Channel Voice Config (Web Speech API) ---
-const CHANNEL_HOSTS = {
-  'all': {
-    name: 'DJ Zero',
-    preferVoice: 'Google UK English Male',
-    gender: 'male',
-    pitch: 0.9,
-    rate: 0.85,
-    welcome: [
-      "DJ Zero. The Blind Mix. Let's go.",
-      "Blind Mix. DJ Zero. No names, no fame.",
-      "DJ Zero here. Welcome to The Blind Mix.",
-    ],
-    promos: [
-      "Submit your AI tracks at vote my A.I. dot com. Get rated blind.",
-      "vote my A.I. dot com. Nine channels. Blind ratings. No clout bias.",
-      "Got an AI track? Submit at vote my A.I. dot com. The community decides.",
-      "Check the blog at vote my A.I. dot com. New articles every week.",
-      "vote my A.I. dot com. Submit. Rate. Listen. It's not complicated.",
-      "No names, no fame. Just sound. vote my A.I. dot com.",
-      "Making AI music? vote my A.I. dot com. Get rated by strangers.",
-      "Nine channels, hundreds of tracks, zero bias. vote my A.I. dot com.",
-    ],
-    sponsors: [
-      "This station runs on caffeine and {sponsor}. If you're making AI music, check them out. vote my A.I. dot com.",
-      "Quick shoutout to {sponsor} — tools that help you make better AI music. Creator Tools at vote my A.I. dot com.",
-      "Before we continue, a word about {sponsor}. They make things. Good things. Music things. vote my A.I. dot com.",
-      "This segment brought to you by {sponsor}. DJ Zero approved. Which means nothing. But still.",
-      "Making AI music? {sponsor} might be your next favorite tool. Creator Tools at vote my A.I. dot com.",
-      "Shoutout to {sponsor} for keeping the lights on. Figuratively. Everything here is free. We're doing great.",
-      "{sponsor}. Because even AI music needs good tools. vote my A.I. dot com.",
-      "A moment for {sponsor}. They help creators create. We help creators get judged. vote my A.I. dot com.",
-    ],
-  },
-  'trending': {
-    name: 'The Algorithm',
-    preferVoice: 'Google US English',
-    gender: 'female',
-    pitch: 0.7,
-    rate: 0.95,
-    welcome: [
-      "The Algorithm. Trending. Vote my A.I. Radio.",
-      "Trending channel online. The Algorithm presides.",
-    ],
-  },
-  'pop': {
-    name: 'Poppy',
-    preferVoice: 'Google UK English Female',
-    gender: 'female',
-    pitch: 1.3,
-    rate: 0.95,
-    welcome: [
-      "It's Poppy! Pop channel! Let's GO!",
-      "Poppy here! Welcome to Pop!",
-    ],
-  },
-  'rock': {
-    name: 'Riff',
-    preferVoice: 'Daniel',
-    gender: 'male',
-    pitch: 0.6,
-    rate: 0.88,
-    welcome: [
-      "Riff. Rock channel. Here we go.",
-      "Rock. Vote my A.I. Radio. Riff at the mic.",
-    ],
-  },
-  'hip-hop': {
-    name: 'MC Buffer',
-    preferVoice: 'Google US English',
-    gender: 'male',
-    pitch: 1.0,
-    rate: 1.2,
-    welcome: [
-      "Yo! MC Buffer! Hip-Hop channel! Let's get it!",
-      "MC Buffer online! Hip-Hop! Vote my A.I. Radio!",
-    ],
-  },
-  'metal': {
-    name: 'Lord Distortion',
-    preferVoice: 'Daniel',
-    gender: 'male',
-    pitch: 0.4,
-    rate: 0.8,
-    welcome: [
-      "Lord Distortion. Metal. Enter freely.",
-      "Metal. Lord Distortion presides. Welcome.",
-    ],
-  },
-  'electronic': {
-    name: 'SYNC',
-    preferVoice: 'Google UK English Female',
-    gender: 'female',
-    pitch: 0.8,
-    rate: 0.95,
-    welcome: [
-      "SYNC online. Electronic channel.",
-      "Electronic. SYNC operational. Welcome.",
-    ],
-  },
-  'country': {
-    name: 'Dusty',
-    preferVoice: 'Google US English',
-    gender: 'male',
-    pitch: 0.85,
-    rate: 0.9,
-    welcome: [
-      "Howdy. Dusty here. Country channel.",
-      "Dusty. Country. Vote my A.I. Radio. Welcome.",
-    ],
-  },
-  'chill': {
-    name: 'Whisper',
-    preferVoice: 'Karen',
-    gender: 'female',
-    pitch: 1.1,
-    rate: 0.75,
-    welcome: [
-      "Whisper. Chill channel. Breathe.",
-      "Welcome to Chill. I'm Whisper.",
-    ],
-  },
 };
 
 let currentChannel = 'all';
@@ -1349,48 +932,25 @@ async function startRadio(channel = 'all') {
     console.log('🎙️ TTS warmup: unlocked speechSynthesis via user gesture');
   }
 
-  // 2. Unlock HTML5 Audio + AudioContext on iOS (needs play() in gesture chain)
-  // Use fire-and-forget (no await) to avoid hanging if play() never resolves
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    ctx.resume().then(() => ctx.close()).catch(() => {});
-  } catch(e) {}
+  // 2. Unlock HTML5 Audio on iOS (needs play() in gesture chain)
   const audioPlayer = document.getElementById('audioPlayer');
-  audioPlayer.muted = true;
-  audioPlayer.play().then(() => {
+  try {
+    audioPlayer.muted = true;
+    await audioPlayer.play();
     audioPlayer.pause();
     audioPlayer.muted = false;
     audioPlayer.currentTime = 0;
     console.log('🔊 Audio unlock: HTML5 audio unlocked via user gesture');
-  }).catch(() => {
+  } catch(e) {
+    // Some browsers don't need this, ignore
     audioPlayer.muted = false;
-  });
-
-  // 3. Warm up YouTube player during user gesture (iOS needs this)
-  if (ytPlayer && ytPlayer.mute) {
-    try {
-      ytPlayer.mute();
-      ytPlayer.loadVideoById({ videoId: 'jNQXAC9IVRw', startSeconds: 0 });
-      setTimeout(() => {
-        try { ytPlayer.stopVideo(); ytPlayer.unMute(); _ytUnlocked = true; } catch(e) {}
-      }, 200);
-      console.log('📺 YT warmup: unlocked YouTube player via user gesture');
-    } catch(e) {}
-  } else {
-    // YT API not loaded yet — flag for unlock when ready
-    window._ytNeedsUnlock = true;
   }
 
   document.getElementById('startOverlay').style.display = 'none';
   document.getElementById('statusText').textContent = 'LOADING...';
 
-  // Init SC Widget (may fail if SC API didn't load)
-  try {
-    scWidgetObj = SC.Widget(document.getElementById('scWidget'));
-  } catch(e) {
-    console.warn('🔊 SC Widget API failed to initialize:', e.message);
-    scWidgetObj = null;
-  }
+  // Init SC Widget
+  scWidgetObj = SC.Widget(document.getElementById('scWidget'));
 
   // Fetch real tracks from Supabase
   try {
@@ -1417,13 +977,22 @@ async function startRadio(channel = 'all') {
     return;
   }
 
+  document.getElementById('statusText').textContent = 'LOADING...';
   isPlaying = true;
   currentTrackIndex = -1;
 
-  // Preload Web Speech voices
+  // Preload TTS voices
   await loadVoices();
 
+  // No pre-validation — we use the buffer approach instead
   console.log(`📻 Radio loaded ${schedule.length} tracks, starting with buffer approach`);
+
+  if (schedule.length === 0) {
+    document.getElementById('statusText').textContent = 'NO TRACKS';
+    alert('No playable tracks found!');
+    return;
+  }
+
   document.getElementById('statusText').textContent = 'TUNING IN...';
 
   // Find first working track and start
@@ -1435,112 +1004,6 @@ async function startRadio(channel = 'all') {
   }
 
   document.getElementById('statusText').textContent = 'LIVE';
-  renderChannelStrip();
-
-  // Welcome message on initial start
-  _songsSincePromo = 0;
-  _songsSinceSponsor = 0;
-  const welcomeHost = CHANNEL_HOSTS[currentChannel] || CHANNEL_HOSTS['all'];
-  const welcomeMsg = pickFresh(welcomeHost.welcome, currentChannel + '_welcome');
-  const hostEl = document.getElementById('hostMsg');
-  const hostNameEl = hostEl.querySelector('.host-name');
-  if (hostNameEl) hostNameEl.textContent = welcomeHost.name;
-  hostEl.classList.add('visible');
-  await speakText(welcomeMsg);
-  hostEl.classList.remove('visible');
-
-  await playVerifiedTrack(firstTrack);
-}
-
-// --- Channel Switcher (inline, while playing) ---
-const CHANNEL_DATA = [
-  { id: 'all',        icon: '📻', name: 'The Blind Mix' },
-  { id: 'trending',   icon: '🔥', name: 'Trending' },
-  { id: 'pop',        icon: '🎤', name: 'Pop' },
-  { id: 'rock',       icon: '🎸', name: 'Rock' },
-  { id: 'hip-hop',    icon: '🎧', name: 'Hip-Hop' },
-  { id: 'metal',      icon: '🤘', name: 'Metal' },
-  { id: 'electronic', icon: '🎛️', name: 'Electronic' },
-  { id: 'country',    icon: '🤠', name: 'Country' },
-  { id: 'chill',      icon: '🧘', name: 'Chill' },
-];
-
-function renderChannelStrip() {
-  const strip = document.getElementById('channelStrip');
-  strip.innerHTML = '';
-  CHANNEL_DATA.forEach(ch => {
-    const chip = document.createElement('button');
-    chip.className = 'channel-chip' + (ch.id === currentChannel ? ' active' : '');
-    chip.innerHTML = `<span class="chip-icon">${ch.icon}</span><span class="chip-name">${ch.name}</span>`;
-    chip.onclick = () => switchChannel(ch.id);
-    strip.appendChild(chip);
-  });
-}
-
-let _switchGen = 0;
-async function switchChannel(channel) {
-  if (channel === currentChannel) return;
-  const gen = ++_switchGen;
-
-  console.log(`📻 Switching channel: ${currentChannel} → ${channel} (gen=${_switchGen + 1})`);
-  currentChannel = channel;
-
-  // Update active chip
-  renderChannelStrip();
-
-  // Update header
-  const chData = CHANNEL_DATA.find(c => c.id === channel);
-  document.querySelector('.header h1').innerHTML =
-    `VoteMyAI <span>Radio</span><div style="font-size:0.5em;color:var(--accent2);font-weight:400;margin-top:4px;">${chData ? chData.name : 'All Tracks'}</div>`;
-
-  // Stop current playback + TTS
-  stopAllPlayers();
-  isTransitioning = false;
-  nextBufferedTrack = null;
-
-  document.getElementById('statusText').textContent = 'TUNING IN...';
-
-  // Reload schedule for new channel
-  try {
-    schedule = await fetchSchedule();
-    if (gen !== _switchGen) return; // stale switch, abort
-    if (schedule.length === 0) {
-      document.getElementById('statusText').textContent = 'NO TRACKS';
-      return;
-    }
-  } catch(err) {
-    if (gen !== _switchGen) return;
-    console.error('Channel switch failed:', err);
-    document.getElementById('statusText').textContent = 'ERROR';
-    return;
-  }
-
-  currentTrackIndex = -1;
-  const firstTrack = await findNextWorkingTrack();
-  if (gen !== _switchGen) return; // stale switch, abort
-  if (!firstTrack) {
-    document.getElementById('statusText').textContent = 'NO TRACKS';
-    return;
-  }
-
-  document.getElementById('statusText').textContent = 'LIVE';
-
-  // Welcome message on channel switch
-  _songsSincePromo = 0;
-  _songsSinceSponsor = 0;
-  {
-    const ch = currentChannel;
-    const host = CHANNEL_HOSTS[ch] || CHANNEL_HOSTS['all'];
-    const welcomeMsg = pickFresh(host.welcome, ch + '_welcome');
-    const hostEl = document.getElementById('hostMsg');
-    const nameEl = hostEl.querySelector('.host-name');
-    if (nameEl) nameEl.textContent = host.name;
-    hostEl.classList.add('visible');
-    await speakText(welcomeMsg);
-    if (gen !== _switchGen) return; // stale switch during welcome TTS
-    hostEl.classList.remove('visible');
-  }
-
   await playVerifiedTrack(firstTrack);
 }
 
@@ -1566,84 +1029,169 @@ function loadVoices() {
   });
 }
 
-function getPreferredVoice(hostConfig) {
+function getPreferredVoice() {
   if (ttsVoices.length === 0) ttsVoices = window.speechSynthesis.getVoices();
-  const en = ttsVoices.filter(v => v.lang.startsWith('en'));
-  if (en.length === 0) return ttsVoices[0] || null;
-
-  if (hostConfig && hostConfig.preferVoice) {
-    // 1. Exact preferVoice match
-    const exact = en.find(v => v.name.includes(hostConfig.preferVoice));
-    if (exact) return exact;
-  }
-
-  if (hostConfig && hostConfig.gender) {
-    // 2. Gender-based fallback
-    const genderHints = hostConfig.gender === 'female'
-      ? ['Female', 'Samantha', 'Karen', 'Moira', 'Fiona', 'Victoria', 'Tessa']
-      : ['Male', 'Daniel', 'Alex', 'Fred', 'Tom', 'James', 'Aaron'];
-    const genderMatch = en.find(v => genderHints.some(h => v.name.includes(h)));
-    if (genderMatch) return genderMatch;
-  }
-
-  // 3. Generic English fallback
-  return en.find(v => v.name.includes('Google') && v.lang.startsWith('en'))
-    || en[0] || ttsVoices[0] || null;
+  return ttsVoices.find(v => v.name.includes('Google') && v.lang.startsWith('en'))
+    || ttsVoices.find(v => v.lang.startsWith('en-') && v.name.includes('Female'))
+    || ttsVoices.find(v => v.lang.startsWith('en-'))
+    || ttsVoices.find(v => v.lang.startsWith('en'))
+    || ttsVoices[0] || null;
 }
 
-// --- Web Speech TTS with per-channel voices ---
+// --- Mobile detection ---
+const _isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+const _isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+const _isAndroid = /Android/i.test(navigator.userAgent);
+
+// Keep reference to current utterance to prevent GC on Safari
+let _currentUtterance = null;
 
 function speakText(text) {
   return new Promise(resolve => {
     if (!('speechSynthesis' in window) || ttsVoices.length === 0) {
-      console.warn('🎙️ No TTS available, skipping intro');
+      console.warn('🎙️ No TTS available, skipping voice intro');
       resolve();
       return;
     }
 
+    // Cancel any stuck speech
     window.speechSynthesis.cancel();
 
-    // Use DJ Zero's voice for promos/sponsors, channel host for everything else
-    const host = _isDJZeroPromo ? CHANNEL_HOSTS['all'] : (CHANNEL_HOSTS[currentChannel] || CHANNEL_HOSTS['all']);
-    const voice = getPreferredVoice(host);
+    console.log(`🎙️ Speaking (${_isMobile ? 'mobile' : 'desktop'}): ${text.substring(0, 60)}...`);
 
-    console.log(`🎙️ ${host.name} speaking (pitch:${host.pitch}, rate:${host.rate}, voice:${voice ? voice.name : 'default'}): ${text.substring(0, 60)}...`);
+    // On mobile: always use chunk-based TTS for reliability
+    // On desktop: use chunks for long text, single utterance for short
+    if (_isMobile || text.length > 200) {
+      speakChunked(text).then(resolve);
+    } else {
+      speakSingle(text).then(resolve);
+    }
+  });
+}
 
+// Single utterance with desktop Chrome pause/resume workaround
+function speakSingle(text) {
+  return new Promise(resolve => {
     const utterance = new SpeechSynthesisUtterance(text);
+    _currentUtterance = utterance; // prevent GC
     utterance.lang = 'en-US';
-    utterance.rate = host.rate;
-    utterance.pitch = host.pitch;
+    utterance.rate = 0.92;
+    utterance.pitch = 1.0;
     utterance.volume = document.getElementById('volumeSlider').value / 100;
-    if (voice) utterance.voice = voice;
 
-    // Prevent Safari GC
-    window._currentUtterance = utterance;
+    const voice = getPreferredVoice();
+    if (voice) utterance.voice = voice;
 
     let resolved = false;
     const done = (reason) => {
       if (resolved) return;
       resolved = true;
       clearInterval(watchdog);
+      _currentUtterance = null;
       console.log('🎙️ TTS done:', reason);
       resolve();
     };
 
     utterance.onend = () => done('onend');
     utterance.onerror = () => done('error');
-    setTimeout(() => done('timeout'), 30000);
+    setTimeout(() => done('timeout'), 25000);
 
     window.speechSynthesis.speak(utterance);
 
-    // Poll for completion (covers iOS Safari unreliable onend + Chrome silent stop)
-    let hasStarted = false;
+    // Desktop Chrome only: pause/resume every 3s to prevent 15s cutoff
+    // DO NOT use on Android (causes cancellation) or iOS (not needed)
     const watchdog = setInterval(() => {
       if (resolved) { clearInterval(watchdog); return; }
       if (window.speechSynthesis.speaking) {
-        hasStarted = true;
-      } else if (hasStarted) {
-        done('poll-end');
+        if (!_isMobile) {
+          window.speechSynthesis.pause();
+          window.speechSynthesis.resume();
+        }
+      } else {
+        // Speech stopped but onend didn't fire
+        done('silent-end');
       }
-    }, 300);
+    }, 3000);
+  });
+}
+
+// Chunk-based TTS for mobile reliability
+// Splits text into sentences, speaks each sequentially
+async function speakChunked(text) {
+  // Split at sentence boundaries: .!? followed by space or end
+  const rawChunks = text.match(/[^.!?]*[.!?]+[\s]*/g) || [text];
+
+  // Merge very short chunks (under 20 chars) with next chunk for natural flow
+  const chunks = [];
+  let buffer = '';
+  for (const chunk of rawChunks) {
+    buffer += chunk;
+    if (buffer.trim().length >= 40 || chunk === rawChunks[rawChunks.length - 1]) {
+      chunks.push(buffer.trim());
+      buffer = '';
+    }
+  }
+  if (buffer.trim()) chunks.push(buffer.trim());
+
+  console.log(`🎙️ Chunked TTS: ${chunks.length} chunks`);
+
+  for (let i = 0; i < chunks.length; i++) {
+    if (!isPlaying) break; // Stop if user stopped playback
+    await speakSingleChunk(chunks[i], i, chunks.length);
+  }
+}
+
+function speakSingleChunk(text, index, total) {
+  return new Promise(resolve => {
+    if (!text || !text.trim()) { resolve(); return; }
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    _currentUtterance = utterance; // prevent GC on Safari
+    utterance.lang = 'en-US';
+    utterance.rate = 0.92;
+    utterance.pitch = 1.0;
+    utterance.volume = document.getElementById('volumeSlider').value / 100;
+
+    const voice = getPreferredVoice();
+    if (voice) utterance.voice = voice;
+
+    let resolved = false;
+    const done = (reason) => {
+      if (resolved) return;
+      resolved = true;
+      clearInterval(pollInterval);
+      console.log(`🎙️ Chunk ${index + 1}/${total} done: ${reason}`);
+      // Small pause between chunks for natural rhythm
+      setTimeout(resolve, 80);
+    };
+
+    utterance.onend = () => done('onend');
+    utterance.onerror = (e) => {
+      console.warn(`🎙️ Chunk ${index + 1} error:`, e.error || e);
+      done('error');
+    };
+
+    // Per-chunk safety timeout: ~10s max per chunk
+    setTimeout(() => done('timeout'), 10000);
+
+    window.speechSynthesis.speak(utterance);
+
+    // Poll for completion — catches iOS Safari's unreliable onend
+    let hasStarted = false;
+    let silentChecks = 0;
+    const pollInterval = setInterval(() => {
+      if (resolved) { clearInterval(pollInterval); return; }
+      if (window.speechSynthesis.speaking) {
+        hasStarted = true;
+        silentChecks = 0;
+      } else if (hasStarted) {
+        // Was speaking, now stopped — onend may not have fired (iOS bug)
+        silentChecks++;
+        if (silentChecks >= 2) { // 2 consecutive checks = truly done
+          done('poll-end');
+        }
+      }
+    }, 150);
   });
 }
 
@@ -1659,10 +1207,8 @@ let allTracks = []; // Store all tracks for re-shuffling
 
 // Genre-diverse reorder function (reusable for re-shuffles)
 function genreDiverseShuffle(tracks) {
-  if (tracks.length === 0) return [];
-
   let pool;
-
+  
   if (currentChannel === 'trending') {
     // Trending is already the top tracks — no boost needed, just shuffle
     pool = [...tracks];
@@ -1679,34 +1225,21 @@ function genreDiverseShuffle(tracks) {
     .map(t => ({ ...t, _sort: Math.random() }))
     .sort((a, b) => a._sort - b._sort);
 
-  // For genre-specific channels: skip genre-diverse reorder (all tracks are same genre).
-  // Just dedupe consecutive same title (from the 3x boost duplicates).
-  const isGenreChannel = CHANNEL_GENRES[currentChannel] && currentChannel !== 'all' && currentChannel !== 'trending';
-
+  // Genre-diverse reorder + dedupe consecutive same title
   const reordered = [];
   const remaining = [...shuffled];
   let lastGenre = '';
   let lastTitle = '';
 
   while (remaining.length > 0) {
-    let idx;
-    if (isGenreChannel) {
-      // Genre channel: only avoid consecutive same title (no cross-genre logic needed)
-      idx = remaining.findIndex(t =>
-        t.title.toLowerCase() !== lastTitle.toLowerCase()
-      );
-      if (idx === -1) idx = 0;
-    } else {
-      // Mixed channel (all): genre-diverse reorder + dedupe consecutive same title
-      idx = remaining.findIndex(t =>
-        t.genre.toLowerCase() !== lastGenre.toLowerCase() &&
-        t.title.toLowerCase() !== lastTitle.toLowerCase()
-      );
-      if (idx === -1) idx = remaining.findIndex(t =>
-        t.title.toLowerCase() !== lastTitle.toLowerCase()
-      );
-      if (idx === -1) idx = 0;
-    }
+    let idx = remaining.findIndex(t =>
+      t.genre.toLowerCase() !== lastGenre.toLowerCase() &&
+      t.title.toLowerCase() !== lastTitle.toLowerCase()
+    );
+    if (idx === -1) idx = remaining.findIndex(t =>
+      t.title.toLowerCase() !== lastTitle.toLowerCase()
+    );
+    if (idx === -1) idx = 0;
 
     const track = remaining.splice(idx, 1)[0];
     reordered.push(track);
@@ -1745,10 +1278,8 @@ async function findNextWorkingTrack() {
         console.log(`⏭️ Silent skip (won't load): "${candidate.title}"`);
         continue;
       }
-    } else if (candidate.platform === 'udio') {
-      console.log(`✅ Udio track queued: "${candidate.title}"`);
-      return candidate;
     } else if (candidate.youtube_id) {
+      // YT can't easily be pre-tested, trust it
       console.log(`✅ YouTube track queued: "${candidate.title}"`);
       return candidate;
     } else if (candidate.soundcloud_url) {
@@ -1787,34 +1318,26 @@ function bufferLoadAudio(url) {
 
 // Play a track that has already been verified/buffered
 async function playVerifiedTrack(track) {
-  const gen = _switchGen; // capture channel generation before TTS
-  console.log(`📻 Now playing [${currentTrackIndex + 1}/${schedule.length}]: "${track.title}" (${track.platform}) on ch="${currentChannel}"`);
+  console.log(`📻 Now playing [${currentTrackIndex + 1}/${schedule.length}]: "${track.title}" (${track.platform})`);
 
-  // STEP 1: Stop ALL audio/video playback IMMEDIATELY (old song stops NOW)
-  stopAudioPlayback();
-
-  // STEP 2: Update UI
+  // Update UI
   updateNowPlaying(track);
   updateUpNext();
 
-  // STEP 3: TTS intro (only if promo/sponsor — no outro after every song)
+  // Show host speaking indicator + speak intro
   const introText = showHostMessage(track);
-  if (introText) {
-    await speakText(introText);
-    document.getElementById('hostMsg').classList.remove('visible');
-  }
+  await speakText(introText);
+  document.getElementById('hostMsg').classList.remove('visible');
 
-  // Bail if channel switched while TTS was speaking
-  if (gen !== _switchGen) {
-    console.log(`📻 Channel switched during TTS, aborting stale playback for "${track.title}"`);
-    return;
-  }
   if (!isPlaying) return;
 
-  // STEP 4: Play the new track (use track.audio_url directly, NOT bufferAudio.src)
+  // Play the track
+  stopAllPlayers();
+
   if (track.platform === 'suno' && track.audio_url) {
+    // Transfer buffered audio to the main player
     const audio = document.getElementById('audioPlayer');
-    audio.src = track.audio_url;
+    audio.src = bufferAudio.src;
     audio.volume = document.getElementById('volumeSlider').value / 100;
     audio.currentTime = 0;
 
@@ -1837,13 +1360,12 @@ async function playVerifiedTrack(track) {
       onTrackEnded();
     });
 
-  } else if (track.platform === 'udio') {
-    await playUdioTrack(track);
   } else if (track.platform === 'youtube' || track.youtube_id) {
     playYouTubeTrack(track);
   } else if (track.platform === 'soundcloud' || track.soundcloud_url) {
-    await playSoundCloudTrack(track);
-  } else if (track.audio_url && track.audio_url !== '__udio__') {
+    playSoundCloudTrack(track);
+  } else if (track.audio_url) {
+    // Generic audio fallback
     const audio = document.getElementById('audioPlayer');
     audio.src = track.audio_url;
     audio.volume = document.getElementById('volumeSlider').value / 100;
@@ -1895,7 +1417,7 @@ async function preBufferNext() {
         console.log(`⏭️ Pre-buffer skip: "${candidate.title}"`);
         continue;
       }
-    } else if (candidate.platform === 'udio' || candidate.youtube_id || candidate.soundcloud_url) {
+    } else if (candidate.youtube_id || candidate.soundcloud_url) {
       nextBufferedTrack = { track: candidate, index: tempIndex };
       console.log(`🔮 Next queued (${candidate.platform}): "${candidate.title}"`);
       return;
@@ -1906,20 +1428,17 @@ async function preBufferNext() {
 
 function showHostMessage(track) {
   const msg = generateHostIntro(track);
-  if (!msg) return ''; // No TTS needed — skip UI entirely
-
   const el = document.getElementById('hostMsg');
 
-  // Promos/sponsors always show DJ Zero, otherwise channel host
-  const nameEl = el.querySelector('.host-name');
-  if (nameEl) nameEl.textContent = _isDJZeroPromo ? '🎙️ DJ Zero' : (CHANNEL_HOSTS[currentChannel] || CHANNEL_HOSTS['all']).name;
-
+  // Show the host text so users can read along (especially useful when TTS fails on mobile)
+  document.getElementById('hostText').textContent = msg;
   el.classList.add('visible');
 
-  // Hide indicator after TTS typically finishes
+  // Extended timeout for mobile TTS which takes longer with chunking
+  const hideTimeout = _isMobile ? 25000 : 15000;
   setTimeout(() => {
     el.classList.remove('visible');
-  }, 20000);
+  }, hideTimeout);
 
   return msg;
 }
@@ -1930,8 +1449,7 @@ function showHostMessage(track) {
 let fallbackTimer = null;
 function setFallbackTimer(seconds) {
   clearFallbackTimer();
-  const duration = Math.min(seconds || 300, 600); // cap at 10 minutes
-  const timeout = duration + 10; // track duration + 10s buffer
+  const timeout = (seconds || 300) + 10; // track duration + 10s buffer, max 5min
   fallbackTimer = setTimeout(() => {
     console.warn('⏭️ Fallback timer triggered — skipping to next');
     onTrackEnded();
@@ -1948,238 +1466,92 @@ function clearFallbackTimer() {
 function playYouTubeTrack(track) {
   if (!ytPlayer || !ytPlayer.loadVideoById) {
     console.warn('📺 YT Player not ready, skipping');
-    setTimeout(() => onTrackEnded(), 1000);
+    setTimeout(() => onTrackEnded(), 500);
     return;
   }
 
   console.log('📺 Loading YouTube:', track.youtube_id);
-  const vol = document.getElementById('volumeSlider').value;
-  ytPlayer.setVolume(vol);
-  ytPlayer.loadVideoById({ videoId: track.youtube_id, startSeconds: 0 });
+  ytPlayer.loadVideoById(track.youtube_id);
+  ytPlayer.setVolume(document.getElementById('volumeSlider').value);
 
-  // iOS: explicit playVideo() after load — needed when autoplay is blocked
-  setTimeout(() => {
-    try { ytPlayer.playVideo(); } catch(e) {}
-  }, 300);
-  // Second retry for slow iOS loads
-  setTimeout(() => {
-    try {
-      if (ytPlayer.getPlayerState && ytPlayer.getPlayerState() !== YT.PlayerState.PLAYING) {
-        ytPlayer.playVideo();
-      }
-    } catch(e) {}
-  }, 1500);
-
+  // Quick check: if YT hasn't started playing within 10s, skip
   let ytStarted = false;
-  let ytSkipped = false;
-  const timeout = _isMobile ? 15000 : 15000;
   const ytQuickCheck = setTimeout(() => {
-    if (!ytStarted && !ytSkipped) {
-      ytSkipped = true;
-      console.warn(`📺 YouTube failed to start within ${timeout/1000}s, skipping:`, track.title);
+    if (!ytStarted) {
+      console.warn('📺 YouTube failed to start within 10s, skipping:', track.title);
       onTrackEnded();
     }
-  }, timeout);
+  }, 10000);
 
   // Progress tracking for YT
   if (progressInterval) clearInterval(progressInterval);
   progressInterval = setInterval(() => {
-    if (ytSkipped) { clearInterval(progressInterval); return; }
     if (ytPlayer && ytPlayer.getCurrentTime) {
       const current = ytPlayer.getCurrentTime();
       const duration = ytPlayer.getDuration();
-      if (current > 0.5 && !ytStarted) {
+      if (current > 0.5) {
         ytStarted = true;
         clearTimeout(ytQuickCheck);
-        console.log('📺 YouTube playing:', track.title);
       }
       updateProgress(current, duration);
       if (duration > 0 && !fallbackTimer) setFallbackTimer(duration);
     }
   }, 500);
 
+  // Max fallback
   setFallbackTimer(300);
 }
 
-async function playUdioTrack(track) {
-  const gen = _switchGen;
-  const udioUrl = track.embed_url;
-  if (!udioUrl || !udioUrl.includes('udio.com')) {
-    console.warn('🎶 No Udio URL, skipping');
-    setTimeout(() => onTrackEnded(), 500);
-    return;
-  }
-
-  console.log('🎶 Resolving Udio stream:', udioUrl);
-
-  try {
-    const resp = await fetch(`${SUPABASE_URL}/functions/v1/udio-stream`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`
-      },
-      body: JSON.stringify({ url: udioUrl })
-    });
-
-    if (!resp.ok) {
-      const err = await resp.json().catch(() => ({}));
-      throw new Error(err.error || `HTTP ${resp.status}`);
-    }
-
-    const data = await resp.json();
-    if (!data.stream_url) throw new Error('No stream URL returned');
-
-    console.log('🎶 Udio stream resolved:', data.stream_url.substring(0, 80) + '...');
-
-    // Bail if channel switched during fetch
-    if (gen !== _switchGen) return;
-
-    const audio = document.getElementById('audioPlayer');
-    audio.src = data.stream_url;
-    audio.volume = document.getElementById('volumeSlider').value / 100;
-    audio.currentTime = 0;
-
-    audio.onended = () => onTrackEnded();
-    audio.onerror = () => {
-      console.warn('🎶 Udio playback error, skipping');
-      onTrackEnded();
-    };
-    audio.ontimeupdate = () => updateProgress(audio.currentTime, audio.duration);
-    audio.onloadedmetadata = () => {
-      document.getElementById('timeDuration').textContent = formatTime(audio.duration);
-      setFallbackTimer(audio.duration);
-    };
-    setFallbackTimer(300);
-
-    audio.play().then(() => {
-      console.log('🎶 Udio playing:', track.title);
-    }).catch(err => {
-      console.warn('🎶 Udio play failed:', err.message);
-      onTrackEnded();
-    });
-
-  } catch (err) {
-    console.warn('🎶 Udio stream resolve failed:', err.message, '— skipping');
-    onTrackEnded();
-  }
-}
-
-async function playSoundCloudTrack(track) {
-  const gen = _switchGen;
+function playSoundCloudTrack(track) {
   const scUrl = track.soundcloud_url || track.embed_url;
-  if (!scUrl) {
-    console.warn('🔊 No SC URL, skipping');
+
+  if (!scUrl || !scWidgetObj) {
+    console.warn('🔊 No SC URL or widget, skipping');
     setTimeout(() => onTrackEnded(), 500);
     return;
   }
 
-  console.log('🔊 Resolving SoundCloud stream:', scUrl);
+  console.log('🔊 Loading SoundCloud:', scUrl);
 
-  try {
-    // Call Edge Function to get direct stream URL
-    const resp = await fetch(`${SUPABASE_URL}/functions/v1/sc-stream`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`
-      },
-      body: JSON.stringify({ url: scUrl })
-    });
-
-    if (!resp.ok) {
-      const err = await resp.json().catch(() => ({}));
-      throw new Error(err.error || `HTTP ${resp.status}`);
-    }
-
-    const data = await resp.json();
-    if (!data.stream_url) throw new Error('No stream URL returned');
-
-    console.log(`🔊 SC stream resolved (${data.format}):`, data.stream_url.substring(0, 80) + '...');
-
-    // Bail if channel switched during fetch
-    if (gen !== _switchGen) return;
-
-    // Play via the main audio element (same path as Suno — works on iOS)
-    const audio = document.getElementById('audioPlayer');
-    audio.src = data.stream_url;
-    audio.volume = document.getElementById('volumeSlider').value / 100;
-    audio.currentTime = 0;
-
-    audio.onended = () => onTrackEnded();
-    audio.onerror = () => {
-      console.warn('🔊 SC audio playback error, skipping');
-      onTrackEnded();
-    };
-    audio.ontimeupdate = () => updateProgress(audio.currentTime, audio.duration);
-    audio.onloadedmetadata = () => {
-      document.getElementById('timeDuration').textContent = formatTime(audio.duration);
-      setFallbackTimer(audio.duration);
-    };
-    setFallbackTimer(300);
-
-    audio.play().then(() => {
-      console.log('🔊 SoundCloud playing:', track.title);
-    }).catch(err => {
-      console.warn('🔊 SC play failed:', err.message);
-      onTrackEnded();
-    });
-
-  } catch (err) {
-    console.warn('🔊 SC stream resolve failed:', err.message, '— trying widget fallback');
-    playSoundCloudWidget(track, scUrl);
-  }
-}
-
-// Fallback: SC Widget for when Edge Function fails (e.g. CORS, rate limit)
-function playSoundCloudWidget(track, scUrl) {
-  if (!scWidgetObj) {
-    console.warn('🔊 No SC widget available, skipping');
-    setTimeout(() => onTrackEnded(), 500);
-    return;
-  }
-
+  // Quick check: if SC hasn't started within 10s, skip
   let scStarted = false;
-  let scSkipped = false;
-  const scTimeout = _isMobile ? 4000 : 6000;
   const scQuickCheck = setTimeout(() => {
-    if (!scStarted && !scSkipped) {
-      scSkipped = true;
-      console.warn('🔊 SC widget fallback timed out, skipping:', track.title);
+    if (!scStarted) {
+      console.warn('🔊 SoundCloud failed to start within 10s, skipping:', track.title);
       onTrackEnded();
     }
-  }, scTimeout);
-
-  try {
-    scWidgetObj.unbind(SC.Widget.Events.FINISH);
-    scWidgetObj.unbind(SC.Widget.Events.PLAY_PROGRESS);
-    scWidgetObj.unbind(SC.Widget.Events.ERROR);
-    scWidgetObj.unbind(SC.Widget.Events.READY);
-  } catch (e) {}
+  }, 10000);
 
   scWidgetObj.load(scUrl, {
-    auto_play: true, show_artwork: false, show_user: false,
-    hide_related: true, visual: false,
-    callback: () => { try { scWidgetObj.play(); } catch(e) {} }
+    auto_play: true,
+    show_artwork: false,
+    show_user: false,
+    hide_related: true,
+    visual: false
   });
 
-  scWidgetObj.bind(SC.Widget.Events.READY, () => {
-    if (!scStarted && !scSkipped) try { scWidgetObj.play(); } catch(e) {}
+  // Rebind events after load
+  scWidgetObj.bind(SC.Widget.Events.FINISH, () => {
+    onTrackEnded();
   });
-  scWidgetObj.bind(SC.Widget.Events.FINISH, () => { if (!scSkipped) onTrackEnded(); });
+
   scWidgetObj.bind(SC.Widget.Events.PLAY_PROGRESS, (data) => {
-    if (!scStarted) { scStarted = true; clearTimeout(scQuickCheck); }
-    if (scSkipped) return;
-    scWidgetObj.getDuration(d => {
-      updateProgress(data.currentPosition / 1000, d / 1000);
-      if (d > 0 && !fallbackTimer) setFallbackTimer(d / 1000);
+    if (!scStarted) {
+      scStarted = true;
+      clearTimeout(scQuickCheck);
+    }
+    scWidgetObj.getDuration(duration => {
+      updateProgress(data.currentPosition / 1000, duration / 1000);
+      if (duration > 0 && !fallbackTimer) setFallbackTimer(duration / 1000);
     });
   });
+
   scWidgetObj.bind(SC.Widget.Events.ERROR, () => {
-    if (!scSkipped) { scSkipped = true; clearTimeout(scQuickCheck); onTrackEnded(); }
+    console.warn('SC Widget error, skipping');
+    onTrackEnded();
   });
+
+  // Fallback
   setFallbackTimer(360);
 }
 
@@ -2217,19 +1589,17 @@ async function onTrackEnded() {
 }
 
 // --- Stop All Players ---
-// Stop audio/video playback only (leaves TTS alone)
-function stopAudioPlayback() {
+function stopAllPlayers() {
   clearFallbackTimer();
 
+  // Stop <audio> — use pause + removeAttribute to avoid layout thrash
   const audio = document.getElementById('audioPlayer');
   audio.pause();
-  audio.currentTime = 0;
   audio.onended = null;
   audio.ontimeupdate = null;
   audio.onerror = null;
-  audio.onloadedmetadata = null;
   audio.removeAttribute('src');
-  audio.load(); // reset internal state
+  audio.load(); // reset without triggering visible changes
 
   // Stop YouTube
   if (ytPlayer && ytPlayer.stopVideo) {
@@ -2241,12 +1611,6 @@ function stopAudioPlayback() {
   if (scWidgetObj) {
     try { scWidgetObj.pause(); } catch (e) {}
   }
-}
-
-// Stop everything: audio + video + TTS
-function stopAllPlayers() {
-  stopAudioPlayback();
-  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
 }
 
 // --- UI Updates ---
@@ -2308,7 +1672,6 @@ function updatePlayButton(playing) {
 document.getElementById('volumeSlider').addEventListener('input', function() {
   const vol = this.value / 100;
   document.getElementById('audioPlayer').volume = vol;
-  document.getElementById('ttsPlayer').volume = vol;
   if (ytPlayer && ytPlayer.setVolume) ytPlayer.setVolume(this.value);
   if (scWidgetObj) scWidgetObj.setVolume(this.value);
 });
@@ -2328,131 +1691,7 @@ setInterval(() => {
     document.getElementById('listenersCount').textContent = `${count} listeners tuned in`;
   }
 }, 10000);
-
-// --- Share functionality ---
-function getShareUrl() {
-  const url = new URL(window.location.href.split('?')[0]);
-  if (currentChannel && currentChannel !== 'all') {
-    url.searchParams.set('channel', currentChannel);
-  }
-  return url.toString();
-}
-
-function getShareText() {
-  const chNames = { 'all':'The Blind Mix','trending':'Trending','pop':'Pop','rock':'Rock',
-    'hip-hop':'Hip-Hop','metal':'Metal','electronic':'Electronic','country':'Country','chill':'Chill' };
-  const ch = chNames[currentChannel] || 'The Blind Mix';
-  return `Listening to ${ch} on VoteMyAI Radio \u2014 AI-generated music, rated blind by humans`;
-}
-
-function shareRadio(platform) {
-  const url = getShareUrl();
-  const text = getShareText();
-  switch (platform) {
-    case 'copy': {
-      navigator.clipboard.writeText(url).then(() => {
-        const btn = document.getElementById('shareCopyBtn');
-        btn.classList.add('copied');
-        btn.querySelector('span').textContent = 'Copied!';
-        setTimeout(() => {
-          btn.classList.remove('copied');
-          btn.querySelector('span').textContent = 'Copy link';
-        }, 2000);
-      }).catch(() => {
-        const ta = document.createElement('textarea');
-        ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
-        document.body.appendChild(ta); ta.select();
-        document.execCommand('copy'); document.body.removeChild(ta);
-        const btn = document.getElementById('shareCopyBtn');
-        btn.classList.add('copied');
-        btn.querySelector('span').textContent = 'Copied!';
-        setTimeout(() => { btn.classList.remove('copied'); btn.querySelector('span').textContent = 'Copy link'; }, 2000);
-      });
-      break;
-    }
-    case 'native':
-      if (navigator.share) {
-        navigator.share({ title: 'VoteMyAI Radio', text: text, url: url }).catch(() => {});
-      }
-      break;
-    case 'facebook':
-      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`, '_blank', 'width=600,height=400');
-      break;
-    case 'x':
-      window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank', 'width=600,height=400');
-      break;
-    case 'reddit':
-      window.open(`https://www.reddit.com/submit?url=${encodeURIComponent(url)}&title=${encodeURIComponent(text)}`, '_blank', 'width=600,height=600');
-      break;
-    case 'threads':
-      window.open(`https://www.threads.net/intent/post?text=${encodeURIComponent(text + ' ' + url)}`, '_blank', 'width=600,height=400');
-      break;
-    case 'linkedin':
-      window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank', 'width=600,height=400');
-      break;
-    case 'whatsapp':
-      window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`, '_blank');
-      break;
-    case 'telegram':
-      window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank');
-      break;
-    case 'discord':
-      navigator.clipboard.writeText(text + ' ' + url).then(() => {
-        const btn = document.querySelector('[onclick="shareRadio(\'discord\')"]');
-        btn.classList.add('copied');
-        btn.querySelector('span').textContent = 'Copied for Discord!';
-        setTimeout(() => { btn.classList.remove('copied'); btn.querySelector('span').textContent = 'Discord'; }, 2500);
-      }).catch(() => {});
-      break;
-    case 'pinterest':
-      window.open(`https://pinterest.com/pin/create/button/?url=${encodeURIComponent(url)}&description=${encodeURIComponent(text)}`, '_blank', 'width=600,height=500');
-      break;
-    case 'email':
-      window.location.href = `mailto:?subject=${encodeURIComponent('Check out VoteMyAI Radio')}&body=${encodeURIComponent(text + '\n\n' + url)}`;
-      break;
-  }
-}
-// Show native share button if Web Share API is available
-if (navigator.share) {
-  const nb = document.getElementById('shareNativeBtn');
-  if (nb) nb.style.display = 'inline-flex';
-}
-
-// --- Auto-select channel from URL parameter ---
-(function() {
-  const params = new URLSearchParams(window.location.search);
-  const ch = params.get('channel');
-  if (ch && ['trending','pop','rock','hip-hop','metal','electronic','country','chill'].includes(ch)) {
-    // Override the default channel for startRadio calls
-    document.querySelectorAll('.channel-card').forEach(card => {
-      const onclick = card.getAttribute('onclick');
-      if (onclick && onclick.includes("startRadio('" + ch + "')")) {
-        // Highlight the target channel card
-        card.style.borderColor = 'var(--accent)';
-        card.style.background = 'rgba(255, 61, 90, 0.12)';
-      }
-    });
-    // Override the main start button and channel cards to auto-start correct channel
-    window._autoChannel = ch;
-  }
-})();
-// Patch startRadio to respect URL channel param on first call
-const _origStartRadio = startRadio;
-let _radioStarted = false;
-startRadio = async function(channel) {
-  if (!_radioStarted && window._autoChannel) {
-    channel = window._autoChannel;
-    delete window._autoChannel;
-  }
-  _radioStarted = true;
-  return _origStartRadio(channel);
-};
 </script>
 
-<script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').catch(() => {});
-}
-</script>
 </body>
 </html>
