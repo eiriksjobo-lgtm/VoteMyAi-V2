@@ -1054,11 +1054,7 @@ async function fetchSchedule() {
       youtube_id: youtube_id,
       soundcloud_url: soundcloud_url,
     };
-  }).filter(t => {
-    // Only include tracks with direct audio (Suno CDN mp3)
-    if (!t.audio_url) return false;
-    return true;
-  });
+  }).filter(t => t.audio_url || t.youtube_id || t.soundcloud_url);
 
   // Apply channel filter
   console.log(`📻 fetchSchedule: filtering for channel="${currentChannel}", ${mapped.length} total tracks`);
