@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
 <title>VoteMyAI Radio 📻</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,13 +21,18 @@
   --border: #2a2a3a;
   --green: #3dff8f;
 }
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 body {
   background: var(--bg);
   color: var(--text);
   font-family: 'Outfit', sans-serif;
   min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  touch-action: manipulation;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
 /* === PASSWORD GATE === */
@@ -45,9 +50,10 @@ body {
 #passwordGate input {
   background: var(--surface); border: 1px solid var(--border);
   color: var(--text); padding: 14px 20px; border-radius: 12px;
-  font-size: 1rem; width: 280px; text-align: center;
+  font-size: 16px; width: 280px; max-width: 85vw; text-align: center;
   font-family: 'Space Mono', monospace;
   outline: none; transition: border-color 0.2s;
+  -webkit-appearance: none; appearance: none;
 }
 #passwordGate input:focus { border-color: var(--accent); }
 #passwordGate button {
@@ -57,9 +63,15 @@ body {
   font-family: 'Outfit', sans-serif;
   transition: transform 0.15s, box-shadow 0.15s;
 }
-#passwordGate button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px var(--accent-glow);
+@media (hover: hover) {
+  #passwordGate button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px var(--accent-glow);
+  }
+}
+#passwordGate button:active {
+  transform: scale(0.97);
+  box-shadow: 0 4px 20px var(--accent-glow);
 }
 #passwordGate .error {
   color: var(--accent); font-size: 0.85rem;
@@ -79,13 +91,15 @@ body {
 
 .container {
   max-width: 600px; margin: 0 auto; padding: 20px;
-  min-height: 100vh; display: flex; flex-direction: column;
+  min-height: 100vh; min-height: 100dvh;
+  display: flex; flex-direction: column;
   overflow-anchor: none;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom));
 }
 
 /* Header */
 .header {
-  text-align: center; padding: 30px 0 24px;
+  text-align: center; padding: 40px 0 30px;
 }
 .header .badge {
   display: inline-flex; align-items: center; gap: 8px;
@@ -93,7 +107,7 @@ body {
   padding: 6px 14px; border-radius: 100px;
   font-size: 0.75rem; color: var(--text-dim);
   font-family: 'Space Mono', monospace;
-  margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;
+  margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px;
 }
 .header .badge .live-dot {
   width: 8px; height: 8px; border-radius: 50%;
@@ -105,7 +119,7 @@ body {
   50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(61,255,143,0); }
 }
 .header h1 {
-  font-size: 2rem; font-weight: 900; letter-spacing: -1px;
+  font-size: 2.2rem; font-weight: 900; letter-spacing: -1px;
   background: linear-gradient(135deg, var(--text-bright), var(--text));
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
 }
@@ -113,22 +127,13 @@ body {
   background: linear-gradient(135deg, var(--accent), var(--accent2));
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
 }
-.back-btn {
-  display: inline-flex; align-items: center; gap: 6px;
-  background: var(--surface2); border: 1px solid var(--border);
-  color: var(--text-dim); padding: 6px 14px; border-radius: 100px;
-  font-size: 0.72rem; cursor: pointer; margin-top: 10px;
-  font-family: 'Space Mono', monospace;
-  transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.5px;
-}
-.back-btn:hover { border-color: var(--accent); color: var(--text-bright); }
 
 /* Now Playing Card */
 .now-playing {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 20px; padding: 24px;
-  margin-bottom: 16px;
+  border-radius: 20px; padding: 28px;
+  margin-bottom: 20px;
   position: relative; overflow: hidden;
 }
 .now-playing::before {
@@ -136,6 +141,7 @@ body {
   background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent));
   background-size: 200% 100%;
   animation: shimmer 3s ease infinite;
+  will-change: background-position;
 }
 @keyframes shimmer {
   0% { background-position: 200% 0; }
@@ -145,41 +151,23 @@ body {
   font-family: 'Space Mono', monospace;
   font-size: 0.7rem; color: var(--accent);
   text-transform: uppercase; letter-spacing: 2px;
-  margin-bottom: 12px;
-  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 14px;
 }
-
-/* Equalizer bars */
-.eq-bars { display: flex; align-items: flex-end; gap: 2px; height: 12px; }
-.eq-bars .bar {
-  width: 3px; background: var(--accent); border-radius: 1px;
-  animation: eq 0.8s ease-in-out infinite alternate;
-}
-.eq-bars .bar:nth-child(1) { height: 40%; animation-delay: 0s; }
-.eq-bars .bar:nth-child(2) { height: 80%; animation-delay: 0.15s; }
-.eq-bars .bar:nth-child(3) { height: 50%; animation-delay: 0.3s; }
-.eq-bars .bar:nth-child(4) { height: 100%; animation-delay: 0.1s; }
-.eq-bars .bar:nth-child(5) { height: 60%; animation-delay: 0.25s; }
-@keyframes eq {
-  0% { transform: scaleY(0.3); }
-  100% { transform: scaleY(1); }
-}
-
 .np-title {
-  font-size: 1.4rem; font-weight: 800; color: var(--text-bright);
+  font-size: 1.5rem; font-weight: 800; color: var(--text-bright);
   margin-bottom: 6px; line-height: 1.2;
 }
 .np-meta {
-  font-size: 0.85rem; color: var(--text-dim); margin-bottom: 14px;
+  font-size: 0.9rem; color: var(--text-dim); margin-bottom: 16px;
 }
 .np-meta .platform {
   display: inline-block; padding: 2px 8px; border-radius: 6px;
-  background: var(--surface2); font-size: 0.7rem;
+  background: var(--surface2); font-size: 0.75rem;
   font-family: 'Space Mono', monospace;
   border: 1px solid var(--border);
 }
 .np-stats {
-  display: flex; gap: 16px; margin-bottom: 14px;
+  display: flex; gap: 16px; margin-bottom: 18px;
 }
 .np-stat {
   display: flex; align-items: center; gap: 6px;
@@ -190,17 +178,18 @@ body {
 /* Progress bar */
 .progress-wrap {
   width: 100%; height: 4px; background: var(--surface2);
-  border-radius: 10px; overflow: hidden; margin-bottom: 6px;
+  border-radius: 10px; overflow: hidden; margin-bottom: 8px;
 }
 .progress-bar {
   height: 100%; width: 0%;
   background: linear-gradient(90deg, var(--accent), var(--accent2));
   border-radius: 10px; transition: width 0.5s linear;
+  will-change: width;
 }
 .progress-time {
   display: flex; justify-content: space-between;
   font-family: 'Space Mono', monospace;
-  font-size: 0.65rem; color: var(--text-dim);
+  font-size: 0.7rem; color: var(--text-dim);
 }
 
 /* Artist Note */
@@ -211,186 +200,224 @@ body {
   transition: all 0.4s ease;
 }
 .artist-note.visible {
-  padding: 12px 16px; margin-top: 14px;
+  padding: 14px 16px; margin-top: 16px;
   max-height: 200px; opacity: 1;
 }
 .artist-note .label {
-  font-size: 0.65rem; color: var(--accent2);
+  font-size: 0.7rem; color: var(--accent2);
   text-transform: uppercase; letter-spacing: 1px;
   font-family: 'Space Mono', monospace;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 .artist-note .text {
-  font-size: 0.85rem; color: var(--text); font-style: italic;
-  line-height: 1.4;
+  font-size: 0.9rem; color: var(--text); font-style: italic;
+  line-height: 1.5;
 }
 
-/* Host Speaking Indicator */
+/* Host Message */
 .host-msg {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 20px;
-  opacity: 0; max-height: 0; overflow: hidden;
+  border-radius: 20px; padding: 24px;
+  margin-bottom: 20px;
+  opacity: 0;
+  max-height: 0; overflow: hidden;
   transition: opacity 0.4s ease, max-height 0.4s ease, padding 0.4s ease, margin 0.4s ease;
   padding: 0 24px; margin-bottom: 0;
 }
 .host-msg.visible {
-  opacity: 1; max-height: 100px;
-  padding: 16px 24px; margin-bottom: 16px;
+  opacity: 1;
+  max-height: 400px;
+  padding: 24px;
+  margin-bottom: 20px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .host-msg .host-header {
-  display: flex; align-items: center; gap: 10px;
+  display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
 }
 .host-msg .host-avatar {
-  width: 32px; height: 32px; border-radius: 50%;
+  width: 36px; height: 36px; border-radius: 50%;
   background: linear-gradient(135deg, var(--accent), var(--accent2));
   display: flex; align-items: center; justify-content: center;
-  font-size: 0.9rem;
+  font-size: 1.1rem;
 }
 .host-msg .host-name {
-  font-weight: 700; font-size: 0.85rem; color: var(--text-bright);
+  font-weight: 700; font-size: 0.95rem; color: var(--text-bright);
 }
 .host-msg .host-role {
-  font-size: 0.65rem; color: var(--accent);
+  font-size: 0.7rem; color: var(--text-dim);
   font-family: 'Space Mono', monospace;
-  animation: blink 1s step-end infinite;
 }
-@keyframes blink {
-  50% { opacity: 0.4; }
+.host-msg .host-text {
+  font-size: 0.95rem; color: var(--text); line-height: 1.6;
 }
 
-/* Volume */
+/* Controls */
 .controls {
   display: flex; align-items: center; justify-content: center;
-  padding: 14px 0;
+  gap: 20px; padding: 20px 0;
 }
+.btn-play {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 4px 20px var(--accent-glow);
+}
+@media (hover: hover) {
+  .btn-play:hover {
+    transform: scale(1.08);
+    box-shadow: 0 8px 40px var(--accent-glow);
+  }
+}
+.btn-play:active { transform: scale(0.95); }
+.btn-play svg { fill: white; }
+.btn-skip {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: var(--surface2); border: 1px solid var(--border);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s, transform 0.1s;
+}
+@media (hover: hover) { .btn-skip:hover { background: var(--surface); } }
+.btn-skip:active { transform: scale(0.92); background: var(--surface); }
+.btn-skip svg { fill: var(--text-dim); width: 18px; }
+
 .volume-wrap {
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; gap: 10px;
 }
 .volume-wrap svg { fill: var(--text-dim); width: 18px; flex-shrink: 0; }
 .volume-wrap input[type="range"] {
+  width: 120px; accent-color: var(--accent);
+  height: 44px; cursor: pointer;
   -webkit-appearance: none; appearance: none;
-  width: 100px; height: 4px; background: var(--surface2);
-  border-radius: 4px; outline: none;
+  background: transparent;
+}
+.volume-wrap input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px; border-radius: 3px;
+  background: var(--surface2);
 }
 .volume-wrap input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none; appearance: none;
-  width: 14px; height: 14px; border-radius: 50%;
-  background: var(--accent); cursor: pointer;
-  box-shadow: 0 0 8px var(--accent-glow);
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border: 3px solid var(--bg);
+  margin-top: -11px;
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+.volume-wrap input[type="range"]::-moz-range-track {
+  height: 6px; border-radius: 3px;
+  background: var(--surface2); border: none;
 }
 .volume-wrap input[type="range"]::-moz-range-thumb {
-  width: 14px; height: 14px; border-radius: 50%;
-  background: var(--accent); cursor: pointer; border: none;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border: 3px solid var(--bg);
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+
+/* Listeners */
+.listeners {
+  text-align: center; padding: 10px 0;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.75rem; color: var(--text-dim);
 }
 
 /* Up Next */
 .up-next {
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: 20px; padding: 18px 22px; margin-bottom: 20px;
+  border-radius: 20px; padding: 20px 24px; margin-bottom: 20px;
 }
 .up-next h3 {
-  font-size: 0.65rem; color: var(--text-dim);
+  font-size: 0.7rem; color: var(--text-dim);
   text-transform: uppercase; letter-spacing: 2px;
   font-family: 'Space Mono', monospace;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 .up-next-item {
   display: flex; align-items: center; gap: 12px;
-  padding: 8px 0; border-bottom: 1px solid var(--border);
+  padding: 10px 0; border-bottom: 1px solid var(--border);
 }
 .up-next-item:last-child { border-bottom: none; }
 .up-next-num {
   font-family: 'Space Mono', monospace;
-  font-size: 0.7rem; color: var(--text-dim);
+  font-size: 0.75rem; color: var(--text-dim);
   width: 20px; text-align: center;
 }
-.up-next-info { flex: 1; min-width: 0; }
-.up-next-title {
-  font-weight: 600; font-size: 0.85rem; color: var(--text-bright);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.up-next-genre { font-size: 0.7rem; color: var(--text-dim); }
+.up-next-info { flex: 1; }
+.up-next-title { font-weight: 600; font-size: 0.9rem; color: var(--text-bright); }
+.up-next-genre { font-size: 0.75rem; color: var(--text-dim); }
 .up-next-rating {
   font-family: 'Space Mono', monospace;
-  font-size: 0.75rem; color: var(--accent2); flex-shrink: 0;
+  font-size: 0.8rem; color: var(--accent2);
 }
-
-/* Footer */
-.radio-footer {
-  text-align: center; padding: 20px 0 40px;
-  margin-top: auto;
-}
-.radio-footer a {
-  color: var(--text-dim); text-decoration: none;
-  font-size: 0.75rem; font-family: 'Space Mono', monospace;
-  transition: color 0.2s;
-}
-.radio-footer a:hover { color: var(--accent); }
 
 /* Channel Grid */
 .channel-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px; padding: 10px 0;
-  max-width: 400px; margin: 0 auto;
+  gap: 10px;
+  padding: 10px 0;
+  max-width: 400px;
+  margin: 0 auto;
 }
 .channel-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 14px; padding: 16px 10px;
-  cursor: pointer; transition: all 0.2s;
-  display: flex; flex-direction: column;
-  align-items: center; gap: 4px; text-align: center;
-  color: var(--text);
+  border-radius: 14px;
+  padding: 16px 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
 }
-.channel-card:hover {
+@media (hover: hover) {
+  .channel-card:hover {
+    border-color: var(--accent);
+    background: rgba(255, 61, 90, 0.08);
+    transform: translateY(-2px);
+  }
+}
+.channel-card:active {
+  transform: scale(0.95);
   border-color: var(--accent);
-  background: rgba(255, 61, 90, 0.08);
-  transform: translateY(-2px);
+  background: rgba(255, 61, 90, 0.12);
 }
-.channel-card.main-channel {
-  grid-column: span 3;
-  flex-direction: row; justify-content: center; gap: 12px;
-  padding: 18px 20px;
-  background: linear-gradient(135deg, rgba(255,61,90,0.08), rgba(255,107,61,0.06));
-  border-color: var(--accent);
+.channel-icon {
+  font-size: 1.8rem;
+  line-height: 1;
 }
-.channel-card.main-channel .channel-icon { font-size: 2rem; }
-.channel-card.main-channel .channel-text { text-align: left; }
+.channel-name {
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--text-bright);
+  letter-spacing: 0.5px;
+}
+.channel-desc {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  font-family: 'Space Mono', monospace;
+}
 .channel-card.trending {
   border-color: var(--accent2);
   background: rgba(255, 107, 61, 0.06);
 }
-.channel-icon { font-size: 1.8rem; line-height: 1; }
-.channel-name {
-  font-weight: 700; font-size: 0.8rem;
-  color: var(--text-bright); letter-spacing: 0.5px;
+@media (max-width: 420px) {
+  .channel-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    max-width: 100%;
+    padding: 10px 16px;
+  }
+  .channel-card { padding: 14px 8px; border-radius: 12px; min-height: 80px; }
+  .channel-icon { font-size: 1.5rem; }
+  .channel-name { font-size: 0.75rem; }
+  .channel-desc { font-size: 0.6rem; }
 }
-.channel-desc {
-  font-size: 0.6rem; color: var(--text-dim);
-  font-family: 'Space Mono', monospace;
-}
-.channel-count {
-  font-size: 0.55rem; color: var(--text-dim);
-  font-family: 'Space Mono', monospace;
-  opacity: 0.7;
-}
-
-/* Start overlay */
-#startOverlay {
-  position: fixed; inset: 0; z-index: 100;
-  background: rgba(10,10,15,0.97);
-  display: flex; align-items: center; justify-content: center;
-  flex-direction: column; gap: 20px; padding: 20px;
-  backdrop-filter: blur(20px);
-}
-#startOverlay h2 {
-  font-size: 1.8rem; font-weight: 900;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-}
-#startOverlay p { color: var(--text-dim); font-size: 0.9rem; }
 
 /* Hidden players */
 #hiddenPlayers {
@@ -398,13 +425,126 @@ body {
   width: 1px; height: 1px; overflow: hidden;
 }
 
-/* Responsive */
+/* Start overlay */
+#startOverlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(10,10,15,0.95);
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 24px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: env(safe-area-inset-top) 20px calc(20px + env(safe-area-inset-bottom)) 20px;
+}
+#startOverlay h2 {
+  font-size: 1.8rem; font-weight: 900;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+#startOverlay p { color: var(--text-dim); font-size: 0.95rem; }
+#startOverlay .start-btn {
+  width: 100px; height: 100px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 60px var(--accent-glow);
+  transition: transform 0.2s, box-shadow 0.2s;
+  animation: breathe 2s ease infinite;
+}
+@keyframes breathe {
+  0%, 100% { box-shadow: 0 0 40px var(--accent-glow); }
+  50% { box-shadow: 0 0 80px var(--accent-glow); }
+}
+@media (hover: hover) {
+  #startOverlay .start-btn:hover { transform: scale(1.1); }
+}
+#startOverlay .start-btn:active { transform: scale(0.95); }
+#startOverlay .start-btn svg { fill: white; width: 40px; height: 40px; }
+
+/* === Responsive === */
+
+/* Tablets (landscape) */
+@media (max-width: 768px) {
+  .container { padding: 16px; }
+  .header { padding: 30px 0 20px; }
+}
+
+/* Mobile (portrait) */
 @media (max-width: 480px) {
-  .header h1 { font-size: 1.5rem; }
-  .np-title { font-size: 1.2rem; }
-  .container { padding: 12px; }
-  .channel-grid { grid-template-columns: repeat(2, 1fr); }
-  .channel-card.main-channel { grid-column: span 2; }
+  .header { padding: 20px 0 16px; }
+  .header h1 { font-size: 1.6rem; letter-spacing: -0.5px; }
+  .header .badge { font-size: 0.65rem; padding: 5px 10px; margin-bottom: 10px; }
+  .container { padding: 12px; padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
+  .now-playing { padding: 20px; border-radius: 16px; margin-bottom: 14px; }
+  .np-label { font-size: 0.65rem; margin-bottom: 10px; }
+  .np-title { font-size: 1.15rem; }
+  .np-meta { font-size: 0.8rem; margin-bottom: 12px; }
+  .np-stats { gap: 12px; margin-bottom: 14px; }
+  .np-stat { font-size: 0.8rem; }
+  .host-msg { border-radius: 16px; }
+  .host-msg.visible { padding: 18px; }
+  .host-msg .host-text { font-size: 0.88rem; }
+  .controls { gap: 16px; padding: 16px 0; }
+  .btn-play { width: 56px; height: 56px; }
+  .volume-wrap input[type="range"] { width: 100px; }
+  .up-next { padding: 16px 18px; border-radius: 16px; }
+  .up-next h3 { font-size: 0.65rem; margin-bottom: 10px; }
+  .up-next-title { font-size: 0.85rem; }
+  .up-next-rating { font-size: 0.75rem; }
+  .artist-note .text { font-size: 0.85rem; }
+}
+
+/* Small phones (iPhone SE, Galaxy S series) */
+@media (max-width: 375px) {
+  .header h1 { font-size: 1.4rem; }
+  .container { padding: 10px; }
+  .now-playing { padding: 16px; }
+  .np-title { font-size: 1.05rem; }
+  .controls { gap: 12px; padding: 12px 0; }
+  .btn-play { width: 52px; height: 52px; }
+  .volume-wrap input[type="range"] { width: 80px; }
+}
+
+/* Landscape mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+  .header { padding: 10px 0 8px; }
+  .header .badge { margin-bottom: 6px; }
+  .header h1 { font-size: 1.3rem; }
+  .now-playing { padding: 14px; margin-bottom: 10px; }
+  .controls { padding: 8px 0; }
+  .up-next { padding: 12px 16px; }
+}
+
+/* Start overlay mobile adjustments */
+@media (max-width: 480px) {
+  #startOverlay { gap: 16px; padding: 20px; }
+  #startOverlay h2 { font-size: 1.4rem; }
+  #startOverlay p { font-size: 0.85rem; }
+}
+@media (max-height: 700px) {
+  #startOverlay { gap: 12px; }
+  #startOverlay .start-btn { width: 80px; height: 80px; }
+  #startOverlay .start-btn svg { width: 32px; height: 32px; }
+}
+
+/* Scrollable channel grid on very small screens */
+@media (max-height: 600px) {
+  #startOverlay {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 20px;
+    justify-content: flex-start;
+    padding-top: 40px;
+  }
+}
+
+/* Performance: reduce animations on mobile */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 </style>
 </head>
@@ -426,24 +566,22 @@ body {
   <!-- Channel Picker -->
   <div id="startOverlay">
     <h2>📻 VoteMyAI Radio</h2>
-    <p>AI-hosted radio · community-submitted AI music</p>
-    <div class="channel-grid" id="channelGrid">
-      <button class="channel-card main-channel" onclick="startRadio('all')">
+    <p>AI-hosted radio playing community-submitted tracks</p>
+    <div class="channel-grid">
+      <button class="channel-card" onclick="startRadio('all')">
         <span class="channel-icon">📻</span>
-        <div class="channel-text">
-          <span class="channel-name">The Blind Mix</span>
-          <span class="channel-desc">No clout bias, all vibes</span>
-        </div>
+        <span class="channel-name">The Blind Mix</span>
+        <span class="channel-desc">No clout, all vibes</span>
       </button>
       <button class="channel-card trending" onclick="startRadio('trending')">
         <span class="channel-icon">🔥</span>
         <span class="channel-name">Trending</span>
-        <span class="channel-desc">Top rated</span>
+        <span class="channel-desc">Top rated hits</span>
       </button>
       <button class="channel-card" onclick="startRadio('pop')">
         <span class="channel-icon">🎤</span>
         <span class="channel-name">Pop</span>
-        <span class="channel-desc">Catchy vibes</span>
+        <span class="channel-desc">Catchy & melodic</span>
       </button>
       <button class="channel-card" onclick="startRadio('rock')">
         <span class="channel-icon">🎸</span>
@@ -458,7 +596,7 @@ body {
       <button class="channel-card" onclick="startRadio('metal')">
         <span class="channel-icon">🤘</span>
         <span class="channel-name">Metal</span>
-        <span class="channel-desc">Heavy stuff</span>
+        <span class="channel-desc">Heavy & brutal</span>
       </button>
       <button class="channel-card" onclick="startRadio('electronic')">
         <span class="channel-icon">🎛️</span>
@@ -476,7 +614,7 @@ body {
         <span class="channel-desc">Lo-Fi & ambient</span>
       </button>
     </div>
-    <p style="font-size: 0.7rem; color: var(--text-dim);">Pick a channel to tune in</p>
+    <p style="font-size: 0.75rem; color: var(--text-dim); margin-top: 16px;">Pick a channel to tune in</p>
   </div>
 
   <div class="container">
@@ -486,7 +624,6 @@ body {
         <span id="statusText">OFFLINE</span>
       </div>
       <h1>VoteMyAI <span>Radio</span></h1>
-      <button class="back-btn" id="backBtn" onclick="goBackToChannels()" style="display:none;">← Channels</button>
     </div>
 
     <!-- Host Speaking Indicator -->
@@ -498,14 +635,12 @@ body {
           <div class="host-role">SPEAKING...</div>
         </div>
       </div>
+      <div class="host-text" id="hostText"></div>
     </div>
 
     <!-- Now Playing -->
     <div class="now-playing" id="nowPlaying">
-      <div class="np-label">
-        <div class="eq-bars"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
-        Now Playing
-      </div>
+      <div class="np-label">▶ Now Playing</div>
       <div class="np-title" id="npTitle">—</div>
       <div class="np-meta">
         <span id="npGenre">—</span> · <span class="platform" id="npPlatform">—</span>
@@ -534,27 +669,53 @@ body {
       </div>
     </div>
 
+    <div class="listeners" id="listenersCount">—</div>
+
     <!-- Up Next -->
     <div class="up-next" id="upNext">
       <h3>Up Next</h3>
       <div id="upNextList"></div>
     </div>
-
-    <!-- Footer -->
-    <div class="radio-footer">
-      <a href="https://votemyai.com" target="_blank">votemyai.com</a>
-    </div>
   </div>
 </div>
 
-<!-- Hidden audio player -->
+<!-- Hidden players -->
 <div id="hiddenPlayers">
   <audio id="audioPlayer" preload="auto"></audio>
+  <audio id="ttsPlayer" preload="auto"></audio>
+  <div id="ytPlayerContainer"></div>
+  <iframe id="scWidget" width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay"
+    src="about:blank"></iframe>
 </div>
+
+<!-- SoundCloud Widget API -->
+<script src="https://w.soundcloud.com/player/api.js"></script>
+
+<!-- YouTube IFrame API -->
+<script>
+  var tag = document.createElement('script');
+  tag.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(tag);
+  var ytPlayer = null;
+  function onYouTubeIframeAPIReady() {
+    ytPlayer = new YT.Player('ytPlayerContainer', {
+      height: '1', width: '1',
+      playerVars: { autoplay: 0, controls: 0 },
+      events: {
+        onStateChange: onYTStateChange
+      }
+    });
+  }
+  function onYTStateChange(event) {
+    if (event.data === YT.PlayerState.ENDED) {
+      onTrackEnded();
+    }
+  }
+</script>
 
 <script>
 // ============================================================
-// VoteMyAI Radio — Core Engine (v2 clean rewrite)
+// VoteMyAI Radio — Core Engine
 // ============================================================
 
 const RADIO_PASSWORD = 'satansatan123!';
@@ -563,52 +724,15 @@ const RADIO_PASSWORD = 'satansatan123!';
 let isPlaying = false;
 let currentTrackIndex = -1;
 let schedule = [];
-let allTracks = [];
 let progressInterval = null;
-let currentChannel = 'all';
-let nextBufferedTrack = null;
-let bufferAudio = new Audio();
-bufferAudio.preload = 'auto';
+let trackStartTime = 0;
+let scWidgetObj = null;
 
-// --- Supabase ---
+// --- Supabase Config ---
 const SUPABASE_URL = 'https://gezijezmsecbtzytotax.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdlemlqZXptc2VjYnR6eXRvdGF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0MDQxMDIsImV4cCI6MjA4Njk4MDEwMn0.4Ky7xz__U3bX5hFJJCYKlDptT29qsMQKbQk0KnPZODk';
 
-// --- Channel genre mapping ---
-const CHANNEL_GENRES = {
-  'all': null,
-  'trending': '__trending__',
-  'pop': ['pop', 'indie pop', 'k-pop', 'synth-pop', 'dream pop', 'art pop'],
-  'rock': ['rock', 'indie rock', 'alternative rock', 'punk rock', 'classic rock', 'garage rock', 'post-punk', 'punk', 'grunge'],
-  'hip-hop': ['hip-hop', 'hip hop', 'rap', 'trap', 'boom bap', 'r&b', 'rnb'],
-  'metal': ['metal', 'heavy metal', 'death metal', 'black metal', 'thrash metal', 'doom metal', 'metalcore', 'nu-metal', 'progressive metal'],
-  'electronic': ['electronic', 'edm', 'techno', 'house', 'trance', 'dubstep', 'drum and bass', 'dnb', 'synthwave', 'electro', 'electropop', 'tech house'],
-  'country': ['country', 'folk', 'bluegrass', 'americana', 'country rock'],
-  'chill': ['lo-fi', 'lofi', 'ambient', 'chillwave', 'downtempo', 'jazz', 'bossa nova', 'acoustic', 'singer-songwriter', 'soul'],
-};
-
-const CHANNEL_NAMES = {
-  'all': 'The Blind Mix', 'trending': 'Trending', 'pop': 'Pop',
-  'rock': 'Rock', 'hip-hop': 'Hip-Hop', 'metal': 'Metal',
-  'electronic': 'Electronic', 'country': 'Country', 'chill': 'Chill'
-};
-
-// --- Password ---
-function checkPassword() {
-  const input = document.getElementById('pwInput').value;
-  if (input === RADIO_PASSWORD) {
-    document.getElementById('passwordGate').style.display = 'none';
-    document.getElementById('radioApp').style.display = 'block';
-  } else {
-    document.getElementById('pwError').classList.add('show');
-    setTimeout(() => document.getElementById('pwError').classList.remove('show'), 2000);
-  }
-}
-document.getElementById('pwInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter') checkPassword();
-});
-
-// --- Fetch & normalize tracks ---
+// Fetch tracks from Supabase and normalize for radio
 async function fetchSchedule() {
   const res = await fetch(
     `${SUPABASE_URL}/rest/v1/tracks?select=*&order=avg_rating.desc&limit=500`,
@@ -616,38 +740,78 @@ async function fetchSchedule() {
   );
   const tracks = await res.json();
 
-  // Shuffle with rating weight
+  // Shuffle with weighted randomness (higher rated = more likely to be early)
   const shuffled = tracks
     .map(t => ({ ...t, sort: Math.random() * (t.avg_rating || 1) }))
     .sort((a, b) => b.sort - a.sort);
 
   const mapped = shuffled.map(t => {
+    // Extract platform-specific IDs from embed_url
     const platform = (t.tool || '').toLowerCase();
-    let suno_id = null, audio_url = null;
+    let suno_id = null;
+    let youtube_id = t.yt_id || null;
+    let soundcloud_url = null;
+    let audio_url = null;
 
-    // Detect from actual URL content
+    // Detect platform from ACTUAL URL content, not the tool field
+    // This handles cases where tool="Suno" but embed_url is actually YouTube
     if (t.embed_url) {
-      const match = t.embed_url.match(/suno\.com\/song\/([a-f0-9-]+)/i);
-      if (match) {
+      const url = t.embed_url;
+
+      if (url.match(/suno\.com\/song\/([a-f0-9-]+)/i)) {
+        // Suno song URL
+        const match = url.match(/suno\.com\/song\/([a-f0-9-]+)/i);
         suno_id = match[1];
         audio_url = `https://cdn1.suno.ai/${suno_id}.mp3`;
+      } else if (url.match(/youtu\.?be/)) {
+        // YouTube URL (youtu.be or youtube.com)
+        const match = url.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/);
+        if (match) youtube_id = match[1];
+      } else if (url.includes('soundcloud.com')) {
+        // SoundCloud URL
+        soundcloud_url = url;
+      } else if (url.match(/udio\.com/)) {
+        // Udio — skip for now
       }
     }
+
+    // Also check yt_id field as fallback
+    if (!youtube_id && t.yt_id) {
+      youtube_id = t.yt_id;
+    }
+
+    // Determine actual platform from what we found
+    let actualPlatform = platform;
+    if (audio_url && suno_id) actualPlatform = 'suno';
+    else if (youtube_id) actualPlatform = 'youtube';
+    else if (soundcloud_url) actualPlatform = 'soundcloud';
 
     return {
       id: t.id,
       title: t.title || 'Untitled',
       genre: t.genre || 'Unknown',
-      platform: audio_url ? 'suno' : platform,
+      platform: actualPlatform,
       artist_note: t.artist_note || null,
       avg_rating: t.avg_rating || 0,
+      num_ratings: t.rating_count || 0,
+      votes: t.votes || 0,
+      thumbnail_url: t.thumbnail_url || null,
+      embed_url: t.embed_url || null,
       audio_url: audio_url,
+      suno_id: suno_id,
+      youtube_id: youtube_id,
+      soundcloud_url: soundcloud_url,
     };
-  }).filter(t => !!t.audio_url);
+  }).filter(t => {
+    // Only include tracks with direct audio (Suno CDN mp3)
+    if (!t.audio_url) return false;
+    return true;
+  });
 
   // Apply channel filter
   let filtered = mapped;
   if (currentChannel === 'trending') {
+    // Top 50 by rating
     filtered = [...mapped].sort((a, b) => (b.avg_rating || 0) - (a.avg_rating || 0)).slice(0, 50);
   } else if (CHANNEL_GENRES[currentChannel]) {
     const genres = CHANNEL_GENRES[currentChannel];
@@ -657,36 +821,415 @@ async function fetchSchedule() {
     });
   }
 
+  // Fallback: if channel has too few tracks, tell user
   if (filtered.length < 3 && currentChannel !== 'all') {
     console.warn(`📻 Only ${filtered.length} tracks for channel "${currentChannel}"`);
   }
 
+  // Store all tracks for re-shuffling on loop
   allTracks = [...filtered];
+
+  // Initial genre-diverse shuffle with top-100 boost
   const reordered = genreDiverseShuffle(allTracks);
   console.log(`📻 Channel "${currentChannel}": ${reordered.length} tracks (from ${mapped.length} total)`);
   return reordered;
 }
 
-// --- Genre-diverse shuffle ---
-function genreDiverseShuffle(tracks) {
-  let pool;
-  if (currentChannel === 'trending') {
-    pool = [...tracks];
-  } else {
-    const sorted = [...tracks].sort((a, b) => (b.avg_rating || 0) - (a.avg_rating || 0));
-    const topN = Math.min(100, sorted.length);
-    const top = sorted.slice(0, topN);
-    const rest = sorted.slice(topN);
-    pool = [...top, ...top, ...rest]; // Top tracks 2x, not 3x
+// --- Host personality lines ---
+function generateHostIntro(track) {
+  const stars = track.avg_rating ? track.avg_rating.toFixed(1) : null;
+  const note = track.artist_note || null;
+  const genre = track.genre || 'unknown genre';
+
+  // Savage rating commentary
+  let ratingRoast = '';
+  if (stars) {
+    const s = parseFloat(stars);
+    if (s >= 4.5) ratingRoast = `${stars} stars. Yeah, the people have spoken, and apparently they have terrible taste.`;
+    else if (s >= 4.0) ratingRoast = `Sitting at ${stars} stars. Not bad. Not good either, but not bad.`;
+    else if (s >= 3.5) ratingRoast = `${stars} stars. That's a solid... meh.`;
+    else if (s >= 3.0) ratingRoast = `${stars} stars. Ouch. The community did NOT hold back on this one.`;
+    else ratingRoast = `${stars} stars. That's... that's rough, buddy. Real rough.`;
   }
 
+  // Savage artist note reactions
+  let noteRoast = '';
+  if (note) {
+    const noteReactions = [
+      `The artist wrote a little note. They said, "${note}". Sure, buddy. Sure.`,
+      `Oh, and get this — the artist wants you to know: "${note}". Thanks for sharing, I guess?`,
+      `Artist note says: "${note}". I mean... okay? Nobody asked, but okay.`,
+      `The artist left a message: "${note}". Bold move. Let's see if the song backs it up.`,
+      `And I quote the artist: "${note}". Wow. The confidence. I respect it. I don't agree with it, but I respect it.`,
+    ];
+    noteRoast = ' ' + noteReactions[Math.floor(Math.random() * noteReactions.length)];
+  }
+
+  const intros = [
+    `Alright, buckle up. Next up is "${track.title}". ${genre}. ${ratingRoast}${noteRoast} Here we go, I guess.`,
+    `Oh boy, here comes "${track.title}". It's ${genre}, because of course it is. ${ratingRoast}${noteRoast} Let's get this over with.`,
+    `Ladies and gentlemen, I present to you... "${track.title}". ${genre}. Made by an AI, rated by humans, questioned by me. ${ratingRoast}${noteRoast}`,
+    `Next on VoteMyAI Radio — "${track.title}". ${genre} vibes. Look, I don't make the playlist, I just judge it. ${ratingRoast}${noteRoast}`,
+    `Okay okay okay. "${track.title}" is up. It's ${genre}. Now before you skip — oh wait, you can't skip! This is live radio, baby! ${ratingRoast}${noteRoast}`,
+    `This is VoteMyAI Radio, where AI makes the music and humans pretend to enjoy it. Next: "${track.title}", ${genre}. ${ratingRoast}${noteRoast}`,
+    `Somebody submitted "${track.title}" to VoteMyAI. ${genre}. No clout bias here — just pure, blind, questionable judgment. ${ratingRoast}${noteRoast}`,
+    `Welcome back. Did you miss me? No? Too bad. Here's "${track.title}", ${genre}. ${ratingRoast}${noteRoast} You're welcome.`,
+    `Fun fact: this next song, "${track.title}", was made by artificial intelligence. And honestly? You can tell. ${genre}. ${ratingRoast}${noteRoast} Just kidding. Maybe.`,
+    `"${track.title}". ${genre}. Someone spent actual time prompting an AI to make this. And then someone else spent actual time rating it. What a world. ${ratingRoast}${noteRoast}`,
+    `Alright alright, don't touch that dial — oh wait, there's no dial. You're stuck with me. Next up: "${track.title}", ${genre}. ${ratingRoast}${noteRoast}`,
+    `Breaking news on VoteMyAI Radio: "${track.title}" exists. It's ${genre}. The community rated it with no idea who made it. ${ratingRoast}${noteRoast} Democracy at its finest.`,
+  ];
+  return intros[Math.floor(Math.random() * intros.length)];
+}
+
+// --- Password ---
+function checkPassword() {
+  const input = document.getElementById('pwInput').value;
+  if (input === RADIO_PASSWORD) {
+    document.getElementById('passwordGate').style.display = 'none';
+    document.getElementById('radioApp').style.display = 'block';
+  } else {
+    document.getElementById('pwError').classList.add('show');
+    document.getElementById('pwInput').value = '';
+    setTimeout(() => document.getElementById('pwError').classList.remove('show'), 2000);
+  }
+}
+document.getElementById('pwInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkPassword();
+});
+
+// --- Genre mapping for channels ---
+const CHANNEL_GENRES = {
+  'all': null, // no filter
+  'trending': '__trending__', // special: top 50 by rating
+  'pop': ['pop', 'indie pop', 'k-pop', 'synth-pop', 'dream pop', 'art pop'],
+  'rock': ['rock', 'indie rock', 'alternative rock', 'punk rock', 'classic rock', 'garage rock', 'post-punk', 'punk', 'grunge'],
+  'hip-hop': ['hip-hop', 'hip hop', 'rap', 'trap', 'boom bap', 'r&b', 'rnb'],
+  'metal': ['metal', 'heavy metal', 'death metal', 'black metal', 'thrash metal', 'doom metal', 'metalcore', 'nu-metal', 'progressive metal'],
+  'electronic': ['electronic', 'edm', 'techno', 'house', 'trance', 'dubstep', 'drum and bass', 'dnb', 'synthwave', 'electro'],
+  'country': ['country', 'folk', 'bluegrass', 'americana', 'country rock'],
+  'chill': ['lo-fi', 'lofi', 'ambient', 'chillwave', 'downtempo', 'jazz', 'bossa nova', 'acoustic', 'singer-songwriter', 'soul'],
+};
+
+let currentChannel = 'all';
+
+// --- Start Radio (user interaction gate for autoplay) ---
+async function startRadio(channel = 'all') {
+  currentChannel = channel;
+
+  // === CRITICAL: iOS/Mobile audio unlock ===
+  // Must happen SYNCHRONOUSLY in user gesture handler, BEFORE any await.
+  // This permanently unlocks speechSynthesis and audio playback for this page.
+
+  // 1. Unlock speechSynthesis on iOS (requires user gesture for first speak)
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    const warmup = new SpeechSynthesisUtterance(' ');
+    warmup.volume = 0;
+    warmup.rate = 10; // fastest possible to finish instantly
+    window._ttsWarmupUtterance = warmup; // prevent GC on Safari
+    window.speechSynthesis.speak(warmup);
+    console.log('🎙️ TTS warmup: unlocked speechSynthesis via user gesture');
+  }
+
+  // 2. Unlock HTML5 Audio on iOS (needs play() in gesture chain)
+  const audioPlayer = document.getElementById('audioPlayer');
+  try {
+    audioPlayer.muted = true;
+    await audioPlayer.play();
+    audioPlayer.pause();
+    audioPlayer.muted = false;
+    audioPlayer.currentTime = 0;
+    console.log('🔊 Audio unlock: HTML5 audio unlocked via user gesture');
+  } catch(e) {
+    // Some browsers don't need this, ignore
+    audioPlayer.muted = false;
+  }
+
+  document.getElementById('startOverlay').style.display = 'none';
+  document.getElementById('statusText').textContent = 'LOADING...';
+
+  // Init SC Widget
+  scWidgetObj = SC.Widget(document.getElementById('scWidget'));
+
+  // Fetch real tracks from Supabase
+  try {
+    schedule = await fetchSchedule();
+    if (schedule.length === 0) {
+      document.getElementById('statusText').textContent = 'NO TRACKS';
+      alert('No playable tracks found in the database!');
+      return;
+    }
+    console.log(`📻 Radio loaded ${schedule.length} playable tracks`);
+    
+    // Show channel name in header
+    const channelNames = {
+      'all': 'The Blind Mix', 'trending': 'Trending', 'pop': 'Pop',
+      'rock': 'Rock', 'hip-hop': 'Hip-Hop', 'metal': 'Metal',
+      'electronic': 'Electronic', 'country': 'Country', 'chill': 'Chill'
+    };
+    document.querySelector('.header h1').innerHTML = 
+      `VoteMyAI <span>Radio</span><div style="font-size:0.5em;color:var(--accent2);font-weight:400;margin-top:4px;">${channelNames[currentChannel] || 'All Tracks'}</div>`;
+  } catch (err) {
+    console.error('Failed to fetch schedule:', err);
+    document.getElementById('statusText').textContent = 'ERROR';
+    alert('Could not load tracks. Check console.');
+    return;
+  }
+
+  document.getElementById('statusText').textContent = 'LOADING...';
+  isPlaying = true;
+  currentTrackIndex = -1;
+
+  // Preload TTS voices
+  await loadVoices();
+
+  // No pre-validation — we use the buffer approach instead
+  console.log(`📻 Radio loaded ${schedule.length} tracks, starting with buffer approach`);
+
+  if (schedule.length === 0) {
+    document.getElementById('statusText').textContent = 'NO TRACKS';
+    alert('No playable tracks found!');
+    return;
+  }
+
+  document.getElementById('statusText').textContent = 'TUNING IN...';
+
+  // Find first working track and start
+  const firstTrack = await findNextWorkingTrack();
+  if (!firstTrack) {
+    document.getElementById('statusText').textContent = 'NO TRACKS';
+    alert('Could not find any working tracks!');
+    return;
+  }
+
+  document.getElementById('statusText').textContent = 'LIVE';
+  await playVerifiedTrack(firstTrack);
+}
+
+// --- TTS Voice Loading ---
+let ttsVoices = [];
+function loadVoices() {
+  return new Promise(resolve => {
+    if (!('speechSynthesis' in window)) { resolve(); return; }
+    ttsVoices = window.speechSynthesis.getVoices();
+    if (ttsVoices.length > 0) {
+      console.log('🎙️ TTS voices loaded:', ttsVoices.length);
+      resolve();
+      return;
+    }
+    // Chrome loads voices async
+    window.speechSynthesis.onvoiceschanged = () => {
+      ttsVoices = window.speechSynthesis.getVoices();
+      console.log('🎙️ TTS voices loaded (async):', ttsVoices.length);
+      resolve();
+    };
+    // Timeout fallback
+    setTimeout(resolve, 3000);
+  });
+}
+
+function getPreferredVoice() {
+  if (ttsVoices.length === 0) ttsVoices = window.speechSynthesis.getVoices();
+  return ttsVoices.find(v => v.name.includes('Google') && v.lang.startsWith('en'))
+    || ttsVoices.find(v => v.lang.startsWith('en-') && v.name.includes('Female'))
+    || ttsVoices.find(v => v.lang.startsWith('en-'))
+    || ttsVoices.find(v => v.lang.startsWith('en'))
+    || ttsVoices[0] || null;
+}
+
+// --- Mobile detection ---
+const _isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+const _isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+const _isAndroid = /Android/i.test(navigator.userAgent);
+
+// Keep reference to current utterance to prevent GC on Safari
+let _currentUtterance = null;
+
+function speakText(text) {
+  return new Promise(resolve => {
+    if (!('speechSynthesis' in window) || ttsVoices.length === 0) {
+      console.warn('🎙️ No TTS available, skipping voice intro');
+      resolve();
+      return;
+    }
+
+    // Cancel any stuck speech
+    window.speechSynthesis.cancel();
+
+    console.log(`🎙️ Speaking (${_isMobile ? 'mobile' : 'desktop'}): ${text.substring(0, 60)}...`);
+
+    // On mobile: always use chunk-based TTS for reliability
+    // On desktop: use chunks for long text, single utterance for short
+    if (_isMobile || text.length > 200) {
+      speakChunked(text).then(resolve);
+    } else {
+      speakSingle(text).then(resolve);
+    }
+  });
+}
+
+// Single utterance with desktop Chrome pause/resume workaround
+function speakSingle(text) {
+  return new Promise(resolve => {
+    const utterance = new SpeechSynthesisUtterance(text);
+    _currentUtterance = utterance; // prevent GC
+    utterance.lang = 'en-US';
+    utterance.rate = 0.92;
+    utterance.pitch = 1.0;
+    utterance.volume = document.getElementById('volumeSlider').value / 100;
+
+    const voice = getPreferredVoice();
+    if (voice) utterance.voice = voice;
+
+    let resolved = false;
+    const done = (reason) => {
+      if (resolved) return;
+      resolved = true;
+      clearInterval(watchdog);
+      _currentUtterance = null;
+      console.log('🎙️ TTS done:', reason);
+      resolve();
+    };
+
+    utterance.onend = () => done('onend');
+    utterance.onerror = () => done('error');
+    setTimeout(() => done('timeout'), 25000);
+
+    window.speechSynthesis.speak(utterance);
+
+    // Desktop Chrome only: pause/resume every 3s to prevent 15s cutoff
+    // DO NOT use on Android (causes cancellation) or iOS (not needed)
+    const watchdog = setInterval(() => {
+      if (resolved) { clearInterval(watchdog); return; }
+      if (window.speechSynthesis.speaking) {
+        if (!_isMobile) {
+          window.speechSynthesis.pause();
+          window.speechSynthesis.resume();
+        }
+      } else {
+        // Speech stopped but onend didn't fire
+        done('silent-end');
+      }
+    }, 3000);
+  });
+}
+
+// Chunk-based TTS for mobile reliability
+// Splits text into sentences, speaks each sequentially
+async function speakChunked(text) {
+  // Split at sentence boundaries: .!? followed by space or end
+  const rawChunks = text.match(/[^.!?]*[.!?]+[\s]*/g) || [text];
+
+  // Merge very short chunks (under 20 chars) with next chunk for natural flow
+  const chunks = [];
+  let buffer = '';
+  for (const chunk of rawChunks) {
+    buffer += chunk;
+    if (buffer.trim().length >= 40 || chunk === rawChunks[rawChunks.length - 1]) {
+      chunks.push(buffer.trim());
+      buffer = '';
+    }
+  }
+  if (buffer.trim()) chunks.push(buffer.trim());
+
+  console.log(`🎙️ Chunked TTS: ${chunks.length} chunks`);
+
+  for (let i = 0; i < chunks.length; i++) {
+    if (!isPlaying) break; // Stop if user stopped playback
+    await speakSingleChunk(chunks[i], i, chunks.length);
+  }
+}
+
+function speakSingleChunk(text, index, total) {
+  return new Promise(resolve => {
+    if (!text || !text.trim()) { resolve(); return; }
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    _currentUtterance = utterance; // prevent GC on Safari
+    utterance.lang = 'en-US';
+    utterance.rate = 0.92;
+    utterance.pitch = 1.0;
+    utterance.volume = document.getElementById('volumeSlider').value / 100;
+
+    const voice = getPreferredVoice();
+    if (voice) utterance.voice = voice;
+
+    let resolved = false;
+    const done = (reason) => {
+      if (resolved) return;
+      resolved = true;
+      clearInterval(pollInterval);
+      console.log(`🎙️ Chunk ${index + 1}/${total} done: ${reason}`);
+      // Small pause between chunks for natural rhythm
+      setTimeout(resolve, 80);
+    };
+
+    utterance.onend = () => done('onend');
+    utterance.onerror = (e) => {
+      console.warn(`🎙️ Chunk ${index + 1} error:`, e.error || e);
+      done('error');
+    };
+
+    // Per-chunk safety timeout: ~10s max per chunk
+    setTimeout(() => done('timeout'), 10000);
+
+    window.speechSynthesis.speak(utterance);
+
+    // Poll for completion — catches iOS Safari's unreliable onend
+    let hasStarted = false;
+    let silentChecks = 0;
+    const pollInterval = setInterval(() => {
+      if (resolved) { clearInterval(pollInterval); return; }
+      if (window.speechSynthesis.speaking) {
+        hasStarted = true;
+        silentChecks = 0;
+      } else if (hasStarted) {
+        // Was speaking, now stopped — onend may not have fired (iOS bug)
+        silentChecks++;
+        if (silentChecks >= 2) { // 2 consecutive checks = truly done
+          done('poll-end');
+        }
+      }
+    }, 150);
+  });
+}
+
+// --- Core Playback: Pre-Buffer Architecture ---
+// The key idea: NEVER talk about a song until it's actually loaded and ready to play.
+// 1. Try loading next track's audio in a buffer Audio element
+// 2. If it loads (canplaythrough) → it's verified. Show host intro, speak, then play.
+// 3. If it fails → silently skip to next, try again. No TTS, no UI update.
+
+let bufferAudio = new Audio(); // Dedicated buffer for pre-loading
+bufferAudio.preload = 'auto';
+let allTracks = []; // Store all tracks for re-shuffling
+
+// Genre-diverse reorder function (reusable for re-shuffles)
+function genreDiverseShuffle(tracks) {
+  let pool;
+  
+  if (currentChannel === 'trending') {
+    // Trending is already the top tracks — no boost needed, just shuffle
+    pool = [...tracks];
+  } else {
+    // Top 100 by rating get 3x weight (appear ~3x more often)
+    const sorted = [...tracks].sort((a, b) => (b.avg_rating || 0) - (a.avg_rating || 0));
+    const top100 = sorted.slice(0, 100);
+    const rest = sorted.slice(100);
+    pool = [...top100, ...top100, ...top100, ...rest];
+  }
+
+  // Shuffle the pool
   const shuffled = pool
     .map(t => ({ ...t, _sort: Math.random() }))
     .sort((a, b) => a._sort - b._sort);
 
+  // Genre-diverse reorder + dedupe consecutive same title
   const reordered = [];
   const remaining = [...shuffled];
-  let lastGenre = '', lastTitle = '';
+  let lastGenre = '';
+  let lastTitle = '';
 
   while (remaining.length > 0) {
     let idx = remaining.findIndex(t =>
@@ -703,290 +1246,144 @@ function genreDiverseShuffle(tracks) {
     lastGenre = track.genre;
     lastTitle = track.title;
   }
+
   return reordered;
 }
 
-// --- Host personality ---
-function generateHostIntro(track) {
-  const stars = track.avg_rating ? track.avg_rating.toFixed(1) : null;
-  const note = track.artist_note || null;
-  const genre = track.genre || 'whatever this is';
-
-  let ratingRoast = '';
-  if (stars) {
-    const s = parseFloat(stars);
-    if (s >= 4.5) ratingRoast = `${stars} stars. Wow. The bar is literally on the floor and this barely cleared it.`;
-    else if (s >= 4.0) ratingRoast = `${stars} stars. Which in AI music terms means it's almost listenable. Almost.`;
-    else if (s >= 3.5) ratingRoast = `${stars} stars. Mediocrity has entered the chat. Give it a round of applause, everyone.`;
-    else if (s >= 3.0) ratingRoast = `${stars} stars. Yikes. Even the algorithm that made this is embarrassed right now.`;
-    else ratingRoast = `${stars} stars. I'm not even mad, I'm impressed. It takes real talent to be rated this low.`;
-  }
-
-  let noteRoast = '';
-  if (note) {
-    const reactions = [
-      `Oh, and the artist left a little love letter: "${note}". Adorable. Wrong, but adorable.`,
-      `The artist says, and I quote: "${note}". Imagine having that much confidence with this little talent.`,
-      `Artist note: "${note}". Buddy, the song should be doing the talking. And right now it's begging for mercy.`,
-      `Get this — the artist wrote: "${note}". I swear these people think they're making history. You're making noise, sweetheart.`,
-      `Note from the creator: "${note}". Look, I respect the hustle. I don't respect the output, but I respect the hustle.`,
-      `The artist wants you to know: "${note}". Thanks for sharing. Now please stop sharing.`,
-    ];
-    noteRoast = ' ' + reactions[Math.floor(Math.random() * reactions.length)];
-  }
-
-  const intros = [
-    `Oh god, here we go again. "${track.title}". ${genre}. I didn't choose this life, but here we are. ${ratingRoast}${noteRoast}`,
-    `Alright, whoever submitted "${track.title}" — we need to talk. ${genre}. ${ratingRoast}${noteRoast} I'm not angry, I'm disappointed.`,
-    `Ladies and gentlemen, I am legally obligated to play "${track.title}". ${genre}. ${ratingRoast}${noteRoast} My therapist will hear about this.`,
-    `Next up is "${track.title}" and honestly? I need a raise. ${genre}. ${ratingRoast}${noteRoast} This is what I get for being an AI.`,
-    `"${track.title}". ${genre}. You know what the worst part is? You can't skip this. You're trapped here. With me. And this song. ${ratingRoast}${noteRoast}`,
-    `Breaking news: "${track.title}" just dropped on VoteMyAI Radio and I am already filing a complaint. ${genre}. ${ratingRoast}${noteRoast}`,
-    `This is VoteMyAI Radio, the only station where the DJ openly hates the playlist. Next: "${track.title}". ${genre}. ${ratingRoast}${noteRoast}`,
-    `I want everyone to close their eyes and imagine a world where "${track.title}" was never created. Beautiful, right? Too bad. ${genre}. ${ratingRoast}${noteRoast}`,
-    `Oh fantastic. "${track.title}". ${genre}. Made by a robot, submitted by a human, suffered through by all of us. ${ratingRoast}${noteRoast} We're all in this together.`,
-    `Someone woke up today and thought: you know what the world needs? "${track.title}". ${genre}. They were wrong. ${ratingRoast}${noteRoast}`,
-    `If "${track.title}" was a person, I would avoid eye contact with it at a party. ${genre}. ${ratingRoast}${noteRoast} But sure, let's play it.`,
-    `Welcome back to VoteMyAI Radio, where dreams go to be rated 3 stars. Next: "${track.title}". ${genre}. ${ratingRoast}${noteRoast}`,
-    `I've been doing this for hours and somehow "${track.title}" still found its way into my queue. ${genre}. ${ratingRoast}${noteRoast} There is no escape.`,
-    `Fun fact: I am a machine with no feelings. And yet, "${track.title}" makes me wish I could feel pain, just so I could describe this experience accurately. ${genre}. ${ratingRoast}${noteRoast}`,
-  ];
-  return intros[Math.floor(Math.random() * intros.length)];
-}
-
-// --- TTS ---
-let ttsVoices = [];
-function loadVoices() {
-  return new Promise(resolve => {
-    if (!('speechSynthesis' in window)) { resolve(); return; }
-    ttsVoices = window.speechSynthesis.getVoices();
-    if (ttsVoices.length > 0) { resolve(); return; }
-    window.speechSynthesis.onvoiceschanged = () => {
-      ttsVoices = window.speechSynthesis.getVoices();
-      console.log('🎙️ TTS voices loaded (async):', ttsVoices.length);
-      resolve();
-    };
-    setTimeout(resolve, 3000);
-  });
-}
-
-function getPreferredVoice() {
-  const prefs = ['Google US English', 'Google UK English Female', 'Samantha', 'Alex'];
-  for (const name of prefs) {
-    const v = ttsVoices.find(v => v.name.includes(name));
-    if (v) return v;
-  }
-  return ttsVoices.find(v => v.lang.startsWith('en')) || ttsVoices[0] || null;
-}
-
-function speakText(text) {
-  return new Promise(resolve => {
-    if (!('speechSynthesis' in window) || ttsVoices.length === 0) { resolve(); return; }
-
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US';
-    utterance.rate = 0.92;
-    utterance.pitch = 1.0;
-    utterance.volume = document.getElementById('volumeSlider').value / 100;
-
-    const voice = getPreferredVoice();
-    if (voice) { utterance.voice = voice; console.log('🎙️ Using voice:', voice.name); }
-
-    let resolved = false;
-    let hasStartedSpeaking = false;
-    const startTime = Date.now();
-
-    const done = (reason) => {
-      if (resolved) return;
-      resolved = true;
-      clearInterval(watchdog);
-      console.log(`🎙️ TTS done, reason: ${reason} (${Date.now() - startTime}ms)`);
-      resolve();
-    };
-
-    utterance.onstart = () => {
-      hasStartedSpeaking = true;
-      console.log('🎙️ TTS started speaking');
-    };
-    utterance.onend = () => done('onend');
-    utterance.onerror = (e) => {
-      // On mobile, 'interrupted' errors happen on cancel — ignore if not started
-      if (e.error === 'interrupted' && !hasStartedSpeaking) return;
-      done('error: ' + (e.error || 'unknown'));
-    };
-
-    // Safety timeout — estimate ~80ms per character at 0.92 rate
-    const estimatedDuration = Math.max(8000, text.length * 80);
-    const safetyTimeout = Math.min(estimatedDuration, 30000);
-    setTimeout(() => done('timeout'), safetyTimeout);
-
-    console.log('🎙️ Speaking:', text.substring(0, 60) + '...');
-    window.speechSynthesis.speak(utterance);
-
-    // Watchdog: Chrome bug workaround (pause/resume to prevent hang)
-    // BUT: don't kill speech until it has actually started AND stopped
-    const GRACE_PERIOD = 5000; // Give mobile 5s to start speaking
-    const watchdog = setInterval(() => {
-      if (resolved) { clearInterval(watchdog); return; }
-
-      const elapsed = Date.now() - startTime;
-
-      if (window.speechSynthesis.speaking) {
-        // It's speaking — do the Chrome pause/resume hack
-        hasStartedSpeaking = true;
-        window.speechSynthesis.pause();
-        window.speechSynthesis.resume();
-      } else if (hasStartedSpeaking) {
-        // It was speaking but stopped — onend probably didn't fire
-        done('silent-end');
-      } else if (elapsed > GRACE_PERIOD) {
-        // Never started speaking after grace period — TTS failed on this device
-        console.warn('🎙️ TTS never started after grace period, skipping');
-        done('never-started');
-      }
-      // else: still within grace period, keep waiting
-    }, 2000);
-  });
-}
-
-// --- Start Radio ---
-async function startRadio(channel = 'all') {
-  currentChannel = channel;
-  document.getElementById('startOverlay').style.display = 'none';
-  document.getElementById('statusText').textContent = 'LOADING...';
-  document.getElementById('backBtn').style.display = 'inline-flex';
-
-  try {
-    schedule = await fetchSchedule();
-    if (schedule.length === 0) {
-      document.getElementById('statusText').textContent = 'NO TRACKS';
-      alert('No playable tracks found for this channel!');
-      goBackToChannels();
-      return;
-    }
-    console.log(`📻 Radio loaded ${schedule.length} playable tracks`);
-
-    // Show channel name
-    document.querySelector('.header h1').innerHTML =
-      `VoteMyAI <span>Radio</span><div style="font-size:0.45em;color:var(--accent2);font-weight:400;margin-top:4px;">${CHANNEL_NAMES[currentChannel] || 'The Blind Mix'} · ${allTracks.length} tracks</div>`;
-
-  } catch (err) {
-    console.error('Failed to fetch schedule:', err);
-    document.getElementById('statusText').textContent = 'ERROR';
-    return;
-  }
-
-  isPlaying = true;
-  currentTrackIndex = -1;
-  await loadVoices();
-
-  console.log(`📻 Radio loaded ${schedule.length} tracks, starting`);
-
-  document.getElementById('statusText').textContent = 'TUNING IN...';
-  const firstTrack = await findNextWorkingTrack();
-  if (!firstTrack) {
-    document.getElementById('statusText').textContent = 'NO TRACKS';
-    return;
-  }
-
-  document.getElementById('statusText').textContent = 'LIVE';
-  await playVerifiedTrack(firstTrack);
-}
-
-// --- Back to channels ---
-function goBackToChannels() {
-  isPlaying = false;
-  stopAllPlayers();
-  window.speechSynthesis && window.speechSynthesis.cancel();
-  document.getElementById('startOverlay').style.display = 'flex';
-  document.getElementById('backBtn').style.display = 'none';
-  document.getElementById('statusText').textContent = 'OFFLINE';
-  document.querySelector('.header h1').innerHTML = 'VoteMyAI <span>Radio</span>';
-  document.getElementById('npTitle').textContent = '—';
-  document.getElementById('upNextList').innerHTML = '';
-}
-
-// --- Core Playback: Pre-Buffer Architecture ---
+// Find the next track that actually loads successfully
 async function findNextWorkingTrack() {
   let attempts = 0;
-  while (attempts < schedule.length) {
+  const maxAttempts = schedule.length;
+
+  while (attempts < maxAttempts) {
     currentTrackIndex++;
+
+    // Loop: re-shuffle when we reach the end
     if (currentTrackIndex >= schedule.length) {
-      console.log('🔄 Playlist complete! Re-shuffling...');
+      console.log('🔄 Playlist complete! Re-shuffling with fresh order...');
       schedule = genreDiverseShuffle(allTracks);
       currentTrackIndex = 0;
     }
+
     attempts++;
 
     const candidate = schedule[currentTrackIndex];
-    if (candidate.audio_url) {
+
+    if (candidate.platform === 'suno' && candidate.audio_url) {
       const loaded = await bufferLoadAudio(candidate.audio_url);
       if (loaded) {
         console.log(`✅ Buffered: "${candidate.title}"`);
         return candidate;
       } else {
-        console.log(`⏭️ Skip (broken): "${candidate.title}"`);
+        console.log(`⏭️ Silent skip (won't load): "${candidate.title}"`);
+        continue;
       }
+    } else if (candidate.youtube_id) {
+      // YT can't easily be pre-tested, trust it
+      console.log(`✅ YouTube track queued: "${candidate.title}"`);
+      return candidate;
+    } else if (candidate.soundcloud_url) {
+      console.log(`✅ SoundCloud track queued: "${candidate.title}"`);
+      return candidate;
     }
   }
-  return null;
+  return null; // Nothing works
 }
 
+// Try to load audio into buffer — returns true if canplaythrough fires
 function bufferLoadAudio(url) {
   return new Promise(resolve => {
+    // Reset buffer
     bufferAudio.pause();
     bufferAudio.removeAttribute('src');
+
     let resolved = false;
-    const done = (r) => { if (!resolved) { resolved = true; resolve(r); } };
+    const done = (result) => {
+      if (resolved) return;
+      resolved = true;
+      resolve(result);
+    };
+
     bufferAudio.oncanplaythrough = () => done(true);
     bufferAudio.onerror = () => done(false);
+    bufferAudio.onstalled = () => {}; // ignore stalls, wait for timeout
+
+    // Timeout: if not loaded in 6 seconds, skip
     setTimeout(() => done(false), 6000);
+
     bufferAudio.src = url;
     bufferAudio.load();
   });
 }
 
+// Play a track that has already been verified/buffered
 async function playVerifiedTrack(track) {
   console.log(`📻 Now playing [${currentTrackIndex + 1}/${schedule.length}]: "${track.title}" (${track.platform})`);
 
+  // Update UI
   updateNowPlaying(track);
   updateUpNext();
 
-  // Host intro
-  const el = document.getElementById('hostMsg');
-  el.classList.add('visible');
-  const introText = generateHostIntro(track);
+  // Show host speaking indicator + speak intro
+  const introText = showHostMessage(track);
   await speakText(introText);
-  el.classList.remove('visible');
+  document.getElementById('hostMsg').classList.remove('visible');
 
   if (!isPlaying) return;
 
-  // Play
+  // Play the track
   stopAllPlayers();
-  const audio = document.getElementById('audioPlayer');
-  audio.src = track.audio_url;
-  audio.volume = document.getElementById('volumeSlider').value / 100;
 
-  audio.onended = () => onTrackEnded();
-  audio.onerror = () => { console.warn('🎵 Error, skipping'); onTrackEnded(); };
-  audio.ontimeupdate = () => updateProgress(audio.currentTime, audio.duration);
-  audio.onloadedmetadata = () => {
-    document.getElementById('timeDuration').textContent = formatTime(audio.duration);
-    setFallbackTimer(audio.duration);
-  };
-  setFallbackTimer(300);
+  if (track.platform === 'suno' && track.audio_url) {
+    // Transfer buffered audio to the main player
+    const audio = document.getElementById('audioPlayer');
+    audio.src = bufferAudio.src;
+    audio.volume = document.getElementById('volumeSlider').value / 100;
+    audio.currentTime = 0;
 
-  audio.play().then(() => {
-    console.log('🎵 Playing:', track.title);
-  }).catch(err => {
-    console.warn('🎵 Play failed:', err.message);
+    audio.onended = () => onTrackEnded();
+    audio.onerror = () => {
+      console.warn('🎵 Playback error, skipping');
+      onTrackEnded();
+    };
+    audio.ontimeupdate = () => updateProgress(audio.currentTime, audio.duration);
+    audio.onloadedmetadata = () => {
+      document.getElementById('timeDuration').textContent = formatTime(audio.duration);
+      setFallbackTimer(audio.duration);
+    };
+    setFallbackTimer(300);
+
+    audio.play().then(() => {
+      console.log('🎵 Playing:', track.title);
+    }).catch(err => {
+      console.warn('🎵 Play failed:', err.message);
+      onTrackEnded();
+    });
+
+  } else if (track.platform === 'youtube' || track.youtube_id) {
+    playYouTubeTrack(track);
+  } else if (track.platform === 'soundcloud' || track.soundcloud_url) {
+    playSoundCloudTrack(track);
+  } else if (track.audio_url) {
+    // Generic audio fallback
+    const audio = document.getElementById('audioPlayer');
+    audio.src = track.audio_url;
+    audio.volume = document.getElementById('volumeSlider').value / 100;
+    audio.onended = () => onTrackEnded();
+    audio.onerror = () => onTrackEnded();
+    audio.ontimeupdate = () => updateProgress(audio.currentTime, audio.duration);
+    setFallbackTimer(300);
+    audio.play().catch(() => onTrackEnded());
+  } else {
     onTrackEnded();
-  });
+  }
 
+  // Start pre-buffering next track in background
   preBufferNext();
 }
 
+// Pre-buffer next working track while current is playing
+let nextBufferedTrack = null;
 async function preBufferNext() {
   nextBufferedTrack = null;
   let tempIndex = currentTrackIndex;
@@ -998,7 +1395,9 @@ async function preBufferNext() {
     attempts++;
 
     const candidate = schedule[tempIndex];
-    if (candidate.audio_url) {
+
+    if (candidate.platform === 'suno' && candidate.audio_url) {
+      // Use a separate Audio element for pre-buffering
       const testAudio = new Audio();
       testAudio.preload = 'auto';
       const works = await new Promise(resolve => {
@@ -1016,12 +1415,147 @@ async function preBufferNext() {
         return;
       } else {
         console.log(`⏭️ Pre-buffer skip: "${candidate.title}"`);
+        continue;
       }
+    } else if (candidate.youtube_id || candidate.soundcloud_url) {
+      nextBufferedTrack = { track: candidate, index: tempIndex };
+      console.log(`🔮 Next queued (${candidate.platform}): "${candidate.title}"`);
+      return;
     }
   }
+  console.warn('🔮 No next track could be pre-buffered');
 }
 
-// --- Track Ended ---
+function showHostMessage(track) {
+  const msg = generateHostIntro(track);
+  const el = document.getElementById('hostMsg');
+
+  // Show the host text so users can read along (especially useful when TTS fails on mobile)
+  document.getElementById('hostText').textContent = msg;
+  el.classList.add('visible');
+
+  // Extended timeout for mobile TTS which takes longer with chunking
+  const hideTimeout = _isMobile ? 25000 : 15000;
+  setTimeout(() => {
+    el.classList.remove('visible');
+  }, hideTimeout);
+
+  return msg;
+}
+
+// (playTrack replaced by playVerifiedTrack above)
+
+// --- Fallback timer (skips if track fails or hangs) ---
+let fallbackTimer = null;
+function setFallbackTimer(seconds) {
+  clearFallbackTimer();
+  const timeout = (seconds || 300) + 10; // track duration + 10s buffer, max 5min
+  fallbackTimer = setTimeout(() => {
+    console.warn('⏭️ Fallback timer triggered — skipping to next');
+    onTrackEnded();
+  }, timeout * 1000);
+}
+function clearFallbackTimer() {
+  if (fallbackTimer) { clearTimeout(fallbackTimer); fallbackTimer = null; }
+}
+
+// --- Platform Players ---
+
+// (playSunoTrack logic moved into playVerifiedTrack)
+
+function playYouTubeTrack(track) {
+  if (!ytPlayer || !ytPlayer.loadVideoById) {
+    console.warn('📺 YT Player not ready, skipping');
+    setTimeout(() => onTrackEnded(), 500);
+    return;
+  }
+
+  console.log('📺 Loading YouTube:', track.youtube_id);
+  ytPlayer.loadVideoById(track.youtube_id);
+  ytPlayer.setVolume(document.getElementById('volumeSlider').value);
+
+  // Quick check: if YT hasn't started playing within 10s, skip
+  let ytStarted = false;
+  const ytQuickCheck = setTimeout(() => {
+    if (!ytStarted) {
+      console.warn('📺 YouTube failed to start within 10s, skipping:', track.title);
+      onTrackEnded();
+    }
+  }, 10000);
+
+  // Progress tracking for YT
+  if (progressInterval) clearInterval(progressInterval);
+  progressInterval = setInterval(() => {
+    if (ytPlayer && ytPlayer.getCurrentTime) {
+      const current = ytPlayer.getCurrentTime();
+      const duration = ytPlayer.getDuration();
+      if (current > 0.5) {
+        ytStarted = true;
+        clearTimeout(ytQuickCheck);
+      }
+      updateProgress(current, duration);
+      if (duration > 0 && !fallbackTimer) setFallbackTimer(duration);
+    }
+  }, 500);
+
+  // Max fallback
+  setFallbackTimer(300);
+}
+
+function playSoundCloudTrack(track) {
+  const scUrl = track.soundcloud_url || track.embed_url;
+
+  if (!scUrl || !scWidgetObj) {
+    console.warn('🔊 No SC URL or widget, skipping');
+    setTimeout(() => onTrackEnded(), 500);
+    return;
+  }
+
+  console.log('🔊 Loading SoundCloud:', scUrl);
+
+  // Quick check: if SC hasn't started within 10s, skip
+  let scStarted = false;
+  const scQuickCheck = setTimeout(() => {
+    if (!scStarted) {
+      console.warn('🔊 SoundCloud failed to start within 10s, skipping:', track.title);
+      onTrackEnded();
+    }
+  }, 10000);
+
+  scWidgetObj.load(scUrl, {
+    auto_play: true,
+    show_artwork: false,
+    show_user: false,
+    hide_related: true,
+    visual: false
+  });
+
+  // Rebind events after load
+  scWidgetObj.bind(SC.Widget.Events.FINISH, () => {
+    onTrackEnded();
+  });
+
+  scWidgetObj.bind(SC.Widget.Events.PLAY_PROGRESS, (data) => {
+    if (!scStarted) {
+      scStarted = true;
+      clearTimeout(scQuickCheck);
+    }
+    scWidgetObj.getDuration(duration => {
+      updateProgress(data.currentPosition / 1000, duration / 1000);
+      if (duration > 0 && !fallbackTimer) setFallbackTimer(duration / 1000);
+    });
+  });
+
+  scWidgetObj.bind(SC.Widget.Events.ERROR, () => {
+    console.warn('SC Widget error, skipping');
+    onTrackEnded();
+  });
+
+  // Fallback
+  setFallbackTimer(360);
+}
+
+// --- On Track Ended (Central Flow) ---
 let isTransitioning = false;
 async function onTrackEnded() {
   if (isTransitioning) return;
@@ -1033,6 +1567,7 @@ async function onTrackEnded() {
 
   if (!isPlaying) { isTransitioning = false; return; }
 
+  // Use pre-buffered track if available, otherwise find one
   let nextTrack;
   if (nextBufferedTrack) {
     currentTrackIndex = nextBufferedTrack.index;
@@ -1048,35 +1583,34 @@ async function onTrackEnded() {
   if (nextTrack) {
     await playVerifiedTrack(nextTrack);
   } else {
+    console.error('📻 No more playable tracks');
     document.getElementById('statusText').textContent = 'NO TRACKS';
   }
 }
 
-// --- Stop All ---
+// --- Stop All Players ---
 function stopAllPlayers() {
   clearFallbackTimer();
+
+  // Stop <audio> — use pause + removeAttribute to avoid layout thrash
   const audio = document.getElementById('audioPlayer');
   audio.pause();
   audio.onended = null;
   audio.ontimeupdate = null;
   audio.onerror = null;
   audio.removeAttribute('src');
-  audio.load();
-  try { bufferAudio.pause(); bufferAudio.removeAttribute('src'); } catch (e) {}
-}
+  audio.load(); // reset without triggering visible changes
 
-// --- Fallback timer ---
-let fallbackTimer = null;
-function setFallbackTimer(seconds) {
-  clearFallbackTimer();
-  const timeout = (seconds || 300) + 10;
-  fallbackTimer = setTimeout(() => {
-    console.warn('⏭️ Fallback timer triggered');
-    onTrackEnded();
-  }, timeout * 1000);
-}
-function clearFallbackTimer() {
-  if (fallbackTimer) { clearTimeout(fallbackTimer); fallbackTimer = null; }
+  // Stop YouTube
+  if (ytPlayer && ytPlayer.stopVideo) {
+    try { ytPlayer.stopVideo(); } catch (e) {}
+  }
+  if (progressInterval) clearInterval(progressInterval);
+
+  // Stop SoundCloud
+  if (scWidgetObj) {
+    try { scWidgetObj.pause(); } catch (e) {}
+  }
 }
 
 // --- UI Updates ---
@@ -1085,10 +1619,12 @@ function updateNowPlaying(track) {
   document.getElementById('npGenre').textContent = track.genre;
   document.getElementById('npPlatform').textContent = track.platform.toUpperCase();
   document.getElementById('npRating').textContent = track.avg_rating ? track.avg_rating.toFixed(1) : '—';
-  document.getElementById('timeDuration').textContent = '—';
+  document.getElementById('timeDuration').textContent =
+    track.duration_seconds ? formatTime(track.duration_seconds) : '—';
   document.getElementById('timeElapsed').textContent = '0:00';
   document.getElementById('progressBar').style.width = '0%';
 
+  // Artist note
   const noteEl = document.getElementById('artistNote');
   if (track.artist_note) {
     document.getElementById('artistNoteText').textContent = track.artist_note;
@@ -1104,16 +1640,15 @@ function updateUpNext() {
   for (let i = 1; i <= 3; i++) {
     const idx = (currentTrackIndex + i) % schedule.length;
     const track = schedule[idx];
-    if (!track) continue;
     const item = document.createElement('div');
     item.className = 'up-next-item';
     item.innerHTML = `
       <div class="up-next-num">${i}</div>
       <div class="up-next-info">
         <div class="up-next-title">${track.title}</div>
-        <div class="up-next-genre">${track.genre}</div>
+        <div class="up-next-genre">${track.genre} · ${track.platform.toUpperCase()}</div>
       </div>
-      <div class="up-next-rating">★ ${track.avg_rating ? track.avg_rating.toFixed(1) : '—'}</div>
+      <div class="up-next-rating">★ ${track.avg_rating.toFixed(1)}</div>
     `;
     list.appendChild(item);
   }
@@ -1127,9 +1662,18 @@ function updateProgress(current, duration) {
   document.getElementById('timeDuration').textContent = formatTime(duration);
 }
 
-// --- Volume ---
+function updatePlayButton(playing) {
+  // Play button removed for live radio mode — no-op
+}
+
+// --- Controls removed for live radio mode ---
+
+// Volume
 document.getElementById('volumeSlider').addEventListener('input', function() {
-  document.getElementById('audioPlayer').volume = this.value / 100;
+  const vol = this.value / 100;
+  document.getElementById('audioPlayer').volume = vol;
+  if (ytPlayer && ytPlayer.setVolume) ytPlayer.setVolume(this.value);
+  if (scWidgetObj) scWidgetObj.setVolume(this.value);
 });
 
 // --- Helpers ---
@@ -1139,6 +1683,15 @@ function formatTime(seconds) {
   const s = Math.floor(seconds % 60);
   return m + ':' + (s < 10 ? '0' : '') + s;
 }
+
+// --- Fake listeners count ---
+setInterval(() => {
+  if (isPlaying) {
+    const count = Math.floor(Math.random() * 8) + 3;
+    document.getElementById('listenersCount').textContent = `${count} listeners tuned in`;
+  }
+}, 10000);
 </script>
+
 </body>
 </html>
