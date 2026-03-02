@@ -79,36 +79,6 @@ body {
 }
 #passwordGate .error.show { opacity: 1; }
 
-/* === Kokoro TTS Loading === */
-#kokoroLoader {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 20px; padding: 24px;
-  margin-bottom: 20px; text-align: center;
-  display: none;
-}
-#kokoroLoader.visible { display: block; }
-#kokoroLoader .kl-icon { font-size: 2rem; margin-bottom: 10px; }
-#kokoroLoader .kl-title {
-  font-size: 0.9rem; color: var(--text-bright);
-  font-weight: 600; margin-bottom: 4px;
-}
-#kokoroLoader .kl-sub {
-  font-size: 0.7rem; color: var(--text-dim);
-  font-family: 'Space Mono', monospace;
-  margin-bottom: 14px;
-}
-#kokoroLoader .kl-bar-wrap {
-  width: 100%; height: 4px;
-  background: var(--surface2);
-  border-radius: 10px; overflow: hidden;
-}
-#kokoroLoader .kl-bar-fill {
-  height: 100%; width: 0%;
-  background: linear-gradient(90deg, var(--accent), var(--accent2));
-  border-radius: 10px; transition: width 0.3s ease;
-}
-
 /* === MAIN RADIO UI === */
 #radioApp { display: none; }
 
@@ -709,14 +679,6 @@ body {
       </div>
     </div>
 
-    <!-- Kokoro TTS Loading -->
-    <div id="kokoroLoader">
-      <div class="kl-icon">🧠</div>
-      <div class="kl-title">Loading AI Voice Engine</div>
-      <div class="kl-sub" id="klStatus">Downloading model...</div>
-      <div class="kl-bar-wrap"><div class="kl-bar-fill" id="klBar"></div></div>
-    </div>
-
     <!-- Now Playing -->
     <div class="now-playing" id="nowPlaying">
       <div class="np-label">▶ Now Playing</div>
@@ -772,19 +734,6 @@ body {
   <iframe id="scWidget" width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay"
     src="about:blank"></iframe>
 </div>
-
-<!-- Kokoro TTS Module (loads in background, exposes class to window) -->
-<script type="module">
-  try {
-    const { KokoroTTS } = await import("https://cdn.jsdelivr.net/npm/kokoro-js@1.2.1/+esm");
-    window._KokoroTTSClass = KokoroTTS;
-    window.dispatchEvent(new CustomEvent('kokoro-module-ready'));
-    console.log('🎙️ Kokoro module loaded from CDN');
-  } catch(e) {
-    console.warn('🎙️ Kokoro module failed to load:', e);
-    window.dispatchEvent(new CustomEvent('kokoro-module-ready'));
-  }
-</script>
 
 <!-- SoundCloud Widget API -->
 <script src="https://w.soundcloud.com/player/api.js"></script>
@@ -1009,21 +958,20 @@ const CHANNEL_GENRES = {
   'chill': ['lo-fi', 'lofi', 'ambient', 'chillwave', 'downtempo', 'jazz', 'bossa nova', 'acoustic', 'singer-songwriter', 'soul'],
 };
 
-// --- Kokoro TTS Voice Config per Channel ---
+// --- Per-Channel Voice Config (Web Speech API) ---
 const CHANNEL_HOSTS = {
-  'all':        { voice: 'af_bella',   speed: 1.05 },
-  'trending':   { voice: 'af_heart',   speed: 1.1 },
-  'pop':        { voice: 'af_nova',    speed: 1.08 },
-  'rock':       { voice: 'am_fenrir',  speed: 0.95 },
-  'hip-hop':    { voice: 'am_puck',    speed: 1.12 },
-  'metal':      { voice: 'am_michael', speed: 0.9 },
-  'electronic': { voice: 'bf_emma',    speed: 1.05 },
-  'country':    { voice: 'af_sarah',   speed: 0.95 },
-  'chill':      { voice: 'af_nicole',  speed: 0.88 },
+  'all':        { name: 'DJ Zero',         preferVoice: 'Google UK English Male',  gender: 'male',   pitch: 0.9,  rate: 1.0  },
+  'trending':   { name: 'The Algorithm',   preferVoice: 'Google US English',       gender: 'female', pitch: 0.7,  rate: 1.15 },
+  'pop':        { name: 'Poppy',           preferVoice: 'Google UK English Female', gender: 'female', pitch: 1.3,  rate: 1.1  },
+  'rock':       { name: 'Riff',            preferVoice: 'Daniel',                  gender: 'male',   pitch: 0.6,  rate: 0.88 },
+  'hip-hop':    { name: 'MC Buffer',       preferVoice: 'Google US English',       gender: 'male',   pitch: 1.0,  rate: 1.2  },
+  'metal':      { name: 'Lord Distortion', preferVoice: 'Daniel',                  gender: 'male',   pitch: 0.4,  rate: 0.8  },
+  'electronic': { name: 'SYNC',            preferVoice: 'Google UK English Female', gender: 'female', pitch: 0.8,  rate: 1.05 },
+  'country':    { name: 'Dusty',           preferVoice: 'Google US English',       gender: 'male',   pitch: 0.85, rate: 0.9  },
+  'chill':      { name: 'Whisper',         preferVoice: 'Karen',                   gender: 'female', pitch: 1.1,  rate: 0.75 },
 };
 
 let currentChannel = 'all';
-let kokoroTTS = null; // Kokoro TTS instance (loaded once, reused across channels)
 
 // --- Start Radio (user interaction gate for autoplay) ---
 async function startRadio(channel = 'all') {
@@ -1095,62 +1043,7 @@ async function startRadio(channel = 'all') {
   isPlaying = true;
   currentTrackIndex = -1;
 
-  // --- Load Kokoro TTS (once, reused across channel switches) ---
-  if (!kokoroTTS) {
-    const loader = document.getElementById('kokoroLoader');
-    const klBar = document.getElementById('klBar');
-    const klStatus = document.getElementById('klStatus');
-    loader.classList.add('visible');
-    document.getElementById('statusText').textContent = 'LOADING AI VOICE...';
-
-    try {
-      // Wait for the <script type="module"> to finish loading kokoro-js
-      klStatus.textContent = 'Loading library...';
-      klBar.style.width = '5%';
-
-      const KokoroTTS = await new Promise((resolve) => {
-        if (window._KokoroTTSClass) { resolve(window._KokoroTTSClass); return; }
-        const timeout = setTimeout(() => resolve(null), 20000);
-        window.addEventListener('kokoro-module-ready', () => {
-          clearTimeout(timeout);
-          resolve(window._KokoroTTSClass || null);
-        }, { once: true });
-      });
-
-      if (!KokoroTTS) throw new Error('Kokoro module did not load');
-
-      klStatus.textContent = 'Downloading model (~160 MB, cached after first load)...';
-      klBar.style.width = '15%';
-
-      kokoroTTS = await KokoroTTS.from_pretrained(
-        "onnx-community/Kokoro-82M-ONNX",
-        {
-          dtype: "q8",
-          device: "wasm",
-          progress_callback: (progress) => {
-            if (progress && typeof progress.progress === 'number') {
-              const pct = Math.min(15 + progress.progress * 0.8, 95);
-              klBar.style.width = pct + '%';
-            }
-          }
-        }
-      );
-
-      klBar.style.width = '100%';
-      klStatus.textContent = 'AI voice ready!';
-      console.log('🎙️ Kokoro TTS loaded successfully');
-      await new Promise(r => setTimeout(r, 400));
-    } catch(e) {
-      console.warn('🎙️ Kokoro TTS failed to load, will use Web Speech fallback:', e);
-      klStatus.textContent = 'Could not load — using fallback voice';
-      klBar.style.width = '100%';
-      await new Promise(r => setTimeout(r, 800));
-    }
-
-    loader.classList.remove('visible');
-  }
-
-  // Preload Web Speech voices as fallback
+  // Preload Web Speech voices
   await loadVoices();
 
   console.log(`📻 Radio loaded ${schedule.length} tracks, starting with buffer approach`);
@@ -1261,65 +1154,34 @@ function loadVoices() {
   });
 }
 
-function getPreferredVoice() {
+function getPreferredVoice(hostConfig) {
   if (ttsVoices.length === 0) ttsVoices = window.speechSynthesis.getVoices();
-  return ttsVoices.find(v => v.name.includes('Google') && v.lang.startsWith('en'))
-    || ttsVoices.find(v => v.lang.startsWith('en-') && v.name.includes('Female'))
-    || ttsVoices.find(v => v.lang.startsWith('en-'))
-    || ttsVoices.find(v => v.lang.startsWith('en'))
-    || ttsVoices[0] || null;
-}
+  const en = ttsVoices.filter(v => v.lang.startsWith('en'));
+  if (en.length === 0) return ttsVoices[0] || null;
 
-// --- Kokoro TTS + Web Speech Fallback ---
-// Kokoro is primary (AI-quality audio, works everywhere as regular audio playback).
-// Web Speech API is fallback if Kokoro fails to load.
-
-let _ttsObjectURL = null; // Track blob URLs for cleanup
-
-async function speakText(text) {
-  // Try Kokoro TTS first
-  if (kokoroTTS) {
-    try {
-      const host = CHANNEL_HOSTS[currentChannel] || CHANNEL_HOSTS['all'];
-      console.log(`🎙️ Kokoro (${host.voice}, ${host.speed}x): ${text.substring(0, 60)}...`);
-
-      const result = await kokoroTTS.generate(text, {
-        voice: host.voice,
-        speed: host.speed
-      });
-
-      // Convert to WAV and play via <audio> element
-      const wavBytes = result.toWav();
-      const blob = new Blob([wavBytes], { type: 'audio/wav' });
-      if (_ttsObjectURL) URL.revokeObjectURL(_ttsObjectURL);
-      _ttsObjectURL = URL.createObjectURL(blob);
-
-      const ttsPlayer = document.getElementById('ttsPlayer');
-      ttsPlayer.volume = document.getElementById('volumeSlider').value / 100;
-      ttsPlayer.src = _ttsObjectURL;
-
-      await new Promise((resolve) => {
-        let resolved = false;
-        const done = () => { if (!resolved) { resolved = true; resolve(); } };
-        ttsPlayer.onended = done;
-        ttsPlayer.onerror = done;
-        setTimeout(done, 30000); // safety timeout
-        ttsPlayer.play().catch(done);
-      });
-
-      console.log('🎙️ Kokoro TTS done');
-      return;
-    } catch(e) {
-      console.warn('🎙️ Kokoro TTS failed for this intro, falling back:', e);
-    }
+  if (hostConfig && hostConfig.preferVoice) {
+    // 1. Exact preferVoice match
+    const exact = en.find(v => v.name.includes(hostConfig.preferVoice));
+    if (exact) return exact;
   }
 
-  // Fallback: Web Speech API
-  await speakTextFallback(text);
+  if (hostConfig && hostConfig.gender) {
+    // 2. Gender-based fallback
+    const genderHints = hostConfig.gender === 'female'
+      ? ['Female', 'Samantha', 'Karen', 'Moira', 'Fiona', 'Victoria', 'Tessa']
+      : ['Male', 'Daniel', 'Alex', 'Fred', 'Tom', 'James', 'Aaron'];
+    const genderMatch = en.find(v => genderHints.some(h => v.name.includes(h)));
+    if (genderMatch) return genderMatch;
+  }
+
+  // 3. Generic English fallback
+  return en.find(v => v.name.includes('Google') && v.lang.startsWith('en'))
+    || en[0] || ttsVoices[0] || null;
 }
 
-// Web Speech API fallback (simplified)
-function speakTextFallback(text) {
+// --- Web Speech TTS with per-channel voices ---
+
+function speakText(text) {
   return new Promise(resolve => {
     if (!('speechSynthesis' in window) || ttsVoices.length === 0) {
       console.warn('🎙️ No TTS available, skipping intro');
@@ -1328,40 +1190,45 @@ function speakTextFallback(text) {
     }
 
     window.speechSynthesis.cancel();
+
+    const host = CHANNEL_HOSTS[currentChannel] || CHANNEL_HOSTS['all'];
+    const voice = getPreferredVoice(host);
+
+    console.log(`🎙️ ${host.name} speaking (pitch:${host.pitch}, rate:${host.rate}, voice:${voice ? voice.name : 'default'}): ${text.substring(0, 60)}...`);
+
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'en-US';
-    utterance.rate = 0.95;
-    utterance.pitch = 1.0;
+    utterance.rate = host.rate;
+    utterance.pitch = host.pitch;
     utterance.volume = document.getElementById('volumeSlider').value / 100;
-
-    const voice = getPreferredVoice();
     if (voice) utterance.voice = voice;
 
     // Prevent Safari GC
-    window._fallbackUtterance = utterance;
+    window._currentUtterance = utterance;
 
     let resolved = false;
-    const done = () => {
+    const done = (reason) => {
       if (resolved) return;
       resolved = true;
       clearInterval(watchdog);
+      console.log('🎙️ TTS done:', reason);
       resolve();
     };
 
-    utterance.onend = done;
-    utterance.onerror = done;
-    setTimeout(done, 25000);
+    utterance.onend = () => done('onend');
+    utterance.onerror = () => done('error');
+    setTimeout(() => done('timeout'), 25000);
 
     window.speechSynthesis.speak(utterance);
 
-    // Poll for completion (covers all platforms)
+    // Poll for completion (covers iOS Safari unreliable onend + Chrome silent stop)
     let hasStarted = false;
     const watchdog = setInterval(() => {
       if (resolved) { clearInterval(watchdog); return; }
       if (window.speechSynthesis.speaking) {
         hasStarted = true;
       } else if (hasStarted) {
-        done();
+        done('poll-end');
       }
     }, 300);
   });
@@ -1601,6 +1468,12 @@ async function preBufferNext() {
 function showHostMessage(track) {
   const msg = generateHostIntro(track);
   const el = document.getElementById('hostMsg');
+  const host = CHANNEL_HOSTS[currentChannel] || CHANNEL_HOSTS['all'];
+
+  // Update host name in the indicator
+  const nameEl = el.querySelector('.host-name');
+  if (nameEl) nameEl.textContent = host.name;
+
   el.classList.add('visible');
 
   // Hide indicator after TTS typically finishes
@@ -1769,14 +1642,7 @@ function stopAllPlayers() {
   audio.removeAttribute('src');
   audio.load(); // reset without triggering visible changes
 
-  // Stop TTS player (Kokoro audio)
-  const ttsPlayer = document.getElementById('ttsPlayer');
-  ttsPlayer.pause();
-  ttsPlayer.onended = null;
-  ttsPlayer.onerror = null;
-  ttsPlayer.removeAttribute('src');
-
-  // Stop Web Speech fallback
+  // Stop Web Speech TTS
   if ('speechSynthesis' in window) window.speechSynthesis.cancel();
 
   // Stop YouTube
