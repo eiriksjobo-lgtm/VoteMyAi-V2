@@ -1101,12 +1101,15 @@ async function fetchSchedule() {
     console.log(`📻 fetchSchedule: genre filter [${genres.join(', ')}] → ${filtered.length} matches`);
   }
 
-  // Fallback: if channel has too few tracks, tell user
-  if (filtered.length < 3 && currentChannel !== 'all') {
-    console.warn(`📻 Only ${filtered.length} tracks for channel "${currentChannel}"`);
+  // STRICT: No fallback. If genre has 0 tracks, return empty — callers show "NO TRACKS".
+  // Even 1 track is fine — it will loop that single track.
+  if (filtered.length === 0 && currentChannel !== 'all') {
+    console.warn(`📻 0 tracks for channel "${currentChannel}" — NO TRACKS`);
+    allTracks = [];
+    return [];
   }
 
-  // Store all tracks for re-shuffling on loop
+  // Store ONLY the genre-filtered tracks for re-shuffling on loop
   allTracks = [...filtered];
 
   // Initial genre-diverse shuffle with top-100 boost
@@ -2125,8 +2128,10 @@ let allTracks = []; // Store all tracks for re-shuffling
 
 // Genre-diverse reorder function (reusable for re-shuffles)
 function genreDiverseShuffle(tracks) {
+  if (tracks.length === 0) return [];
+
   let pool;
-  
+
   if (currentChannel === 'trending') {
     // Trending is already the top tracks — no boost needed, just shuffle
     pool = [...tracks];
@@ -2143,21 +2148,34 @@ function genreDiverseShuffle(tracks) {
     .map(t => ({ ...t, _sort: Math.random() }))
     .sort((a, b) => a._sort - b._sort);
 
-  // Genre-diverse reorder + dedupe consecutive same title
+  // For genre-specific channels: skip genre-diverse reorder (all tracks are same genre).
+  // Just dedupe consecutive same title (from the 3x boost duplicates).
+  const isGenreChannel = CHANNEL_GENRES[currentChannel] && currentChannel !== 'all' && currentChannel !== 'trending';
+
   const reordered = [];
   const remaining = [...shuffled];
   let lastGenre = '';
   let lastTitle = '';
 
   while (remaining.length > 0) {
-    let idx = remaining.findIndex(t =>
-      t.genre.toLowerCase() !== lastGenre.toLowerCase() &&
-      t.title.toLowerCase() !== lastTitle.toLowerCase()
-    );
-    if (idx === -1) idx = remaining.findIndex(t =>
-      t.title.toLowerCase() !== lastTitle.toLowerCase()
-    );
-    if (idx === -1) idx = 0;
+    let idx;
+    if (isGenreChannel) {
+      // Genre channel: only avoid consecutive same title (no cross-genre logic needed)
+      idx = remaining.findIndex(t =>
+        t.title.toLowerCase() !== lastTitle.toLowerCase()
+      );
+      if (idx === -1) idx = 0;
+    } else {
+      // Mixed channel (all): genre-diverse reorder + dedupe consecutive same title
+      idx = remaining.findIndex(t =>
+        t.genre.toLowerCase() !== lastGenre.toLowerCase() &&
+        t.title.toLowerCase() !== lastTitle.toLowerCase()
+      );
+      if (idx === -1) idx = remaining.findIndex(t =>
+        t.title.toLowerCase() !== lastTitle.toLowerCase()
+      );
+      if (idx === -1) idx = 0;
+    }
 
     const track = remaining.splice(idx, 1)[0];
     reordered.push(track);
