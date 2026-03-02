@@ -794,29 +794,58 @@ function speakText(text) {
     if (voice) { utterance.voice = voice; console.log('🎙️ Using voice:', voice.name); }
 
     let resolved = false;
+    let hasStartedSpeaking = false;
+    const startTime = Date.now();
+
     const done = (reason) => {
       if (resolved) return;
       resolved = true;
       clearInterval(watchdog);
-      console.log('🎙️ TTS done, reason:', reason);
+      console.log(`🎙️ TTS done, reason: ${reason} (${Date.now() - startTime}ms)`);
       resolve();
     };
 
+    utterance.onstart = () => {
+      hasStartedSpeaking = true;
+      console.log('🎙️ TTS started speaking');
+    };
     utterance.onend = () => done('onend');
-    utterance.onerror = () => done('error');
-    setTimeout(() => done('timeout'), 20000);
+    utterance.onerror = (e) => {
+      // On mobile, 'interrupted' errors happen on cancel — ignore if not started
+      if (e.error === 'interrupted' && !hasStartedSpeaking) return;
+      done('error: ' + (e.error || 'unknown'));
+    };
+
+    // Safety timeout — estimate ~80ms per character at 0.92 rate
+    const estimatedDuration = Math.max(8000, text.length * 80);
+    const safetyTimeout = Math.min(estimatedDuration, 30000);
+    setTimeout(() => done('timeout'), safetyTimeout);
 
     console.log('🎙️ Speaking:', text.substring(0, 60) + '...');
     window.speechSynthesis.speak(utterance);
 
+    // Watchdog: Chrome bug workaround (pause/resume to prevent hang)
+    // BUT: don't kill speech until it has actually started AND stopped
+    const GRACE_PERIOD = 5000; // Give mobile 5s to start speaking
     const watchdog = setInterval(() => {
       if (resolved) { clearInterval(watchdog); return; }
+
+      const elapsed = Date.now() - startTime;
+
       if (window.speechSynthesis.speaking) {
+        // It's speaking — do the Chrome pause/resume hack
+        hasStartedSpeaking = true;
         window.speechSynthesis.pause();
         window.speechSynthesis.resume();
-      } else {
+      } else if (hasStartedSpeaking) {
+        // It was speaking but stopped — onend probably didn't fire
         done('silent-end');
+      } else if (elapsed > GRACE_PERIOD) {
+        // Never started speaking after grace period — TTS failed on this device
+        console.warn('🎙️ TTS never started after grace period, skipping');
+        done('never-started');
       }
+      // else: still within grace period, keep waiting
     }, 2000);
   });
 }
