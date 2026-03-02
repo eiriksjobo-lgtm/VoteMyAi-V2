@@ -1538,7 +1538,17 @@ function generateHostIntro(track) {
 
   let intro = pickFresh(bank.intros, ch + '_intro');
   intro = intro.replace(/\$\{t\}/g, title).replace(/\$\{g\}/g, genre);
-  return `${intro} ${ratingRoast}${noteRoast}`.trim();
+
+  // Keep total length in check so TTS finishes before the song starts
+  const MAX_LEN = 280;
+  let full = `${intro} ${ratingRoast}${noteRoast}`.trim();
+  if (full.length > MAX_LEN && noteRoast) {
+    full = `${intro} ${ratingRoast}`.trim();
+  }
+  if (full.length > MAX_LEN && ratingRoast) {
+    full = intro.trim();
+  }
+  return full;
 }
 
 // --- Password ---
@@ -1573,14 +1583,14 @@ const CHANNEL_GENRES = {
 // --- Per-Channel Voice Config (Web Speech API) ---
 const CHANNEL_HOSTS = {
   'all':        { name: 'DJ Zero',         preferVoice: 'Google UK English Male',  gender: 'male',   pitch: 0.9,  rate: 1.0  },
-  'trending':   { name: 'The Algorithm',   preferVoice: 'Google US English',       gender: 'female', pitch: 0.7,  rate: 1.15 },
-  'pop':        { name: 'Poppy',           preferVoice: 'Google UK English Female', gender: 'female', pitch: 1.3,  rate: 1.1  },
-  'rock':       { name: 'Riff',            preferVoice: 'Daniel',                  gender: 'male',   pitch: 0.6,  rate: 0.88 },
-  'hip-hop':    { name: 'MC Buffer',       preferVoice: 'Google US English',       gender: 'male',   pitch: 1.0,  rate: 1.2  },
-  'metal':      { name: 'Lord Distortion', preferVoice: 'Daniel',                  gender: 'male',   pitch: 0.4,  rate: 0.8  },
-  'electronic': { name: 'SYNC',            preferVoice: 'Google UK English Female', gender: 'female', pitch: 0.8,  rate: 1.05 },
-  'country':    { name: 'Dusty',           preferVoice: 'Google US English',       gender: 'male',   pitch: 0.85, rate: 0.9  },
-  'chill':      { name: 'Whisper',         preferVoice: 'Karen',                   gender: 'female', pitch: 1.1,  rate: 0.75 },
+  'trending':   { name: 'The Algorithm',   preferVoice: 'Google US English',       gender: 'female', pitch: 0.7,  rate: 1.0  },
+  'pop':        { name: 'Poppy',           preferVoice: 'Google UK English Female', gender: 'female', pitch: 1.3,  rate: 1.0  },
+  'rock':       { name: 'Riff',            preferVoice: 'Daniel',                  gender: 'male',   pitch: 0.6,  rate: 0.9  },
+  'hip-hop':    { name: 'MC Buffer',       preferVoice: 'Google US English',       gender: 'male',   pitch: 1.0,  rate: 1.02 },
+  'metal':      { name: 'Lord Distortion', preferVoice: 'Daniel',                  gender: 'male',   pitch: 0.4,  rate: 0.85 },
+  'electronic': { name: 'SYNC',            preferVoice: 'Google UK English Female', gender: 'female', pitch: 0.8,  rate: 1.0  },
+  'country':    { name: 'Dusty',           preferVoice: 'Google US English',       gender: 'male',   pitch: 0.85, rate: 0.92 },
+  'chill':      { name: 'Whisper',         preferVoice: 'Karen',                   gender: 'female', pitch: 1.1,  rate: 0.82 },
 };
 
 let currentChannel = 'all';
@@ -1829,7 +1839,7 @@ function speakText(text) {
 
     utterance.onend = () => done('onend');
     utterance.onerror = () => done('error');
-    setTimeout(() => done('timeout'), 25000);
+    setTimeout(() => done('timeout'), 30000);
 
     window.speechSynthesis.speak(utterance);
 
