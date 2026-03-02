@@ -2388,33 +2388,60 @@ function playSoundCloudTrack(track) {
 
   console.log('🔊 Loading SoundCloud:', scUrl);
 
-  // Quick check: if SC hasn't started within 10s, skip
   let scStarted = false;
+  let scSkipped = false;
+
+  // 5s timeout — skip fast if SC won't cooperate (especially iOS)
   const scQuickCheck = setTimeout(() => {
-    if (!scStarted) {
-      console.warn('🔊 SoundCloud failed to start within 10s, skipping:', track.title);
+    if (!scStarted && !scSkipped) {
+      scSkipped = true;
+      console.warn('🔊 SoundCloud failed to start within 5s, skipping:', track.title);
       onTrackEnded();
     }
-  }, 10000);
+  }, 5000);
+
+  // Unbind previous listeners to avoid double-fires
+  try {
+    scWidgetObj.unbind(SC.Widget.Events.FINISH);
+    scWidgetObj.unbind(SC.Widget.Events.PLAY_PROGRESS);
+    scWidgetObj.unbind(SC.Widget.Events.ERROR);
+    scWidgetObj.unbind(SC.Widget.Events.READY);
+  } catch (e) {}
 
   scWidgetObj.load(scUrl, {
     auto_play: true,
     show_artwork: false,
     show_user: false,
     hide_related: true,
-    visual: false
+    visual: false,
+    callback: () => {
+      // Fired when widget is ready — force play as fallback for iOS
+      if (!scStarted && !scSkipped) {
+        console.log('🔊 SC widget ready, forcing play()');
+        try { scWidgetObj.play(); } catch (e) {}
+      }
+    }
   });
 
-  // Rebind events after load
+  // Also try READY event as another play trigger
+  scWidgetObj.bind(SC.Widget.Events.READY, () => {
+    if (!scStarted && !scSkipped) {
+      console.log('🔊 SC READY event, forcing play()');
+      try { scWidgetObj.play(); } catch (e) {}
+    }
+  });
+
   scWidgetObj.bind(SC.Widget.Events.FINISH, () => {
-    onTrackEnded();
+    if (!scSkipped) onTrackEnded();
   });
 
   scWidgetObj.bind(SC.Widget.Events.PLAY_PROGRESS, (data) => {
     if (!scStarted) {
       scStarted = true;
       clearTimeout(scQuickCheck);
+      console.log('🔊 SoundCloud playing:', track.title);
     }
+    if (scSkipped) return;
     scWidgetObj.getDuration(duration => {
       updateProgress(data.currentPosition / 1000, duration / 1000);
       if (duration > 0 && !fallbackTimer) setFallbackTimer(duration / 1000);
@@ -2422,11 +2449,14 @@ function playSoundCloudTrack(track) {
   });
 
   scWidgetObj.bind(SC.Widget.Events.ERROR, () => {
-    console.warn('SC Widget error, skipping');
-    onTrackEnded();
+    if (!scSkipped) {
+      scSkipped = true;
+      clearTimeout(scQuickCheck);
+      console.warn('🔊 SC Widget error, skipping:', track.title);
+      onTrackEnded();
+    }
   });
 
-  // Fallback
   setFallbackTimer(360);
 }
 
