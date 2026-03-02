@@ -1850,7 +1850,7 @@ async function startRadio(channel = 'all') {
   // Use fire-and-forget (no await) to avoid hanging if play() never resolves
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    ctx.resume().then(() => ctx.close());
+    ctx.resume().then(() => ctx.close()).catch(() => {});
   } catch(e) {}
   const audioPlayer = document.getElementById('audioPlayer');
   audioPlayer.muted = true;
@@ -1881,8 +1881,13 @@ async function startRadio(channel = 'all') {
   document.getElementById('startOverlay').style.display = 'none';
   document.getElementById('statusText').textContent = 'LOADING...';
 
-  // Init SC Widget
-  scWidgetObj = SC.Widget(document.getElementById('scWidget'));
+  // Init SC Widget (may fail if SC API didn't load)
+  try {
+    scWidgetObj = SC.Widget(document.getElementById('scWidget'));
+  } catch(e) {
+    console.warn('🔊 SC Widget API failed to initialize:', e.message);
+    scWidgetObj = null;
+  }
 
   // Fetch real tracks from Supabase
   try {
@@ -2287,7 +2292,7 @@ async function playVerifiedTrack(track) {
     playYouTubeTrack(track);
   } else if (track.platform === 'soundcloud' || track.soundcloud_url) {
     await playSoundCloudTrack(track);
-  } else if (track.audio_url) {
+  } else if (track.audio_url && track.audio_url !== '__udio__') {
     const audio = document.getElementById('audioPlayer');
     audio.src = track.audio_url;
     audio.volume = document.getElementById('volumeSlider').value / 100;
@@ -2373,7 +2378,8 @@ function showHostMessage(track) {
 let fallbackTimer = null;
 function setFallbackTimer(seconds) {
   clearFallbackTimer();
-  const timeout = (seconds || 300) + 10; // track duration + 10s buffer, max 5min
+  const duration = Math.min(seconds || 300, 600); // cap at 10 minutes
+  const timeout = duration + 10; // track duration + 10s buffer
   fallbackTimer = setTimeout(() => {
     console.warn('⏭️ Fallback timer triggered — skipping to next');
     onTrackEnded();
@@ -2390,7 +2396,7 @@ function clearFallbackTimer() {
 function playYouTubeTrack(track) {
   if (!ytPlayer || !ytPlayer.loadVideoById) {
     console.warn('📺 YT Player not ready, skipping');
-    setTimeout(() => onTrackEnded(), 500);
+    setTimeout(() => onTrackEnded(), 1000);
     return;
   }
 
@@ -2444,6 +2450,7 @@ function playYouTubeTrack(track) {
 }
 
 async function playUdioTrack(track) {
+  const gen = _switchGen;
   const udioUrl = track.embed_url;
   if (!udioUrl || !udioUrl.includes('udio.com')) {
     console.warn('🎶 No Udio URL, skipping');
@@ -2473,6 +2480,9 @@ async function playUdioTrack(track) {
     if (!data.stream_url) throw new Error('No stream URL returned');
 
     console.log('🎶 Udio stream resolved:', data.stream_url.substring(0, 80) + '...');
+
+    // Bail if channel switched during fetch
+    if (gen !== _switchGen) return;
 
     const audio = document.getElementById('audioPlayer');
     audio.src = data.stream_url;
@@ -2505,6 +2515,7 @@ async function playUdioTrack(track) {
 }
 
 async function playSoundCloudTrack(track) {
+  const gen = _switchGen;
   const scUrl = track.soundcloud_url || track.embed_url;
   if (!scUrl) {
     console.warn('🔊 No SC URL, skipping');
@@ -2535,6 +2546,9 @@ async function playSoundCloudTrack(track) {
     if (!data.stream_url) throw new Error('No stream URL returned');
 
     console.log(`🔊 SC stream resolved (${data.format}):`, data.stream_url.substring(0, 80) + '...');
+
+    // Bail if channel switched during fetch
+    if (gen !== _switchGen) return;
 
     // Play via the main audio element (same path as Suno — works on iOS)
     const audio = document.getElementById('audioPlayer');
