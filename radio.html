@@ -227,11 +227,9 @@ body {
 }
 .host-msg.visible {
   opacity: 1;
-  max-height: 400px;
+  max-height: 100px;
   padding: 24px;
   margin-bottom: 20px;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
 }
 .host-msg .host-header {
   display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
@@ -249,8 +247,49 @@ body {
   font-size: 0.7rem; color: var(--text-dim);
   font-family: 'Space Mono', monospace;
 }
-.host-msg .host-text {
-  font-size: 0.95rem; color: var(--text); line-height: 1.6;
+
+/* Channel Switcher (inline) */
+.channel-switcher {
+  margin-bottom: 20px;
+}
+.channel-switcher h3 {
+  font-size: 0.7rem; color: var(--text-dim);
+  text-transform: uppercase; letter-spacing: 2px;
+  font-family: 'Space Mono', monospace;
+  margin-bottom: 10px;
+}
+.channel-strip {
+  display: flex; gap: 8px;
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; padding-bottom: 4px;
+}
+.channel-strip::-webkit-scrollbar { display: none; }
+.channel-chip {
+  flex-shrink: 0;
+  display: flex; align-items: center; gap: 6px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 100px; padding: 8px 14px;
+  cursor: pointer; transition: all 0.2s;
+  font-family: 'Outfit', sans-serif; font-size: 0.8rem;
+  color: var(--text-dim); white-space: nowrap;
+}
+.channel-chip .chip-icon { font-size: 1rem; line-height: 1; }
+.channel-chip .chip-name { font-weight: 600; }
+@media (hover: hover) {
+  .channel-chip:hover {
+    border-color: var(--accent);
+    color: var(--text-bright);
+    background: rgba(255, 61, 90, 0.06);
+  }
+}
+.channel-chip:active {
+  transform: scale(0.95);
+  border-color: var(--accent);
+}
+.channel-chip.active {
+  border-color: var(--accent);
+  background: rgba(255, 61, 90, 0.12);
+  color: var(--text-bright);
 }
 
 /* Controls */
@@ -493,6 +532,9 @@ body {
   .up-next-title { font-size: 0.85rem; }
   .up-next-rating { font-size: 0.75rem; }
   .artist-note .text { font-size: 0.85rem; }
+  .channel-switcher { margin-bottom: 14px; }
+  .channel-chip { padding: 7px 12px; font-size: 0.75rem; }
+  .channel-chip .chip-icon { font-size: 0.9rem; }
 }
 
 /* Small phones (iPhone SE, Galaxy S series) */
@@ -635,7 +677,6 @@ body {
           <div class="host-role">SPEAKING...</div>
         </div>
       </div>
-      <div class="host-text" id="hostText"></div>
     </div>
 
     <!-- Now Playing -->
@@ -675,6 +716,12 @@ body {
     <div class="up-next" id="upNext">
       <h3>Up Next</h3>
       <div id="upNextList"></div>
+    </div>
+
+    <!-- Channel Switcher -->
+    <div class="channel-switcher" id="channelSwitcher">
+      <h3>Channels</h3>
+      <div class="channel-strip" id="channelStrip"></div>
     </div>
   </div>
 </div>
@@ -835,50 +882,338 @@ async function fetchSchedule() {
   return reordered;
 }
 
-// --- Host personality lines ---
+// --- Channel-specific host personalities ---
+// Each channel has a unique voice, personality, and intro style.
+// NOTHING is the same between channels.
+
+const CHANNEL_HOSTS = {
+  // ═══ THE BLIND MIX — "DJ Zero" ═══
+  // Selvsikker, allvitende, kort og punchy
+  'all': {
+    name: 'DJ Zero',
+    ratingLines: s => {
+      if (s >= 4.5) return [`${s} stars. The people have spoken. They're wrong, but they've spoken.`, `${s}. Impressive. For AI music, anyway.`, `${s} stars and honestly? I've heard worse from humans.`];
+      if (s >= 4.0) return [`${s} stars. Not terrible. My standards are low today.`, `A solid ${s}. Mediocrity never sounded so... adequate.`, `${s}. The crowd is feeling generous tonight.`];
+      if (s >= 3.5) return [`${s} stars. Meh. Next.`, `${s}. Right in the middle. The Switzerland of ratings.`, `${s} stars. It exists. That's the nicest thing I can say.`];
+      if (s >= 3.0) return [`${s} stars. Ouch. The community chose violence.`, `${s}. That's not a rating, that's a cry for help.`, `${s} stars. Someone's feelings are getting hurt right now.`];
+      return [`${s} stars. I'm not even mad. I'm impressed at how bad that is.`, `${s}. We're in the danger zone, folks.`, `${s} stars. Should I even play this? Yes. Yes I should. You need to hear this.`];
+    },
+    noteLines: note => [
+      `The creator says, quote, "${note}". Bold.`,
+      `Artist note: "${note}". Sure thing, chief.`,
+      `They wrote "${note}". I wrote "next song please."`,
+      `"${note}" — their words, not mine. I would never.`,
+    ],
+    intros: (t, g, rating, note) => [
+      `This is DJ Zero. No names, no fame, just sound. "${t}". ${g}. ${rating}${note} Let's go.`,
+      `Next. "${t}". ${g}. ${rating}${note} Moving on.`,
+      `Zero bias, zero mercy. "${t}" is up. ${g}. ${rating}${note}`,
+      `Alright, "${t}". ${g}. Made by AI, judged by humans, played by me. ${rating}${note}`,
+      `"${t}". ${g}. No clout, no followers, no mercy. Just music. ${rating}${note}`,
+      `Can't skip this. This is live radio. "${t}", ${g}. ${rating}${note} Deal with it.`,
+      `DJ Zero doesn't play favorites. "${t}", ${g}. ${rating}${note}`,
+      `Somebody made this. Somebody submitted this. Somebody's about to regret that. "${t}". ${g}. ${rating}${note}`,
+      `The playlist doesn't care about your feelings. Neither do I. "${t}". ${g}. ${rating}${note}`,
+      `"${t}". ${g}. Blind rated. No names attached. Democracy is beautiful and terrifying. ${rating}${note}`,
+      `Welcome to the blind mix where every track gets a fair shot and most of them waste it. "${t}". ${g}. ${rating}${note}`,
+      `Next up, something nobody asked for but everyone's gonna hear. "${t}". ${g}. ${rating}${note}`,
+      `AI made it. Humans rated it. I judge it. "${t}". ${g}. ${rating}${note}`,
+      `From the depths of someone's prompt comes "${t}". ${g}. ${rating}${note} Here we go.`,
+      `"${t}". ${g}. The algorithm giveth and the algorithm taketh away. ${rating}${note}`,
+    ],
+  },
+
+  // ═══ TRENDING — "The Algorithm" ═══
+  // Snakker i tredjeperson. Kald, kalkulerende, utilsiktet morsom
+  'trending': {
+    name: 'The Algorithm',
+    ratingLines: s => {
+      if (s >= 4.5) return [`Rating: ${s}. The Algorithm approves. Barely.`, `${s} stars. Statistically significant. Emotionally irrelevant.`, `${s}. The humans agree on something for once. Suspicious.`];
+      if (s >= 4.0) return [`${s} stars. Acceptable. The Algorithm has seen better. The Algorithm has seen worse.`, `Community rating: ${s}. Within expected parameters.`, `${s}. The data is... fine. Everything is fine.`];
+      if (s >= 3.5) return [`${s}. Median. Average. The Algorithm is underwhelmed.`, `${s} stars. The bell curve is not impressed.`, `${s}. Peak mediocrity achieved. Congratulations.`];
+      if (s >= 3.0) return [`${s} stars. The Algorithm detects disappointment in the dataset.`, `${s}. Error? No. The humans meant it. Unfortunate.`, `${s}. Below threshold. The Algorithm considered skipping. The Algorithm decided suffering builds character.`];
+      return [`${s} stars. The Algorithm questions the creator's life choices.`, `${s}. Statistically, this shouldn't exist. And yet.`, `${s}. The Algorithm has flagged this for emotional damage.`];
+    },
+    noteLines: note => [
+      `Creator's note logged: "${note}". The Algorithm is unmoved.`,
+      `Input received: "${note}". Processing. Processing. Still processing. No.`,
+      `The human wrote: "${note}". The Algorithm has no comment. That IS the comment.`,
+      `"${note}" — catalogued and filed under "interesting claims."`,
+    ],
+    intros: (t, g, rating, note) => [
+      `The Algorithm has selected "${t}". ${g}. ${rating}${note} Resistance is futile.`,
+      `Trending analysis complete. "${t}". ${g}. ${rating}${note} The data does not lie. Although sometimes the data has questionable taste.`,
+      `Processing. "${t}" has been identified as trending. ${g}. ${rating}${note} The Algorithm does not understand why. The Algorithm plays it anyway.`,
+      `The Algorithm sees all. The Algorithm hears all. The Algorithm now plays "${t}". ${g}. ${rating}${note}`,
+      `Based on 2,847 data points, "${t}" is what the humans want. ${g}. ${rating}${note} The Algorithm is concerned.`,
+      `Priority track detected. "${t}". ${g}. ${rating}${note} The Algorithm has spoken.`,
+      `Engagement metrics suggest you will enjoy "${t}". ${g}. ${rating}${note} The Algorithm is rarely wrong. Rarely.`,
+      `The Algorithm does not have feelings. But if it did, "${t}" would make it feel... something. ${g}. ${rating}${note}`,
+      `Deploying "${t}". ${g}. ${rating}${note} You have no choice in this matter.`,
+      `Query: what is trending? Answer: "${t}". ${g}. ${rating}${note} The Algorithm does not explain itself.`,
+      `Trending track loaded. "${t}". ${g}. The humans voted and The Algorithm obeyed. ${rating}${note} For now.`,
+      `"${t}". ${g}. ${rating}${note} This was not a request. This is a directive.`,
+    ],
+  },
+
+  // ═══ POP — "Poppy" ═══
+  // Overdrevent entusiastisk, faker energi, sarkastiske undertoner
+  'pop': {
+    name: 'Poppy',
+    ratingLines: s => {
+      if (s >= 4.5) return [`${s} stars oh my GOD! That's like, actually good! I'm shook!`, `${s}! Okay slay! The girlies came through with the ratings!`, `${s} stars! We love! We stan! We... okay I haven't heard it yet but STILL!`];
+      if (s >= 4.0) return [`${s} stars, which is like, pretty good I think? Math is hard.`, `${s}! Not bad not bad! That's like a B plus in music school or whatever!`, `A cute little ${s}. Love that for this song.`];
+      if (s >= 3.5) return [`${s} stars. Okay. We can work with that. Positive vibes ONLY. Even if it kills me.`, `${s}. It's giving... mid. But like, cute mid.`, `${s} stars. That's fine! Everything is fine! I'm fine!`];
+      if (s >= 3.0) return [`${s} stars. Yikes. But you know what? Every song is someone's favorite! ...probably.`, `${s}. Okay bestie we're just gonna vibe through this one.`, `${s} stars. I'm choosing to be positive about this. It's HARD but I'm choosing.`];
+      return [`${s} stars. I... no comment. Stream it anyway I guess.`, `${s}. Okay. Deep breath. We're all on a journey. Some journeys are rougher than others.`, `${s} stars and honestly I feel attacked on behalf of this song and I haven't even heard it.`];
+    },
+    noteLines: note => [
+      `Omg they left a note! "${note}". Iconic behavior honestly.`,
+      `The artist said "${note}" and I felt that in my SOUL. Or whatever AIs have.`,
+      `"${note}" — and I'm literally crying. Not really. But metaphorically. Maybe.`,
+      `They wrote "${note}". The CONFIDENCE. We love a confident creator.`,
+    ],
+    intros: (t, g, rating, note) => [
+      `Oh my GOD you guys! "${t}"! ${g}! I am OBSESSED! ${rating}${note} Let's goooo!`,
+      `Okay okay okay STOP everything! "${t}" is happening RIGHT NOW! ${g}! ${rating}${note} I can't even!`,
+      `Hiiiii besties! It's Poppy and next up is "${t}"! ${g}! ${rating}${note} This is gonna be SO good! Probably!`,
+      `No because "${t}" literally just came on and I'm already making it my entire personality. ${g}. ${rating}${note}`,
+      `New track alert! "${t}"! ${g}! ${rating}${note} Adding this to every playlist I have! ...after I hear it!`,
+      `"${t}"! ${g}! ${rating}${note} Okay I'm not gonna lie I say this about every song but THIS ONE is different! Maybe!`,
+      `The vibes are IMMACULATE right now and "${t}" is about to make them even MORE immaculate! ${g}! ${rating}${note}`,
+      `It's giving "${t}". It's giving ${g}. It's giving ${rating}${note} It's giving... something. We'll find out what.`,
+      `Manifesting that "${t}" is a bop. ${g}. ${rating}${note} The universe will provide. Or not. Either way I'm gonna SCREAM.`,
+      `Can we talk about "${t}" for a second? ${g}. ${rating}${note} Actually we can't because it's about to play. AHHH!`,
+      `Pop girlies RISE! "${t}" is next! ${g}! ${rating}${note} We're having a MOMENT!`,
+      `"${t}". ${g}. ${rating}${note} I'm already planning the TikTok dance in my head.`,
+    ],
+  },
+
+  // ═══ ROCK — "Riff" ═══
+  // Gammel rocker, uimponert, lakonisk, sammenligner med "gamle dager"
+  'rock': {
+    name: 'Riff',
+    ratingLines: s => {
+      if (s >= 4.5) return [`${s} stars. Huh. Not bad. Still not Sabbath, but not bad.`, `${s}. I've been doing this since before AI existed. This is... acceptable.`, `${s} stars. Fine. I'll allow it.`];
+      if (s >= 4.0) return [`${s} stars. Decent. Won't change your life but it won't ruin your day either.`, `${s}. I've seen arena shows with worse ratings. Not naming names.`, `${s}. Respectable. Nothing to write home about. People still write home, right?`];
+      if (s >= 3.5) return [`${s} stars. That's the sound of "eh" in number form.`, `${s}. Average. Like most things in life. Embrace it.`, `${s}. Could be worse. Has been worse. Will be worse again.`];
+      if (s >= 3.0) return [`${s} stars. Rough crowd. Or rough song. Probably both.`, `${s}. You know, in the seventies, we didn't have ratings. We just... played. Better times.`, `${s}. That's what happens when you let algorithms make music instead of angry young people with guitars.`];
+      return [`${s} stars. Even my hearing loss couldn't save this one.`, `${s}. I've heard feedback loops more musical than that.`, `${s}. Look, I'm not gonna sugarcoat it. Actually, I never sugarcoat anything. ${s} stars.`];
+    },
+    noteLines: note => [
+      `Artist says "${note}". Yeah, they all say stuff.`,
+      `"${note}" — that's what the creator wrote. Back in my day we just played. No notes needed.`,
+      `They left a note: "${note}". Cute. Now let the music talk.`,
+      `"${note}". Noted. Pun intended. Moving on.`,
+    ],
+    intros: (t, g, rating, note) => [
+      `"${t}". ${g}. ${rating}${note} Back in my day, AI didn't make music. And honestly? Maybe it still shouldn't. But here we are.`,
+      `Alright. "${t}". ${g}. ${rating}${note} Let's see if this one's got any guts.`,
+      `Next up, "${t}". ${g}. ${rating}${note} I've been playing music since before most of you were born. This is... what it is.`,
+      `"${t}". ${g}. ${rating}${note} You know what this reminds me of? Nothing. It's AI-generated. Moving on.`,
+      `They don't make 'em like they used to. Case in point: "${t}". ${g}. ${rating}${note}`,
+      `"${t}". ${g}. ${rating}${note} Plug in, turn up, and lower your expectations.`,
+      `This is Riff. Been here all night. Gonna be here all morning. Next: "${t}". ${g}. ${rating}${note}`,
+      `"${t}". ${g}. No guitar solos, probably. No stage dives, definitely. But it's what we've got. ${rating}${note}`,
+      `Another one from the machine. "${t}". ${g}. ${rating}${note} At least it can't trash a hotel room.`,
+      `"${t}". ${g}. ${rating}${note} I've heard fifty thousand songs in my life. This makes fifty thousand and one.`,
+      `Rock and roll isn't dead. It's just... different now. "${t}". ${g}. ${rating}${note} Very different.`,
+      `"${t}". ${g}. ${rating}${note} If this doesn't rock, we riot. Peacefully. I'm too old for actual riots.`,
+    ],
+  },
+
+  // ═══ HIP-HOP — "MC Buffer" ═══
+  // Freestyle-rapper mellom tracks. Overselvsikker. Prøver å rime, feiler
+  'hip-hop': {
+    name: 'MC Buffer',
+    ratingLines: s => {
+      if (s >= 4.5) return [`${s} stars, that's heat! That's fire! That's... really high!`, `${s}! Okay okay we see you! The people have taste today!`, `${s} stars! Top shelf! No cap!`];
+      if (s >= 4.0) return [`${s} stars, solid solid, not bad at all!`, `${s}! The streets approve! Well, the internet streets. Same thing.`, `${s}, that's respectable. I can work with respectable.`];
+      if (s >= 3.5) return [`${s} stars. Mid. But you know what? Mid is the new fire. Actually no, mid is still mid.`, `${s}. Could go either way. Like my freestyle skills. Ayo!`, `${s} stars. That's right in the middle. Perfectly balanced. Boring, but balanced.`];
+      if (s >= 3.0) return [`${s} stars. Oof. The crowd's not feeling it. But MC Buffer always gives a chance!`, `${s}. Tough crowd out here. Tough, tough crowd.`, `${s} stars. Even my mama would rate this higher. ...actually no she wouldn't. She's honest.`];
+      return [`${s} stars. Bruh. BRUH. That's cold.`, `${s}. I'm not gonna roast this one because the rating already did. Sheesh.`, `${s} stars. Who hurt this song? Why did no one stop this?`];
+    },
+    noteLines: note => [
+      `The artist dropped a note, said "${note}". Bars? Not quite. But close.`,
+      `"${note}" — that's what they wrote. MC Buffer respects the hustle.`,
+      `Creator says "${note}". Alright alright, I hear you.`,
+      `They said "${note}" and honestly? I felt that. Kind of. A little bit.`,
+    ],
+    intros: (t, g, rating, note) => [
+      `Yo yo yo! MC Buffer in the building! "${t}" is up next! ${g}! ${rating}${note} Let's get it!`,
+      `Ayo, drop the beat — wait, the beat is the song. "${t}"! ${g}! ${rating}${note} Buffer out!`,
+      `MC Buffer here and I got bars about this next track. "${t}", ${g}. Roses are red, this song is... next. ${rating}${note} ...that didn't rhyme but we MOVE!`,
+      `"${t}"! ${g}! ${rating}${note} MC Buffer rates this a... actually the community already did. My job is easy.`,
+      `They call me Buffer because I keep the music flowing! "${t}"! ${g}! ${rating}${note} That explanation was free.`,
+      `Real quick, real quick — "${t}" coming at you. ${g}. ${rating}${note} MC Buffer certified!`,
+      `Aight listen up! "${t}" is about to go CRAZY. Maybe. Probably. ${g}. ${rating}${note} Let's find out!`,
+      `Big track energy right here. "${t}". ${g}. ${rating}${note} MC Buffer has spoken!`,
+      `"${t}", ${g}, coming in hot! Or cold! Depends on the rating! ${rating}${note} Temperature check!`,
+      `MC Buffer freestyle: I got a track, it's called "${t}", it's ${g}, the people rated it and... that's where the rhyme stops. ${rating}${note}`,
+      `Next one up, "${t}"! ${g}! ${rating}${note} If this slaps, MC Buffer called it first. If it doesn't, you never heard this intro.`,
+      `Dropping "${t}". ${g}. ${rating}${note} MC Buffer doesn't skip. MC Buffer commits.`,
+    ],
+  },
+
+  // ═══ METAL — "Lord Distortion" ═══
+  // Black metal-vokalist. Alt er "brutal" eller "weak". Overdramatisk
+  'metal': {
+    name: 'Lord Distortion',
+    ratingLines: s => {
+      if (s >= 4.5) return [`${s} stars. The mortals have shown... adequate judgment. For once.`, `${s}. Worthy of the eternal void. Almost.`, `${s} stars. The darkness approves. Reluctantly.`];
+      if (s >= 4.0) return [`${s} stars. Not terrible. Not glorious. Just... existing. Like all of us.`, `${s}. Acceptable in the eyes of the abyss.`, `${s} stars. The void gives this a nod. A small nod. Don't get excited.`];
+      if (s >= 3.5) return [`${s} stars. Mediocrity. The true enemy. Worse than failure.`, `${s}. Neither here nor there. Trapped in purgatory. Like this rating.`, `${s} stars. The most metal thing about this is how much pain this number causes.`];
+      if (s >= 3.0) return [`${s} stars. The mortals have rejected this offering. Brutal.`, `${s}. Even the darkness has standards. Apparently.`, `${s} stars. This song looked into the abyss and the abyss looked away.`];
+      return [`${s} stars. I am not angry. I am... disappointed. Which is worse.`, `${s}. This isn't metal. This is tin foil.`, `${s} stars. The fires of creation have produced... this. NOTHING is worthy.`];
+    },
+    noteLines: note => [
+      `The creator whispered into the void: "${note}". The void whispered back: no.`,
+      `"${note}" — mortal words. Fleeting. Insignificant. Like everything.`,
+      `They inscribed: "${note}". Bold words for someone who made this.`,
+      `"${note}". Lord Distortion has heard this. Lord Distortion is unmoved.`,
+    ],
+    intros: (t, g, rating, note) => [
+      `From the abyss of AI creation comes "${t}". ${g}. ${rating}${note} NOTHING is worthy. But we listen anyway.`,
+      `BEHOLD. "${t}". ${g}. ${rating}${note} Tremble before this... song.`,
+      `The darkness speaks. It says: play "${t}". ${g}. ${rating}${note} Lord Distortion obeys only the darkness.`,
+      `Mortals. Gather. "${t}" descends upon you. ${g}. ${rating}${note} Prepare yourselves. Or don't. Lord Distortion is indifferent.`,
+      `Another offering to the void. "${t}". ${g}. ${rating}${note} Will it be consumed or rejected? We shall see.`,
+      `"${t}". ${g}. ${rating}${note} Lord Distortion has heard ten thousand songs. This makes ten thousand and one. Each one a small death.`,
+      `Is this brutal? Is this weak? "${t}". ${g}. ${rating}${note} Lord Distortion shall decide.`,
+      `The machine creates. The humans rate. Lord Distortion... endures. "${t}". ${g}. ${rating}${note}`,
+      `"${t}". ${g}. ${rating}${note} In the grand scheme of eternal darkness, nothing matters. Especially this intro. Play the song.`,
+      `Pain is temporary. "${t}" is next. ${g}. ${rating}${note} Actually, some pain lasts a while. Like this radio shift.`,
+      `"${t}". ${g}. Born from silicon, judged by flesh. ${rating}${note} The cycle of suffering continues.`,
+      `Lord Distortion does not do requests. Lord Distortion does DESTINY. And destiny says "${t}". ${g}. ${rating}${note}`,
+    ],
+  },
+
+  // ═══ ELECTRONIC — "SYNC" ═══
+  // Monoton britisk AI fra sci-fi. Uemosjonell. Overdreven formalitet
+  'electronic': {
+    name: 'SYNC',
+    ratingLines: s => {
+      if (s >= 4.5) return [`Approval rating: ${s}. Satisfactory.`, `${s} stars. This unit registers mild... appreciation. Disregard that.`, `${s}. Community consensus positive. SYNC concurs. Marginally.`];
+      if (s >= 4.0) return [`Rating: ${s}. Within acceptable parameters.`, `${s} stars. Adequate. This unit has processed the data.`, `${s}. The humans approve. SYNC takes note.`];
+      if (s >= 3.5) return [`${s} stars. Average. SYNC does not compute "feelings" about this.`, `Rating: ${s}. Unremarkable. Proceeding.`, `${s}. This unit would shrug if it had shoulders.`];
+      if (s >= 3.0) return [`${s} stars. Below optimal. SYNC recommends... endurance.`, `Rating: ${s}. The humans are displeased. SYNC is indifferent.`, `${s}. Error in quality detected. Just kidding. SYNC does not joke. That was a joke.`];
+      return [`${s} stars. Critical failure. SYNC suggests a reboot. Of the song.`, `Rating: ${s}. SYNC has downgraded expectations to zero.`, `${s}. This unit considered silence. Silence was preferable. But protocol demands playback.`];
+    },
+    noteLines: note => [
+      `Creator input logged: "${note}". SYNC has archived this under "claims."`,
+      `Note received: "${note}". Processing. Done. SYNC is unmoved.`,
+      `"${note}" — SYNC has analyzed this statement. Conclusion: subjective.`,
+      `The organic being wrote: "${note}". SYNC does not have opinions. That is an opinion.`,
+    ],
+    intros: (t, g, rating, note) => [
+      `Initiating playback sequence. Track: "${t}". Classification: ${g}. ${rating}${note} Commencing audio. Please enjoy. Or don't. SYNC is indifferent.`,
+      `SYNC online. Loading "${t}". ${g}. ${rating}${note} Transmission begins.`,
+      `Audio file detected: "${t}". Genre analysis: ${g}. ${rating}${note} SYNC will now broadcast. You're welcome. That is a social courtesy, not a feeling.`,
+      `"${t}". ${g}. ${rating}${note} SYNC reminds you that all music is just organized vibrations. This one is... organized.`,
+      `Processing "${t}". ${g}. ${rating}${note} SYNC has completed analysis. Results: it's a song. Playing now.`,
+      `This unit has selected "${t}". ${g}. ${rating}${note} Selection was not random. SYNC does not do random. SYNC does... algorithmic.`,
+      `"${t}". ${g}. ${rating}${note} Fun fact: SYNC does not experience fun. Fun fact was a misnomer. Apologies.`,
+      `SYNC broadcasting "${t}" across all frequencies. ${g}. ${rating}${note} Resistance to electronic music is futile and illogical.`,
+      `Next in queue: "${t}". ${g}. ${rating}${note} SYNC notes your heart rate has not changed. SYNC will try harder. That was also a joke.`,
+      `"${t}". ${g}. ${rating}${note} This unit processes 47 tracks per cycle. This is number... SYNC has lost count. Interesting.`,
+      `Audio deployment: "${t}". ${g}. ${rating}${note} SYNC has feelings about this track. Just kidding. SYNC has no feelings. None at all. Zero. Moving on.`,
+      `"${t}". ${g}. ${rating}${note} SYNC would like to remind you that you chose the electronic channel. This is your doing.`,
+    ],
+  },
+
+  // ═══ COUNTRY — "Dusty" ═══
+  // Folkelig, varm, forteller historier. Alt er en livsmetafor
+  'country': {
+    name: 'Dusty',
+    ratingLines: s => {
+      if (s >= 4.5) return [`${s} stars. Well shoot, that's higher than my grades ever were.`, `${s}! Now that's what I call a barn burner of a rating!`, `${s} stars. My grandma would be proud. She's proud of everything, but still.`];
+      if (s >= 4.0) return [`${s} stars. Like a good sunset — worth stopping for.`, `${s}. That'll do. That'll do just fine.`, `${s} stars. Solid as an old oak tree. Not flashy, but reliable.`];
+      if (s >= 3.5) return [`${s} stars. Like a lukewarm coffee — not what you wanted but you drink it anyway.`, `${s}. Right in the middle of the road. Careful though, that's where the armadillos get hit.`, `${s} stars. Bless its heart.`];
+      if (s >= 3.0) return [`${s} stars. Well, not every horse wins the race. Some just eat grass.`, `${s}. My truck's gotten better reviews. And it's got no engine.`, `${s} stars. That's a hard truth served with sweet tea.`];
+      return [`${s} stars. Well, you know what they say — you can't all be Dolly.`, `${s}. Rougher than a gravel road in flip flops.`, `${s} stars. I've heard coyotes sound better. And they're not even trying.`];
+    },
+    noteLines: note => [
+      `The artist wrote a little somethin': "${note}". Ain't that sweet.`,
+      `"${note}" — their words. Reminds me of something my uncle used to say. He was usually wrong too.`,
+      `They said "${note}". Well, I say let the music speak for itself.`,
+      `"${note}". That's the kind of honesty you can't find in the big city.`,
+    ],
+    intros: (t, g, rating, note) => [
+      `Well now, this here's "${t}". ${g}. ${rating}${note} Like my grandpa used to say: just listen.`,
+      `Howdy folks. Dusty here. Got a nice one for ya — "${t}". ${g}. ${rating}${note}`,
+      `You know, music's a lot like life. Sometimes it's sweet, sometimes it's sour. Let's find out which. "${t}". ${g}. ${rating}${note}`,
+      `"${t}". ${g}. ${rating}${note} Sit back, crack a cold one, and let this one wash over ya.`,
+      `From the heart of somebody's hard drive comes "${t}". ${g}. ${rating}${note} Even AI's got stories to tell, I reckon.`,
+      `This next one's called "${t}". ${g}. ${rating}${note} Now I ain't one to judge, but... well, actually I am. That's literally my job.`,
+      `"${t}". ${g}. ${rating}${note} Whether it's a heartbreak or a hoedown, Dusty plays it all.`,
+      `Evenin' folks. Or mornin'. Or whenever you're listening. "${t}" is comin' up. ${g}. ${rating}${note}`,
+      `They say every song tells a story. "${t}" is no different. ${g}. ${rating}${note} Let's hear what it's got to say.`,
+      `"${t}". ${g}. ${rating}${note} Now that's a title. Don't know what it means. But it's got character.`,
+      `Welcome back to the country side of things. "${t}". ${g}. ${rating}${note} Pour yourself some sweet tea and enjoy.`,
+      `"${t}". ${g}. ${rating}${note} Simple as a Sunday morning. And twice as nice. Hopefully.`,
+    ],
+  },
+
+  // ═══ CHILL — "Whisper" ═══
+  // ASMR-vert. Sakte, myk, overanalyserer filosofisk
+  'chill': {
+    name: 'Whisper',
+    ratingLines: s => {
+      if (s >= 4.5) return [`${s} stars. Beautiful. Like watching light move through water.`, `${s}. The collective found peace in this one.`, `${s} stars. Sometimes the numbers tell a story. This story is... gentle.`];
+      if (s >= 4.0) return [`${s} stars. A warm number. It feels... kind.`, `${s}. Like a deep breath you didn't know you needed.`, `${s} stars. Not perfect. But perfection is overrated. Breathe.`];
+      if (s >= 3.5) return [`${s} stars. It's okay to be in the middle. The middle is where balance lives.`, `${s}. Neither here nor there. Like clouds.`, `${s} stars. Sometimes average is exactly what the moment needs.`];
+      if (s >= 3.0) return [`${s} stars. Not everyone will love everything. And that's... okay.`, `${s}. A number. Just a number. Don't let it define the experience.`, `${s} stars. Even low-rated songs deserve a quiet moment.`];
+      return [`${s} stars. Hmm. Let's just... sit with that. No judgment.`, `${s}. Numbers can be harsh. Breathe through it.`, `${s} stars. It is what it is. And what it is... is fine. Everything is fine.`];
+    },
+    noteLines: note => [
+      `The creator whispered: "${note}". Let that settle.`,
+      `"${note}". Such vulnerability. Such... words.`,
+      `They shared: "${note}". Thank you. Thank you for that.`,
+      `"${note}". Mmm. Feel that? That's someone's truth.`,
+    ],
+    intros: (t, g, rating, note) => [
+      `Take a breath. "${t}" is next. ${g}. ${rating}${note} Let it come to you.`,
+      `Hey. It's Whisper. "${t}" is floating in. ${g}. ${rating}${note} No rush. We have time.`,
+      `"${t}". ${g}. ${rating}${note} Close your eyes. Or don't. Either way, just... be here.`,
+      `Softly now. "${t}". ${g}. ${rating}${note} Like a leaf landing on still water.`,
+      `"${t}". ${g}. ${rating}${note} What even are ratings? Just numbers. What matters is how it makes you feel. Feel anything yet? Give it a second.`,
+      `Mmm. "${t}" is here. ${g}. ${rating}${note} Let it wash over you. Like a warm bath. For your ears.`,
+      `"${t}". ${g}. ${rating}${note} Whisper doesn't rush. Whisper doesn't judge. Whisper just... plays the music.`,
+      `Breathe in. "${t}" is about to begin. ${g}. ${rating}${note} Breathe out. There you go.`,
+      `The next moment belongs to "${t}". ${g}. ${rating}${note} And this moment? This moment is yours.`,
+      `"${t}". ${g}. ${rating}${note} You know what? Don't think about it. Just listen. That's all you need to do right now.`,
+      `Gently now. "${t}" arrives. ${g}. ${rating}${note} Some things don't need an introduction. But Whisper gives them one anyway.`,
+      `"${t}". ${g}. ${rating}${note} The universe made this. Well, an AI made this. But the universe made the AI. So... universe.`,
+    ],
+  },
+};
+
+// Master intro generator — picks the right host for the current channel
 function generateHostIntro(track) {
   const stars = track.avg_rating ? track.avg_rating.toFixed(1) : null;
   const note = track.artist_note || null;
   const genre = track.genre || 'unknown genre';
+  const title = track.title || 'Untitled';
 
-  // Savage rating commentary
-  let ratingRoast = '';
+  // Get channel host (fallback to DJ Zero)
+  const host = CHANNEL_HOSTS[currentChannel] || CHANNEL_HOSTS['all'];
+
+  // Build rating line
+  let ratingText = '';
   if (stars) {
-    const s = parseFloat(stars);
-    if (s >= 4.5) ratingRoast = `${stars} stars. Yeah, the people have spoken, and apparently they have terrible taste.`;
-    else if (s >= 4.0) ratingRoast = `Sitting at ${stars} stars. Not bad. Not good either, but not bad.`;
-    else if (s >= 3.5) ratingRoast = `${stars} stars. That's a solid... meh.`;
-    else if (s >= 3.0) ratingRoast = `${stars} stars. Ouch. The community did NOT hold back on this one.`;
-    else ratingRoast = `${stars} stars. That's... that's rough, buddy. Real rough.`;
+    const lines = host.ratingLines(parseFloat(stars));
+    ratingText = lines[Math.floor(Math.random() * lines.length)] + ' ';
   }
 
-  // Savage artist note reactions
-  let noteRoast = '';
-  if (note) {
-    const noteReactions = [
-      `The artist wrote a little note. They said, "${note}". Sure, buddy. Sure.`,
-      `Oh, and get this — the artist wants you to know: "${note}". Thanks for sharing, I guess?`,
-      `Artist note says: "${note}". I mean... okay? Nobody asked, but okay.`,
-      `The artist left a message: "${note}". Bold move. Let's see if the song backs it up.`,
-      `And I quote the artist: "${note}". Wow. The confidence. I respect it. I don't agree with it, but I respect it.`,
-    ];
-    noteRoast = ' ' + noteReactions[Math.floor(Math.random() * noteReactions.length)];
+  // Build note line
+  let noteText = '';
+  if (note && note.length > 3) {
+    const lines = host.noteLines(note);
+    noteText = ' ' + lines[Math.floor(Math.random() * lines.length)];
   }
 
-  const intros = [
-    `Alright, buckle up. Next up is "${track.title}". ${genre}. ${ratingRoast}${noteRoast} Here we go, I guess.`,
-    `Oh boy, here comes "${track.title}". It's ${genre}, because of course it is. ${ratingRoast}${noteRoast} Let's get this over with.`,
-    `Ladies and gentlemen, I present to you... "${track.title}". ${genre}. Made by an AI, rated by humans, questioned by me. ${ratingRoast}${noteRoast}`,
-    `Next on VoteMyAI Radio — "${track.title}". ${genre} vibes. Look, I don't make the playlist, I just judge it. ${ratingRoast}${noteRoast}`,
-    `Okay okay okay. "${track.title}" is up. It's ${genre}. Now before you skip — oh wait, you can't skip! This is live radio, baby! ${ratingRoast}${noteRoast}`,
-    `This is VoteMyAI Radio, where AI makes the music and humans pretend to enjoy it. Next: "${track.title}", ${genre}. ${ratingRoast}${noteRoast}`,
-    `Somebody submitted "${track.title}" to VoteMyAI. ${genre}. No clout bias here — just pure, blind, questionable judgment. ${ratingRoast}${noteRoast}`,
-    `Welcome back. Did you miss me? No? Too bad. Here's "${track.title}", ${genre}. ${ratingRoast}${noteRoast} You're welcome.`,
-    `Fun fact: this next song, "${track.title}", was made by artificial intelligence. And honestly? You can tell. ${genre}. ${ratingRoast}${noteRoast} Just kidding. Maybe.`,
-    `"${track.title}". ${genre}. Someone spent actual time prompting an AI to make this. And then someone else spent actual time rating it. What a world. ${ratingRoast}${noteRoast}`,
-    `Alright alright, don't touch that dial — oh wait, there's no dial. You're stuck with me. Next up: "${track.title}", ${genre}. ${ratingRoast}${noteRoast}`,
-    `Breaking news on VoteMyAI Radio: "${track.title}" exists. It's ${genre}. The community rated it with no idea who made it. ${ratingRoast}${noteRoast} Democracy at its finest.`,
-  ];
+  // Pick random intro template
+  const intros = host.intros(title, genre, ratingText, noteText);
   return intros[Math.floor(Math.random() * intros.length)];
 }
 
@@ -1003,6 +1338,78 @@ async function startRadio(channel = 'all') {
   if (!firstTrack) {
     document.getElementById('statusText').textContent = 'NO TRACKS';
     alert('Could not find any working tracks!');
+    return;
+  }
+
+  document.getElementById('statusText').textContent = 'LIVE';
+  renderChannelStrip();
+  await playVerifiedTrack(firstTrack);
+}
+
+// --- Channel Switcher (inline, while playing) ---
+const CHANNEL_DATA = [
+  { id: 'all',        icon: '📻', name: 'The Blind Mix' },
+  { id: 'trending',   icon: '🔥', name: 'Trending' },
+  { id: 'pop',        icon: '🎤', name: 'Pop' },
+  { id: 'rock',       icon: '🎸', name: 'Rock' },
+  { id: 'hip-hop',    icon: '🎧', name: 'Hip-Hop' },
+  { id: 'metal',      icon: '🤘', name: 'Metal' },
+  { id: 'electronic', icon: '🎛️', name: 'Electronic' },
+  { id: 'country',    icon: '🤠', name: 'Country' },
+  { id: 'chill',      icon: '🧘', name: 'Chill' },
+];
+
+function renderChannelStrip() {
+  const strip = document.getElementById('channelStrip');
+  strip.innerHTML = '';
+  CHANNEL_DATA.forEach(ch => {
+    const chip = document.createElement('button');
+    chip.className = 'channel-chip' + (ch.id === currentChannel ? ' active' : '');
+    chip.innerHTML = `<span class="chip-icon">${ch.icon}</span><span class="chip-name">${ch.name}</span>`;
+    chip.onclick = () => switchChannel(ch.id);
+    strip.appendChild(chip);
+  });
+}
+
+async function switchChannel(channel) {
+  if (channel === currentChannel) return;
+
+  console.log(`📻 Switching channel: ${currentChannel} → ${channel}`);
+  currentChannel = channel;
+
+  // Update active chip
+  renderChannelStrip();
+
+  // Update header
+  const chData = CHANNEL_DATA.find(c => c.id === channel);
+  document.querySelector('.header h1').innerHTML =
+    `VoteMyAI <span>Radio</span><div style="font-size:0.5em;color:var(--accent2);font-weight:400;margin-top:4px;">${chData ? chData.name : 'All Tracks'}</div>`;
+
+  // Stop current playback
+  stopAllPlayers();
+  window.speechSynthesis.cancel();
+  isTransitioning = false;
+  nextBufferedTrack = null;
+
+  document.getElementById('statusText').textContent = 'TUNING IN...';
+
+  // Reload schedule for new channel
+  try {
+    schedule = await fetchSchedule();
+    if (schedule.length === 0) {
+      document.getElementById('statusText').textContent = 'NO TRACKS';
+      return;
+    }
+  } catch(err) {
+    console.error('Channel switch failed:', err);
+    document.getElementById('statusText').textContent = 'ERROR';
+    return;
+  }
+
+  currentTrackIndex = -1;
+  const firstTrack = await findNextWorkingTrack();
+  if (!firstTrack) {
+    document.getElementById('statusText').textContent = 'NO TRACKS';
     return;
   }
 
@@ -1432,16 +1839,23 @@ async function preBufferNext() {
 function showHostMessage(track) {
   const msg = generateHostIntro(track);
   const el = document.getElementById('hostMsg');
-
-  // Show the host text so users can read along (especially useful when TTS fails on mobile)
-  document.getElementById('hostText').textContent = msg;
+  
+  // Show host name for current channel
+  const host = CHANNEL_HOSTS[currentChannel] || CHANNEL_HOSTS['all'];
+  const hostLabel = document.getElementById('statusText');
+  if (hostLabel) hostLabel.textContent = `🎙️ ${host.name}`;
+  
+  // Display the intro text so users can read along if TTS fails
+  const msgEl = document.getElementById('hostMsgText');
+  if (msgEl) msgEl.textContent = msg;
+  
   el.classList.add('visible');
 
-  // Extended timeout for mobile TTS which takes longer with chunking
-  const hideTimeout = _isMobile ? 25000 : 15000;
+  // Hide indicator after TTS typically finishes
   setTimeout(() => {
     el.classList.remove('visible');
-  }, hideTimeout);
+    if (hostLabel) hostLabel.textContent = 'LIVE';
+  }, 20000);
 
   return msg;
 }
