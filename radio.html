@@ -773,6 +773,19 @@ body {
     src="about:blank"></iframe>
 </div>
 
+<!-- Kokoro TTS Module (loads in background, exposes class to window) -->
+<script type="module">
+  try {
+    const { KokoroTTS } = await import("https://cdn.jsdelivr.net/npm/kokoro-js@1.2.1/+esm");
+    window._KokoroTTSClass = KokoroTTS;
+    window.dispatchEvent(new CustomEvent('kokoro-module-ready'));
+    console.log('🎙️ Kokoro module loaded from CDN');
+  } catch(e) {
+    console.warn('🎙️ Kokoro module failed to load:', e);
+    window.dispatchEvent(new CustomEvent('kokoro-module-ready'));
+  }
+</script>
+
 <!-- SoundCloud Widget API -->
 <script src="https://w.soundcloud.com/player/api.js"></script>
 
@@ -1091,15 +1104,26 @@ async function startRadio(channel = 'all') {
     document.getElementById('statusText').textContent = 'LOADING AI VOICE...';
 
     try {
+      // Wait for the <script type="module"> to finish loading kokoro-js
       klStatus.textContent = 'Loading library...';
       klBar.style.width = '5%';
-      const { KokoroTTS } = await import("https://cdn.jsdelivr.net/npm/kokoro-js@1.1.2/+esm");
+
+      const KokoroTTS = await new Promise((resolve) => {
+        if (window._KokoroTTSClass) { resolve(window._KokoroTTSClass); return; }
+        const timeout = setTimeout(() => resolve(null), 20000);
+        window.addEventListener('kokoro-module-ready', () => {
+          clearTimeout(timeout);
+          resolve(window._KokoroTTSClass || null);
+        }, { once: true });
+      });
+
+      if (!KokoroTTS) throw new Error('Kokoro module did not load');
 
       klStatus.textContent = 'Downloading model (~160 MB, cached after first load)...';
       klBar.style.width = '15%';
 
       kokoroTTS = await KokoroTTS.from_pretrained(
-        "onnx-community/Kokoro-82M-v1.0-ONNX",
+        "onnx-community/Kokoro-82M-ONNX",
         {
           dtype: "q8",
           device: "wasm",
@@ -1115,7 +1139,7 @@ async function startRadio(channel = 'all') {
       klBar.style.width = '100%';
       klStatus.textContent = 'AI voice ready!';
       console.log('🎙️ Kokoro TTS loaded successfully');
-      await new Promise(r => setTimeout(r, 400)); // brief flash of "ready"
+      await new Promise(r => setTimeout(r, 400));
     } catch(e) {
       console.warn('🎙️ Kokoro TTS failed to load, will use Web Speech fallback:', e);
       klStatus.textContent = 'Could not load — using fallback voice';
