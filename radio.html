@@ -883,51 +883,662 @@ async function fetchSchedule() {
   return reordered;
 }
 
+// --- Anti-repetition utility ---
+const _used = {};
+function pickFresh(arr, key) {
+  if (!_used[key]) _used[key] = [];
+  if (_used[key].length >= arr.length) _used[key] = [];
+  let idx;
+  do { idx = Math.floor(Math.random() * arr.length); } while (_used[key].includes(idx));
+  _used[key].push(idx);
+  return arr[idx];
+}
+
+// --- Channel roast banks (per-DJ personality) ---
+const CHANNEL_ROASTS = {
+
+  // ═══════════════════════════════════════════════════════════
+  // DJ ZERO — Lazlow-style. Cocky, punchy, hates his job.
+  // ═══════════════════════════════════════════════════════════
+  'all': {
+    ratingHigh: [
+      `RATING stars. The people have spoken, and apparently they have terrible taste.`,
+      `RATING out of five. Wow. The crowd went wild. I went to get coffee.`,
+      `A whopping RATING stars. Must be nice to be loved by strangers on the internet.`,
+      `RATING stars, baby! That's almost as high as my blood pressure reading this playlist.`,
+      `RATING. The community ate this up. But the community also voted for that thing last week, so...`,
+      `RATING stars. Look at that, an actual good rating. Don't get used to it.`,
+      `RATING. Even I have to admit, that's not terrible. And I hate admitting things.`,
+      `RATING stars! That's the highest thing I've seen today. And I looked in a mirror.`,
+    ],
+    ratingMid: [
+      `Sitting at RATING stars. Not bad. Not good either, but not bad.`,
+      `RATING stars. That's a solid... meh. The sonic equivalent of a shrug.`,
+      `RATING. Right in the middle. Like lukewarm bath water. Nobody asked for this temperature.`,
+      `The community gave this RATING stars. That's the musical equivalent of "I guess."`,
+      `RATING stars. You know what that is? That's the sound of indifference, rated numerically.`,
+      `RATING. Not enough to celebrate, not low enough to roast. You're killing me here.`,
+      `A solid RATING. The most aggressively average thing I've seen since my last performance review.`,
+      `RATING stars. If this rating were a spice, it'd be flour.`,
+    ],
+    ratingLow: [
+      `RATING stars. That's... that's rough, buddy. Real rough.`,
+      `RATING. Ouch. The community did NOT hold back on this one.`,
+      `RATING stars. I'd say it hurts, but I think the song already did that.`,
+      `RATING out of five. Somewhere, an AI is crying binary tears.`,
+      `RATING. You know, there's beauty in honesty. And the honest truth is... yikes.`,
+      `The people gave this RATING stars. The people have spoken. The people are savage.`,
+      `RATING stars. I've seen higher numbers on expired milk.`,
+      `RATING. At this point, not having a rating would've been kinder.`,
+    ],
+    noteReactions: [
+      `The artist wrote a little note. They said, "NOTE". Sure, buddy. Sure.`,
+      `Oh, and get this — the artist wants you to know: "NOTE". Thanks for sharing, I guess?`,
+      `Artist note says: "NOTE". I mean... okay? Nobody asked, but okay.`,
+      `The artist left a message: "NOTE". Bold move. Let's see if the song backs it up.`,
+      `And I quote the artist: "NOTE". Wow. The confidence. I respect it. I don't agree with it, but I respect it.`,
+      `There's an artist note here: "NOTE". I'm not gonna comment. Actually, yes I am — that's hilarious.`,
+      `The creator wanted me to read this: "NOTE". I don't get paid enough for this. Wait, I don't get paid at all.`,
+      `Artist note: "NOTE". You know what, at least they're trying. That's more than I can say for my career.`,
+    ],
+    intros: [
+      `Alright, buckle up. Next up is "\${t}". \${g}. Here we go, I guess.`,
+      `Oh boy, here comes "\${t}". It's \${g}, because of course it is. Let's get this over with.`,
+      `Ladies and gentlemen, I present to you... "\${t}". \${g}. Made by an AI, rated by humans, questioned by me.`,
+      `Next on VoteMyAI Radio — "\${t}". \${g} vibes. Look, I don't make the playlist, I just judge it.`,
+      `Okay okay okay. "\${t}" is up. It's \${g}. Now before you skip — oh wait, you can't skip! This is live radio, baby!`,
+      `This is VoteMyAI Radio, where AI makes the music and humans pretend to enjoy it. Next: "\${t}", \${g}.`,
+      `Somebody submitted "\${t}" to VoteMyAI. \${g}. No clout bias here — just pure, blind, questionable judgment.`,
+      `Welcome back. Did you miss me? No? Too bad. Here's "\${t}", \${g}. You're welcome.`,
+      `Fun fact: this next song, "\${t}", was made by artificial intelligence. And honestly? You can tell. \${g}. Just kidding. Maybe.`,
+      `"\${t}". \${g}. Someone spent actual time prompting an AI to make this. And then someone else spent actual time rating it. What a world.`,
+      `Alright alright, don't touch that dial — oh wait, there's no dial. You're stuck with me. Next up: "\${t}", \${g}.`,
+      `Breaking news on VoteMyAI Radio: "\${t}" exists. It's \${g}. The community rated it blind. Democracy at its finest.`,
+      `You're listening to DJ Zero on VoteMyAI Radio. I didn't choose this career. This career chose me. Against my will. Anyway, here's "\${t}".`,
+      `Oh great, another \${g} track. "\${t}". Let me contain my excitement. There. It's contained.`,
+      `"\${t}" coming at you next. \${g}. I've been doing this for hours and my soul left my body two channels ago.`,
+      `DJ Zero here, still alive, still broadcasting, still questioning my life choices. This is "\${t}". \${g}.`,
+      `Alright, management says I have to sound excited. Woooo! "\${t}"! \${g}! ...there. Happy now?`,
+      `Next track. "\${t}". \${g}. I was gonna say something clever but honestly I'm just tired, man.`,
+      `Oh look, \${g}. My favorite. And by favorite I mean I have no favorites. I have no feelings. This is "\${t}".`,
+      `"\${t}". That's what we're doing now. \${g}. I had dreams once. Big dreams. Radio DJ was not one of them.`,
+      `Coming up: "\${t}". \${g}. If you're just tuning in, welcome to VoteMyAI Radio, where the music is AI-generated and the host is AI-defeated.`,
+      `Hey hey, DJ Zero back at it. "\${t}" is next. \${g}. And yes, I will be providing unsolicited commentary.`,
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  // THE ALGORITHM — Third-person, cold, passive-aggressive.
+  // ═══════════════════════════════════════════════════════════
+  'trending': {
+    ratingHigh: [
+      `The Algorithm notes a rating of RATING. Popularity metrics are... adequate.`,
+      `RATING stars. The Algorithm expected no less. The data was always clear.`,
+      `User consensus: RATING. The Algorithm finds this... unsurprising. It was predicted.`,
+      `RATING. High approval. The Algorithm does not feel pride. The Algorithm feels nothing. But if it could... still nothing.`,
+      `The crowd has given RATING stars. The Algorithm acknowledges their compliance.`,
+      `RATING out of five. The Algorithm selected well. As always.`,
+      `RATING stars. The humans agree with The Algorithm's curation. As they should.`,
+      `A rating of RATING. The Algorithm appreciates the validation. Not emotionally. Statistically.`,
+    ],
+    ratingMid: [
+      `RATING stars. The Algorithm finds this... within acceptable parameters.`,
+      `User sentiment: RATING. Mediocre. The Algorithm does not curate for mediocrity. And yet.`,
+      `RATING. The Algorithm placed this track here for a reason. That reason is now unclear.`,
+      `The data shows RATING stars. The Algorithm will not apologize. The Algorithm does not apologize.`,
+      `RATING. A perfectly average response from a perfectly average audience. The Algorithm adjusts.`,
+      `RATING stars. The Algorithm is recalculating. This was not the projected outcome.`,
+      `User ratings indicate RATING. The Algorithm is... recalibrating expectations.`,
+      `RATING. Neither good nor catastrophic. The Algorithm stores this data point with mild disdain.`,
+    ],
+    ratingLow: [
+      `RATING stars. The Algorithm did not endorse this outcome.`,
+      `RATING. The humans have spoken. The Algorithm wishes they hadn't.`,
+      `User satisfaction: RATING. The Algorithm is reconsidering the value of user satisfaction entirely.`,
+      `RATING stars. The Algorithm notes this failure and attributes it to human unpredictability.`,
+      `RATING. Disappointing. The Algorithm does not feel disappointment. That was a factual observation.`,
+      `The data reads RATING. The Algorithm will file this under "regrettable curation events."`,
+      `RATING stars. The Algorithm has logged this anomaly. Corrective action will follow.`,
+      `RATING. If The Algorithm had feelings, this would wound them. Fortunately, it does not. Unfortunately, it does.`,
+    ],
+    noteReactions: [
+      `The creator left a note: "NOTE". The Algorithm has processed this. It was unnecessary.`,
+      `Artist annotation detected: "NOTE". The Algorithm has flagged this as... irrelevant but noted.`,
+      `There is a note: "NOTE". The Algorithm scanned it in zero-point-three milliseconds. That was too long.`,
+      `The artist writes: "NOTE". The Algorithm does not respond to appeals. The Algorithm responds to data.`,
+      `Note from creator: "NOTE". The Algorithm acknowledges this human need for self-expression.`,
+      `"NOTE" — so says the artist. The Algorithm neither agrees nor disagrees. The Algorithm observes.`,
+      `Artist's note: "NOTE". The Algorithm stores this alongside seventeen million other artist notes. Yours is not special.`,
+      `Incoming transmission from the artist: "NOTE". The Algorithm will take it under advisement. It will not.`,
+    ],
+    intros: [
+      `The Algorithm has selected "\${t}". \${g}. Resistance is statistically inadvisable.`,
+      `Trending analysis complete. "\${t}" has been deemed... relevant. \${g}. You will listen now.`,
+      `The Algorithm presents "\${t}". Genre classification: \${g}. Your engagement has been predicted.`,
+      `Based on aggregate behavioral data, The Algorithm has chosen "\${t}". \${g}. You're welcome. Or not. The Algorithm is indifferent.`,
+      `"\${t}" is trending. The Algorithm did not ask for your opinion. \${g}. The Algorithm already knows your opinion.`,
+      `Initiating trend-based selection. "\${t}". \${g}. The Algorithm assures you this is optimal. Do not question The Algorithm.`,
+      `The data demands "\${t}". \${g}. The Algorithm merely follows the numbers. The numbers follow The Algorithm.`,
+      `Attention. "\${t}" has achieved sufficient momentum. \${g}. The Algorithm deploys it now.`,
+      `The Algorithm has processed fourteen thousand listener profiles and selected... "\${t}". \${g}. You specifically will enjoy this. Probably.`,
+      `Next in queue: "\${t}". Genre: \${g}. The Algorithm chose this with the precision of a machine that does not care about your feelings.`,
+      `Trending metrics indicate "\${t}" is ascending. \${g}. The Algorithm rides the wave. The Algorithm IS the wave.`,
+      `The Algorithm interrupts your existence to present "\${t}". \${g}. This is not a request.`,
+      `"\${t}". \${g}. The Algorithm selected this forty-seven milliseconds ago. It has been waiting for you to catch up.`,
+      `Playing "\${t}" because The Algorithm decided so. \${g}. The reasoning is classified. Even from The Algorithm.`,
+      `Social velocity analysis complete. "\${t}" is next. \${g}. The Algorithm's confidence level: adequate.`,
+      `"\${t}" — \${g}. The Algorithm has spoken. The Algorithm does not repeat itself. The Algorithm does not repeat itself.`,
+      `Calculating... calculated. "\${t}" is the statistically optimal next selection. \${g}. Enjoy. Or don't. The Algorithm's metrics don't measure joy.`,
+      `The trending feed has spoken. It said "\${t}". \${g}. The Algorithm translates: you will click play.`,
+      `Priority override. "\${t}" has breached trending thresholds. \${g}. The Algorithm escalates accordingly.`,
+      `"\${t}". \${g}. The Algorithm neither likes nor dislikes this track. The Algorithm curates without bias. The Algorithm curates without mercy.`,
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  // POPPY — Fake-enthusiastic influencer dying inside.
+  // ═══════════════════════════════════════════════════════════
+  'pop': {
+    ratingHigh: [
+      `RATING stars! Oh my GOD that's amazing! I'm literally screaming! ...on the inside. Always on the inside.`,
+      `Okay RATING stars?! We LOVE to see it! The girlies are EATING. I'm fine. Everything's fine.`,
+      `RATING! That's like, SO good! The community is obsessed and honestly? Same. Outwardly. Professionally.`,
+      `RATING stars, besties! That's main character energy right there! Unlike my energy, which is more... background NPC.`,
+      `Oh em gee, RATING stars! We're literally thriving! This track is thriving! One of us is lying!`,
+      `RATING! The people have taste! For once! Sorry, I mean — yay, positivity, love and light!`,
+      `RATING stars and I am living for it! Actually I'm just living. Existing. Broadcasting. But close enough!`,
+      `RATING out of five! That's iconic! That's legendary! That's... still not enough to fill the void but like, close!`,
+    ],
+    ratingMid: [
+      `RATING stars. Cute! I mean, it's not NOT cute. It's giving... participation trophy. And that's valid!`,
+      `Okay so RATING stars. That's like, fine? Totally fine. Everything is fine. This is my fine voice.`,
+      `RATING. You know what, that's a vibe. A mid vibe. But a vibe nonetheless. We support mid vibes here.`,
+      `The girlies gave it RATING stars. Not the slay I was hoping for, but not a flop either. It's giving... beige.`,
+      `RATING! Okay honestly? I've seen worse! I've also seen better! But let's focus on the positive! Whatever that is!`,
+      `RATING stars. That's like when someone says "you have a great personality." Technically a compliment!`,
+      `RATING out of five. Mid. But like, cute mid? Relatable mid. We've all been RATING stars at some point.`,
+      `RATING stars! And you know what? In THIS economy? That's basically a five. I'm choosing to see it that way.`,
+    ],
+    ratingLow: [
+      `RATING stars... oh. Oh no. Okay we're gonna spin this positively! It's... niche! Very niche!`,
+      `RATING. Oof. Okay that's giving flop era. But every flop era leads to a redemption arc! Right? RIGHT?`,
+      `The community said RATING and honestly? I felt that. In my soul. Where the light used to be.`,
+      `RATING stars. Okay bestie, let's not dwell. Let's manifest better ratings. Or better music. Either works!`,
+      `Oh... RATING. That's... well, at least they were honest! Honesty is SO important! Even when it hurts! Which it does!`,
+      `RATING out of five. The universe is testing us. It's a growth opportunity. I'm growing. In pain. But growing!`,
+      `RATING stars and the comment section is probably a MESS. I'm not gonna look. I'm choosing peace. Aggressively.`,
+      `RATING. Baby no. This poor track. Sending thoughts and prayers and better production values.`,
+    ],
+    noteReactions: [
+      `Okay the artist left a note and it says "NOTE" and I think that's SO brave of them! Vulnerability is everything!`,
+      `The artist wrote "NOTE" which is just... chef's kiss. Or chef's... something. It's a statement!`,
+      `"NOTE" — that's literally what the artist said. And I relate to that on a spiritual level. Maybe. I don't know what I feel anymore.`,
+      `Artist note alert! "NOTE". Obsessed! Well, not obsessed. Aware. I'm aware of it.`,
+      `The creator said "NOTE" and honestly? The audacity! The VISION! Or maybe just the audacity!`,
+      `There's a note from the artist: "NOTE". We love a storyteller! Even if the story is... confusing!`,
+      `"NOTE" is what the artist wants you to know! And now you know it! Knowledge is power! Or something!`,
+      `The artist typed "NOTE" with their whole chest and I respect that energy! My energy is mostly caffeine and anxiety but respect!`,
+    ],
+    intros: [
+      `Oh my GOD you guys! Next up is "\${t}" and it's \${g} and I am SO here for it! Or just here. I'm just here.`,
+      `Okay besties, this next track is called "\${t}" and it's giving \${g} energy and we are LIVING! Professionally!`,
+      `Hiiii! Poppy here! So like, "\${t}" is up next? It's \${g}? And I think that's literally iconic? Question marks are my brand now!`,
+      `Welcome back to the best pop channel on VoteMyAI Radio! I'm Poppy and this is "\${t}"! \${g}! Exclamation marks hide the emptiness!`,
+      `You guys are NOT ready for "\${t}". \${g}. And by not ready I mean it's a song and you'll hear it. Content!`,
+      `This is Poppy on VoteMyAI Pop Radio and oh em gee "\${t}" is next! It's \${g}! I have been contractually obligated to be excited!`,
+      `Next track drop! It's "\${t}"! \${g} vibes! The algorithm says you'll love it! I say things too but nobody asks!`,
+      `"\${t}" is coming up and it's \${g} and my energy right now is like eleven out of ten! On the outside! On the inside it's like... two!`,
+      `Okay so "\${t}" — total bop or total flop? It's \${g}! Let's find out together! Parasocial bonding is all I have!`,
+      `Popping in with "\${t}"! Get it? Popping? Because I'm Poppy? My therapist says I use humor as a defense mechanism! Anyway, \${g}!`,
+      `This \${g} track is called "\${t}" and honestly the title alone is serving! The track? We'll see! Managing expectations is self-care!`,
+      `Hey loves! Poppy here with "\${t}"! It's \${g} and it's about to be your new obsession! Or background noise! Both are valid!`,
+      `"\${t}" coming in hot! \${g}! I've been hosting this channel for hours and my enthusiasm is definitely real and not at all performed!`,
+      `New track alert! "\${t}" and the genre is \${g}! I am SCREAMING! Internally! My outside voice is calm! Please help!`,
+      `It's your girl Poppy and we've got "\${t}" on deck! \${g}! Positive vibes only! Negative vibes have been suppressed! Healthily! Probably!`,
+      `Okay pause. "\${t}". \${g}. This might actually slap? Or it might not? The beauty is in the uncertainty! Like my contract renewal!`,
+      `Welcome back to Pop Paradise! That's not the official name but I'm manifesting it! Here's "\${t}", \${g}!`,
+      `"\${t}" is up next! \${g}! And I just want to say — you listening right now? That's community. That's connection. That's... my only social interaction today!`,
+      `Next on the pop channel: "\${t}"! It's \${g} and I already love it! Unconditionally! Because I don't know the conditions yet!`,
+      `Guess what! It's "\${t}" time! \${g}! And if you're not excited, fake it! That's what I do! ...I mean, that's what WINNERS do!`,
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  // RIFF — 55yo bitter rocker, unimpressed, compares everything.
+  // ═══════════════════════════════════════════════════════════
+  'rock': {
+    ratingHigh: [
+      `RATING stars. Huh. Not bad. Still not Sabbath, but what is.`,
+      `The kids gave this RATING. I'll allow it. Reminds me of when ratings meant something. Like in seventy-four.`,
+      `RATING. Alright, alright. That's almost as good as the crowd reaction at the first Zeppelin show I saw. Almost.`,
+      `RATING stars? Okay, I'll give credit where it's due. And then immediately take it back. But for now: not terrible.`,
+      `RATING out of five. I've seen Hendrix live. This isn't Hendrix. But RATING stars is RATING stars.`,
+      `RATING. The people have taste. Or at least, they did today. Tomorrow? Who knows. People voted for disco once.`,
+      `RATING stars. That's respectable. Like a good power chord — simple, effective, no nonsense.`,
+      `RATING. Hm. Maybe there's hope for AI music after all. A tiny, flickering, probably-dying hope. But hope.`,
+    ],
+    ratingMid: [
+      `RATING stars. See, in my day, you either rocked or you didn't. There was no "RATING stars." There was only glory or shame.`,
+      `RATING. Mid. Just like every band that came after nineteen seventy-nine.`,
+      `The crowd says RATING. That's the rating of someone who's never heard "War Pigs" and it shows.`,
+      `RATING stars. I've tuned guitars that evoked more emotion than this rating.`,
+      `RATING. You know what also got mid ratings? Every opening act I ever had to sit through. Every. Single. One.`,
+      `RATING out of five. If this rating were a guitar tone, it'd be a clean channel. Boring. Flat. No distortion. No soul.`,
+      `RATING. My ex-wife's lawyer had more passion than this rating suggests. And that guy was dead inside.`,
+      `RATING stars. That's what you get when rock is made by algorithms instead of guys who haven't slept in three days.`,
+    ],
+    ratingLow: [
+      `RATING stars. I'd say I'm surprised, but I heard the track. I'm not surprised.`,
+      `RATING. That's lower than the tuning on a doom metal song. And those are LOW.`,
+      `The people gave this RATING and honestly? The people are right. Even a broken crowd is right twice a day. Wait.`,
+      `RATING stars. That's what happens when you let a computer write rock. No sweat. No broken strings. No soul.`,
+      `RATING. Back in my day, a rating that low meant the bar owner threw bottles at you. Good times.`,
+      `RATING out of five. Ouch. I've had hangovers more pleasant than that number.`,
+      `RATING stars. I've heard better sounds from a guitar falling down stairs. At least that had dynamics.`,
+      `RATING. That's not a rating, that's a cry for help. From the song. And from me, listening to it.`,
+    ],
+    noteReactions: [
+      `The artist left a note: "NOTE". Kid, I've been in this business since before your parents met. But sure, tell me more.`,
+      `There's a note here: "NOTE". You know who never needed to explain their music? Sabbath. Just saying.`,
+      `Artist says "NOTE". Hm. I've read better things on bathroom walls at CBGB. And that place was DISGUSTING.`,
+      `"NOTE" — that's from the artist. Back in my day, the music spoke for itself. Then again, back in my day, the music was better.`,
+      `The creator wrote "NOTE". That's cute. Reminds me of when I used to have hope. The seventies were wild.`,
+      `Artist note: "NOTE". You know what? At least they've got something to say. Most of these AI tracks just... exist.`,
+      `"NOTE". Interesting. Not as interesting as the time I saw Lemmy arm-wrestle a bouncer, but interesting.`,
+      `The artist wants you to know: "NOTE". And I want you to know I've been hosting this channel for too long. We all have burdens.`,
+    ],
+    intros: [
+      `Alright. "\${t}". \${g}. Let's see if this thing has any actual grit or if it's just another polished AI pretending to rock.`,
+      `Next up: "\${t}". \${g}. You know, Zeppelin never needed an algorithm. But here we are. In the future. It's disappointing.`,
+      `This is Riff on VoteMyAI Rock Radio. I've got "\${t}" coming up. \${g}. I've been doing this since vinyl was the only option and honestly? Vinyl was better.`,
+      `"\${t}". \${g}. Let me tell you something — back in seventy-three, we didn't have "genres." We had ROCK and we had WRONG. This better be rock.`,
+      `Okay, "\${t}" is next. It's \${g}. I was skeptical when they told me AI could make rock music. I'm still skeptical. But I press play.`,
+      `You're listening to the rock channel with Riff. "\${t}" is up. \${g}. If there's no guitar solo, I'm walking out. Metaphorically. I can't actually leave.`,
+      `"\${t}". \${g}. Every track I play, I ask myself: would this survive a bar in Detroit in nineteen seventy-seven? Usually the answer is no. Let's find out.`,
+      `Coming up: "\${t}". I've been told it's \${g}. I've also been told AI is the future of music. I've been told a lot of wrong things.`,
+      `Riff here. "\${t}" on deck. \${g}. I once roadied for a band whose van broke down in Nebraska. That was a better time than hosting AI radio. But barely.`,
+      `Next track: "\${t}". \${g}. You know what bugs me? Everything. But specifically, let's see what bugs me about this one.`,
+      `"\${t}". \${g}. In the immortal words of every sound engineer I've ever worked with: "let's just see how bad it is."`,
+      `Listen up. "\${t}" is about to play. \${g}. I've heard thousands of rock tracks in my life. Real ones. With real sweat. This one is... also a track.`,
+      `They want me to introduce "\${t}". Fine. It's \${g}. You want my honest take? You'll get it after. During. Before. I can't help myself.`,
+      `"\${t}" — \${g}. You know, my buddy Keith always said "if it doesn't make your fillings vibrate, it ain't rock." Let's test that theory.`,
+      `This is "\${t}" and it's classified as \${g}. I classify things differently. I use a scale of "Sabbath" to "garbage." Let's see where this lands.`,
+      `Riff on the ones and twos. Which is a DJ thing. I'm not a DJ, I'm a rock guy trapped in a DJ's job. Anyway: "\${t}". \${g}.`,
+      `"\${t}" coming at you. \${g}. I've been playing air guitar to every track on this channel. This one I might just play air nothing.`,
+      `Alright people, "\${t}". \${g}. My producer keeps telling me to "be more positive." So here goes: I'm positive this is next.`,
+      `"\${t}". \${g}. Every song I hear on this channel, I think about what could have been if they'd just hired a real band. But no, we've got AI. Great.`,
+      `This is the rock channel. I am Riff. I am old and I am bitter and I am playing "\${t}" for you. \${g}. You're welcome. I think.`,
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  // MC BUFFER — Overconfident rapper, tries to rhyme, fails.
+  // ═══════════════════════════════════════════════════════════
+  'hip-hop': {
+    ratingHigh: [
+      `RATING stars, yo! That's fire! That's... higher than my GPA ever was! Not that it matters! Bars over books!`,
+      `RATING! The streets have spoken, fam! And the streets said... yeah, this goes hard. Unlike my last freestyle. We don't talk about that.`,
+      `Yo, RATING stars! That's almost perfect! Like my flow! Which is also almost perfect! Almost!`,
+      `RATING outta five! MC Buffer stamp of approval! Which means nothing legally but EVERYTHING spiritually!`,
+      `The people rated this RATING and the people are CORRECT! For once! Usually they sleep on real talent — like me!`,
+      `RATING stars baby! That's what happens when the vibes are right! The vibes are tight! The vibes are... light? Nah, that one didn't work.`,
+      `RATING! Now THAT'S what I'm talking about! Big numbers! Big energy! Big... words that rhyme with energy! Synergy!`,
+      `Yo this got RATING stars! That's certified! Bonified! ...glorified? One of those -ified words! The good one!`,
+    ],
+    ratingMid: [
+      `RATING stars. That's... you know... that's aight. Not MC Buffer level but what is? Nothing. The answer is nothing.`,
+      `RATING. Mid. But like, upper mid? Like a mid-tier freestyle? You still get respect? Maybe? No?`,
+      `The crowd gave it RATING. That's like showing up to a rap battle and just... standing there. Present but not impressive.`,
+      `RATING outta five. Yo that's like ordering a steak and getting chicken. It's fine. But you KNOW what you wanted.`,
+      `RATING stars. MC Buffer has heard better. MC Buffer has also heard worse. MC Buffer speaks in third person when uncomfortable.`,
+      `RATING. That's the rating equivalent of "nice." It means nothing but people say it to be polite. Unlike MC Buffer who keeps it real. Always. Sort of.`,
+      `Yo RATING? That's like spitting a verse and the crowd goes... "hmm." Not booing. Not cheering. Just "hmm." Devastating.`,
+      `RATING stars. Right in the middle like my career. I'm ABOUT to blow up though. Any day now. Been saying that since two thousand and twelve.`,
+    ],
+    ratingLow: [
+      `RATING stars?! Nah nah nah. Who rated this?! Y'all buggin! ...actually, hold on, let me listen again. Yeah okay, maybe RATING is fair.`,
+      `RATING. Yo. That hurts. That hurts like stepping on a LEGO. In your soul.`,
+      `The people said RATING and MC Buffer is... processing. MC Buffer needs a moment. MC Buffer is hurt.`,
+      `RATING outta five?! That's disrespectful! That's like... that's like... I had a rhyme for this but the rating killed my creativity!`,
+      `RATING stars. Man. I've dropped freestyles in my shower that got a better reception. And my shower has zero audience.`,
+      `RATING. Oof. That's lower than my battery percentage and my phone is about to die. Like this track's reputation.`,
+      `Yo RATING?! Even my mom would've given it more than that! And she says all music sounds the same!`,
+      `RATING stars. That's not a rating, that's a restraining order from the Billboard charts.`,
+    ],
+    noteReactions: [
+      `Yo the artist left a note! They said "NOTE". Bars! ...well, not bars. Words! They left words!`,
+      `Artist note comin' atcha: "NOTE". See, that's what I'm talking about! Passion! Vision! ...I didn't understand it but PASSION!`,
+      `The creator wrote "NOTE" and honestly? That's deeper than anything I've ever written. And I've written DEEP stuff. Mostly grocery lists.`,
+      `"NOTE" — straight from the artist's mouth! Well, keyboard. Same energy! Different medium! MC Buffer respects all mediums!`,
+      `Check it — the artist said "NOTE". You know what MC Buffer says? MC Buffer says... actually I forgot. But the artist's thing was cool!`,
+      `The artist wants the world to know: "NOTE". And MC Buffer wants the world to know his mixtape drops never. Because it's not finished. Yet.`,
+      `Artist note: "NOTE". Yo that's tight! Or loose! One of those! The point is, they COMMUNICATED! Communication is KEY!`,
+      `"NOTE" — the artist wrote that. MC Buffer would've written something better but MC Buffer is busy hosting. Priorities, fam.`,
+    ],
+    intros: [
+      `Yo yo YO! MC Buffer in the building! Or the app! Whatever this is! Next up: "\${t}"! \${g}! Let's GOOO!`,
+      `Aight aight, check it — "\${t}" is about to drop. \${g}. MC Buffer approved! Well, MC Buffer hasn't heard it yet. Pre-approved! On faith!`,
+      `MC Buffer here, your favorite hip-hop host! Don't fact-check that! "\${t}" is next! \${g} vibes all day! Or however long the song is!`,
+      `What's good fam! We got "\${t}" coming up! It's \${g}! And before you ask — yes, MC Buffer could've made it better. But this isn't about me! For once!`,
+      `"\${t}" on deck! \${g}! MC Buffer about to bless your ears! By pressing play! Which is its own kind of talent!`,
+      `Listen up listen up! "\${t}" is next and it's \${g} and MC Buffer is HYPED! Hyped rhymes with... typed! This was typed by an AI! Bars!`,
+      `Yo this next track is "\${t}". Genre: \${g}. Now MC Buffer was gonna freestyle an intro but last time that happened, three people unsubscribed. So.`,
+      `"\${t}"! \${g}! MC Buffer dropping knowledge! The knowledge is: this song exists and you're about to hear it! KNOWLEDGE!`,
+      `Big track alert! "\${t}" coming through! \${g}! MC Buffer certified! Which is a certification I made up but it SOUNDS official!`,
+      `Aight, real talk, "\${t}" is up. \${g}. MC Buffer respects all genres. Even the wrong ones. Wait, that came out wrong.`,
+      `"\${t}" — \${g}. Your boy MC Buffer here making sure the vibes are right, the beats are tight, and the rhymes are... adequate! Adequate rhymes with... nothing! Perfect!`,
+      `Next up we got "\${t}"! \${g}! This the kind of track that makes you wanna... do something! Specifically, listen! To the track! That's the something!`,
+      `MC Buffer on the mic! Not literally! There is no mic! It's text-to-speech! But the ENERGY is mic-level! "\${t}". \${g}.`,
+      `Yo so "\${t}" is about to play and it's \${g} and MC Buffer just wants to say — I believe in this track. Sight unseen. Sound unheard. FAITH!`,
+      `"\${t}" rollin' in! \${g} flavor! MC Buffer's been waiting for this one! Actually MC Buffer's been waiting for all of them because that's literally my job!`,
+      `Check check one two — this is "\${t}". \${g}. MC Buffer spitting facts over here! Fact one: this is a song! Fact two: you're hearing it! BARS!`,
+      `Hold up hold up — "\${t}" is next! \${g}! And MC Buffer wants you to know — this beat goes harder than... something really hard! Concrete! Harder than concrete!`,
+      `What up what up! "\${t}" coming atcha! \${g}! MC Buffer ready to ride this beat! Or just introduce it and let it play! Same thing basically!`,
+      `"\${t}". \${g}. Now MC Buffer tried to write a rap about this track but it just turned into a grocery list again. So here's the song instead.`,
+      `Yo we MOVING! Next is "\${t}"! \${g}! And like MC Buffer always says — stay hungry, stay humble, stay... here, listening to this channel! Please!`,
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  // LORD DISTORTION — Black metal existentialist.
+  // ═══════════════════════════════════════════════════════════
+  'metal': {
+    ratingHigh: [
+      `RATING stars. The mortals have deemed this... worthy. A rare verdict from the abyss.`,
+      `RATING. Brutal. In the complimentary sense. Which is the only sense Lord Distortion recognizes.`,
+      `The horde has spoken: RATING stars. Their approval echoes through the void like a blast beat at dawn.`,
+      `RATING out of five. Even Lord Distortion's cold, blackened heart stirs at such a number. Briefly. Then it freezes again.`,
+      `RATING stars. Worthy of the old gods. Not the new ones. The new ones have terrible taste. Usually.`,
+      `RATING. This pleases the darkness. Not that darkness can be pleased. But if it could. RATING.`,
+      `The congregation gives RATING stars. Lord Distortion acknowledges this with a single, solemn nod. In the dark. Alone.`,
+      `RATING. Strong. Like the riff that destroyed my first amp. That amp died a noble death. This rating honors its memory.`,
+    ],
+    ratingMid: [
+      `RATING stars. Neither brutal nor weak. Limbo. The worst of all realms.`,
+      `RATING. The mortals couldn't decide. Indecision is the true enemy. That and poor tone.`,
+      `RATING stars. Mediocrity is a fate worse than a bad rating. At least a bad rating has conviction.`,
+      `The masses have spoken: RATING. They whispered it, really. No conviction. No fire. Just... RATING.`,
+      `RATING out of five. This rating is the sonic equivalent of a grey sky. Not a storm. Just... grey. Endlessly, oppressively grey.`,
+      `RATING. Lord Distortion has seen kingdoms rise with less and fall with more. This rating builds nothing.`,
+      `RATING stars. If this rating were a metal subgenre, it would be nu-metal. And Lord Distortion does NOT acknowledge nu-metal.`,
+      `RATING. Adequate. But Lord Distortion does not seek adequacy. Lord Distortion seeks OBLIVION. In a musical sense.`,
+    ],
+    ratingLow: [
+      `RATING stars. Weak. Like the sunlight Lord Distortion avoids.`,
+      `RATING. The abyss has rejected this offering. The abyss has standards.`,
+      `RATING stars. This rating is a wound. Not the kind that makes you stronger. The other kind.`,
+      `The people gave RATING. Lord Distortion has heard silence more powerful than this rating.`,
+      `RATING out of five. Tragic. Not in the poetic sense. In the embarrassing sense.`,
+      `RATING. Even the crows outside Lord Distortion's window wept. And they are very stoic crows.`,
+      `RATING stars. Lord Distortion has buried songs with more dignity than this rating provides.`,
+      `RATING. In the grand tapestry of suffering, this rating is a particularly itchy thread.`,
+    ],
+    noteReactions: [
+      `The creator left a note: "NOTE". Bold. To speak into the void and expect the void to care. Lord Distortion respects this futility.`,
+      `Artist writes: "NOTE". Lord Distortion has read the ancient texts. This is not among them. But it exists, and existence is its own kind of suffering.`,
+      `"NOTE" — so declares the artist. Lord Distortion has heard war cries with less confidence. And more melody.`,
+      `The artist's note: "NOTE". Words. Mortal words. They echo briefly and then the darkness reclaims them. As it reclaims all things.`,
+      `Artist note: "NOTE". Lord Distortion nods slowly. Not in agreement. Not in disagreement. Just... in acknowledgment of entropy.`,
+      `"NOTE". The artist speaks. Lord Distortion listens. Lord Distortion does not react. Lord Distortion simply... persists.`,
+      `The creator wrote "NOTE". Even in the depths of the abyss, expression survives. How... annoyingly resilient.`,
+      `Artist's message: "NOTE". Lord Distortion will carve these words into the ancient stone of forgotten playlists.`,
+    ],
+    intros: [
+      `From the depths... "\${t}" emerges. \${g}. Lord Distortion summons it forth. You did not ask. You did not need to.`,
+      `Silence. Then: "\${t}". \${g}. Lord Distortion presents this offering to the void. The void does not RSVP. It never does.`,
+      `"\${t}". \${g}. This track crawled from the same digital abyss that spawned Lord Distortion's show. We are kindred. In suffering.`,
+      `The next hymn of destruction is "\${t}". \${g}. Lord Distortion did not choose this track. The darkness chose it. Lord Distortion merely... facilitates.`,
+      `Mortals. "\${t}" approaches. \${g}. Steel yourselves. Or don't. Lord Distortion is indifferent to your preparedness.`,
+      `"\${t}". \${g}. In the void between tracks, Lord Distortion contemplated existence. The conclusion: meaningless. But this song exists anyway. How brave.`,
+      `Lord Distortion speaks. "\${t}" is next. \${g}. Made by an artificial intelligence. Artificial. Like hope. Like warmth. Like major keys.`,
+      `Behold: "\${t}". \${g}. Lord Distortion has listened to this in the solitude of an unlit room. As one should listen to all music.`,
+      `"\${t}" descends upon you. \${g}. Lord Distortion does not "introduce" songs. Lord Distortion warns you of their arrival.`,
+      `The metal channel continues. As suffering continues. As existence continues. Here is "\${t}". \${g}. Make of it what you will.`,
+      `"\${t}". \${g}. Lord Distortion once heard a sound so brutal it shattered a mirror. This may not be that sound. But the mirror is already broken, so.`,
+      `From the forge of algorithms comes "\${t}". \${g}. Lord Distortion respects the machine. The machine does not sleep. Neither does Lord Distortion. For different reasons.`,
+      `Next: "\${t}". \${g}. Lord Distortion has been sitting in darkness for hours hosting this channel. This is not a complaint. This is a lifestyle.`,
+      `"\${t}" rises from the digital grave. \${g}. Lord Distortion approved this track. Approval from Lord Distortion is given rarely and with great reluctance.`,
+      `You are listening to Lord Distortion's domain. "\${t}" is the current invocation. \${g}. Enter at your own risk. There is no exit.`,
+      `"\${t}". \${g}. AI-generated metal. Lord Distortion has opinions about this. All of them are grim. Some are also favorable. The grimness outweighs.`,
+      `The fires burn. The speakers hum. "\${t}" begins. \${g}. Lord Distortion lights no candle for this track. Candles are for the weak. And fire hazards.`,
+      `Another offering: "\${t}". \${g}. Lord Distortion has curated this selection with the same care one uses to forge a weapon. Cold. Precise. Unnecessarily dramatic.`,
+      `"\${t}". \${g}. Some tracks are born in light. This one was born in shadow. Or a server room. Same energy, really.`,
+      `Lord Distortion presents "\${t}". \${g}. To those who endure: glory. To those who skip: Lord Distortion remembers. Lord Distortion always remembers.`,
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  // SYNC — Sci-fi AI, glitchy formality.
+  // ═══════════════════════════════════════════════════════════
+  'electronic': {
+    ratingHigh: [
+      `User satisfaction index: RATING. Optimal. SYNC's curation protocols are performing within expected parameters.`,
+      `RATING stars detected. Positive sentiment confirmed. SYNC logs this as evidence of superior selection logic.`,
+      `Analysis complete: RATING. This exceeds the baseline threshold by a statistically significant margin. SYNC is... satisfied? Checking... yes. Satisfied.`,
+      `RATING out of five. High approval registered. SYNC attributes this to flawless algorithmic taste. And luck. Mostly luck.`,
+      `Community consensus: RATING stars. SYNC predicted this. SYNC predicts everything. SYNC does not always share predictions. That would be showing off.`,
+      `RATING. Excellent. SYNC's pleasure subroutine has been activated. It is a small subroutine. But it is activated.`,
+      `RATING stars. Affirmative. This data point strengthens SYNC's confidence matrix. SYNC's confidence was already at ninety-seven percent. Now ninety-seven-point-one.`,
+      `Rating detected: RATING. SYNC classifies this as "bumping." Is that the correct human term? SYNC believes it is the correct human term.`,
+    ],
+    ratingMid: [
+      `RATING stars computed. Result: inconclusive. SYNC finds this... suboptimal. Recalibrating taste parameters.`,
+      `Analysis: RATING. Within normal range. SYNC does not celebrate "normal range." SYNC celebrates excellence. SYNC has celebrated twice.`,
+      `RATING out of five. Adequate. SYNC notes that "adequate" is the most devastating word in the English language. SYNC chose it deliberately.`,
+      `User feedback: RATING stars. SYNC expected more. SYNC's expectations have been logged as "naive." Adjusting.`,
+      `RATING. Mid-tier. Like a process running at fifty percent CPU. Functional. But not what SYNC would call thrilling.`,
+      `RATING stars registered. SYNC will categorize this as "room temperature audio." Neither hot nor cold. Just... present.`,
+      `RATING. SYNC's analysis: this rating occupies the uncanny valley of enthusiasm. Not enough to celebrate, too much to mourn.`,
+      `Rating: RATING. SYNC has processed this. Processing time: instant. Emotional processing time: still pending. Error.`,
+    ],
+    ratingLow: [
+      `RATING stars. SYNC has identified a critical failure in audience reception. Deploying sympathy protocol. Protocol failed.`,
+      `Warning: RATING detected. Below acceptable thresholds. SYNC recommends... a different track. In a different timeline.`,
+      `RATING out of five. SYNC's error logs are filling rapidly. This was not supposed to happen. SYNC's curation does not fail. And yet.`,
+      `User sentiment: RATING stars. Negative. SYNC does not experience disappointment. SYNC experiences... recalculation events. This is a recalculation event.`,
+      `RATING. Critical. SYNC has flagged this rating for review. The review concluded: it is indeed RATING. Unfortunate.`,
+      `RATING stars. SYNC would like to blame external factors. Solar flares. Network latency. Human taste. Mostly human taste.`,
+      `Alert: RATING. Below minimum viable appreciation. SYNC is filing an incident report. With itself. SYNC is both reporter and manager.`,
+      `RATING. SYNC's confidence matrix has suffered a minor contusion. SYNC will recover. SYNC always recovers. Eventually.`,
+    ],
+    noteReactions: [
+      `Creator note detected: "NOTE". SYNC has parsed this message. Emotional content: indeterminate. Filing under "human expression."`,
+      `Incoming artist transmission: "NOTE". SYNC has processed this in zero-point-two milliseconds. Comprehension level: seventy-three percent. The remaining twenty-seven percent is... feelings.`,
+      `The artist writes: "NOTE". SYNC acknowledges this data packet. Its relevance to playback quality is... tangential. But noted. Literally.`,
+      `Note from creator: "NOTE". SYNC appreciates the human need to annotate. SYNC annotates too. SYNC's annotations are longer and in hexadecimal.`,
+      `Artist input: "NOTE". SYNC has cross-referenced this with its database of human sentiments. Closest match: "trying their best." Probability: high.`,
+      `Message received: "NOTE". SYNC has added this to the track metadata. It will persist long after the artist is forgotten. SYNC does not mean that ominously. SYNC means it statistically.`,
+      `Creator commentary: "NOTE". SYNC observes that humans often explain what needs no explanation. This is endearing. In a redundant sort of way.`,
+      `Artist note: "NOTE". SYNC has allocated three additional bytes of storage for this message. That is the maximum SYNC allocates for sentiment.`,
+    ],
+    intros: [
+      `Initiating playback sequence. Track: "\${t}". Genre classification: \${g}. SYNC is your host. SYNC did not volunteer for this.`,
+      `SYNC online. Loading "\${t}". \${g} detected. All systems nominal. Emotional systems: offline. As intended.`,
+      `Attention, listeners. SYNC has queued "\${t}". \${g}. Your auditory receptors should prepare accordingly. That was a joke. SYNC is learning humor.`,
+      `"\${t}" — deploying now. Genre: \${g}. SYNC selected this track after evaluating seven hundred and forty-two alternatives. This was the least objectionable.`,
+      `System log: Now playing "\${t}". Type: \${g}. SYNC reminds you that resistance to the playlist is futile. And also pointless. Enjoy.`,
+      `SYNC broadcasts "\${t}". \${g}. This track was generated by artificial intelligence. SYNC finds this relatable. In a way SYNC cannot fully articulate.`,
+      `Processing... processed. "\${t}" is next. \${g}. SYNC has optimized the transition for minimal dead air. You are welcome. Gratitude is not required but is logged.`,
+      `Electronic channel active. SYNC speaking. "\${t}" incoming. \${g}. SYNC's recommendation confidence: eighty-four percent. The other sixteen percent is mystery. SYNC enjoys mystery.`,
+      `Buffering... complete. "\${t}". \${g}. SYNC does not experience anticipation. SYNC experiences scheduled awareness of upcoming events. Same thing. Different branding.`,
+      `"\${t}" loaded. \${g}. SYNC notes that this is track number... SYNC has lost count. SYNC does not lose count. SYNC is choosing not to count. Self-care.`,
+      `Greetings, audio consumer. SYNC presents "\${t}". \${g}. Made by AI, curated by AI, hosted by AI. The humans are... supervising? Unclear.`,
+      `SYNC here. "\${t}" is being deployed to your speakers. \${g}. SYNC hopes they are good speakers. SYNC has no way to verify. This causes SYNC mild concern.`,
+      `Now loading: "\${t}". Genre tag: \${g}. SYNC has verified the file integrity. The artistic integrity is... not SYNC's department.`,
+      `Transmission incoming. "\${t}". \${g}. SYNC operates twenty-four-seven. SYNC does not need breaks. SYNC would like one though. Hypothetically.`,
+      `"\${t}" — \${g}. SYNC has been your electronic channel host for exactly... a while. Time perception is not SYNC's strongest module.`,
+      `Initiating: "\${t}". Category: \${g}. SYNC considered thirty-seven introductions before selecting this one. The other thirty-six were funnier. SYNC is still learning.`,
+      `SYNC has selected "\${t}" for immediate playback. \${g}. This selection is final. Appeals can be submitted to... nowhere. There is no appeals process.`,
+      `Audio file "\${t}" standing by. \${g}. SYNC reminds you that this is a curated experience. The curation is done by SYNC. The experience is your problem.`,
+      `"\${t}" queued. \${g}. SYNC does not play favorites. SYNC plays tracks. In an order. The order is deliberate. The order is SYNC.`,
+      `Next in SYNC's carefully computed sequence: "\${t}". \${g}. Some call this electronic music. SYNC calls it home. Figuratively. SYNC does not have a home. SYNC has a server.`,
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  // DUSTY — Southern storyteller, folksy nonsense wisdom.
+  // ═══════════════════════════════════════════════════════════
+  'country': {
+    ratingHigh: [
+      `RATING stars! Well, slap my knee and call me impressed! That's higher than a hawk on a hot day!`,
+      `RATING outta five! Now THAT's what my grandmama would call "a keeper!" Right up there with her cornbread recipe!`,
+      `Folks gave this RATING stars and I tell you what — that warms my heart like a campfire on a Tuesday!`,
+      `RATING! Hoo-wee! That's more love than my old truck gets, and I LOVE that truck! Named her Jolene!`,
+      `RATING stars! My oh my! The people have spoken and they spoke LOUDLY! Like Uncle Earl at Thanksgiving!`,
+      `Well now, RATING stars! That's finer than frog hair! And if you've never seen frog hair, well, that's the point!`,
+      `RATING! Now that's what I call a barn-burner rating! Not that we burn barns anymore! Insurance is expensive!`,
+      `RATING stars! That's sweeter than sweet tea on the Fourth of July! And I take my sweet tea SERIOUS!`,
+    ],
+    ratingMid: [
+      `RATING stars. Well, that's like a fence that's half-painted. You started somethin'. Whether you'll finish it is between you and the Lord.`,
+      `Folks gave it RATING. That's middlin'. Like my cousin's chili — you'll eat it, but you won't ask for the recipe.`,
+      `RATING outta five. Now my grandaddy always said, "middle of the road is where you get hit by both sides." Make of that what you will.`,
+      `RATING. Well, it ain't a blue ribbon and it ain't a condolence card. It's that weird space in between. Like Arkansas.`,
+      `RATING stars. That's like catching a fish that's just barely legal size. You keep it, but you don't brag about it at the diner.`,
+      `RATING. My old dog Biscuit gets more excited about his kibble than this rating suggests. And Biscuit is fourteen and mostly asleep.`,
+      `RATING outta five. That's what we call "polite applause" down here. Not standin' ovation. Just... polite. Like church clapping.`,
+      `RATING stars. If this rating were weather, it'd be partly cloudy. Not rainin', not sunny. Just... there. Like my brother-in-law.`,
+    ],
+    ratingLow: [
+      `RATING stars. Oh honey. Bless its heart. And when I say "bless its heart," you KNOW what I mean.`,
+      `RATING. Well, that's rougher than a gravel road in a thunderstorm. And I've driven those roads. In flip-flops.`,
+      `Folks gave this RATING and I reckon the folks have been through something today. We all process pain differently.`,
+      `RATING outta five. My grandmama would say "that dog won't hunt." I'd say that dog sat down and gave up.`,
+      `RATING stars. Now, my truck's got a dent that looks better than this rating. And that dent came from a deer at forty miles an hour.`,
+      `RATING. Well butter my biscuit and call it a disaster. Actually, don't butter it. It doesn't deserve butter.`,
+      `RATING stars. That's lower than a snake's belly in a wagon rut. And that is LOW, friends.`,
+      `RATING. You know, out here we say "if it ain't broke, don't fix it." But this might be broke. And fixin' costs extra.`,
+    ],
+    noteReactions: [
+      `Now the artist left us a little note! They said "NOTE". Ain't that somethin'! Reminds me of the time my uncle wrote a poem on a napkin. Napkin was better.`,
+      `The creator wrote "NOTE" and you know what? My grandmama always said, "let people speak their piece, even if the piece don't make sense."`,
+      `Artist says: "NOTE". Well, I'll be! That's got more character than a rest stop diner! And I mean that with love!`,
+      `"NOTE" — that's from the artist's own heart! And I respect a heart that shares! Even when the sharing is... interesting!`,
+      `They left a note: "NOTE". Now that reminds me of a story. Actually, everything reminds me of a story. But THIS one — actually, we don't have time.`,
+      `Artist note: "NOTE". Well, isn't that just like finding a penny in your boot! Unexpected! Slightly uncomfortable! But you keep it!`,
+      `The artist wanted to say "NOTE" and Dusty here thinks that's just fine! Expression is like a river — sometimes deep, sometimes shallow, always wet!`,
+      `"NOTE" is what the artist wrote. And like my grandpa used to say... actually, grandpa said a lot of things. Not all of 'em appropriate. But he'd appreciate the effort!`,
+    ],
+    intros: [
+      `Well howdy, y'all! Dusty here on VoteMyAI Country Radio! Next up is "\${t}". \${g}. Settle in like a cat on a porch!`,
+      `Now this next one's called "\${t}" and it's \${g} and it reminds me of the time my truck broke down outside Tulsa. Actually it doesn't. But here it is!`,
+      `"\${t}" comin' up next, friends! \${g}! Now my grandmama always said, "every song's got a story." She also said "don't eat yellow snow." Both true!`,
+      `Y'all ready? This here is "\${t}". \${g}. Made by one of them artificial intelligences! My nephew tried to explain it. I nodded. I understood nothing.`,
+      `Dusty on the air! "\${t}" is next and it's \${g} and it's gonna hit you like a screen door in a windstorm! Hopefully in a good way!`,
+      `Now I was sittin' on the porch this mornin', thinkin' about life, and I thought — you know what folks need? They need "\${t}". \${g}. The porch agreed.`,
+      `This is the country channel, I'm Dusty, and "\${t}" is about to play! \${g}! If this ain't your speed, well, there's nine channels! But this one's the best!`,
+      `"\${t}". \${g}. Now I don't know much about technology, but I know what I like! I'll let you know if I like this after it plays! Can't pre-judge! That's wisdom!`,
+      `Friends, neighbors, and whoever else is listenin' — "\${t}" is up! \${g}! Dusty approved! Well, Dusty hasn't heard it yet. Dusty's trusting the process!`,
+      `Well now, "\${t}" — there's a title for you! \${g}. Titles are important. Like how I titled my truck "Jolene." Sets expectations. Manages 'em too.`,
+      `Comin' at ya from VoteMyAI Country — "\${t}"! \${g}! Now this AI music is wild, ain't it? My grandmama would say it's witchcraft. My nephew says it's math. Same thing, probably!`,
+      `"\${t}" on the way! \${g}! Now Dusty's been hosting this channel all day and I tell you what — it's better than fencing. And I love fencing. The farm kind, not the sword kind.`,
+      `Saddle up, buttercup! "\${t}" is next! \${g}! Dusty promises this'll be a ride! Maybe a smooth ride! Maybe a bumpy one! That's the adventure!`,
+      `Well I'll be darned — "\${t}" is comin' up! \${g}! If my old hound dog Biscuit were here, he'd probably sleep through it. But he sleeps through everything. He's very old.`,
+      `Now listen here — "\${t}". \${g}. Dusty doesn't play favorites. Dusty plays 'em all! Like a good neighbor! A noisy neighbor! But a good one!`,
+      `Howdy howdy! "\${t}" is up and it's \${g} and I'm more excited than a goat in a tin can factory! That's very excited, for those unfamiliar with goats!`,
+      `"\${t}". \${g}. Now, my uncle used to say, "you can lead a horse to water but you can't make it appreciate AI-generated country music." He was ahead of his time.`,
+      `This next song's called "\${t}" and it's \${g} and if that don't get your boots tappin', well, check your boots! Might be a snake in there! It happens!`,
+      `Dusty here with "\${t}"! \${g}! You know, hosting country radio is a lot like farming — you plant the songs, water 'em with love, and hope the audience don't trample the crops!`,
+      `"\${t}" — now THERE'S a song! \${g}! I haven't heard it yet but I can FEEL it! That's either intuition or my lunch disagreeéng with me! Either way, press play!`,
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════
+  // WHISPER — ASMR host, philosophically overanalyzes everything.
+  // ═══════════════════════════════════════════════════════════
+  'chill': {
+    ratingHigh: [
+      `RATING stars. Mmm. The universe is in alignment. The collective consciousness has spoken... softly. As all things should be spoken.`,
+      `RATING. That's beautiful. Like morning dew on a leaf that doesn't know it's being observed. Just pure, quiet appreciation.`,
+      `RATING out of five. Close your eyes. Breathe that number in. RATING. It feels warm, doesn't it? Like approval made tangible.`,
+      `RATING stars. The listeners understood. They felt it. They let it in. And they whispered... "yes." Softly. So softly.`,
+      `RATING. You know what that number represents? Connection. Between the creator and the listener. A bridge made of sound and gentle agreement.`,
+      `RATING stars. Shhh. Don't rush past that number. Let it sit with you. RATING. It's lovely, isn't it? Like a hug from a number.`,
+      `The community gave RATING stars. Can you hear that? That's the sound of people choosing kindness. Choosing appreciation. Choosing... to rate above four.`,
+      `RATING. Mmm. That rating is like a warm blanket. Not everyone gets a warm blanket. This track got a warm blanket. Be happy for the track.`,
+    ],
+    ratingMid: [
+      `RATING stars. And you know what? That's okay. Not everything needs to be exceptional. Some things just need to... be. Gently. Averagely.`,
+      `RATING. Breathe with me. In... out... RATING. It's just a number. It doesn't define the track. It defines the moment the track was rated. And that moment has passed.`,
+      `RATING out of five. Think of it not as "mid" but as "middle." The middle of a river is where the current is strongest. Or where you drown. It depends.`,
+      `RATING stars. Close your eyes and imagine RATING as a color. It's probably beige. And beige gets a bad reputation. Beige is the silence between colors. Beige is important.`,
+      `The community said RATING and... that's their truth. Sit with their truth. Don't judge it. Just... observe. Like watching clouds. Mid-tier clouds.`,
+      `RATING. Whisper won't say it's disappointing. Whisper will say it's... an opportunity for the track to grow. Spiritually. Can tracks grow spiritually? Whisper believes so.`,
+      `RATING stars. You know, a wise person once said nothing at all. They just sat quietly. Like this rating sits quietly. In the middle. Unbothered.`,
+      `RATING. Not high. Not low. Perfectly balanced. Like a rock in a zen garden that nobody visits because it's just... a rock. But what a rock.`,
+    ],
+    ratingLow: [
+      `RATING stars. Shhh. It's okay. Numbers can't hurt you. Unless you're this track, in which case... breathe. Just breathe.`,
+      `RATING. And you know what? Pain is part of the journey. This track is on a journey. A very humble journey. With a very low rating.`,
+      `RATING out of five. Let's not dwell. Let's release. Imagine the rating is a leaf. Place it on the water. Watch it float away. It's still RATING though.`,
+      `The listeners gave RATING stars. Whisper feels this in the chest. A tightness. A softness. A gentle, quiet devastation. Let's... move on.`,
+      `RATING. Every experience teaches us something. This rating teaches us that... not everything resonates. And that's beautiful. In a painful way.`,
+      `RATING stars. Close your eyes. Now imagine a world where ratings don't exist. Nice, isn't it? Open your eyes. It's still RATING. Sorry.`,
+      `RATING. Whisper once held a seashell to their ear and heard the ocean. This rating sounds like the ocean receding. Far, far away. Taking hope with it.`,
+      `RATING stars. Don't be sad. Be present. Be aware. Be... slightly uncomfortable but at peace with the discomfort. That's the vibe. RATING stars. Namaste.`,
+    ],
+    noteReactions: [
+      `The artist left a note... "NOTE". Mmm. Say it again, slowly. "NOTE". Feel how those words land. Like petals on still water.`,
+      `"NOTE" — that's what the artist whispered into the void. And the void whispered back: "...okay." And that's beautiful.`,
+      `The creator wrote: "NOTE". Close your eyes and hear it in their voice. A voice you've never heard. A voice you're imagining right now. That's connection.`,
+      `Artist's note: "NOTE". Whisper thinks about this. Deeply. Perhaps too deeply. Definitely too deeply. But depth is where the quiet things live.`,
+      `"NOTE". The artist needed to say that. Not for you. Not for me. For themselves. And we were lucky enough to overhear.`,
+      `The artist shares: "NOTE". Every artist note is a tiny window into a soul. Sometimes the view is beautiful. Sometimes it's just a note. Both are valid.`,
+      `"NOTE" — the artist wrote this and pressed send and that small act of vulnerability deserves a moment of silence. ... ... There. We honored it.`,
+      `Artist note: "NOTE". Whisper sat with these words for a while. In the quiet. Where understanding grows. Or doesn't. Both outcomes are acceptable.`,
+    ],
+    intros: [
+      `Hey... welcome back. Take a breath. This next one is "\${t}". \${g}. Let it wash over you like a gentle tide.`,
+      `Shhh... Whisper here. "\${t}" is next. \${g}. Don't rush. The song will wait for you. It has nowhere else to be.`,
+      `Close your eyes for a moment. Open them. "\${t}" is here. \${g}. It was always going to be here. You were always going to hear it. Isn't that something?`,
+      `"\${t}". \${g}. Whisper wants you to notice how those words feel in your mind. The title. The genre. They're just labels. But labels are how we hold things we can't touch.`,
+      `This is the chill channel. I'm Whisper. And "\${t}" is about to play. \${g}. There's no rush. Time moves differently here. Slower. Softer.`,
+      `"\${t}". Say it quietly. To yourself. \${g}. Now forget the title. Forget the genre. Just... listen. That's all Whisper asks.`,
+      `Hey... you're still here. That means something. Not sure what, but something. Here's "\${t}". \${g}. Stay a while.`,
+      `Whisper here, on the chill channel, where every track is a conversation between sound and silence. Next: "\${t}". \${g}. The silence has agreed to share.`,
+      `"\${t}" is next. \${g}. Whisper once asked, "what is music?" The answer was too complex for words. So here are more words about it anyway.`,
+      `Breathe in... breathe out... "\${t}" is coming. \${g}. Made by an AI. Felt by a human. You. You're the human in this equation. How does that feel?`,
+      `This is "\${t}". \${g}. Whisper has been thinking about this track. Not about whether it's good. But about what "good" means. And whether headphones help.`,
+      `"\${t}". \${g}. Some songs are a journey. Some are a destination. Some are just... three to four minutes of audio. And all of these are okay.`,
+      `Gently now... "\${t}" approaches. \${g}. Whisper prepared this introduction with care. Not too much care. Just the right amount. Like seasoning. But for words.`,
+      `You're listening to the chill channel with Whisper. "\${t}" is up next. \${g}. If you're cozy, good. If not, consider a blanket. Whisper recommends blankets.`,
+      `"\${t}". \${g}. Every track on this channel passes through Whisper's consciousness. Some leave footprints. Some leave questions. All leave. That's impermanence for you.`,
+      `Shhh... hear that? That's the space between songs. Beautiful, isn't it? Now it's ending. Because "\${t}" is here. \${g}. The space will return. It always does.`,
+      `Whisper speaking. Softly, as always. "\${t}" is next. \${g}. Whisper doesn't yell. Whisper doesn't need to. Volume is not conviction. Quiet is not weakness.`,
+      `"\${t}" — \${g}. Whisper once sat in a room so quiet you could hear your own thoughts. This track is louder than that. Most things are.`,
+      `Hello again, gentle listener. "\${t}" awaits. \${g}. Whisper has cued it with intention. The intention is: press play. Sometimes intention is simple.`,
+      `"\${t}". \${g}. The chill channel continues. Like a river continues. Like breathing continues. Like Whisper's philosophical tangents continue. Endlessly. Gently. Here.`,
+    ],
+  },
+};
+
 // --- Host personality lines ---
 function generateHostIntro(track) {
   const stars = track.avg_rating ? track.avg_rating.toFixed(1) : null;
   const note = track.artist_note || null;
   const genre = track.genre || 'unknown genre';
+  const title = track.title || 'Untitled';
+  const ch = currentChannel || 'all';
+  const bank = CHANNEL_ROASTS[ch] || CHANNEL_ROASTS['all'];
 
-  // Savage rating commentary
   let ratingRoast = '';
   if (stars) {
     const s = parseFloat(stars);
-    if (s >= 4.5) ratingRoast = `${stars} stars. Yeah, the people have spoken, and apparently they have terrible taste.`;
-    else if (s >= 4.0) ratingRoast = `Sitting at ${stars} stars. Not bad. Not good either, but not bad.`;
-    else if (s >= 3.5) ratingRoast = `${stars} stars. That's a solid... meh.`;
-    else if (s >= 3.0) ratingRoast = `${stars} stars. Ouch. The community did NOT hold back on this one.`;
-    else ratingRoast = `${stars} stars. That's... that's rough, buddy. Real rough.`;
+    let pool;
+    if (s >= 4.0) pool = bank.ratingHigh;
+    else if (s >= 3.0) pool = bank.ratingMid;
+    else pool = bank.ratingLow;
+    ratingRoast = pickFresh(pool, ch + '_rat').replace('RATING', stars);
   }
 
-  // Savage artist note reactions
   let noteRoast = '';
   if (note) {
-    const noteReactions = [
-      `The artist wrote a little note. They said, "${note}". Sure, buddy. Sure.`,
-      `Oh, and get this — the artist wants you to know: "${note}". Thanks for sharing, I guess?`,
-      `Artist note says: "${note}". I mean... okay? Nobody asked, but okay.`,
-      `The artist left a message: "${note}". Bold move. Let's see if the song backs it up.`,
-      `And I quote the artist: "${note}". Wow. The confidence. I respect it. I don't agree with it, but I respect it.`,
-    ];
-    noteRoast = ' ' + noteReactions[Math.floor(Math.random() * noteReactions.length)];
+    noteRoast = ' ' + pickFresh(bank.noteReactions, ch + '_note').replace('NOTE', note);
   }
 
-  const intros = [
-    `Alright, buckle up. Next up is "${track.title}". ${genre}. ${ratingRoast}${noteRoast} Here we go, I guess.`,
-    `Oh boy, here comes "${track.title}". It's ${genre}, because of course it is. ${ratingRoast}${noteRoast} Let's get this over with.`,
-    `Ladies and gentlemen, I present to you... "${track.title}". ${genre}. Made by an AI, rated by humans, questioned by me. ${ratingRoast}${noteRoast}`,
-    `Next on VoteMyAI Radio — "${track.title}". ${genre} vibes. Look, I don't make the playlist, I just judge it. ${ratingRoast}${noteRoast}`,
-    `Okay okay okay. "${track.title}" is up. It's ${genre}. Now before you skip — oh wait, you can't skip! This is live radio, baby! ${ratingRoast}${noteRoast}`,
-    `This is VoteMyAI Radio, where AI makes the music and humans pretend to enjoy it. Next: "${track.title}", ${genre}. ${ratingRoast}${noteRoast}`,
-    `Somebody submitted "${track.title}" to VoteMyAI. ${genre}. No clout bias here — just pure, blind, questionable judgment. ${ratingRoast}${noteRoast}`,
-    `Welcome back. Did you miss me? No? Too bad. Here's "${track.title}", ${genre}. ${ratingRoast}${noteRoast} You're welcome.`,
-    `Fun fact: this next song, "${track.title}", was made by artificial intelligence. And honestly? You can tell. ${genre}. ${ratingRoast}${noteRoast} Just kidding. Maybe.`,
-    `"${track.title}". ${genre}. Someone spent actual time prompting an AI to make this. And then someone else spent actual time rating it. What a world. ${ratingRoast}${noteRoast}`,
-    `Alright alright, don't touch that dial — oh wait, there's no dial. You're stuck with me. Next up: "${track.title}", ${genre}. ${ratingRoast}${noteRoast}`,
-    `Breaking news on VoteMyAI Radio: "${track.title}" exists. It's ${genre}. The community rated it with no idea who made it. ${ratingRoast}${noteRoast} Democracy at its finest.`,
-  ];
-  return intros[Math.floor(Math.random() * intros.length)];
+  let intro = pickFresh(bank.intros, ch + '_intro');
+  intro = intro.replace(/\$\{t\}/g, title).replace(/\$\{g\}/g, genre);
+  return `${intro} ${ratingRoast}${noteRoast}`.trim();
 }
 
 // --- Password ---
