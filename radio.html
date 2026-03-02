@@ -1018,6 +1018,7 @@ async function fetchSchedule() {
   });
 
   // Apply channel filter
+  console.log(`📻 fetchSchedule: filtering for channel="${currentChannel}", ${mapped.length} total tracks`);
   let filtered = mapped;
   if (currentChannel === 'trending') {
     // Top 50 by rating
@@ -1028,6 +1029,7 @@ async function fetchSchedule() {
       const g = (t.genre || '').toLowerCase();
       return genres.some(genre => g.includes(genre));
     });
+    console.log(`📻 fetchSchedule: genre filter [${genres.join(', ')}] → ${filtered.length} matches`);
   }
 
   // Fallback: if channel has too few tracks, tell user
@@ -1875,7 +1877,7 @@ async function switchChannel(channel) {
   if (channel === currentChannel) return;
   const gen = ++_switchGen;
 
-  console.log(`📻 Switching channel: ${currentChannel} → ${channel}`);
+  console.log(`📻 Switching channel: ${currentChannel} → ${channel} (gen=${_switchGen + 1})`);
   currentChannel = channel;
 
   // Update active chip
@@ -2145,7 +2147,8 @@ function bufferLoadAudio(url) {
 
 // Play a track that has already been verified/buffered
 async function playVerifiedTrack(track) {
-  console.log(`📻 Now playing [${currentTrackIndex + 1}/${schedule.length}]: "${track.title}" (${track.platform})`);
+  const gen = _switchGen; // capture channel generation before TTS
+  console.log(`📻 Now playing [${currentTrackIndex + 1}/${schedule.length}]: "${track.title}" (${track.platform}) on ch="${currentChannel}"`);
 
   // Update UI
   updateNowPlaying(track);
@@ -2156,6 +2159,11 @@ async function playVerifiedTrack(track) {
   await speakText(introText);
   document.getElementById('hostMsg').classList.remove('visible');
 
+  // Bail if channel switched while TTS was speaking
+  if (gen !== _switchGen) {
+    console.log(`📻 Channel switched during TTS, aborting stale playback for "${track.title}"`);
+    return;
+  }
   if (!isPlaying) return;
 
   // Play the track
