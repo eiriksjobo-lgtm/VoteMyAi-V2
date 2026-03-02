@@ -259,14 +259,11 @@ body {
   margin-bottom: 10px;
 }
 .channel-strip {
-  display: flex; gap: 8px;
-  overflow-x: auto; -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; padding-bottom: 4px;
+  display: flex; flex-wrap: wrap; gap: 8px;
+  justify-content: center;
 }
-.channel-strip::-webkit-scrollbar { display: none; }
 .channel-chip {
-  flex-shrink: 0;
-  display: flex; align-items: center; gap: 6px;
+  display: flex; align-items: center; gap: 5px;
   background: var(--surface); border: 1px solid var(--border);
   border-radius: 100px; padding: 8px 14px;
   cursor: pointer; transition: all 0.2s;
@@ -533,8 +530,9 @@ body {
   .up-next-rating { font-size: 0.75rem; }
   .artist-note .text { font-size: 0.85rem; }
   .channel-switcher { margin-bottom: 14px; }
-  .channel-chip { padding: 7px 12px; font-size: 0.75rem; }
-  .channel-chip .chip-icon { font-size: 0.9rem; }
+  .channel-strip { gap: 6px; }
+  .channel-chip { padding: 6px 10px; font-size: 0.72rem; gap: 4px; }
+  .channel-chip .chip-icon { font-size: 0.85rem; }
 }
 
 /* Small phones (iPhone SE, Galaxy S series) */
@@ -546,6 +544,9 @@ body {
   .controls { gap: 12px; padding: 12px 0; }
   .btn-play { width: 52px; height: 52px; }
   .volume-wrap input[type="range"] { width: 80px; }
+  .channel-strip { gap: 5px; }
+  .channel-chip { padding: 5px 8px; font-size: 0.68rem; gap: 3px; }
+  .channel-chip .chip-icon { font-size: 0.8rem; }
 }
 
 /* Landscape mobile */
