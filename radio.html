@@ -932,19 +932,22 @@ async function startRadio(channel = 'all') {
     console.log('🎙️ TTS warmup: unlocked speechSynthesis via user gesture');
   }
 
-  // 2. Unlock HTML5 Audio on iOS (needs play() in gesture chain)
-  const audioPlayer = document.getElementById('audioPlayer');
+  // 2. Unlock HTML5 Audio + AudioContext on iOS (needs play() in gesture chain)
+  // Use fire-and-forget (no await) to avoid hanging if play() never resolves
   try {
-    audioPlayer.muted = true;
-    await audioPlayer.play();
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    ctx.resume().then(() => ctx.close());
+  } catch(e) {}
+  const audioPlayer = document.getElementById('audioPlayer');
+  audioPlayer.muted = true;
+  audioPlayer.play().then(() => {
     audioPlayer.pause();
     audioPlayer.muted = false;
     audioPlayer.currentTime = 0;
     console.log('🔊 Audio unlock: HTML5 audio unlocked via user gesture');
-  } catch(e) {
-    // Some browsers don't need this, ignore
+  }).catch(() => {
     audioPlayer.muted = false;
-  }
+  });
 
   document.getElementById('startOverlay').style.display = 'none';
   document.getElementById('statusText').textContent = 'LOADING...';
