@@ -342,12 +342,20 @@ window.VMAPlayer = (function () {
       thumbContainer.style.aspectRatio = 'auto';
       thumbContainer.style.overflow = 'visible';
 
+      var eqSpinColor = eqColorClass === 'soundcloud' ? '#ff5500' : eqColorClass === 'udio' ? '#818cf8' : 'var(--accent)';
+
       thumbContainer.innerHTML =
         '<div id="ios-live-player-' + uid + '" style="position:relative;">' +
           '<div class="ios-embed-wrap ' + wrapClass + '" id="ios-iframe-wrap-' + uid + '" style="position:relative;transition:height 0.4s ease,opacity 0.3s ease;">' +
             '<iframe src="' + iframeSrc + '" allow="autoplay; encrypted-media" style="width:100%;height:100%;border:none;" scrolling="no" playsinline></iframe>' +
           '</div>' +
-          '<div style="position:absolute;bottom:0;left:0;right:0;padding:8px 12px;background:linear-gradient(transparent,rgba(0,0,0,0.9));pointer-events:none;text-align:center;" id="ios-hint-' + uid + '">' +
+          '<div class="embed-loading" id="ios-loading-' + uid + '" style="border-radius:0;">' +
+            '<div style="text-align:center;">' +
+              '<div class="embed-loading-spinner" style="border-top-color:' + eqSpinColor + ';"></div>' +
+              '<div style="font-size:0.72rem;color:rgba(255,255,255,0.6);">Loading...</div>' +
+            '</div>' +
+          '</div>' +
+          '<div style="position:absolute;bottom:0;left:0;right:0;padding:8px 12px;background:linear-gradient(transparent,rgba(0,0,0,0.9));pointer-events:none;text-align:center;display:none;" id="ios-hint-' + uid + '">' +
             '<span style="font-size:0.68rem;font-weight:700;color:rgba(255,255,255,0.85);letter-spacing:0.5px;">\u25B6 TAP PLAY ABOVE</span>' +
           '</div>' +
           '<button class="ios-stop-btn" data-action="browse-stop" data-uid="' + uid + '" data-track-id="' + trackId + '" aria-label="Stop">' +
@@ -355,6 +363,22 @@ window.VMAPlayer = (function () {
           '</button>' +
         '</div>';
       thumbContainer.removeAttribute('data-action');
+
+      // Show hint + remove loading spinner when iframe is ready
+      (function () {
+        var iosIframe = thumbContainer.querySelector('iframe');
+        var iosLoading = document.getElementById('ios-loading-' + uid);
+        var iosHint = document.getElementById('ios-hint-' + uid);
+        var _iosReady = false;
+        function onIosReady() {
+          if (_iosReady) return;
+          _iosReady = true;
+          if (iosLoading) iosLoading.remove();
+          if (iosHint) iosHint.style.display = '';
+        }
+        if (iosIframe) iosIframe.addEventListener('load', onIosReady);
+        setTimeout(onIosReady, 4000);
+      })();
 
       card.classList.add('is-playing');
       activeBrowseUid = uid;
@@ -468,20 +492,39 @@ window.VMAPlayer = (function () {
         window.open(scUrl2, '_blank');
         return;
       }
-      openSoundCloudPlayer(scUrl2, track.title);
 
       thumbContainer.dataset.originalHtml = thumbContainer.innerHTML;
+
+      // Show loading state on card first
       thumbContainer.innerHTML =
         '<div class="browse-now-playing" data-action="browse-stop" data-uid="' + uid + '" data-track-id="' + trackId + '">' +
           '<div class="bnp-bg" style="background:linear-gradient(135deg, rgba(255,85,0,0.15) 0%, rgba(7,7,11,0.95) 60%);"></div>' +
           '<div class="bnp-content">' +
-            '<div class="bnp-eq"><span style="background:#ff5500;"></span><span style="background:#ff5500;"></span><span style="background:#ff5500;"></span><span style="background:#ff5500;"></span><span style="background:#ff5500;"></span></div>' +
-            '<div class="bnp-title" style="color:#ff5500;">Now Playing</div>' +
-            '<div class="bnp-track">' + sanitize(track.title) + '</div>' +
-            '<div class="bnp-stop">Click to stop</div>' +
+            '<div class="embed-loading-spinner" style="border-top-color:#ff5500;"></div>' +
+            '<div class="bnp-title" style="color:#ff5500;">Loading...</div>' +
+            '<div class="bnp-stop">Click to cancel</div>' +
           '</div>' +
         '</div>';
       thumbContainer.removeAttribute('data-action');
+
+      // Open popup — transition card to "Now Playing" when iframe is ready
+      openSoundCloudPlayer(scUrl2, track.title, function () {
+        if (activeBrowseUid !== uid) return;
+        var currentCard = document.getElementById(uid);
+        if (!currentCard) return;
+        var tc = currentCard.querySelector('.browse-card-thumb');
+        if (!tc) return;
+        tc.innerHTML =
+          '<div class="browse-now-playing" data-action="browse-stop" data-uid="' + uid + '" data-track-id="' + trackId + '">' +
+            '<div class="bnp-bg" style="background:linear-gradient(135deg, rgba(255,85,0,0.15) 0%, rgba(7,7,11,0.95) 60%);"></div>' +
+            '<div class="bnp-content">' +
+              '<div class="bnp-eq"><span style="background:#ff5500;"></span><span style="background:#ff5500;"></span><span style="background:#ff5500;"></span><span style="background:#ff5500;"></span><span style="background:#ff5500;"></span></div>' +
+              '<div class="bnp-title" style="color:#ff5500;">Now Playing</div>' +
+              '<div class="bnp-track">' + sanitize(track.title) + '</div>' +
+              '<div class="bnp-stop">Click to stop</div>' +
+            '</div>' +
+          '</div>';
+      });
 
       playerTitle.textContent = track.title || 'Now Playing';
       playerMeta.textContent = 'SoundCloud \u00B7 ' + (track.genre || '');
@@ -502,20 +545,38 @@ window.VMAPlayer = (function () {
     if (embed.platform === 'udio') {
       var udioIdVal = embed.udioId;
       if (udioIdVal) {
-        openUdioPlayer(udioIdVal, track.title);
-
         thumbContainer.dataset.originalHtml = thumbContainer.innerHTML;
+
+        // Show loading state on card first
         thumbContainer.innerHTML =
           '<div class="browse-now-playing" data-action="browse-stop" data-uid="' + uid + '" data-track-id="' + trackId + '">' +
             '<div class="bnp-bg"></div>' +
             '<div class="bnp-content">' +
-              '<div class="bnp-eq"><span></span><span></span><span></span><span></span><span></span></div>' +
-              '<div class="bnp-title">Now Playing</div>' +
-              '<div class="bnp-track">' + sanitize(track.title) + '</div>' +
-              '<div class="bnp-stop">Click to stop</div>' +
+              '<div class="embed-loading-spinner" style="border-top-color:#818cf8;"></div>' +
+              '<div class="bnp-title" style="color:#818cf8;">Loading...</div>' +
+              '<div class="bnp-stop">Click to cancel</div>' +
             '</div>' +
           '</div>';
         thumbContainer.removeAttribute('data-action');
+
+        // Open popup — transition card to "Now Playing" when iframe is ready
+        openUdioPlayer(udioIdVal, track.title, function () {
+          if (activeBrowseUid !== uid) return;
+          var currentCard = document.getElementById(uid);
+          if (!currentCard) return;
+          var tc = currentCard.querySelector('.browse-card-thumb');
+          if (!tc) return;
+          tc.innerHTML =
+            '<div class="browse-now-playing" data-action="browse-stop" data-uid="' + uid + '" data-track-id="' + trackId + '">' +
+              '<div class="bnp-bg"></div>' +
+              '<div class="bnp-content">' +
+                '<div class="bnp-eq"><span></span><span></span><span></span><span></span><span></span></div>' +
+                '<div class="bnp-title">Now Playing</div>' +
+                '<div class="bnp-track">' + sanitize(track.title) + '</div>' +
+                '<div class="bnp-stop">Click to stop</div>' +
+              '</div>' +
+            '</div>';
+        });
 
         playerTitle.textContent = track.title || 'Now Playing';
         playerMeta.textContent = 'Udio \u00B7 ' + (track.genre || '');
@@ -757,20 +818,48 @@ window.VMAPlayer = (function () {
       } else {
         var scH = isMobile ? '120px' : '166px';
         embedArea.innerHTML =
-          '<iframe src="https://w.soundcloud.com/player/?url=' +
-          encodeURIComponent(info.url) +
-          '&color=%23ff5500&auto_play=true&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=true" ' +
-          'allow="autoplay" style="width:100%;height:' + scH + ';border:none;border-radius:8px" playsinline></iframe>';
+          '<div style="position:relative;height:' + scH + ';">' +
+            '<div class="embed-loading">' +
+              '<div style="text-align:center;">' +
+                '<div class="embed-loading-spinner" style="border-top-color:#ff5500;"></div>' +
+                '<div style="font-size:0.7rem;color:rgba(255,255,255,0.5);">Loading...</div>' +
+              '</div>' +
+            '</div>' +
+            '<iframe src="https://w.soundcloud.com/player/?url=' +
+            encodeURIComponent(info.url) +
+            '&color=%23ff5500&auto_play=true&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=true" ' +
+            'allow="autoplay" style="width:100%;height:100%;border:none;border-radius:8px" playsinline></iframe>' +
+          '</div>';
         embedArea.style.display = 'block';
+        var _scIframe = embedArea.querySelector('iframe');
+        var _scLoading = embedArea.querySelector('.embed-loading');
+        if (_scIframe && _scLoading) {
+          _scIframe.addEventListener('load', function () { _scLoading.remove(); });
+          setTimeout(function () { if (_scLoading.parentNode) _scLoading.remove(); }, 4000);
+        }
       }
     } else if (info.platform === 'udio') {
       var embedId = info.udioId;
       if (embedId) {
         var udioH = isMobile ? '140px' : '180px';
         embedArea.innerHTML =
-          '<iframe src="https://www.udio.com/embed/' + embedId + '" allow="autoplay" ' +
-          'style="width:100%;height:' + udioH + ';border:none;border-radius:8px" playsinline></iframe>';
+          '<div style="position:relative;height:' + udioH + ';">' +
+            '<div class="embed-loading">' +
+              '<div style="text-align:center;">' +
+                '<div class="embed-loading-spinner" style="border-top-color:#818cf8;"></div>' +
+                '<div style="font-size:0.7rem;color:rgba(255,255,255,0.5);">Loading...</div>' +
+              '</div>' +
+            '</div>' +
+            '<iframe src="https://www.udio.com/embed/' + embedId + '" allow="autoplay" ' +
+            'style="width:100%;height:100%;border:none;border-radius:8px" playsinline></iframe>' +
+          '</div>';
         embedArea.style.display = 'block';
+        var _eIframe = embedArea.querySelector('iframe');
+        var _eLoading = embedArea.querySelector('.embed-loading');
+        if (_eIframe && _eLoading) {
+          _eIframe.addEventListener('load', function () { _eLoading.remove(); });
+          setTimeout(function () { if (_eLoading.parentNode) _eLoading.remove(); }, 4000);
+        }
       } else {
         embedArea.innerHTML =
           '<a href="' + sanitizeAttr(track.embed_url) + '" target="_blank" rel="noopener" ' +
@@ -852,17 +941,42 @@ window.VMAPlayer = (function () {
     document.getElementById('udio-backdrop').addEventListener('click', minimizeUdio);
   }
 
-  function openUdioPlayer(udioId, trackTitle) {
+  function openUdioPlayer(udioId, trackTitle, onReady) {
     createUdioContainer();
 
     var box = document.getElementById('udio-iframe-box');
-    var existingIframe = box.querySelector('iframe');
     var newSrc = 'https://www.udio.com/embed/' + udioId;
+    var _ready = false;
 
-    if (!existingIframe || existingIframe.src !== newSrc) {
-      box.innerHTML =
-        '<iframe src="' + newSrc + '" allow="autoplay; encrypted-media" style="width:100%;height:100%;border:none;"></iframe>';
+    // Show loading indicator + iframe (hidden until loaded)
+    box.innerHTML =
+      '<div class="embed-loading">' +
+        '<div style="text-align:center;">' +
+          '<div class="embed-loading-spinner" style="border-top-color:#818cf8;"></div>' +
+          '<div style="font-size:0.72rem;color:rgba(255,255,255,0.6);">Loading Udio...</div>' +
+        '</div>' +
+      '</div>' +
+      '<iframe src="' + newSrc + '" allow="autoplay; encrypted-media" style="width:100%;height:100%;border:none;opacity:0;transition:opacity 0.3s;"></iframe>';
+
+    var iframe = box.querySelector('iframe');
+
+    function markReady() {
+      if (_ready) return;
+      _ready = true;
+      iframe.style.opacity = '1';
+      var loadingEl = box.querySelector('.embed-loading');
+      if (loadingEl) loadingEl.remove();
+      if (typeof onReady === 'function') onReady();
+      // Start auto-minimize timer only after iframe is ready
+      clearTimeout(window._udioAutoMin);
+      window._udioAutoMin = setTimeout(function () {
+        if (udioState === 'popup') minimizeUdio();
+      }, 6000);
     }
+
+    iframe.addEventListener('load', markReady);
+    // Fallback: treat as ready after 4s even if onload hasn't fired
+    setTimeout(markReady, 4000);
 
     udioContainer.querySelector('.udio-hdr-title').textContent =
       trackTitle || 'Udio Track';
@@ -882,11 +996,8 @@ window.VMAPlayer = (function () {
     window._udioBlurHandler = onIframeClick;
     window.addEventListener('blur', onIframeClick);
 
-    // Also auto-minimize after 6s
+    // No auto-minimize timer here — it starts in markReady() after iframe loads
     clearTimeout(window._udioAutoMin);
-    window._udioAutoMin = setTimeout(function () {
-      if (udioState === 'popup') minimizeUdio();
-    }, 6000);
   }
 
   function minimizeUdio() {
@@ -956,25 +1067,48 @@ window.VMAPlayer = (function () {
     document.getElementById('sc-backdrop').addEventListener('click', minimizeSc);
   }
 
-  function openSoundCloudPlayer(scUrl, trackTitle) {
+  function openSoundCloudPlayer(scUrl, trackTitle, onReady) {
     createScContainer();
     var box = document.getElementById('sc-iframe-box');
     var embedSrc =
       'https://w.soundcloud.com/player/?url=' +
       encodeURIComponent(scUrl) +
       '&color=%23ff5500&auto_play=true&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=true';
+    var _ready = false;
+
+    // Show loading indicator + iframe (hidden until loaded)
     box.innerHTML =
-      '<iframe src="' + embedSrc + '" allow="autoplay; encrypted-media" style="width:100%;height:100%;border:none;" scrolling="no"></iframe>';
+      '<div class="embed-loading">' +
+        '<div style="text-align:center;">' +
+          '<div class="embed-loading-spinner" style="border-top-color:#ff5500;"></div>' +
+          '<div style="font-size:0.72rem;color:rgba(255,255,255,0.6);">Loading SoundCloud...</div>' +
+        '</div>' +
+      '</div>' +
+      '<iframe src="' + embedSrc + '" allow="autoplay; encrypted-media" style="width:100%;height:100%;border:none;opacity:0;transition:opacity 0.3s;" scrolling="no"></iframe>';
+
+    var iframe = box.querySelector('iframe');
+
+    function markReady() {
+      if (_ready) return;
+      _ready = true;
+      iframe.style.opacity = '1';
+      var loadingEl = box.querySelector('.embed-loading');
+      if (loadingEl) loadingEl.remove();
+      if (typeof onReady === 'function') onReady();
+      // Start auto-minimize timer only after iframe is ready
+      clearTimeout(window._scAutoMin);
+      window._scAutoMin = setTimeout(function () {
+        if (scState === 'popup') minimizeSc();
+      }, 5000);
+    }
+
+    iframe.addEventListener('load', markReady);
+    setTimeout(markReady, 4000);
+
     scContainer.querySelector('.sc-hdr-title').textContent =
       trackTitle || 'SoundCloud Track';
     scContainer.className = 'sc-popup';
     scState = 'popup';
-
-    // Auto-minimize after user likely pressed play
-    clearTimeout(window._scAutoMin);
-    window._scAutoMin = setTimeout(function () {
-      if (scState === 'popup') minimizeSc();
-    }, 5000);
 
     function onScBlur() {
       if (scState === 'popup') {
@@ -986,6 +1120,9 @@ window.VMAPlayer = (function () {
     window.removeEventListener('blur', window._scBlurHandler);
     window._scBlurHandler = onScBlur;
     window.addEventListener('blur', onScBlur);
+
+    // No auto-minimize timer here — it starts in markReady()
+    clearTimeout(window._scAutoMin);
   }
 
   function minimizeSc() {
