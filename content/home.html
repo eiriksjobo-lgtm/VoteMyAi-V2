@@ -1,0 +1,134 @@
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <h1>DISCOVER & RATE<br><span class="accent">AI MUSIC</span></h1>
+  <p>The community rates tracks made with Suno, Udio, ElevenLabs and more. The best rise to the top.</p>
+  <a href="/submit.html" class="hero-cta">Submit Your Track <span>→</span></a>
+  <div class="hero-tools">
+    <a href="https://suno.com/invite/@playfulsoprano318" target="_blank" rel="noopener" class="hero-tool" onclick="gtag('event','affiliate_click',{tool:'suno',location:'hero'})">
+      <span class="hero-tool-name">Suno</span>
+      <span class="hero-tool-cta">Try free →</span>
+    </a>
+    <a href="https://www.udio.com" target="_blank" rel="noopener" class="hero-tool" onclick="gtag('event','affiliate_click',{tool:'udio',location:'hero'})">
+      <span class="hero-tool-name">Udio</span>
+      <span class="hero-tool-cta">Try free →</span>
+    </a>
+    <a href="https://try.elevenlabs.io/xj2k88ooae07" target="_blank" rel="noopener" class="hero-tool" onclick="gtag('event','affiliate_click',{tool:'elevenlabs',location:'hero'})">
+      <span class="hero-tool-name">ElevenLabs</span>
+      <span class="hero-tool-cta">Try free →</span>
+    </a>
+  </div>
+</section>
+
+<!-- ═══ HOW IT WORKS ═══ -->
+<section class="how-section">
+  <div class="section-header">
+    <h2 class="section-title">How It Works</h2>
+    <p class="section-sub">Three steps to AI music fame</p>
+  </div>
+  <div class="how-steps">
+    <div class="how-step">
+      <div class="how-num">01</div>
+      <div class="how-icon"><svg viewBox="0 0 24 24"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21h14.878a2 2 0 0 0 1.94-1.515L22 17"/></svg></div>
+      <div><div class="how-label">Submit</div><div class="how-desc">Upload your AI-generated track from Suno, Udio, or any platform</div></div>
+      <span class="how-connector">→</span>
+    </div>
+    <div class="how-step">
+      <div class="how-num">02</div>
+      <div class="how-icon"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg></div>
+      <div><div class="how-label">Get Rated</div><div class="how-desc">The community listens and rates your track from 1 to 5 stars</div></div>
+      <span class="how-connector">→</span>
+    </div>
+    <div class="how-step">
+      <div class="how-num">03</div>
+      <div class="how-icon"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></div>
+      <div><div class="how-label">Climb the Board</div><div class="how-desc">Top-rated tracks rise to the leaderboard for everyone to discover</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ BROWSE (Netflix-style) ═══ -->
+<section class="browse-section" id="browseSection">
+  <div class="browse-controls">
+    <div class="search-box">
+      <svg class="search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="browseSearch" placeholder="Search tracks, genres, tools...">
+      <button class="search-clear" id="searchClear" aria-label="Clear">×</button>
+    </div>
+    <div class="browse-count" id="browseCount"></div>
+  </div>
+  <div id="browseRows"></div>
+  <div id="searchResults" class="search-results-grid" style="display:none;"></div>
+</section>
+
+<!-- ═══ LEADERBOARD ═══ -->
+<section class="leaderboard-section" id="leaderboard">
+  <div class="section-header">
+    <h2 class="section-title">Top Rated</h2>
+    <p class="section-sub">Ranked by community ratings using Wilson Score</p>
+  </div>
+  <div class="lb-tabs">
+    <button class="lb-tab active" data-period="week">This Week</button>
+    <button class="lb-tab" data-period="month">This Month</button>
+    <button class="lb-tab" data-period="all">All Time</button>
+  </div>
+  <div class="leaderboard" id="leaderboardList">
+    <div class="skeleton skeleton-lb-row" style="height:56px;margin-bottom:2px;border-radius:0;"></div>
+    <div class="skeleton skeleton-lb-row" style="height:56px;margin-bottom:2px;border-radius:0;"></div>
+    <div class="skeleton skeleton-lb-row" style="height:56px;margin-bottom:2px;border-radius:0;"></div>
+  </div>
+</section>
+
+<!-- ═══ AI TOOLS ═══ -->
+<section class="tools-section" id="tools">
+  <div class="section-header">
+    <h2 class="section-title">AI Music Tools</h2>
+    <p class="section-sub">The platforms powering the next generation of music</p>
+  </div>
+  <div class="tools-grid">
+    <a href="https://suno.com/invite/@playfulsoprano318" target="_blank" rel="noopener" class="tool-card suno" data-tool="suno">
+      <div class="tool-icon">S</div><div class="tool-name">Suno</div>
+      <div class="tool-tagline">Full songs from a text prompt. The most popular AI music generator — fast, intuitive, and great for beginners.</div>
+      <div class="tool-features"><span class="tool-tag">Text to song</span><span class="tool-tag">Custom lyrics</span><span class="tool-tag">Free tier</span></div>
+      <span class="tool-cta">Try Suno <span class="arrow">→</span></span>
+    </a>
+    <a href="https://www.udio.com" target="_blank" rel="noopener" class="tool-card udio" data-tool="udio">
+      <div class="tool-icon">U</div><div class="tool-name">Udio</div>
+      <div class="tool-tagline">Hi-fi sound quality and creative control. Best for producers and experimental genres where audio fidelity matters.</div>
+      <div class="tool-features"><span class="tool-tag">Hi-fi audio</span><span class="tool-tag">Genre blending</span><span class="tool-tag">Free tier</span></div>
+      <span class="tool-cta">Try Udio <span class="arrow">→</span></span>
+    </a>
+    <a href="https://try.elevenlabs.io/xj2k88ooae07" target="_blank" rel="noopener" class="tool-card elevenlabs" data-tool="elevenlabs">
+      <div class="tool-icon">XI</div><div class="tool-name">ElevenLabs</div>
+      <div class="tool-tagline">The world's most realistic AI voices, now making music. Unmatched vocal quality with copyright-cleared output.</div>
+      <div class="tool-features"><span class="tool-tag">Best vocals</span><span class="tool-tag">Copyright-cleared</span><span class="tool-tag">API access</span></div>
+      <span class="tool-cta">Try ElevenLabs <span class="arrow">→</span></span>
+    </a>
+  </div>
+</section>
+
+<!-- ═══ SEO ═══ -->
+<section class="seo-section">
+  <div class="seo-inner">
+    <h2>The Home of AI-Generated Music</h2>
+    <p>VoteMyAI is the community-driven platform where AI music creators submit tracks made with tools like Suno, Udio, and ElevenLabs — and the community decides what's best. Every track is rated on a 1-5 star scale, and our Wilson Score algorithm ensures fair rankings regardless of when a track was submitted. Whether you're a creator looking for feedback or a listener discovering the future of music, VoteMyAI is where AI music gets its spotlight.</p>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <a href="/" class="logo"><span class="logo-dot"></span>VOTEMYAI</a>
+      <p>The community-driven platform for discovering and rating AI-generated music.</p>
+    </div>
+    <div class="footer-links">
+      <div class="footer-col"><h4>Platform</h4><a href="/#tracks">Browse Tracks</a><a href="/playlist.html">Playlists</a><a href="/blog.html">Blog</a><a href="/submit.html">Submit a Track</a><a href="/login.html">Login / Sign Up</a></div>
+      <div class="footer-col"><h4>AI Tools</h4><a href="https://suno.com/invite/@playfulsoprano318" target="_blank" rel="noopener">Suno</a><a href="https://www.udio.com" target="_blank" rel="noopener">Udio</a><a href="https://try.elevenlabs.io/xj2k88ooae07" target="_blank" rel="noopener">ElevenLabs</a></div>
+      <div class="footer-col"><h4>Info</h4><a href="/about.html">About</a><a href="/faq.html">FAQ</a><a href="/contact.html">Contact</a><a href="/terms.html">Terms</a><a href="/privacy.html">Privacy</a></div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy">&copy; 2026 VoteMyAI. All rights reserved.</span>
+    <div class="footer-tools"><a href="https://suno.com/invite/@playfulsoprano318" target="_blank" rel="noopener">Suno</a><a href="https://www.udio.com" target="_blank" rel="noopener">Udio</a><a href="https://try.elevenlabs.io/xj2k88ooae07" target="_blank" rel="noopener">ElevenLabs</a></div>
+  </div>
+</footer>

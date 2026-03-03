@@ -1,0 +1,41 @@
+<div class="profile-container">
+  <!-- Profile Card -->
+  <div class="profile-card">
+    <div class="profile-header">
+      <div class="avatar" id="avatar">?</div>
+      <div>
+        <div class="profile-name" id="userName">Loading...</div>
+        <div class="profile-email" id="userEmail"></div>
+      </div>
+    </div>
+    <div class="name-edit">
+      <input type="text" class="name-input" id="nameInput" placeholder="Choose a display name..." maxlength="30">
+      <button class="btn-save" id="btnSaveName">Save</button>
+    </div>
+    <div class="save-status" id="saveStatus"></div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-num" id="statTracks">&mdash;</div><div class="stat-label">Tracks</div></div>
+    <div class="stat-card"><div class="stat-num" id="statAvgRating">&mdash;</div><div class="stat-label">Avg Rating</div></div>
+    <div class="stat-card"><div class="stat-num" id="statTotalRatings">&mdash;</div><div class="stat-label">Ratings Received</div></div>
+  </div>
+
+  <!-- My Tracks -->
+  <div class="section-title">My Tracks</div>
+  <div class="tracks-list" id="tracksList">
+    <div class="skeleton skel-track"></div>
+    <div class="skeleton skel-track"></div>
+  </div>
+
+  <!-- My Ratings -->
+  <div class="section-title">My Ratings</div>
+  <div class="tracks-list" id="ratingsList">
+    <div class="skeleton skel-track"></div>
+    <div class="skeleton skel-track"></div>
+  </div>
+
+  <!-- Logout -->
+  <button class="btn-logout" id="btnLogout">Log Out</button>
+</div>
