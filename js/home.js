@@ -529,7 +529,7 @@
 
   function onDragStart(e) {
     if (e.button !== 0) return;
-    if (e.target.closest('button, .bstar, a, .browse-card-footer, .comment-input, .comment-form, .comment-submit, .comments-panel, .browse-card-note, .browse-card-note-toggle, .browse-card-note-text, .browse-card-play, input, textarea')) return;
+    if (e.target.closest('button, .bstar, a, .browse-card-footer, .comment-input, .comment-form, .comment-submit, .comments-panel, .browse-card-note, .browse-card-note-toggle, .browse-card-note-text, .browse-card-play, .browse-card-thumb, input, textarea')) return;
     cleanupDrag();
     var scroll = e.currentTarget;
     _drag = {

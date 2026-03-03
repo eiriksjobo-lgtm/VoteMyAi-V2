@@ -295,13 +295,19 @@ window.VMAPlayer = (function () {
     }
 
     var track = _getTrack(trackId);
-    if (!track) return;
+    if (!track) {
+      console.warn('[VMAPlayer] browsePlay: track not found for id=' + trackId);
+      return;
+    }
 
     // ── STOP ALL PLAYBACK first (single source of truth) ──
     _stopAllPlayback();
 
     var card = document.getElementById(uid);
-    if (!card) return;
+    if (!card) {
+      console.warn('[VMAPlayer] browsePlay: card not found for uid=' + uid);
+      return;
+    }
     var thumbContainer = card.querySelector('.browse-card-thumb');
     if (!thumbContainer) return;
 
@@ -653,6 +659,8 @@ window.VMAPlayer = (function () {
         '</div>';
     } else {
       // Audio platforms: hide iframe, show EQ overlay
+      // Strip loading="lazy" — hidden iframes must load immediately
+      embedHtml = embedHtml.replace(/\s*loading="lazy"/g, '');
       embedHtml = embedHtml.replace(
         /<iframe /,
         '<iframe style="width:100%;height:100%;border:none;" '
@@ -868,24 +876,8 @@ window.VMAPlayer = (function () {
         var _eIframe = embedArea.querySelector('iframe');
         var _eLoading = embedArea.querySelector('.embed-loading');
         if (_eIframe && _eLoading) {
-          var _eRetried = false;
-          var _eStart = Date.now();
           _eIframe.addEventListener('load', function () {
-            // Retry once if load fires too fast (< 300ms = likely error/redirect)
-            if (Date.now() - _eStart < 300 && !_eRetried) {
-              _eRetried = true;
-              _eStart = Date.now();
-              setTimeout(function () { _eIframe.src = udioSrc; }, 1500);
-              return;
-            }
             if (_eLoading.parentNode) _eLoading.remove();
-          });
-          _eIframe.addEventListener('error', function () {
-            if (!_eRetried) {
-              _eRetried = true;
-              _eStart = Date.now();
-              setTimeout(function () { _eIframe.src = udioSrc; }, 1500);
-            }
           });
           setTimeout(function () { if (_eLoading.parentNode) _eLoading.remove(); }, 5000);
         }
