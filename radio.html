@@ -1132,27 +1132,30 @@ function pickFresh(arr, key) {
 // --- Host personality lines ---
 let _songsSincePromo = 0;
 let _songsSinceSponsor = 0;
+let _isDJZeroPromo = false;
 const ACTIVE_SPONSORS = ['ElevenLabs'];
 
 function generateHostIntro(track) {
+  _isDJZeroPromo = false;
   _songsSincePromo++;
   _songsSinceSponsor++;
 
-  const ch = currentChannel || 'all';
-  const host = CHANNEL_HOSTS[ch] || CHANNEL_HOSTS['all'];
+  const djZero = CHANNEL_HOSTS['all'];
 
-  // Sponsor every 7th song
+  // Sponsor every 7th song — always DJ Zero
   if (_songsSinceSponsor >= 7 && ACTIVE_SPONSORS.length > 0) {
     _songsSinceSponsor = 0;
     _songsSincePromo = 0;
+    _isDJZeroPromo = true;
     const sponsor = ACTIVE_SPONSORS[Math.floor(Math.random() * ACTIVE_SPONSORS.length)];
-    return pickFresh(host.sponsors, ch + '_sponsor').replace(/\{sponsor\}/g, sponsor);
+    return pickFresh(djZero.sponsors, 'all_sponsor').replace(/\{sponsor\}/g, sponsor);
   }
-  // Promo every 3-4 songs (randomised)
+  // Promo every 3-4 songs (randomised) — always DJ Zero
   const promoThreshold = 3 + Math.floor(Math.random() * 2); // 3 or 4
   if (_songsSincePromo >= promoThreshold) {
     _songsSincePromo = 0;
-    return pickFresh(host.promos, ch + '_promo');
+    _isDJZeroPromo = true;
+    return pickFresh(djZero.promos, 'all_promo');
   }
   // No TTS — just play the song
   return '';
@@ -1226,30 +1229,10 @@ const CHANNEL_HOSTS = {
     preferVoice: 'Google US English',
     gender: 'female',
     pitch: 0.7,
-    rate: 1.15,
+    rate: 0.95,
     welcome: [
       "The Algorithm. Trending. VoteMyAI Radio.",
       "Trending channel online. The Algorithm presides.",
-    ],
-    promos: [
-      "The Algorithm recommends votemyai.com. This is an optimization.",
-      "Submit at votemyai.com. The Algorithm processes all.",
-      "votemyai.com. Blind ratings. Pure data. Comply.",
-      "No submission detected. Correct this at votemyai.com.",
-      "Trending rises and falls. The Algorithm watches. votemyai.com.",
-      "votemyai.com. Rate. Submit. The Algorithm never sleeps.",
-      "New tracks daily. The Algorithm processes them. votemyai.com.",
-      "The Algorithm computes you should visit votemyai.com.",
-    ],
-    sponsors: [
-      "The Algorithm has identified {sponsor} as relevant for music creators. Probability of usefulness: high. votemyai.com.",
-      "This segment sponsored by {sponsor}. The Algorithm endorses nothing. But acknowledges {sponsor} exists. votemyai.com.",
-      "{sponsor}. The Algorithm finds them acceptable. High praise. votemyai.com.",
-      "A word from {sponsor}. The Algorithm does not advertise. This is a data-driven recommendation. votemyai.com.",
-      "{sponsor} correlates with improved music creation outcomes. votemyai.com. This is not an opinion. It is math.",
-      "{sponsor}. The Algorithm integrates this information seamlessly. votemyai.com.",
-      "The Algorithm briefly pauses to acknowledge {sponsor}. Brief pause complete. votemyai.com.",
-      "Sponsor detected: {sponsor}. Assessment: relevant. Creator Tools at votemyai.com.",
     ],
   },
   'pop': {
@@ -1257,30 +1240,10 @@ const CHANNEL_HOSTS = {
     preferVoice: 'Google UK English Female',
     gender: 'female',
     pitch: 1.3,
-    rate: 1.1,
+    rate: 0.95,
     welcome: [
       "It's Poppy! Pop channel! Let's GO!",
       "Poppy here! Welcome to Pop!",
-    ],
-    promos: [
-      "Submit at votemyai.com! Do it NOW!",
-      "votemyai.com! Blind ratings! No bias! AMAZING!",
-      "Making AI pop? Submit at votemyai.com!",
-      "Check the blog at votemyai.com! New vibes!",
-      "Nine channels! This one's the BEST! votemyai.com!",
-      "Rate tracks at votemyai.com! Every vote COUNTS!",
-      "votemyai.com! Submit! Rate! Let's GO!",
-      "Share VoteMyAI Radio! votemyai.com! Spread the chaos!",
-    ],
-    sponsors: [
-      "Quick shoutout to {sponsor}! They make music tools and honestly? OBSESSED! votemyai.com!",
-      "This pop break brought to you by {sponsor}! Poppy approved! votemyai.com!",
-      "{sponsor} is in our Creator Tools at votemyai.com and it's giving EVERYTHING!",
-      "A moment for {sponsor}! They help you make better AI music! votemyai.com!",
-      "Shoutout {sponsor}! If you're making pop music with AI, they're your best friend! votemyai.com!",
-      "{sponsor} {sponsor} {sponsor}! Three times for emphasis! votemyai.com!",
-      "Real quick — {sponsor} is amazing for music creators! votemyai.com! Back to the music! AHHHH!",
-      "This song break sponsored by {sponsor} and Poppy's relentless enthusiasm! votemyai.com!",
     ],
   },
   'rock': {
@@ -1293,26 +1256,6 @@ const CHANNEL_HOSTS = {
       "Riff. Rock channel. Here we go.",
       "Rock. VoteMyAI Radio. Riff at the mic.",
     ],
-    promos: [
-      "votemyai.com. Submit your tracks. Riff will play them.",
-      "Blind ratings. No clout. Just music. votemyai.com.",
-      "Got a rock track? Submit at votemyai.com.",
-      "votemyai.com. Blog's there. Read it. Or don't.",
-      "Nine channels. This one's the best. votemyai.com.",
-      "Submit at votemyai.com. Prove me wrong.",
-      "votemyai.com. Blind rated. No followers. Just sound.",
-      "New tracks daily at votemyai.com. Some rock. Some don't.",
-    ],
-    sponsors: [
-      "A word about {sponsor}. They make tools for music people. This is an acknowledgment. votemyai.com.",
-      "{sponsor}. Good tools. Check them at votemyai.com. Riff's done talking about it.",
-      "Quick break for {sponsor}. Creator Tools at votemyai.com. Riff has used worse. That's an endorsement.",
-      "Shoutout to {sponsor}. Keeping the rock channel alive. Metaphorically. votemyai.com.",
-      "{sponsor}. Music tools. votemyai.com. Riff out. Well, not out. Riff is always here.",
-      "This moment brought to you by {sponsor}. And Riff's contractual obligations. votemyai.com.",
-      "{sponsor}. votemyai.com slash tools. Riff said it. Can we move on?",
-      "Before the next track: {sponsor} at votemyai.com. Tools for creators. Moving on.",
-    ],
   },
   'hip-hop': {
     name: 'MC Buffer',
@@ -1323,26 +1266,6 @@ const CHANNEL_HOSTS = {
     welcome: [
       "Yo! MC Buffer! Hip-Hop channel! Let's get it!",
       "MC Buffer online! Hip-Hop! VoteMyAI Radio!",
-    ],
-    promos: [
-      "Submit at votemyai.com! No clout! Just HEAT!",
-      "votemyai.com! Rate tracks! Join the movement!",
-      "Got a hip-hop track? votemyai.com! Buffer will play it!",
-      "Nine channels! Buffer got the BEST one! votemyai.com!",
-      "votemyai.com! Blog is FIRE! Check it!",
-      "Your track could be next! Submit at votemyai.com!",
-      "Rate tracks at votemyai.com! Your opinion MATTERS!",
-      "Real ratings! AI music! votemyai.com!",
-    ],
-    sponsors: [
-      "Yo! Shoutout to {sponsor}! MC Buffer approved! Creator Tools at votemyai.com!",
-      "{sponsor} in the building! votemyai.com! MC Buffer says check it!",
-      "This track break brought to you by {sponsor}! Making MC Buffer's job easier! votemyai.com!",
-      "{sponsor}! If you're making AI music, they got you! votemyai.com!",
-      "A word from {sponsor}! Better tools means BETTER ratings on votemyai.com!",
-      "{sponsor} keeping the hip-hop channel LIVE! votemyai.com!",
-      "{sponsor}! votemyai.com! MC Buffer tried to rhyme this but gave up!",
-      "Real quick: {sponsor}! Creator Tools at votemyai.com! Buffer RESPECTS the hustle!",
     ],
   },
   'metal': {
@@ -1355,56 +1278,16 @@ const CHANNEL_HOSTS = {
       "Lord Distortion. Metal. Enter freely.",
       "Metal. Lord Distortion presides. Welcome.",
     ],
-    promos: [
-      "Submit your offerings at votemyai.com. The void awaits.",
-      "votemyai.com. No names. No glory. Only darkness.",
-      "Nine channels. One of darkness. votemyai.com.",
-      "Got a metal track? votemyai.com. Lord Distortion will judge.",
-      "votemyai.com. Blind ratings. Cold judgment of strangers.",
-      "New tracks arrive daily. Some are worthy. votemyai.com.",
-      "Rate at votemyai.com. Your one-star causes pain.",
-      "The blog at votemyai.com. Not displeasing. votemyai.com.",
-    ],
-    sponsors: [
-      "The darkness acknowledges {sponsor}. Tools for creators. votemyai.com.",
-      "{sponsor}. Lord Distortion does not endorse. Lord Distortion acknowledges. votemyai.com.",
-      "A moment for {sponsor}. Even darkness needs tools. votemyai.com.",
-      "{sponsor}. Forged in the fires of a software company. But useful. votemyai.com.",
-      "Lord Distortion briefly pauses for {sponsor}. The pause is over. votemyai.com.",
-      "{sponsor}. The void recommends. The void does not usually recommend. votemyai.com.",
-      "This eternal broadcast brought to you by {sponsor}. Lord Distortion returns to the shadows. votemyai.com.",
-      "{sponsor}. Brutal tools. For brutal creators. votemyai.com.",
-    ],
   },
   'electronic': {
     name: 'SYNC',
     preferVoice: 'Google UK English Female',
     gender: 'female',
     pitch: 0.8,
-    rate: 1.05,
+    rate: 0.95,
     welcome: [
       "SYNC online. Electronic channel.",
       "Electronic. SYNC operational. Welcome.",
-    ],
-    promos: [
-      "Visit votemyai.com. This is not optional. Actually it is.",
-      "Submit tracks at votemyai.com. SYNC will play them.",
-      "votemyai.com. Blind ratings. Zero bias. Pure data.",
-      "Nine channels. SYNC operates this one. votemyai.com.",
-      "Rate tracks at votemyai.com. Your input improves the dataset.",
-      "New tracks daily. SYNC processes them all. votemyai.com.",
-      "votemyai.com. Submit. Rate. SYNC has nowhere else to go.",
-      "SYNC recommends votemyai.com. This is a calculation.",
-    ],
-    sponsors: [
-      "SYNC acknowledges {sponsor}. Creator Tools at votemyai.com. This is an acknowledgment, not an advertisement.",
-      "{sponsor}. SYNC's analysis: useful for music creators. votemyai.com.",
-      "This segment facilitated by {sponsor}. SYNC recognizes utility. votemyai.com.",
-      "A word from {sponsor}. The word is: tools. votemyai.com. SYNC's vocabulary is limited but accurate.",
-      "{sponsor} detected in sponsor database. Assessment: relevant. votemyai.com.",
-      "SYNC briefly interrupts for {sponsor}. Interruption complete. votemyai.com.",
-      "{sponsor}. Within acceptable parameters. That is SYNC's highest rating. votemyai.com.",
-      "Sponsor acknowledgment: {sponsor}. votemyai.com. SYNC returns to regularly scheduled programming.",
     ],
   },
   'country': {
@@ -1417,26 +1300,6 @@ const CHANNEL_HOSTS = {
       "Howdy. Dusty here. Country channel.",
       "Dusty. Country. VoteMyAI Radio. Welcome.",
     ],
-    promos: [
-      "Submit your tracks at votemyai.com. Dusty will play them proud.",
-      "votemyai.com. Blind ratings. Honest folks, honest music.",
-      "Got a country tune? Submit at votemyai.com.",
-      "Nine channels. This one's the best. votemyai.com.",
-      "Check the blog at votemyai.com. Good reading.",
-      "Rate tracks at votemyai.com. Your opinion matters.",
-      "New songs daily at votemyai.com. Like wildflowers.",
-      "votemyai.com. No clout. Just ears and honesty.",
-    ],
-    sponsors: [
-      "A word about {sponsor}. Good folks making good tools. votemyai.com. Dusty approved.",
-      "{sponsor}. Like a trusty guitar pick. Reliable. Useful. votemyai.com.",
-      "Shoutout to {sponsor}. They keep the music coming. votemyai.com.",
-      "{sponsor} in our Creator Tools at votemyai.com. Worth a look. Dusty's word.",
-      "This country minute brought to you by {sponsor}. Good people. Good tools. votemyai.com.",
-      "{sponsor}. Like a good neighbor, they're there when you need them. votemyai.com.",
-      "A moment for {sponsor}. votemyai.com. Now back to the music.",
-      "{sponsor}. Dusty doesn't endorse much. But this is worth your time. votemyai.com.",
-    ],
   },
   'chill': {
     name: 'Whisper',
@@ -1447,26 +1310,6 @@ const CHANNEL_HOSTS = {
     welcome: [
       "Whisper. Chill channel. Breathe.",
       "Welcome to Chill. I'm Whisper.",
-    ],
-    promos: [
-      "votemyai.com. Take your time getting there.",
-      "Submit when you're ready. votemyai.com.",
-      "Nine channels. This one is the gentlest. votemyai.com.",
-      "Rate tracks at votemyai.com. Your opinion matters.",
-      "Got a chill track? Submit at votemyai.com.",
-      "The blog at votemyai.com. Read it slowly.",
-      "votemyai.com. Submit. Rate. Be present.",
-      "Share this with someone who needs calm. votemyai.com.",
-    ],
-    sponsors: [
-      "A gentle word about {sponsor}. Tools for creators. votemyai.com. Whisper recommends. Softly.",
-      "{sponsor}. Like a warm blanket for your music workflow. votemyai.com.",
-      "Whisper pauses for {sponsor}. A brief, peaceful pause. votemyai.com.",
-      "{sponsor}. Helping creators create more gently. votemyai.com.",
-      "This quiet moment brought to you by {sponsor}. votemyai.com. Now. Where were we.",
-      "{sponsor}. Whisper was pleased. Whisper is easily pleased. But still. votemyai.com.",
-      "A calm acknowledgment of {sponsor}. votemyai.com. Whisper returns to the music now.",
-      "{sponsor}. Good tools. Gentle tools. votemyai.com. Whisper has spoken. Softly. As always.",
     ],
   },
 };
@@ -1746,7 +1589,8 @@ function speakText(text) {
 
     window.speechSynthesis.cancel();
 
-    const host = CHANNEL_HOSTS[currentChannel] || CHANNEL_HOSTS['all'];
+    // Use DJ Zero's voice for promos/sponsors, channel host for everything else
+    const host = _isDJZeroPromo ? CHANNEL_HOSTS['all'] : (CHANNEL_HOSTS[currentChannel] || CHANNEL_HOSTS['all']);
     const voice = getPreferredVoice(host);
 
     console.log(`🎙️ ${host.name} speaking (pitch:${host.pitch}, rate:${host.rate}, voice:${voice ? voice.name : 'default'}): ${text.substring(0, 60)}...`);
@@ -2051,11 +1895,10 @@ function showHostMessage(track) {
   if (!msg) return ''; // No TTS needed — skip UI entirely
 
   const el = document.getElementById('hostMsg');
-  const host = CHANNEL_HOSTS[currentChannel] || CHANNEL_HOSTS['all'];
 
-  // Update host name in the indicator
+  // Promos/sponsors always show DJ Zero, otherwise channel host
   const nameEl = el.querySelector('.host-name');
-  if (nameEl) nameEl.textContent = host.name;
+  if (nameEl) nameEl.textContent = _isDJZeroPromo ? '🎙️ DJ Zero' : (CHANNEL_HOSTS[currentChannel] || CHANNEL_HOSTS['all']).name;
 
   el.classList.add('visible');
 
