@@ -17,7 +17,7 @@
     { "source": "/radio.html","destination": "/radio.html" },
     {
       "source": "/((?!api|radio|blog/|.*\\..*).*)",
-      "destination": "/app.html"
+      "destination": "/index.html"
     }
   ]
 }

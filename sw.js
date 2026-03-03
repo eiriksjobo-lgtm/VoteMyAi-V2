@@ -1,6 +1,6 @@
 const CACHE_NAME = 'votemyai-v6';
 const PRECACHE = [
-  '/app.html',
+  '/index.html',
   '/app.css',
   '/js/app.js?v=6',
   '/js/player.js?v=6',
