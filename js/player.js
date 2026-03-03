@@ -278,9 +278,31 @@ window.VMAPlayer = (function () {
 
   /**
    * Helper — get platform info for a track (playlist page version).
+   * Returns { platform, videoId?, sunoId?, udioId?, url?, isShort? }
    */
   function _getTrackPlatform(track) {
-    if (VMA && typeof VMA.getTrackPlatform === 'function') return VMA.getTrackPlatform(track);
+    if (!track) return { platform: 'unknown' };
+    var url = track.embed_url;
+    if (url) {
+      var ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([^&?\/#]+)/);
+      if (ytMatch) return { platform: 'youtube', videoId: ytMatch[1] };
+      if (url.includes('soundcloud.com')) {
+        return { platform: 'soundcloud', url: url, isShort: url.includes('on.soundcloud.com') };
+      }
+      if (url.includes('suno.com') || url.includes('suno.ai')) {
+        var sunoMatch = url.match(/\/([a-f0-9-]{36})/);
+        if (sunoMatch) return { platform: 'suno', sunoId: sunoMatch[1], url: url };
+        return { platform: 'suno', url: url };
+      }
+      if (url.includes('udio.com')) {
+        var udioUuid = url.match(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/);
+        if (udioUuid) return { platform: 'udio', udioId: udioUuid[0], url: url };
+        var udioSlug = url.match(/udio\.com\/songs\/([a-zA-Z0-9_-]+)/);
+        if (udioSlug) return { platform: 'udio', udioId: udioSlug[1], url: url };
+        return { platform: 'udio', url: url };
+      }
+    }
+    if (track.yt_id) return { platform: 'youtube', videoId: track.yt_id };
     return { platform: 'unknown' };
   }
 
