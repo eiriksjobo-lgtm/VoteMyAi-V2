@@ -524,6 +524,8 @@
       background: var(--surface); padding: 2px 10px;
       border-radius: 100px; border: 1px solid var(--border); white-space: nowrap;
     }
+    .genre-row-viewall { font-size: 0.68rem; color: var(--accent); font-weight: 600; text-decoration: none; white-space: nowrap; opacity: 0.8; transition: opacity 0.2s; }
+    .genre-row-viewall:hover { opacity: 1; }
     .genre-row-line { flex: 1; height: 1px; background: linear-gradient(90deg, var(--border) 0%, transparent 100%); }
     .genre-sort-toggle {
       display: inline-flex; gap: 0; border-radius: 8px; overflow: hidden;
@@ -914,12 +916,14 @@
   <a href="/" class="logo"><span class="logo-dot"></span>VOTEMYAI</a>
   <div class="nav-right">
     <a href="/blog.html" class="nav-link">Blog</a>
+    <a href="/playlist.html" class="nav-link">Playlists</a>
     <a href="/login.html" class="nav-link" id="authLink">Login</a>
     <button class="btn-submit" onclick="window.location.href='/submit.html'">Submit</button>
     <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
   </div>
   <div class="nav-links-mobile" id="mobileNav">
     <a href="/blog.html" class="nav-link">Blog</a>
+    <a href="/playlist.html" class="nav-link">Playlists</a>
     <a href="/login.html" class="nav-link" id="authLinkMobile">Login</a>
     <a href="/submit.html" class="nav-link">Submit a Track</a>
     <a href="/#leaderboard" class="nav-link">Leaderboard</a>
@@ -1052,7 +1056,7 @@
       <p>The community-driven platform for discovering and rating AI-generated music.</p>
     </div>
     <div class="footer-links">
-      <div class="footer-col"><h4>Platform</h4><a href="/#tracks">Browse Tracks</a><a href="/blog.html">Blog</a><a href="/submit.html">Submit a Track</a><a href="/login.html">Login / Sign Up</a></div>
+      <div class="footer-col"><h4>Platform</h4><a href="/#tracks">Browse Tracks</a><a href="/playlist.html">Playlists</a><a href="/blog.html">Blog</a><a href="/submit.html">Submit a Track</a><a href="/login.html">Login / Sign Up</a></div>
       <div class="footer-col"><h4>AI Tools</h4><a href="https://suno.com/invite/@playfulsoprano318" target="_blank" rel="noopener">Suno</a><a href="https://www.udio.com" target="_blank" rel="noopener">Udio</a><a href="https://try.elevenlabs.io/xj2k88ooae07" target="_blank" rel="noopener">ElevenLabs</a></div>
       <div class="footer-col"><h4>Info</h4><a href="/about.html">About</a><a href="/faq.html">FAQ</a><a href="/contact.html">Contact</a><a href="/terms.html">Terms</a><a href="/privacy.html">Privacy</a></div>
     </div>
@@ -1637,6 +1641,14 @@
     'Other': '🎶'
   };
 
+  const GENRE_TO_SLUG = {
+    'Pop':'pop','Rock':'rock','Hip-Hop':'hip-hop','Electronic':'electronic',
+    'R&B / Soul':'r-b-soul','Funk':'funk','Metal':'metal','Jazz':'jazz',
+    'Classical':'classical','Cinematic':'cinematic','Indie / Folk':'indie-folk',
+    'Latin':'latin','Country':'country','Ambient':'ambient','Reggae':'reggae',
+    'Afrobeat':'afrobeat','Blues':'blues','Other':'other'
+  };
+
   let browseView = 'discover';
   let searchQuery = '';
 
@@ -1936,6 +1948,7 @@
           '<div class="genre-row-title"><span class="genre-emoji">' + rd.emoji + '</span> ' + sanitize(rd.title) + '</div>' +
           (rd.isGenre ? '<div class="genre-sort-toggle"><button class="genre-sort-btn active" data-sort="top" data-row="' + idx + '">Top</button><button class="genre-sort-btn" data-sort="new" data-row="' + idx + '">New</button></div>' : '') +
           '<span class="genre-row-count">' + rd.tracks.length + ' track' + (rd.tracks.length !== 1 ? 's' : '') + '</span>' +
+          (rd.isGenre && GENRE_TO_SLUG[rd.title] ? '<a href="/playlist.html?genre=' + GENRE_TO_SLUG[rd.title] + '" class="genre-row-viewall">View All \u2192</a>' : '') +
           '<div class="genre-row-line"></div>' +
         '</div>' +
         '<div class="genre-row-wrapper">' +
