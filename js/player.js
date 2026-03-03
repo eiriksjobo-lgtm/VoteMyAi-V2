@@ -1181,6 +1181,8 @@ window.VMAPlayer = (function () {
     var pm = document.getElementById('persistent-media');
     if (!pm) return;
 
+    var spaContent = document.getElementById('spa-content');
+
     _savedState = {
       trackId: activePlayerTrackId,
       platform: activePlayerPlatform,
@@ -1189,17 +1191,20 @@ window.VMAPlayer = (function () {
       listTrackId: activeTrackId
     };
 
-    // Udio/SC popups already live outside #spa-content — no action needed.
+    // ── CRITICAL: NEVER move iframes that are already outside #spa-content ──
+    // Chrome/Safari reload iframes on DOM reparenting (appendChild).
+    // Elements on document.body (hidden players, Udio/SC popups) survive
+    // container.innerHTML naturally — moving them would restart the song.
+    // Only move elements that ARE inside #spa-content (would be destroyed).
 
-    // YouTube playing in a browse card: move iframe to #persistent-media
-    if (activeBrowseUid && activePlayerPlatform === 'youtube') {
+    // YouTube playing in a browse card (inside #spa-content): must move to survive
+    if (activeBrowseUid && activePlayerPlatform === 'youtube' && spaContent) {
       var card = document.getElementById(activeBrowseUid);
-      if (card) {
+      if (card && spaContent.contains(card)) {
         var thumbContainer = card.querySelector('.browse-card-thumb');
         if (thumbContainer) {
           var ytIframe = thumbContainer.querySelector('iframe');
           if (ytIframe) {
-            // Wrap in a container so we can identify it later
             var wrap = document.createElement('div');
             wrap.id = 'preserved-yt-' + activeBrowseUid;
             wrap.style.cssText = 'position:fixed;left:0;bottom:0;width:1px;height:1px;overflow:hidden;opacity:0.01;pointer-events:none;z-index:-1;';
@@ -1210,18 +1215,13 @@ window.VMAPlayer = (function () {
       }
     }
 
-    // Hidden player (Suno, etc.) for browse card — move to #persistent-media
-    if (activeBrowseUid) {
-      var hiddenPlayer = document.getElementById('hidden-player-' + activeBrowseUid);
-      if (hiddenPlayer) {
-        pm.appendChild(hiddenPlayer);
-      }
-    }
+    // Hidden player (Suno, etc.) — lives on document.body, survives innerHTML.
+    // Do NOT move — appendChild would cause Chrome to reload the iframe.
 
-    // iOS live player in browse card — move entire wrapper to #persistent-media
-    if (activeBrowseUid && isIOS) {
+    // iOS live player — only move if inside #spa-content
+    if (activeBrowseUid && isIOS && spaContent) {
       var iosLive = document.getElementById('ios-live-player-' + activeBrowseUid);
-      if (iosLive) {
+      if (iosLive && spaContent.contains(iosLive)) {
         var iosWrap = document.createElement('div');
         iosWrap.id = 'preserved-ios-' + activeBrowseUid;
         iosWrap.style.cssText = 'position:fixed;left:0;bottom:0;width:1px;height:1px;overflow:hidden;opacity:0.01;pointer-events:none;z-index:-1;';
@@ -1230,10 +1230,10 @@ window.VMAPlayer = (function () {
       }
     }
 
-    // Playlist inline embeds — move active embed iframe to #persistent-media
-    if (activeTrackId !== null) {
+    // Playlist inline embeds — inside #spa-content, must move to survive
+    if (activeTrackId !== null && spaContent) {
       var row = document.querySelector('.track-row[data-track-id="' + activeTrackId + '"]');
-      if (row) {
+      if (row && spaContent.contains(row)) {
         var embedArea = row.querySelector('.track-embed-area');
         if (embedArea) {
           var listIframe = embedArea.querySelector('iframe');
