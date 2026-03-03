@@ -89,7 +89,6 @@ window.VMAPlayer = (function () {
   function _stopAllPlayback() {
     // 1. Browse card (restore thumbnail if card still in DOM)
     if (activeBrowseUid) browseStop(activeBrowseUid);
-    // Always reset browse state (browseStop may not if card element missing)
     activeBrowseUid = null;
     activeBrowseTrackId = null;
 
@@ -100,33 +99,23 @@ window.VMAPlayer = (function () {
     destroySc();
 
     // 4. Playlist inline track — clean up rows + iframes
-    if (activeTrackId !== null) {
-      var oldId = activeTrackId;
-      activeTrackId = null;
-      document.querySelectorAll('.track-row.playing').forEach(function (row) {
-        row.classList.remove('playing');
-        var btn = row.querySelector('.track-play');
-        if (btn) {
-          btn.innerHTML = '<svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>';
-          btn.setAttribute('aria-label', 'Play');
-        }
-        var embedArea = row.querySelector('.track-embed-area');
-        if (embedArea) {
-          embedArea.querySelectorAll('iframe').forEach(function (f) {
-            try { f.src = 'about:blank'; } catch (e) { /* ignore */ }
-          });
-          embedArea.innerHTML = '';
-          embedArea.style.display = 'none';
-        }
-      });
-      var preserved = document.getElementById('preserved-list-' + oldId);
-      if (preserved) {
-        preserved.querySelectorAll('iframe').forEach(function (f) {
+    activeTrackId = null;
+    document.querySelectorAll('.track-row.playing').forEach(function (row) {
+      row.classList.remove('playing');
+      var btn = row.querySelector('.track-play');
+      if (btn) {
+        btn.innerHTML = '<svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>';
+        btn.setAttribute('aria-label', 'Play');
+      }
+      var embedArea = row.querySelector('.track-embed-area');
+      if (embedArea) {
+        embedArea.querySelectorAll('iframe').forEach(function (f) {
           try { f.src = 'about:blank'; } catch (e) { /* ignore */ }
         });
-        preserved.remove();
+        embedArea.innerHTML = '';
+        embedArea.style.display = 'none';
       }
-    }
+    });
 
     // 5. Hidden players (Suno, etc.)
     document.querySelectorAll('[id^="hidden-player-"]').forEach(function (el) {
@@ -134,29 +123,50 @@ window.VMAPlayer = (function () {
       el.remove();
     });
 
-    // 6. iOS legacy cleanup
-    var iosArea = document.getElementById('iosPlayerEmbed');
-    if (iosArea) {
-      iosArea.querySelectorAll('iframe').forEach(function (i) { i.src = 'about:blank'; });
-      iosArea.remove();
-    }
-    var iosMini = document.getElementById('ios-mini-player');
-    if (iosMini) {
-      iosMini.querySelectorAll('iframe').forEach(function (i) { i.src = 'about:blank'; });
-      iosMini.remove();
-    }
-    document.querySelectorAll('[id^="ios-live-player-"] iframe, .ios-embed-wrap iframe').forEach(function (f) {
-      f.src = 'about:blank';
+    // 6. Preserved players from navigation
+    document.querySelectorAll('[id^="preserved-"]').forEach(function (el) {
+      el.querySelectorAll('iframe').forEach(function (f) {
+        try { f.src = 'about:blank'; } catch (e) { /* ignore */ }
+      });
+      el.remove();
     });
 
-    // 7. Persistent-media container
+    // 7. iOS players
+    document.querySelectorAll('[id^="ios-live-player-"], [id^="ios-mini-player"], #iosPlayerEmbed, .ios-embed-wrap').forEach(function (el) {
+      el.querySelectorAll('iframe').forEach(function (f) { f.src = 'about:blank'; });
+      if (el.id) el.remove();
+    });
+
+    // 8. Persistent-media container — nuke everything
     var pm = document.getElementById('persistent-media');
     if (pm) {
       pm.querySelectorAll('iframe').forEach(function (f) { f.src = 'about:blank'; });
       pm.innerHTML = '';
     }
 
-    // 8. Reset bar platform classes (NOT visibility — caller handles that)
+    // 9. SCORCHED EARTH — kill any remaining audio iframes anywhere in the document
+    //    Only spare the page-frame overlay iframe (iOS navigation).
+    document.querySelectorAll('iframe').forEach(function (f) {
+      if (f.closest('#pageFrame')) return;
+      var src = f.src || '';
+      if (src === '' || src === 'about:blank') return;
+      // Kill any iframe with audio/embed content
+      if (src.includes('suno.com') || src.includes('udio.com') ||
+          src.includes('soundcloud.com') || src.includes('youtube.com') ||
+          src.includes('youtu.be')) {
+        try { f.src = 'about:blank'; } catch (e) { /* ignore */ }
+      }
+    });
+
+    // 10. Kill any stray <audio> or <video> elements
+    document.querySelectorAll('audio, video').forEach(function (el) {
+      try { el.pause(); el.src = ''; } catch (e) { /* ignore */ }
+    });
+
+    // 11. Clear navigation saved state
+    _savedState = null;
+
+    // 12. Reset bar platform classes (NOT visibility — caller handles that)
     playerBar.classList.remove('udio-active', 'sc-active');
   }
 
