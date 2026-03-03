@@ -952,66 +952,19 @@ window.VMAPlayer = (function () {
 
     var box = document.getElementById('udio-iframe-box');
     var newSrc = 'https://www.udio.com/embed/' + udioId;
-    var _ready = false;
-    var _retried = false;
-    var _loadStart = Date.now();
 
-    // Show loading indicator + iframe (hidden until loaded)
+    // Simple iframe load — matches original behavior (no retry complexity)
     box.innerHTML =
-      '<div class="embed-loading">' +
-        '<div style="text-align:center;">' +
-          '<div class="embed-loading-spinner" style="border-top-color:#818cf8;"></div>' +
-          '<div style="font-size:0.72rem;color:rgba(255,255,255,0.6);">Loading Udio...</div>' +
-        '</div>' +
-      '</div>' +
-      '<iframe src="' + newSrc + '" allow="autoplay; encrypted-media" style="width:100%;height:100%;border:none;opacity:0;transition:opacity 0.3s;"></iframe>';
-
-    var iframe = box.querySelector('iframe');
-
-    function markReady() {
-      if (_ready) return;
-      _ready = true;
-      iframe.style.opacity = '1';
-      var loadingEl = box.querySelector('.embed-loading');
-      if (loadingEl) loadingEl.remove();
-      if (typeof onReady === 'function') onReady();
-      // Start auto-minimize timer only after iframe is ready
-      clearTimeout(window._udioAutoMin);
-      window._udioAutoMin = setTimeout(function () {
-        if (udioState === 'popup') minimizeUdio();
-      }, 6000);
-    }
-
-    // Retry once if load fires suspiciously fast (< 300ms = likely error/redirect)
-    function onLoad() {
-      if (_ready) return;
-      var elapsed = Date.now() - _loadStart;
-      if (elapsed < 300 && !_retried) {
-        _retried = true;
-        _loadStart = Date.now();
-        setTimeout(function () { iframe.src = newSrc; }, 1500);
-        return;
-      }
-      markReady();
-    }
-
-    iframe.addEventListener('load', onLoad);
-    // Retry once on network error
-    iframe.addEventListener('error', function () {
-      if (!_retried) {
-        _retried = true;
-        _loadStart = Date.now();
-        setTimeout(function () { iframe.src = newSrc; }, 1500);
-      }
-    });
-    // Fallback: treat as ready after 5s even if onload hasn't fired
-    setTimeout(markReady, 5000);
+      '<iframe src="' + newSrc + '" allow="autoplay; encrypted-media" style="width:100%;height:100%;border:none;"></iframe>';
 
     udioContainer.querySelector('.udio-hdr-title').textContent =
       trackTitle || 'Udio Track';
 
     udioContainer.className = 'udio-popup';
     udioState = 'popup';
+
+    // Fire onReady callback immediately — popup is visible
+    if (typeof onReady === 'function') onReady();
 
     // Auto-minimize when user clicks play (focus goes to iframe)
     function onIframeClick() {
@@ -1025,8 +978,11 @@ window.VMAPlayer = (function () {
     window._udioBlurHandler = onIframeClick;
     window.addEventListener('blur', onIframeClick);
 
-    // No auto-minimize timer here — it starts in markReady() after iframe loads
+    // Auto-minimize after 6s in case user already pressed play
     clearTimeout(window._udioAutoMin);
+    window._udioAutoMin = setTimeout(function () {
+      if (udioState === 'popup') minimizeUdio();
+    }, 6000);
   }
 
   function minimizeUdio() {
@@ -1098,42 +1054,20 @@ window.VMAPlayer = (function () {
       'https://w.soundcloud.com/player/?url=' +
       encodeURIComponent(scUrl) +
       '&color=%23ff5500&auto_play=true&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=true';
-    var _ready = false;
 
-    // Show loading indicator + iframe (hidden until loaded)
+    // Simple iframe load — matches original behavior (no loading spinner)
     box.innerHTML =
-      '<div class="embed-loading">' +
-        '<div style="text-align:center;">' +
-          '<div class="embed-loading-spinner" style="border-top-color:#ff5500;"></div>' +
-          '<div style="font-size:0.72rem;color:rgba(255,255,255,0.6);">Loading SoundCloud...</div>' +
-        '</div>' +
-      '</div>' +
-      '<iframe src="' + embedSrc + '" allow="autoplay; encrypted-media" style="width:100%;height:100%;border:none;opacity:0;transition:opacity 0.3s;" scrolling="no"></iframe>';
-
-    var iframe = box.querySelector('iframe');
-
-    function markReady() {
-      if (_ready) return;
-      _ready = true;
-      iframe.style.opacity = '1';
-      var loadingEl = box.querySelector('.embed-loading');
-      if (loadingEl) loadingEl.remove();
-      if (typeof onReady === 'function') onReady();
-      // Start auto-minimize timer only after iframe is ready
-      clearTimeout(window._scAutoMin);
-      window._scAutoMin = setTimeout(function () {
-        if (scState === 'popup') minimizeSc();
-      }, 5000);
-    }
-
-    iframe.addEventListener('load', markReady);
-    setTimeout(markReady, 4000);
+      '<iframe src="' + embedSrc + '" allow="autoplay; encrypted-media" style="width:100%;height:100%;border:none;" scrolling="no"></iframe>';
 
     scContainer.querySelector('.sc-hdr-title').textContent =
       trackTitle || 'SoundCloud Track';
     scContainer.className = 'sc-popup';
     scState = 'popup';
 
+    // Fire onReady callback immediately — popup is visible
+    if (typeof onReady === 'function') onReady();
+
+    // Auto-minimize when user clicks play (focus goes to iframe)
     function onScBlur() {
       if (scState === 'popup') {
         clearTimeout(window._scAutoMin);
@@ -1145,8 +1079,10 @@ window.VMAPlayer = (function () {
     window._scBlurHandler = onScBlur;
     window.addEventListener('blur', onScBlur);
 
-    // No auto-minimize timer here — it starts in markReady()
     clearTimeout(window._scAutoMin);
+    window._scAutoMin = setTimeout(function () {
+      if (scState === 'popup') minimizeSc();
+    }, 6000);
   }
 
   function minimizeSc() {
