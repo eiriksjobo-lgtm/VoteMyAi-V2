@@ -61,11 +61,23 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,7,11,0.92);border-bottom
 .playlist-count{color:var(--muted);font-size:.82rem;font-weight:600}
 
 /* ═══ GENRE PILLS ═══ */
-.genre-pills{display:flex;gap:6px;overflow-x:auto;padding:4px 0 12px;-webkit-overflow-scrolling:touch;scrollbar-width:none;scroll-snap-type:x mandatory}
+.genre-pills-wrap{position:relative}
+.genre-pills{display:flex;gap:6px;overflow-x:auto;padding:4px 0 12px;-webkit-overflow-scrolling:touch;scrollbar-width:none;scroll-snap-type:x mandatory;scroll-behavior:smooth}
 .genre-pills::-webkit-scrollbar{display:none}
 .genre-pill{flex-shrink:0;scroll-snap-align:start;padding:6px 14px;border-radius:100px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:.7rem;font-weight:600;letter-spacing:.5px;text-decoration:none;white-space:nowrap;transition:all .2s;cursor:pointer}
 .genre-pill:hover{border-color:var(--border-hover);color:var(--text)}
 .genre-pill.active{background:var(--accent);color:var(--bg);border-color:var(--accent);font-weight:700}
+.genre-arrow{position:absolute;top:0;width:32px;height:36px;border:none;cursor:pointer;z-index:2;display:flex;align-items:center;justify-content:center;color:var(--text);transition:opacity .2s;opacity:0;pointer-events:none}
+.genre-arrow.show{opacity:1;pointer-events:auto}
+.genre-arrow.left{left:0;background:linear-gradient(90deg,var(--bg) 60%,transparent);padding-right:8px}
+.genre-arrow.right{right:0;background:linear-gradient(-90deg,var(--bg) 60%,transparent);padding-left:8px}
+.genre-arrow svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+/* ═══ SUBGENRE PILLS ═══ */
+.subgenre-pills{display:flex;gap:5px;overflow-x:auto;padding:0 0 10px;-webkit-overflow-scrolling:touch;scrollbar-width:none;scroll-behavior:smooth;margin-top:-4px}
+.subgenre-pills::-webkit-scrollbar{display:none}
+.subgenre-pill{flex-shrink:0;padding:4px 12px;border-radius:100px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:.62rem;font-weight:600;letter-spacing:.3px;text-decoration:none;white-space:nowrap;transition:all .2s;cursor:pointer}
+.subgenre-pill:hover{border-color:var(--border-hover);color:var(--text)}
+.subgenre-pill.active{background:rgba(232,255,71,.15);color:var(--accent);border-color:rgba(232,255,71,.3);font-weight:700}
 
 /* ═══ TOOLBAR (search + sort) ═══ */
 .playlist-toolbar{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
@@ -158,6 +170,8 @@ footer{background:var(--surface);border-top:1px solid var(--border);padding:48px
   .nav-links-mobile .nav-link:last-child{border-bottom:none}
   .nav-right .nav-link{display:none}
   .btn-submit{padding:7px 14px;font-size:.65rem;letter-spacing:1px}
+  .genre-arrow{display:none}
+  .subgenre-pill{padding:6px 14px;font-size:.66rem;min-height:32px}
   .search-box input{font-size:16px}
   .search-box{max-width:100%;min-width:0}
   .playlist-toolbar{flex-direction:column;align-items:stretch;gap:10px}
@@ -366,7 +380,12 @@ body.player-active{padding-bottom:68px}
     </div>
   </div>
 
-  <div class="genre-pills" id="genrePills"></div>
+  <div class="genre-pills-wrap">
+    <button class="genre-arrow left" id="genreArrowL" aria-label="Scroll left"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="genre-pills" id="genrePills"></div>
+    <button class="genre-arrow right" id="genreArrowR" aria-label="Scroll right"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></button>
+  </div>
+  <div class="subgenre-pills" id="subgenrePills" style="display:none"></div>
 
   <div class="playlist-toolbar">
     <div class="search-box">
@@ -469,6 +488,7 @@ let sortedTracks = [];
 let displayCount = DISPLAY_CHUNK;
 let currentSort = 'top';
 let currentGenreSlug = null;
+let currentSubgenre = null;
 let searchQuery = '';
 let searchTimeout = null;
 
@@ -616,7 +636,12 @@ const GENRE_PARENTS = {
 };
 
 const _genreLookup = {};
-Object.entries(GENRE_PARENTS).forEach(([sub, parent]) => { _genreLookup[sub.toLowerCase().trim()] = parent; });
+const SUBGENRES_BY_PARENT = {};
+Object.entries(GENRE_PARENTS).forEach(([sub, parent]) => {
+  _genreLookup[sub.toLowerCase().trim()] = parent;
+  if (!SUBGENRES_BY_PARENT[parent]) SUBGENRES_BY_PARENT[parent] = [];
+  SUBGENRES_BY_PARENT[parent].push(sub);
+});
 GENRE_PARENT_LIST.forEach(p => { _genreLookup[p.toLowerCase()] = p; });
 
 const _genreKeywords = {
@@ -787,6 +812,15 @@ function applyFilters() {
     ? allTracks.filter(t => resolveGenre(t.genre) === genreName)
     : [...allTracks];
 
+  // Subgenre filter
+  if (currentSubgenre && genreName) {
+    const sub = currentSubgenre.toLowerCase();
+    filteredTracks = filteredTracks.filter(t => {
+      const g = (t.genre || '').toLowerCase().trim();
+      return g === sub || g.includes(sub);
+    });
+  }
+
   // Search filter
   if (searchQuery) {
     const q = searchQuery.toLowerCase();
@@ -827,8 +861,9 @@ function updateHeader(genreName) {
   const emoji = genreName ? (GENRE_PARENT_EMOJIS[genreName] || '🎶') : '🎶';
   const titleEl = document.getElementById('playlistTitle');
   if (genreName) {
-    titleEl.innerHTML = `${emoji} <span class="accent">${genreName.toUpperCase()}</span>`;
-    document.title = `${genreName} Playlist — VoteMyAI`;
+    const displayName = currentSubgenre || genreName;
+    titleEl.innerHTML = `${emoji} <span class="accent">${displayName.toUpperCase()}</span>`;
+    document.title = `${displayName} Playlist — VoteMyAI`;
     const desc = `Listen to top-rated AI ${genreName} tracks on VoteMyAI.`;
     document.querySelector('meta[name="description"]').content = desc;
     document.querySelector('meta[property="og:title"]').content = document.title;
@@ -945,7 +980,87 @@ function renderGenrePills() {
   requestAnimationFrame(() => {
     const activePill = container.querySelector('.genre-pill.active');
     if (activePill) activePill.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    updateGenreArrows();
   });
+
+  // Render subgenres for active parent
+  renderSubgenrePills();
+}
+
+// ─── Genre Arrow Visibility ───
+function updateGenreArrows() {
+  const el = document.getElementById('genrePills');
+  const arrowL = document.getElementById('genreArrowL');
+  const arrowR = document.getElementById('genreArrowR');
+  arrowL.classList.toggle('show', el.scrollLeft > 10);
+  arrowR.classList.toggle('show', el.scrollLeft < el.scrollWidth - el.clientWidth - 10);
+}
+
+// ─── Drag-to-Scroll for Genre Pills ───
+function initGenreDrag() {
+  const el = document.getElementById('genrePills');
+  let isDragging = false, startX = 0, scrollStart = 0, moved = false;
+
+  el.addEventListener('mousedown', (e) => {
+    isDragging = true; moved = false;
+    startX = e.pageX; scrollStart = el.scrollLeft;
+    el.style.cursor = 'grabbing'; el.style.userSelect = 'none';
+  });
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    const dx = e.pageX - startX;
+    if (Math.abs(dx) > 4) moved = true;
+    el.scrollLeft = scrollStart - dx;
+  });
+  document.addEventListener('mouseup', () => {
+    if (isDragging) {
+      isDragging = false;
+      el.style.cursor = ''; el.style.userSelect = '';
+    }
+  });
+
+  // Prevent click on pills when dragging
+  el.addEventListener('click', (e) => {
+    if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; }
+  }, true);
+
+  // Arrows
+  document.getElementById('genreArrowL').addEventListener('click', () => { el.scrollBy({ left: -200, behavior: 'smooth' }); });
+  document.getElementById('genreArrowR').addEventListener('click', () => { el.scrollBy({ left: 200, behavior: 'smooth' }); });
+  el.addEventListener('scroll', updateGenreArrows, { passive: true });
+}
+
+// ─── Subgenre Pills ───
+function renderSubgenrePills() {
+  const container = document.getElementById('subgenrePills');
+  const genreName = currentGenreSlug ? SLUG_TO_GENRE[currentGenreSlug] : null;
+  if (!genreName) { container.style.display = 'none'; currentSubgenre = null; return; }
+
+  // Collect subgenres that actually have tracks in the data
+  const parentSubs = SUBGENRES_BY_PARENT[genreName] || [];
+  if (parentSubs.length === 0) { container.style.display = 'none'; currentSubgenre = null; return; }
+
+  const subCounts = {};
+  allTracks.forEach(t => {
+    if (resolveGenre(t.genre) !== genreName) return;
+    const g = (t.genre || '').trim();
+    if (g && g !== genreName) {
+      const key = g;
+      subCounts[key] = (subCounts[key] || 0) + 1;
+    }
+  });
+
+  // Sort by count descending
+  const subs = Object.entries(subCounts).sort((a, b) => b[1] - a[1]);
+  if (subs.length === 0) { container.style.display = 'none'; currentSubgenre = null; return; }
+
+  let html = `<span class="subgenre-pill${!currentSubgenre ? ' active' : ''}" data-sub="">All ${genreName}</span>`;
+  subs.forEach(([sub, count]) => {
+    const active = currentSubgenre && currentSubgenre.toLowerCase() === sub.toLowerCase() ? ' active' : '';
+    html += `<span class="subgenre-pill${active}" data-sub="${sanitizeAttr(sub)}">${sanitize(sub)} <span style="opacity:.5">${count}</span></span>`;
+  });
+  container.innerHTML = html;
+  container.style.display = 'flex';
 }
 
 // ─── Events ───
@@ -1026,16 +1141,33 @@ function initEvents() {
     const newSlug = url.searchParams.get('genre') || null;
     if (newSlug === currentGenreSlug) return;
     currentGenreSlug = newSlug;
+    currentSubgenre = null;
     window.history.pushState({}, '', pill.href);
     gtag('event', 'playlist_genre_switch', { genre: currentGenreSlug || 'all' });
     renderGenrePills();
     applyFilters();
   });
 
+  // Subgenre pill clicks
+  document.getElementById('subgenrePills').addEventListener('click', (e) => {
+    const pill = e.target.closest('.subgenre-pill');
+    if (!pill) return;
+    const sub = pill.dataset.sub || null;
+    if ((sub || null) === (currentSubgenre || null)) return;
+    currentSubgenre = sub || null;
+    renderSubgenrePills();
+    applyFilters();
+    gtag('event', 'playlist_subgenre', { subgenre: currentSubgenre || 'all' });
+  });
+
+  // Init drag-to-scroll and arrows
+  initGenreDrag();
+
   // Handle back/forward
   window.addEventListener('popstate', () => {
     const params = new URLSearchParams(window.location.search);
     currentGenreSlug = params.get('genre') || null;
+    currentSubgenre = null;
     renderGenrePills();
     applyFilters();
   });
