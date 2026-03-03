@@ -842,6 +842,7 @@ window.VMAPlayer = (function () {
       var embedId = info.udioId;
       if (embedId) {
         var udioH = isMobile ? '140px' : '180px';
+        var udioSrc = 'https://www.udio.com/embed/' + embedId;
         embedArea.innerHTML =
           '<div style="position:relative;height:' + udioH + ';">' +
             '<div class="embed-loading">' +
@@ -850,15 +851,33 @@ window.VMAPlayer = (function () {
                 '<div style="font-size:0.7rem;color:rgba(255,255,255,0.5);">Loading...</div>' +
               '</div>' +
             '</div>' +
-            '<iframe src="https://www.udio.com/embed/' + embedId + '" allow="autoplay" ' +
+            '<iframe src="' + udioSrc + '" allow="autoplay" ' +
             'style="width:100%;height:100%;border:none;border-radius:8px" playsinline></iframe>' +
           '</div>';
         embedArea.style.display = 'block';
         var _eIframe = embedArea.querySelector('iframe');
         var _eLoading = embedArea.querySelector('.embed-loading');
         if (_eIframe && _eLoading) {
-          _eIframe.addEventListener('load', function () { _eLoading.remove(); });
-          setTimeout(function () { if (_eLoading.parentNode) _eLoading.remove(); }, 4000);
+          var _eRetried = false;
+          var _eStart = Date.now();
+          _eIframe.addEventListener('load', function () {
+            // Retry once if load fires too fast (< 300ms = likely error/redirect)
+            if (Date.now() - _eStart < 300 && !_eRetried) {
+              _eRetried = true;
+              _eStart = Date.now();
+              setTimeout(function () { _eIframe.src = udioSrc; }, 1500);
+              return;
+            }
+            if (_eLoading.parentNode) _eLoading.remove();
+          });
+          _eIframe.addEventListener('error', function () {
+            if (!_eRetried) {
+              _eRetried = true;
+              _eStart = Date.now();
+              setTimeout(function () { _eIframe.src = udioSrc; }, 1500);
+            }
+          });
+          setTimeout(function () { if (_eLoading.parentNode) _eLoading.remove(); }, 5000);
         }
       } else {
         embedArea.innerHTML =
@@ -882,6 +901,7 @@ window.VMAPlayer = (function () {
    */
   function stopTrack() {
     if (activeTrackId === null) return;
+    var oldTrackId = activeTrackId;
     activeTrackId = null;
 
     document.querySelectorAll('.track-row.playing').forEach(function (row) {
@@ -901,6 +921,15 @@ window.VMAPlayer = (function () {
         embedArea.style.display = 'none';
       }
     });
+
+    // Clean up preserved iframe in #persistent-media (survives navigation)
+    var preserved = document.getElementById('preserved-list-' + oldTrackId);
+    if (preserved) {
+      preserved.querySelectorAll('iframe').forEach(function (f) {
+        try { f.src = 'about:blank'; } catch (e) { /* ignore */ }
+      });
+      preserved.remove();
+    }
 
     playerBar.classList.remove('active', 'playing');
     document.body.classList.remove('player-active');
@@ -947,6 +976,8 @@ window.VMAPlayer = (function () {
     var box = document.getElementById('udio-iframe-box');
     var newSrc = 'https://www.udio.com/embed/' + udioId;
     var _ready = false;
+    var _retried = false;
+    var _loadStart = Date.now();
 
     // Show loading indicator + iframe (hidden until loaded)
     box.innerHTML =
@@ -974,9 +1005,30 @@ window.VMAPlayer = (function () {
       }, 6000);
     }
 
-    iframe.addEventListener('load', markReady);
-    // Fallback: treat as ready after 4s even if onload hasn't fired
-    setTimeout(markReady, 4000);
+    // Retry once if load fires suspiciously fast (< 300ms = likely error/redirect)
+    function onLoad() {
+      if (_ready) return;
+      var elapsed = Date.now() - _loadStart;
+      if (elapsed < 300 && !_retried) {
+        _retried = true;
+        _loadStart = Date.now();
+        setTimeout(function () { iframe.src = newSrc; }, 1500);
+        return;
+      }
+      markReady();
+    }
+
+    iframe.addEventListener('load', onLoad);
+    // Retry once on network error
+    iframe.addEventListener('error', function () {
+      if (!_retried) {
+        _retried = true;
+        _loadStart = Date.now();
+        setTimeout(function () { iframe.src = newSrc; }, 1500);
+      }
+    });
+    // Fallback: treat as ready after 5s even if onload hasn't fired
+    setTimeout(markReady, 5000);
 
     udioContainer.querySelector('.udio-hdr-title').textContent =
       trackTitle || 'Udio Track';

@@ -139,6 +139,9 @@ window.VMARouter = (function () {
     // target="_blank" — let the browser handle it
     if (link.target === '_blank') return false;
 
+    // data-no-spa — page module handles this link internally
+    if (link.hasAttribute('data-no-spa')) return false;
+
     var pathname = link.pathname;
 
     // Standalone pages that should NOT be routed
@@ -304,7 +307,10 @@ window.VMARouter = (function () {
   // popstate — browser back/forward
   // ---------------------------------------------------------------------------
   window.addEventListener('popstate', function () {
-    navigate(window.location.pathname + window.location.search + window.location.hash, {
+    var newPath = window.location.pathname;
+    // Same page path — let page modules handle query-param changes (e.g. genre pills)
+    if (newPath === _currentPath) return;
+    navigate(newPath + window.location.search + window.location.hash, {
       pushState: false,
     });
   });

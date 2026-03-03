@@ -430,6 +430,10 @@
     var list = document.getElementById('trackList');
     if (!list) return;
 
+    // Sync active track state with Player module (may have changed externally,
+    // e.g. player bar close, browse card play from another page)
+    if (Player) activeTrackId = Player.listTrackId;
+
     var visible = sortedTracks.slice(0, displayCount);
 
     if (visible.length === 0) {
@@ -500,7 +504,7 @@
     var container = document.getElementById('genrePills');
     if (!container) return;
 
-    var html = '<a class="genre-pill' + (!currentGenreSlug ? ' active' : '') + '" href="/playlist.html">All Genres</a>';
+    var html = '<a class="genre-pill' + (!currentGenreSlug ? ' active' : '') + '" href="/playlist.html" data-no-spa>All Genres</a>';
     var parents = genreParentList();
     var slugs = genreSlugs();
     var emojis = genreParentEmojis();
@@ -509,7 +513,7 @@
       var slug = slugs[g];
       var emoji = emojis[g] || '\ud83c\udfb6';
       var active = currentGenreSlug === slug ? ' active' : '';
-      html += '<a class="genre-pill' + active + '" href="/playlist.html?genre=' + slug + '">' + emoji + ' ' + g + '</a>';
+      html += '<a class="genre-pill' + active + '" href="/playlist.html?genre=' + slug + '" data-no-spa>' + emoji + ' ' + g + '</a>';
     });
     container.innerHTML = html;
 
@@ -700,99 +704,37 @@
   // ═══════════════════════════════════════════════════════════════════════
 
   function playTrack(trackId) {
+    // Sync with Player state before toggle check
+    if (Player) activeTrackId = Player.listTrackId;
+
     // Toggle: same track => stop
     if (activeTrackId !== null && String(activeTrackId) === String(trackId)) {
       stopTrack();
       return;
     }
-    // Stop current if any
-    if (activeTrackId !== null) stopTrack();
 
+    // Delegate to Player module — handles embed, player bar, stops other playback
+    if (Player && typeof Player.playTrack === 'function') {
+      Player.playTrack(trackId);
+      activeTrackId = Player.listTrackId;
+      if (typeof gtag === 'function' && activeTrackId !== null) {
+        gtag('event', 'playlist_play', { track_id: trackId });
+      }
+      return;
+    }
+
+    // Fallback (Player module not available)
+    if (activeTrackId !== null) stopTrack();
     var track = findTrackById(trackId);
     if (!track) return;
-
     var row = document.querySelector('.track-row[data-track-id="' + trackId + '"]');
     if (!row) return;
-
-    var info = getTrackPlatform(track);
-
-    // Mark as playing
     activeTrackId = trackId;
     row.classList.add('playing');
-
-    // Change play icon to stop icon
     var btn = row.querySelector('.track-play');
     if (btn) {
       btn.innerHTML = '<svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>';
       btn.setAttribute('aria-label', 'Stop');
-    }
-
-    // Embed area is always in DOM
-    var embedArea = row.querySelector('.track-embed-area');
-    populateEmbed(track, info, embedArea);
-
-    // Activate player bar
-    activatePlayerBar(track);
-
-    if (typeof gtag === 'function') {
-      gtag('event', 'playlist_play', { track_id: trackId, platform: info.platform });
-    }
-  }
-
-  function activatePlayerBar(track) {
-    // Delegate to Player module if available
-    if (Player && typeof Player.activatePlayerBar === 'function') {
-      Player.activatePlayerBar(track);
-      return;
-    }
-    // Fallback: update player bar directly
-    var playerBar   = document.getElementById('playerBar');
-    var playerTitle = document.getElementById('playerTitle');
-    var playerMeta  = document.getElementById('playerMeta');
-    if (!playerBar) return;
-
-    var genre = resolveGenre(track.genre);
-    if (playerTitle) playerTitle.textContent = track.title || 'Now Playing';
-    if (playerMeta)  playerMeta.textContent = [track.tool, genre].filter(Boolean).join(' \u00b7 ');
-    playerBar.classList.add('active', 'playing');
-    document.body.classList.add('player-active');
-  }
-
-  function populateEmbed(track, info, embedArea) {
-    if (!embedArea) return;
-    var isMobile = window.innerWidth <= 640;
-
-    if (info.platform === 'youtube') {
-      embedArea.innerHTML = '<div class="embed-yt"><iframe src="https://www.youtube.com/embed/' + info.videoId + '?rel=0&autoplay=1&playsinline=1&enablejsapi=1&origin=' + encodeURIComponent(window.location.origin) + '" allow="autoplay; encrypted-media" allowfullscreen playsinline></iframe></div>';
-      embedArea.style.display = 'block';
-    } else if (info.platform === 'suno' && info.sunoId) {
-      var sunoH = isMobile ? '120px' : '160px';
-      embedArea.innerHTML = '<div class="embed-suno"><iframe src="https://suno.com/embed/' + info.sunoId + '?autoplay=true" allow="autoplay" style="height:' + sunoH + '" playsinline></iframe></div>';
-      embedArea.style.display = 'block';
-    } else if (info.platform === 'soundcloud') {
-      if (info.isShort) {
-        embedArea.innerHTML = '<a href="' + sanitizeAttr(track.embed_url) + '" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;height:48px;background:var(--surface-2);border-radius:8px;color:#ff5500;text-decoration:none;gap:8px;font-weight:600;font-size:.82rem;"><svg width="18" height="18" viewBox="0 0 24 24" fill="#ff5500"><polygon points="6 3 20 12 6 21 6 3"/></svg>Play on SoundCloud</a>';
-        embedArea.style.display = 'block';
-      } else {
-        var scH = isMobile ? '120px' : '166px';
-        embedArea.innerHTML = '<iframe src="https://w.soundcloud.com/player/?url=' + encodeURIComponent(info.url) + '&color=%23ff5500&auto_play=true&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=true" allow="autoplay" style="width:100%;height:' + scH + ';border:none;border-radius:8px" playsinline></iframe>';
-        embedArea.style.display = 'block';
-      }
-    } else if (info.platform === 'udio') {
-      var embedId = info.udioId;
-      if (embedId) {
-        var udioH = isMobile ? '140px' : '180px';
-        embedArea.innerHTML = '<iframe src="https://www.udio.com/embed/' + embedId + '" allow="autoplay" style="width:100%;height:' + udioH + ';border:none;border-radius:8px" playsinline></iframe>';
-        embedArea.style.display = 'block';
-      } else {
-        embedArea.innerHTML = '<a href="' + sanitizeAttr(track.embed_url) + '" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;height:48px;background:var(--surface-2);border-radius:8px;color:#818cf8;text-decoration:none;gap:8px;font-weight:600;font-size:.82rem;"><svg width="18" height="18" viewBox="0 0 24 24" fill="#818cf8"><polygon points="6 3 20 12 6 21 6 3"/></svg>Play on Udio</a>';
-        embedArea.style.display = 'block';
-      }
-    } else {
-      // Unknown platform -- open in new tab
-      var url = track.embed_url || (track.yt_id ? 'https://www.youtube.com/watch?v=' + track.yt_id : null);
-      if (url) window.open(url, '_blank');
-      stopTrack();
     }
   }
 
@@ -800,7 +742,13 @@
     if (activeTrackId === null) return;
     activeTrackId = null;
 
-    // Clean up all playing rows (safety)
+    // Delegate to Player module
+    if (Player && typeof Player.stopTrack === 'function') {
+      Player.stopTrack();
+      return;
+    }
+
+    // Fallback: clean up manually
     document.querySelectorAll('.track-row.playing').forEach(function (row) {
       row.classList.remove('playing');
       var btn = row.querySelector('.track-play');
@@ -817,8 +765,6 @@
         embedArea.style.display = 'none';
       }
     });
-
-    // Deactivate player bar
     var playerBar = document.getElementById('playerBar');
     if (playerBar) playerBar.classList.remove('active', 'playing');
     document.body.classList.remove('player-active');
@@ -1199,19 +1145,8 @@
       _cleanup.push(function () { trackList.removeEventListener('click', onTrackListClick); });
     }
 
-    // --- Player bar locate & close ---
-    var btnLocate = document.getElementById('btnLocate');
-    if (btnLocate) {
-      btnLocate.addEventListener('click', locateTrack);
-      _cleanup.push(function () { btnLocate.removeEventListener('click', locateTrack); });
-    }
-
-    var btnClose = document.getElementById('btnClose');
-    if (btnClose) {
-      var onClose = function () { stopTrack(); };
-      btnClose.addEventListener('click', onClose);
-      _cleanup.push(function () { btnClose.removeEventListener('click', onClose); });
-    }
+    // Player bar locate & close are handled by the Player module (persistent).
+    // No duplicate listeners needed here.
 
     // --- Genre pill clicks (SPA-style, prevent full reload) ---
     var genrePillsEl = document.getElementById('genrePills');
@@ -1331,8 +1266,8 @@
   // ═══════════════════════════════════════════════════════════════════════
 
   function cleanup() {
-    // Stop any playing track before tearing down
-    if (activeTrackId !== null) stopTrack();
+    // DON'T stop playback — Player module handles cross-navigation persistence
+    // via preserveForNav/restoreAfterNav. The music must keep playing.
 
     // Clear any pending search debounce
     clearTimeout(searchTimeout);
@@ -1355,6 +1290,11 @@
   // ═══════════════════════════════════════════════════════════════════════
 
   function init() {
+    // Restore activeTrackId from Player module (cross-navigation persistence)
+    if (Player && Player.listTrackId !== null) {
+      activeTrackId = Player.listTrackId;
+    }
+
     // Parse genre from URL
     var params = new URLSearchParams(window.location.search);
     currentGenreSlug = params.get('genre') || null;
@@ -1381,9 +1321,19 @@
     }
   }
 
-  // Register cleanup on VMA and run init
+  // Register cleanup and playlist API on VMA
   if (VMA) {
     VMA._pageCleanup = cleanup;
+    VMA.playlist = {
+      expandToTrack: function (trackId) {
+        var idx = sortedTracks.findIndex(function (t) { return String(t.id) === String(trackId); });
+        if (idx >= 0 && idx >= displayCount) {
+          displayCount = idx + DISPLAY_CHUNK;
+          renderList();
+        }
+      }
+    };
+    _cleanup.push(function () { VMA.playlist = null; });
   }
   init();
 })();
