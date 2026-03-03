@@ -986,9 +986,18 @@ body {
       }
     });
   }
+  let _ytPauseRetried = false;
   function onYTStateChange(event) {
     if (event.data === YT.PlayerState.ENDED) {
+      _ytPauseRetried = false;
       onTrackEnded();
+    } else if (event.data === YT.PlayerState.PAUSED && typeof _isMobile !== 'undefined' && _isMobile && !_ytPauseRetried) {
+      // Mobile "paused to save power" — retry once
+      _ytPauseRetried = true;
+      console.log('📺 YouTube paused on mobile, retrying playback once');
+      try { ytPlayer.playVideo(); } catch(e) {}
+    } else if (event.data === YT.PlayerState.PLAYING) {
+      _ytPauseRetried = false;
     }
   }
 </script>
