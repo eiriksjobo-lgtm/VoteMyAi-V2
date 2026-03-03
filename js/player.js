@@ -1269,36 +1269,9 @@ window.VMAPlayer = (function () {
           // Restore "Now Playing" / embed overlay
           card.classList.add('is-playing');
 
-          // YouTube: try to restore the live iframe back into the card
-          if (saved.platform === 'youtube' && pm) {
-            var preservedYt = document.getElementById('preserved-yt-' + saved.browseUid);
-            if (preservedYt) {
-              var ytIframe = preservedYt.querySelector('iframe');
-              if (ytIframe) {
-                ytIframe.style.cssText = 'width:100%;height:100%;border:none;position:absolute;top:0;left:0;';
-                thumbContainer.dataset.originalHtml = thumbContainer.innerHTML;
-                thumbContainer.style.aspectRatio = '16/9';
-                thumbContainer.style.position = 'relative';
-                thumbContainer.innerHTML = '';
-                thumbContainer.appendChild(ytIframe);
-                // Add stop overlay
-                var stopOverlay = document.createElement('div');
-                stopOverlay.className = 'browse-stop-overlay';
-                stopOverlay.setAttribute('data-action', 'browse-stop');
-                stopOverlay.setAttribute('data-uid', saved.browseUid);
-                stopOverlay.setAttribute('data-track-id', saved.browseTrackId);
-                stopOverlay.innerHTML =
-                  '<div class="browse-stop-btn">' +
-                    '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>' +
-                  '</div>';
-                thumbContainer.appendChild(stopOverlay);
-                thumbContainer.removeAttribute('data-action');
-              }
-              preservedYt.remove();
-            }
-          }
-          // Audio platforms (Suno, etc.) with hidden player — restore EQ overlay
-          else if (saved.platform !== 'youtube' && saved.platform !== 'udio' && saved.platform !== 'soundcloud') {
+          // Iframes stay in #persistent-media — NEVER moved back during navigation.
+          // Only visual "Now Playing" overlay is restored on the card.
+          if (saved.platform !== 'udio' && saved.platform !== 'soundcloud') {
             var track = _getTrack(saved.browseTrackId);
             if (track) {
               thumbContainer.dataset.originalHtml = thumbContainer.innerHTML;
@@ -1340,18 +1313,7 @@ window.VMAPlayer = (function () {
             }
           }
 
-          // iOS: restore live player back into card
-          if (isIOS && pm) {
-            var preservedIos = document.getElementById('preserved-ios-' + saved.browseUid);
-            if (preservedIos) {
-              var iosLive = preservedIos.querySelector('[id^="ios-live-player-"]');
-              if (iosLive && thumbContainer) {
-                thumbContainer.innerHTML = '';
-                thumbContainer.appendChild(iosLive);
-              }
-              preservedIos.remove();
-            }
-          }
+          // iOS: live player stays in #persistent-media — never moved back
         }
       }
     }
@@ -1369,22 +1331,7 @@ window.VMAPlayer = (function () {
             '<svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>';
           playBtn.setAttribute('aria-label', 'Stop');
         }
-        // Restore iframe from persistent-media into the embed area
-        if (pm) {
-          var preservedList = document.getElementById('preserved-list-' + saved.listTrackId);
-          if (preservedList) {
-            var embedArea = listRow.querySelector('.track-embed-area');
-            if (embedArea) {
-              var listIframe = preservedList.querySelector('iframe');
-              if (listIframe) {
-                embedArea.innerHTML = '';
-                embedArea.appendChild(listIframe);
-                embedArea.style.display = 'block';
-              }
-            }
-            preservedList.remove();
-          }
-        }
+        // Iframe stays in #persistent-media — never moved back during navigation
       }
     }
 
