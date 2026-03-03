@@ -327,6 +327,21 @@ window.VMARouter = (function () {
       if (shouldIntercept(link)) {
         e.preventDefault();
         navigate(link.pathname + link.search + link.hash);
+        return;
+      }
+
+      // If music is playing and the link would do a full page load
+      // (blog articles, radio, etc.), open in Page Frame overlay instead
+      // so the song keeps playing.
+      if (Player && Player.activeTrackId && link.origin === location.origin &&
+          link.target !== '_blank' && !link.hasAttribute('data-no-spa')) {
+        var p = link.pathname;
+        // Standalone pages that bypass the SPA router
+        if ((p.startsWith('/blog/') && p.endsWith('.html')) ||
+            p === '/radio.html' || p === '/radio') {
+          e.preventDefault();
+          Player.navigateToPage(link.href);
+        }
       }
     }, true);
 
