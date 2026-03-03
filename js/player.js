@@ -82,22 +82,59 @@ window.VMAPlayer = (function () {
   }
 
   /**
-   * Stop everything and hide the player bar.
+   * Nuclear stop — kill ALL playback everywhere.
+   * Single source of truth. Called before starting any new playback.
+   * Does NOT hide the player bar (caller does that or re-activates it).
    */
-  function closePlayer() {
-    // 1. Stop browse card
+  function _stopAllPlayback() {
+    // 1. Browse card (restore thumbnail if card still in DOM)
     if (activeBrowseUid) browseStop(activeBrowseUid);
-    // 2. Kill Udio iframe completely
+    // Always reset browse state (browseStop may not if card element missing)
+    activeBrowseUid = null;
+    activeBrowseTrackId = null;
+
+    // 2. Kill Udio popup (always — don't gate on state)
     destroyUdioPlayer();
-    // 3. Kill SoundCloud iframe completely
+
+    // 3. Kill SoundCloud popup (always)
     destroySc();
-    // 4. Stop playlist-page inline track
-    if (activeTrackId !== null) stopTrack();
-    // 5. Remove any stray hidden players + legacy iOS embeds
-    if (activeBrowseUid) {
-      var hp = document.getElementById('hidden-player-' + activeBrowseUid);
-      if (hp) hp.remove();
+
+    // 4. Playlist inline track — clean up rows + iframes
+    if (activeTrackId !== null) {
+      var oldId = activeTrackId;
+      activeTrackId = null;
+      document.querySelectorAll('.track-row.playing').forEach(function (row) {
+        row.classList.remove('playing');
+        var btn = row.querySelector('.track-play');
+        if (btn) {
+          btn.innerHTML = '<svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>';
+          btn.setAttribute('aria-label', 'Play');
+        }
+        var embedArea = row.querySelector('.track-embed-area');
+        if (embedArea) {
+          embedArea.querySelectorAll('iframe').forEach(function (f) {
+            try { f.src = 'about:blank'; } catch (e) { /* ignore */ }
+          });
+          embedArea.innerHTML = '';
+          embedArea.style.display = 'none';
+        }
+      });
+      var preserved = document.getElementById('preserved-list-' + oldId);
+      if (preserved) {
+        preserved.querySelectorAll('iframe').forEach(function (f) {
+          try { f.src = 'about:blank'; } catch (e) { /* ignore */ }
+        });
+        preserved.remove();
+      }
     }
+
+    // 5. Hidden players (Suno, etc.)
+    document.querySelectorAll('[id^="hidden-player-"]').forEach(function (el) {
+      el.querySelectorAll('iframe').forEach(function (f) { f.src = 'about:blank'; });
+      el.remove();
+    });
+
+    // 6. iOS legacy cleanup
     var iosArea = document.getElementById('iosPlayerEmbed');
     if (iosArea) {
       iosArea.querySelectorAll('iframe').forEach(function (i) { i.src = 'about:blank'; });
@@ -108,25 +145,30 @@ window.VMAPlayer = (function () {
       iosMini.querySelectorAll('iframe').forEach(function (i) { i.src = 'about:blank'; });
       iosMini.remove();
     }
-    // Kill all iOS inline card embeds
     document.querySelectorAll('[id^="ios-live-player-"] iframe, .ios-embed-wrap iframe').forEach(function (f) {
       f.src = 'about:blank';
     });
-    // 6. Kill anything in #persistent-media
+
+    // 7. Persistent-media container
     var pm = document.getElementById('persistent-media');
     if (pm) {
       pm.querySelectorAll('iframe').forEach(function (f) { f.src = 'about:blank'; });
       pm.innerHTML = '';
     }
-    // 7. Reset all player state
-    playerBar.classList.remove('active', 'playing', 'udio-active', 'sc-active');
+
+    // 8. Reset bar platform classes (NOT visibility — caller handles that)
+    playerBar.classList.remove('udio-active', 'sc-active');
+  }
+
+  /**
+   * Stop everything and hide the player bar.
+   */
+  function closePlayer() {
+    _stopAllPlayback();
+    playerBar.classList.remove('active', 'playing');
     document.body.classList.remove('player-active');
     activePlayerTrackId = null;
     activePlayerPlatform = null;
-    activeBrowseUid = null;
-    activeBrowseTrackId = null;
-    activeTrackId = null;
-    // 8. Close page frame
     closePageFrame();
   }
 
@@ -246,33 +288,17 @@ window.VMAPlayer = (function () {
    * Play a track from a browse card on the home page.
    */
   function browsePlay(uid, trackId) {
-    // Toggle: if already playing this uid, stop it
+    // Toggle: if already playing this uid, stop everything
     if (activeBrowseUid === uid) {
-      browseStop(uid);
-      destroyUdioPlayer();
-      destroySc();
-      playerBar.classList.remove('active', 'playing', 'udio-active', 'sc-active');
-      document.body.classList.remove('player-active');
-      activePlayerTrackId = null;
-      activePlayerPlatform = null;
+      closePlayer();
       return;
     }
 
     var track = _getTrack(trackId);
     if (!track) return;
 
-    // ── STOP EVERYTHING first ──
-    if (activeBrowseUid) browseStop(activeBrowseUid);
-    destroyUdioPlayer();
-    destroySc();
-    if (activeTrackId !== null) stopTrack();
-    if (activeBrowseUid) {
-      var hp = document.getElementById('hidden-player-' + activeBrowseUid);
-      if (hp) hp.remove();
-    }
-    playerBar.classList.remove('udio-active', 'sc-active');
-    activeBrowseUid = null;
-    activeBrowseTrackId = null;
+    // ── STOP ALL PLAYBACK first (single source of truth) ──
+    _stopAllPlayback();
 
     var card = document.getElementById(uid);
     if (!card) return;
@@ -671,54 +697,44 @@ window.VMAPlayer = (function () {
    */
   function browseStop(uid) {
     var card = document.getElementById(uid);
-    if (!card) return;
-    var thumbContainer = card.querySelector('.browse-card-thumb');
-    if (!thumbContainer) return;
+    if (card) {
+      var thumbContainer = card.querySelector('.browse-card-thumb');
+      if (thumbContainer) {
+        // Remove hidden player — kill iframe src first
+        var hiddenPlayer = document.getElementById('hidden-player-' + uid);
+        if (hiddenPlayer) {
+          hiddenPlayer.querySelectorAll('iframe').forEach(function (f) { f.src = 'about:blank'; });
+          hiddenPlayer.remove();
+        }
 
-    // Remove hidden player — kill iframe src first
-    var hiddenPlayer = document.getElementById('hidden-player-' + uid);
-    if (hiddenPlayer) {
-      hiddenPlayer.querySelectorAll('iframe').forEach(function (f) { f.src = 'about:blank'; });
-      hiddenPlayer.remove();
-    }
+        // iOS live player in card
+        var iosLive = document.getElementById('ios-live-player-' + uid);
+        if (iosLive) {
+          iosLive.querySelectorAll('iframe').forEach(function (f) { f.src = 'about:blank'; });
+        }
 
-    // Legacy iOS cleanup
-    var iosArea = document.getElementById('iosPlayerEmbed');
-    if (iosArea) {
-      iosArea.querySelectorAll('iframe').forEach(function (f) { f.src = 'about:blank'; });
-      iosArea.remove();
-    }
-    var iosMini = document.getElementById('ios-mini-player');
-    if (iosMini) {
-      iosMini.querySelectorAll('iframe').forEach(function (f) { f.src = 'about:blank'; });
-      iosMini.remove();
-    }
+        // iOS inline embeds
+        var iosWrap = thumbContainer.querySelector('.ios-embed-wrap');
+        if (iosWrap) {
+          iosWrap.querySelectorAll('iframe').forEach(function (f) { f.src = 'about:blank'; });
+        }
 
-    // iOS live player in card
-    var iosLive = document.getElementById('ios-live-player-' + uid);
-    if (iosLive) {
-      iosLive.querySelectorAll('iframe').forEach(function (f) { f.src = 'about:blank'; });
-    }
+        // Kill any iframe inside the card thumb (YouTube + iOS inline)
+        thumbContainer.querySelectorAll('iframe').forEach(function (f) { f.src = 'about:blank'; });
 
-    // iOS inline embeds
-    var iosWrap = thumbContainer.querySelector('.ios-embed-wrap');
-    if (iosWrap) {
-      iosWrap.querySelectorAll('iframe').forEach(function (f) { f.src = 'about:blank'; });
+        // Restore original thumbnail
+        if (thumbContainer.dataset.originalHtml) {
+          thumbContainer.innerHTML = thumbContainer.dataset.originalHtml;
+          delete thumbContainer.dataset.originalHtml;
+          thumbContainer.setAttribute('data-action', 'load-embed');
+          thumbContainer.style.aspectRatio = '16/10';
+          thumbContainer.style.minHeight = '';
+          thumbContainer.style.overflow = 'hidden';
+        }
+      }
+      card.classList.remove('is-playing');
     }
-
-    // Kill any iframe inside the card thumb (YouTube + iOS inline)
-    thumbContainer.querySelectorAll('iframe').forEach(function (f) { f.src = 'about:blank'; });
-
-    // Restore original thumbnail
-    if (thumbContainer.dataset.originalHtml) {
-      thumbContainer.innerHTML = thumbContainer.dataset.originalHtml;
-      delete thumbContainer.dataset.originalHtml;
-      thumbContainer.setAttribute('data-action', 'load-embed');
-      thumbContainer.style.aspectRatio = '16/10';
-      thumbContainer.style.minHeight = '';
-      thumbContainer.style.overflow = 'hidden';
-    }
-    card.classList.remove('is-playing');
+    // ALWAYS reset browse state, even if card element not found (navigated away)
     activeBrowseUid = null;
     activeBrowseTrackId = null;
   }
@@ -732,20 +748,14 @@ window.VMAPlayer = (function () {
    * Play from a track list row on the playlist page.
    */
   function playTrack(trackId) {
-    // Toggle: same track => stop
+    // Toggle: same track => stop everything
     if (activeTrackId !== null && String(activeTrackId) === String(trackId)) {
-      stopTrack();
+      closePlayer();
       return;
     }
-    // Stop current if any
-    if (activeTrackId !== null) stopTrack();
-    // Also stop browse-card play if active
-    if (activeBrowseUid) {
-      browseStop(activeBrowseUid);
-      destroyUdioPlayer();
-      destroySc();
-      playerBar.classList.remove('udio-active', 'sc-active');
-    }
+
+    // ── STOP ALL PLAYBACK first (single source of truth) ──
+    _stopAllPlayback();
 
     var track = _getTrack(trackId);
     if (!track) return;
@@ -897,44 +907,11 @@ window.VMAPlayer = (function () {
   }
 
   /**
-   * Stop playlist playback — clean up all playing rows.
+   * Stop all playback and hide the player bar.
+   * Public API — called by playlist-page.js and player bar close button.
    */
   function stopTrack() {
-    if (activeTrackId === null) return;
-    var oldTrackId = activeTrackId;
-    activeTrackId = null;
-
-    document.querySelectorAll('.track-row.playing').forEach(function (row) {
-      row.classList.remove('playing');
-      var btn = row.querySelector('.track-play');
-      if (btn) {
-        btn.innerHTML =
-          '<svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>';
-        btn.setAttribute('aria-label', 'Play');
-      }
-      var embedArea = row.querySelector('.track-embed-area');
-      if (embedArea) {
-        embedArea.querySelectorAll('iframe').forEach(function (f) {
-          try { f.src = 'about:blank'; } catch (e) { /* ignore */ }
-        });
-        embedArea.innerHTML = '';
-        embedArea.style.display = 'none';
-      }
-    });
-
-    // Clean up preserved iframe in #persistent-media (survives navigation)
-    var preserved = document.getElementById('preserved-list-' + oldTrackId);
-    if (preserved) {
-      preserved.querySelectorAll('iframe').forEach(function (f) {
-        try { f.src = 'about:blank'; } catch (e) { /* ignore */ }
-      });
-      preserved.remove();
-    }
-
-    playerBar.classList.remove('active', 'playing');
-    document.body.classList.remove('player-active');
-    activePlayerTrackId = null;
-    activePlayerPlatform = null;
+    closePlayer();
   }
 
 
@@ -1078,12 +1055,7 @@ window.VMAPlayer = (function () {
   }
 
   function stopUdioFull() {
-    destroyUdioPlayer();
-    if (activeBrowseUid) browseStop(activeBrowseUid);
-    playerBar.classList.remove('active', 'playing', 'udio-active', 'sc-active');
-    document.body.classList.remove('player-active');
-    activePlayerTrackId = null;
-    activePlayerPlatform = null;
+    closePlayer();
   }
 
 
@@ -1203,12 +1175,7 @@ window.VMAPlayer = (function () {
   }
 
   function stopScFull() {
-    destroySc();
-    if (activeBrowseUid) browseStop(activeBrowseUid);
-    playerBar.classList.remove('active', 'playing', 'sc-active');
-    document.body.classList.remove('player-active');
-    activePlayerTrackId = null;
-    activePlayerPlatform = null;
+    closePlayer();
   }
 
 

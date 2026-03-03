@@ -739,35 +739,11 @@
   }
 
   function stopTrack() {
-    if (activeTrackId === null) return;
     activeTrackId = null;
-
-    // Delegate to Player module
-    if (Player && typeof Player.stopTrack === 'function') {
-      Player.stopTrack();
-      return;
+    // Delegate to Player module — single source of truth
+    if (Player && typeof Player.closePlayer === 'function') {
+      Player.closePlayer();
     }
-
-    // Fallback: clean up manually
-    document.querySelectorAll('.track-row.playing').forEach(function (row) {
-      row.classList.remove('playing');
-      var btn = row.querySelector('.track-play');
-      if (btn) {
-        btn.innerHTML = '<svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>';
-        btn.setAttribute('aria-label', 'Play');
-      }
-      var embedArea = row.querySelector('.track-embed-area');
-      if (embedArea) {
-        embedArea.querySelectorAll('iframe').forEach(function (f) {
-          try { f.src = 'about:blank'; } catch (e) { /* ignore */ }
-        });
-        embedArea.innerHTML = '';
-        embedArea.style.display = 'none';
-      }
-    });
-    var playerBar = document.getElementById('playerBar');
-    if (playerBar) playerBar.classList.remove('active', 'playing');
-    document.body.classList.remove('player-active');
   }
 
   function locateTrack() {
