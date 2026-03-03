@@ -62,9 +62,10 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,7,11,0.92);border-bottom
 
 /* ═══ GENRE PILLS ═══ */
 .genre-pills-wrap{position:relative}
-.genre-pills{display:flex;gap:6px;overflow-x:auto;padding:4px 0 12px;-webkit-overflow-scrolling:touch;scrollbar-width:none;scroll-snap-type:x mandatory;scroll-behavior:smooth}
+.genre-pills{display:flex;gap:6px;overflow-x:auto;padding:4px 0 12px;-webkit-overflow-scrolling:touch;scrollbar-width:none;cursor:grab;user-select:none;-webkit-user-select:none;touch-action:pan-x pan-y;will-change:scroll-position}
+body.is-dragging .genre-pills,body.is-dragging .subgenre-pills{cursor:grabbing}
 .genre-pills::-webkit-scrollbar{display:none}
-.genre-pill{flex-shrink:0;scroll-snap-align:start;padding:6px 14px;border-radius:100px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:.7rem;font-weight:600;letter-spacing:.5px;text-decoration:none;white-space:nowrap;transition:all .2s;cursor:pointer}
+.genre-pill{flex-shrink:0;padding:6px 14px;border-radius:100px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:.7rem;font-weight:600;letter-spacing:.5px;text-decoration:none;white-space:nowrap;transition:all .2s;cursor:pointer}
 .genre-pill:hover{border-color:var(--border-hover);color:var(--text)}
 .genre-pill.active{background:var(--accent);color:var(--bg);border-color:var(--accent);font-weight:700}
 .genre-arrow{position:absolute;top:0;width:32px;height:36px;border:none;cursor:pointer;z-index:2;display:flex;align-items:center;justify-content:center;color:var(--text);transition:opacity .2s;opacity:0;pointer-events:none}
@@ -74,7 +75,7 @@ nav{position:sticky;top:0;z-index:200;background:rgba(7,7,11,0.92);border-bottom
 .genre-arrow svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
 /* ═══ SUBGENRE PILLS ═══ */
 .subgenre-pills-wrap{position:relative;margin-top:-4px}
-.subgenre-pills{display:flex;gap:5px;overflow-x:auto;padding:0 0 10px;-webkit-overflow-scrolling:touch;scrollbar-width:none;scroll-behavior:smooth}
+.subgenre-pills{display:flex;gap:5px;overflow-x:auto;padding:0 0 10px;-webkit-overflow-scrolling:touch;scrollbar-width:none;cursor:grab;user-select:none;-webkit-user-select:none;touch-action:pan-x pan-y;will-change:scroll-position}
 .subgenre-pills::-webkit-scrollbar{display:none}
 .subgenre-pill{flex-shrink:0;padding:4px 12px;border-radius:100px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:.62rem;font-weight:600;letter-spacing:.3px;text-decoration:none;white-space:nowrap;transition:all .2s;cursor:pointer}
 .subgenre-pill:hover{border-color:var(--border-hover);color:var(--text)}
@@ -997,45 +998,110 @@ function renderGenrePills() {
   renderSubgenrePills();
 }
 
-// ─── Pill Scroll Helpers (generic) ───
+// ─── Pill Scroll — Arrows ───
 function updateArrows(scrollEl, arrowL, arrowR) {
   arrowL.classList.toggle('show', scrollEl.scrollLeft > 10);
   arrowR.classList.toggle('show', scrollEl.scrollLeft < scrollEl.scrollWidth - scrollEl.clientWidth - 10);
 }
-
-function initPillDrag(scrollEl, arrowL, arrowR) {
-  let isDragging = false, startX = 0, scrollStart = 0, moved = false;
-  const update = () => updateArrows(scrollEl, arrowL, arrowR);
-
-  scrollEl.addEventListener('mousedown', (e) => {
-    isDragging = true; moved = false;
-    startX = e.pageX; scrollStart = scrollEl.scrollLeft;
-    scrollEl.style.cursor = 'grabbing'; scrollEl.style.userSelect = 'none';
-  });
-  document.addEventListener('mousemove', (e) => {
-    if (!isDragging) return;
-    const dx = e.pageX - startX;
-    if (Math.abs(dx) > 4) moved = true;
-    scrollEl.scrollLeft = scrollStart - dx;
-  });
-  document.addEventListener('mouseup', () => {
-    if (isDragging) { isDragging = false; scrollEl.style.cursor = ''; scrollEl.style.userSelect = ''; }
-  });
-  scrollEl.addEventListener('click', (e) => {
-    if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; }
-  }, true);
-
-  arrowL.addEventListener('click', () => { scrollEl.scrollBy({ left: -200, behavior: 'smooth' }); });
-  arrowR.addEventListener('click', () => { scrollEl.scrollBy({ left: 200, behavior: 'smooth' }); });
-  scrollEl.addEventListener('scroll', update, { passive: true });
-}
-
 function updateGenreArrows() {
   updateArrows(document.getElementById('genrePills'), document.getElementById('genreArrowL'), document.getElementById('genreArrowR'));
 }
 function updateSubArrows() {
   updateArrows(document.getElementById('subgenrePills'), document.getElementById('subArrowL'), document.getElementById('subArrowR'));
 }
+function initArrows(scrollEl, arrowL, arrowR) {
+  const update = () => updateArrows(scrollEl, arrowL, arrowR);
+  arrowL.addEventListener('click', () => { scrollEl.scrollBy({ left: -200, behavior: 'smooth' }); });
+  arrowR.addEventListener('click', () => { scrollEl.scrollBy({ left: 200, behavior: 'smooth' }); });
+  scrollEl.addEventListener('scroll', update, { passive: true });
+}
+
+// ─── Single Global Drag System (momentum, matching index.html) ───
+let _drag = null;
+let _dragMomentumId = null;
+
+function cleanupDrag() {
+  if (_dragMomentumId) { cancelAnimationFrame(_dragMomentumId); _dragMomentumId = null; }
+  document.body.classList.remove('is-dragging');
+  _drag = null;
+}
+
+function onPillDragStart(e) {
+  if (e.button !== 0) return;
+  if (e.target.closest('button, a, .bstar, input, textarea')) return;
+  cleanupDrag();
+  const scroll = e.currentTarget;
+  _drag = {
+    el: scroll,
+    startX: e.clientX,
+    scrollStart: scroll.scrollLeft,
+    lastX: e.clientX,
+    lastTime: performance.now(),
+    velocity: 0,
+    moved: false
+  };
+}
+
+document.addEventListener('mousemove', function(e) {
+  if (!_drag) return;
+  if (e.buttons === 0) { cleanupDrag(); return; }
+  const now = performance.now();
+  const dt = now - _drag.lastTime;
+  const dx = e.clientX - _drag.lastX;
+  if (dt > 0) _drag.velocity = dx / dt;
+  _drag.lastX = e.clientX;
+  _drag.lastTime = now;
+  const totalDx = e.clientX - _drag.startX;
+  if (!_drag.moved && Math.abs(totalDx) > 5) {
+    _drag.moved = true;
+    document.body.classList.add('is-dragging');
+  }
+  if (_drag.moved) {
+    _drag.el.scrollLeft = _drag.scrollStart - totalDx;
+  }
+}, { passive: true });
+
+document.addEventListener('mouseup', function() {
+  if (!_drag) return;
+  const el = _drag.el;
+  const wasDragged = _drag.moved;
+  const velocity = _drag.velocity;
+  document.body.classList.remove('is-dragging');
+  if (wasDragged) {
+    // Momentum coast
+    let v = -velocity * 800;
+    if (Math.abs(v) > 20) {
+      const friction = 0.92;
+      let last = performance.now();
+      function coast(now) {
+        const dt = (now - last) / 1000;
+        last = now;
+        v *= friction;
+        el.scrollLeft += v * dt;
+        if (Math.abs(v) > 5) {
+          _dragMomentumId = requestAnimationFrame(coast);
+        } else {
+          _dragMomentumId = null;
+        }
+      }
+      _dragMomentumId = requestAnimationFrame(coast);
+    }
+    // Block click after drag
+    el.addEventListener('click', (ev) => { ev.stopPropagation(); ev.preventDefault(); }, { capture: true, once: true });
+  }
+  _drag = null;
+});
+
+document.documentElement.addEventListener('mouseleave', function() { if (_drag) cleanupDrag(); });
+window.addEventListener('blur', cleanupDrag);
+document.addEventListener('visibilitychange', () => { if (document.hidden) cleanupDrag(); });
+
+// Kill native browser drag on pills (prevents image-drag feel)
+document.addEventListener('dragstart', (e) => {
+  if (e.target.closest('.genre-pills, .subgenre-pills, .genre-pill, .subgenre-pill')) {
+    e.preventDefault();
+  }
+});
 
 // ─── Subgenre Pills ───
 function renderSubgenrePills() {
@@ -1168,9 +1234,13 @@ function initEvents() {
     gtag('event', 'playlist_subgenre', { subgenre: currentSubgenre || 'all' });
   });
 
-  // Init drag-to-scroll and arrows for both pill rows
-  initPillDrag(document.getElementById('genrePills'), document.getElementById('genreArrowL'), document.getElementById('genreArrowR'));
-  initPillDrag(document.getElementById('subgenrePills'), document.getElementById('subArrowL'), document.getElementById('subArrowR'));
+  // Init arrows + drag-to-scroll for both pill rows
+  const genrePillsEl = document.getElementById('genrePills');
+  const subPillsEl = document.getElementById('subgenrePills');
+  initArrows(genrePillsEl, document.getElementById('genreArrowL'), document.getElementById('genreArrowR'));
+  initArrows(subPillsEl, document.getElementById('subArrowL'), document.getElementById('subArrowR'));
+  genrePillsEl.addEventListener('mousedown', onPillDragStart);
+  subPillsEl.addEventListener('mousedown', onPillDragStart);
 
   // Handle back/forward
   window.addEventListener('popstate', () => {
