@@ -1958,7 +1958,7 @@ function playYouTubeTrack(track) {
 
   let ytStarted = false;
   let ytSkipped = false;
-  const timeout = _isMobile ? 6000 : 10000;
+  const timeout = _isMobile ? 15000 : 15000;
   const ytQuickCheck = setTimeout(() => {
     if (!ytStarted && !ytSkipped) {
       ytSkipped = true;
