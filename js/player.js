@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════
- *  VMAPlayer v27 — Platform-specific playback engine
+ *  VMAPlayer v28 — Platform-specific playback engine
  *
  *  YouTube    → visible inline iframe in track-row embed-area
  *  Suno       → hidden iframe on body (1px, opacity 0.01, autoplay)
@@ -484,8 +484,10 @@ window.VMAPlayer = (function () {
       try { el.pause(); el.src = ''; } catch (e) {}
     });
 
-    // Hide player bar
-    playerBar.classList.remove('active', 'playing', 'udio-active', 'sc-active');
+    // Hide player bar + remove any duplicates
+    document.querySelectorAll('.player-bar').forEach(function (bar) {
+      bar.classList.remove('active', 'playing', 'udio-active', 'sc-active');
+    });
     document.body.classList.remove('player-active');
     var thumbEl = document.getElementById('playerThumb');
     if (thumbEl) thumbEl.style.display = 'none';
@@ -505,7 +507,21 @@ window.VMAPlayer = (function () {
       return;
     }
 
+    // ── SAFETY: kill absolutely everything first ──
     stopTrack();
+    // Nuclear cleanup — catch anything stopTrack might have missed
+    document.querySelectorAll('iframe[src*="suno"], iframe[src*="udio"], iframe[src*="youtube"], iframe[src*="soundcloud"]').forEach(function (f) {
+      if (f.closest('.page-frame')) return;
+      try { f.src = 'about:blank'; } catch (e) {}
+    });
+    document.querySelectorAll('[id^="hidden-player-"]').forEach(function (el) { el.remove(); });
+    destroyUdioPlayer();
+    destroySc();
+    // Remove any duplicate player bars (should only be one)
+    var allBars = document.querySelectorAll('.player-bar');
+    if (allBars.length > 1) {
+      for (var i = 1; i < allBars.length; i++) { allBars[i].remove(); }
+    }
 
     var track = _getTrack(trackId);
     if (!track) return;
