@@ -1,4 +1,4 @@
-const CACHE_NAME = 'votemyai-v26';
+const CACHE_NAME = 'votemyai-v27';
 const PRECACHE = [
   '/index.html',
   '/app.css',
