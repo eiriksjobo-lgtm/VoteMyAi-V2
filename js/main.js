@@ -308,8 +308,7 @@
       return;
     }
 
-    // Playing iframes live in #persistent-media (outside trackList),
-    // so innerHTML rebuild is safe — audio never gets destroyed.
+    // Playing iframes live inline in track rows — stopTrack() handles cleanup.
     list.innerHTML = visible.map(function (t) { return buildTrackRow(t, activeTrackId); }).join('');
 
     // Load more button

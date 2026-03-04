@@ -833,25 +833,6 @@ window.VMA = (function() {
   document.addEventListener('click', function(e) {
     var Player = window.VMAPlayer;
 
-    // ── Browse stop (EQ overlay / stop button) ──
-    var stopBtn = e.target.closest('[data-action="browse-stop"]');
-    if (stopBtn) {
-      if (Player && typeof Player.browsePlay === 'function') {
-        Player.browsePlay(stopBtn.dataset.uid, stopBtn.dataset.trackId);
-      }
-      return;
-    }
-
-    // ── Load embed / play (browse card thumb + play button) ──
-    var thumbBtn = e.target.closest('[data-action="load-embed"]');
-    if (thumbBtn) {
-      var uid = thumbBtn.dataset.uid;
-      if (uid && Player && typeof Player.browsePlay === 'function') {
-        Player.browsePlay(uid, thumbBtn.dataset.trackId);
-      }
-      return;
-    }
-
     // ── Artist note toggle ──
     var noteToggle = e.target.closest('[data-action="toggle-note"]');
     if (noteToggle) {
@@ -885,21 +866,6 @@ window.VMA = (function() {
     var postBtn = e.target.closest('[data-action="post-comment"]');
     if (postBtn) {
       addComment(postBtn.dataset.track, postBtn);
-      return;
-    }
-
-    // ── Leaderboard row play ──
-    var lbRow = e.target.closest('[data-action="lb-play"]');
-    if (lbRow) {
-      var tid = lbRow.dataset.trackId;
-      var card = document.querySelector('.browse-card[data-track-id="' + tid + '"]');
-      if (card && Player && typeof Player.browsePlay === 'function') {
-        var cardUid = card.dataset.uid;
-        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        card.style.boxShadow = '0 0 0 2px var(--accent), 0 12px 40px rgba(232,255,71,0.15)';
-        setTimeout(function () { card.style.boxShadow = ''; }, 2500);
-        setTimeout(function () { Player.browsePlay(cardUid, tid); }, 600);
-      }
       return;
     }
 
@@ -998,7 +964,6 @@ window.VMA = (function() {
 
     // Embeds
     detectPlatform: detectPlatform,
-    getEmbedHtml: getEmbedHtml,
 
     // Utils
     sanitize: sanitize,
