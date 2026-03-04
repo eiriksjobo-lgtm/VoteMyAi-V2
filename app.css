@@ -723,8 +723,8 @@ body.is-dragging .genre-pills, body.is-dragging .subgenre-pills { cursor: grabbi
 /* ══════════════════════════════════════════════════════════════════════════
    8. PLAYER BAR (merged — most complete version from both files)
    ══════════════════════════════════════════════════════════════════════════ */
-.player-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999; background: rgba(10,10,18,0.98); border-top: 1px solid var(--border); display: none; align-items: center; gap: 14px; padding: 0 20px; height: 68px; }
-.player-bar.active { display: flex; }
+.player-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999; background: rgba(10,10,18,0.98); border-top: 1px solid var(--border); display: flex; align-items: center; gap: 14px; padding: 0 20px; height: 68px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16,1,0.3,1); pointer-events: none; }
+.player-bar.active { transform: translateY(0); pointer-events: auto; }
 .player-bar.playing .player-eq span { animation-play-state: running; }
 .player-eq { display: flex; align-items: flex-end; gap: 2px; height: 18px; flex-shrink: 0; }
 .player-eq span { width: 3px; background: var(--accent); border-radius: 2px; animation: eqBounce 1s ease-in-out infinite alternate; animation-play-state: paused; height: 18px; transform-origin: bottom; }
@@ -1767,94 +1767,112 @@ body.player-active .page-frame { bottom: 68px; }
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   TRACK OF THE WEEK — Hero Section
+   COMPACT HERO — max 35% viewport with how-inline
    ══════════════════════════════════════════════════════════════════════════ */
-.totw {
-  max-width: 900px; margin: 0 auto;
-  padding: 20px clamp(16px, 4vw, 40px) 12px;
+.hero.hero-compact { padding: 20px 24px 10px; }
+.hero.hero-compact::before { height: 180px; }
+.hero.hero-compact h1 {
+  font-size: clamp(1.8rem, 5vw, 3rem); margin-bottom: 6px; letter-spacing: 3px;
 }
-.totw-inner {
-  display: flex; align-items: center; gap: 24px;
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 16px;
-  max-height: 250px; overflow: hidden;
-  position: relative;
+.hero.hero-compact p {
+  font-size: 0.82rem; margin-bottom: 14px; max-width: 360px; line-height: 1.4;
 }
-.totw-art {
-  position: relative; flex-shrink: 0;
-  width: 200px; height: 200px; border-radius: 10px;
-  overflow: hidden; background: var(--surface-2);
+.hero.hero-compact .hero-cta {
+  padding: 9px 22px; font-size: 0.76rem; border-radius: 8px;
 }
-.totw-art img {
-  width: 100%; height: 100%; object-fit: cover;
-  display: block;
-}
-.totw-play-btn {
-  position: absolute; top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 64px; height: 64px; border-radius: 50%;
-  background: var(--accent); border: none;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; opacity: 0; transition: opacity 0.2s, transform 0.2s;
-  box-shadow: 0 4px 24px rgba(232,255,71,0.4);
-}
-.totw-play-btn svg { margin-left: 3px; }
-.totw-art:hover .totw-play-btn { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
-.totw-badge {
-  position: absolute; top: 8px; left: 8px;
-  font-size: 0.55rem; font-weight: 800; letter-spacing: 1.5px;
-  text-transform: uppercase; color: var(--bg);
-  background: var(--accent); padding: 3px 10px; border-radius: 4px;
-}
-.totw-info {
-  flex: 1; min-width: 0;
-  display: flex; flex-direction: column; gap: 8px;
-}
-.totw-title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: clamp(1.4rem, 3vw, 2rem); letter-spacing: 1.5px;
-  line-height: 1.1; white-space: nowrap;
-  overflow: hidden; text-overflow: ellipsis;
-}
-.totw-meta { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-.totw-rating { display: flex; align-items: center; gap: 8px; }
-.totw-stars { display: flex; gap: 2px; }
-.totw-star svg { width: 18px; height: 18px; fill: var(--star-empty); }
-.totw-star.filled svg { fill: var(--accent); }
-.totw-score { font-weight: 700; font-size: 1rem; color: var(--accent); }
-.totw-count { font-size: 0.72rem; color: var(--muted); }
-.totw-tools { display: flex; gap: 8px; flex-wrap: wrap; }
-.totw-tool-link {
-  font-size: 0.65rem; font-weight: 700; letter-spacing: 0.5px;
-  text-transform: uppercase; text-decoration: none;
-  padding: 4px 12px; border-radius: 100px;
-  transition: all 0.2s;
-}
-.totw-tool-link.suno { background: rgba(232,255,71,0.1); color: var(--accent); border: 1px solid rgba(232,255,71,0.15); }
-.totw-tool-link.suno:hover { background: rgba(232,255,71,0.2); }
-.totw-tool-link.udio { background: rgba(129,140,248,0.1); color: #818cf8; border: 1px solid rgba(129,140,248,0.15); }
-.totw-tool-link.udio:hover { background: rgba(129,140,248,0.2); }
-.totw-tool-link.el { background: rgba(56,189,248,0.1); color: #38bdf8; border: 1px solid rgba(56,189,248,0.15); }
-.totw-tool-link.el:hover { background: rgba(56,189,248,0.2); }
-.totw-submit {
-  display: inline-flex; align-items: center; justify-content: center;
-  background: var(--accent); color: var(--bg);
-  padding: 8px 20px; border-radius: 8px;
-  text-decoration: none; font-weight: 700;
-  font-size: 0.72rem; letter-spacing: 0.5px;
-  width: fit-content; transition: all 0.2s;
-  font-family: 'DM Sans', sans-serif;
-}
-.totw-submit:hover { box-shadow: 0 4px 20px rgba(232,255,71,0.25); transform: translateY(-1px); }
+.hero.hero-compact .hero-tools { margin-top: 16px; gap: 8px; }
+.hero.hero-compact .hero-tool { padding: 8px 16px; border-radius: 8px; }
+.hero.hero-compact .hero-tool-name { font-size: 0.82rem; }
+.hero.hero-compact .hero-tool-cta { font-size: 0.62rem; }
 
-@media (max-width: 640px) {
-  .totw { padding: 12px 12px 8px; }
-  .totw-inner {
-    flex-direction: column; max-height: none;
-    padding: 12px; gap: 12px;
-  }
-  .totw-art { width: 100%; height: 180px; border-radius: 8px; }
-  .totw-play-btn { opacity: 1; width: 56px; height: 56px; }
-  .totw-title { font-size: 1.3rem; white-space: normal; }
-  .totw-submit { width: 100%; justify-content: center; }
+/* How it works — compact single line */
+.how-inline {
+  max-width: 900px; margin: 0 auto;
+  padding: 6px clamp(16px, 4vw, 40px);
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px; height: 36px; flex-wrap: nowrap;
 }
+.how-step-i {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.72rem; letter-spacing: 1.5px;
+  color: var(--text-secondary); white-space: nowrap;
+}
+.how-n { color: var(--accent); font-weight: 700; margin-right: 3px; }
+.how-arr { color: var(--muted); font-size: 0.7rem; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TOP 3 TRACK VISUAL HIERARCHY
+   ══════════════════════════════════════════════════════════════════════════ */
+.track-thumb-lg { width: 64px; height: 64px; }
+.track-rank {
+  position: absolute; top: 6px; left: 6px; z-index: 2;
+  font-family: 'Bebas Neue', sans-serif; font-size: 0.72rem;
+  font-weight: 700; letter-spacing: 0.5px;
+  padding: 2px 8px; border-radius: 4px;
+  background: var(--accent); color: var(--bg);
+}
+.track-row.top-1,
+.track-row.top-2,
+.track-row.top-3 { position: relative; }
+.track-row.top-1 {
+  background: linear-gradient(90deg, rgba(232,255,71,0.06) 0%, transparent 60%) !important;
+  border-left: 3px solid var(--accent);
+}
+.track-row.top-2 {
+  background: linear-gradient(90deg, rgba(192,132,252,0.04) 0%, transparent 60%) !important;
+  border-left: 3px solid #c084fc;
+}
+.track-row.top-2 .track-rank { background: #c084fc; }
+.track-row.top-3 {
+  background: linear-gradient(90deg, rgba(56,189,248,0.04) 0%, transparent 60%) !important;
+  border-left: 3px solid #38bdf8;
+}
+.track-row.top-3 .track-rank { background: #38bdf8; }
+
+/* Udio tap-to-play hint in player bar */
+.player-bar .udio-tap-hint {
+  font-size: 0.65rem; color: var(--accent);
+  animation: tapPulse 1.5s ease-in-out infinite;
+  white-space: nowrap;
+}
+@keyframes tapPulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   COMPACT HERO — Mobile
+   ══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  .hero.hero-compact { padding: 14px 16px 8px; }
+  .hero.hero-compact::before { width: 240px; height: 120px; }
+  .hero.hero-compact h1 { font-size: clamp(1.4rem, 7vw, 1.8rem); letter-spacing: 2px; margin-bottom: 4px; }
+  .hero.hero-compact p { font-size: 0.76rem; margin-bottom: 10px; max-width: 280px; }
+  .hero.hero-compact .hero-cta { padding: 10px 22px; font-size: 0.74rem; width: auto; max-width: none; }
+  .hero.hero-compact .hero-tools { margin-top: 10px; gap: 6px; }
+  .hero.hero-compact .hero-tool { padding: 6px 12px; }
+  .hero.hero-compact .hero-tool-name { font-size: 0.76rem; }
+  .how-inline { height: 28px; gap: 6px; padding: 4px 12px; }
+  .how-step-i { font-size: 0.6rem; letter-spacing: 1px; }
+  .how-arr { font-size: 0.6rem; }
+  .track-thumb-lg { width: 56px; height: 56px; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   GLOBAL RESPONSIVE IMPROVEMENTS
+   ══════════════════════════════════════════════════════════════════════════ */
+/* Ensure minimum touch targets */
+button, [data-action], .genre-pill, .subgenre-pill, .track-play, .track-action-btn,
+.player-ctrl, .lb-tab, .load-more-btn {
+  min-height: 44px; min-width: 44px;
+}
+.genre-pill, .subgenre-pill { min-height: 32px; min-width: auto; }
+
+/* Mobile track row simplification */
+@media (max-width: 480px) {
+  .track-actions { display: none; }
+  .track-rating-count { display: none; }
+  .track-row { gap: 8px; padding: 8px 10px; }
+  .track-title { font-size: 0.82rem; }
+  .track-badge { font-size: 0.55rem; padding: 1px 6px; }
+}
+
+/* Prevent horizontal overflow */
+html, body { overflow-x: hidden; max-width: 100vw; }

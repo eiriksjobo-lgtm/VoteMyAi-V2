@@ -225,6 +225,7 @@ window.VMA = (function() {
       }
     } catch(e) {
       console.error('Load error:', e);
+      document.dispatchEvent(new CustomEvent('vma:tracks-error'));
     }
   }
 

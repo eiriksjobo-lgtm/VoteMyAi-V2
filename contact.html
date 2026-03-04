@@ -33,6 +33,17 @@
     input:focus, textarea:focus { outline: none; border-color: var(--accent); }
     .submit-btn { background: var(--accent); color: #0a0a0f; border: none; padding: 14px 32px; border-radius: 8px; font-weight: 700; cursor: pointer; width: 100%; font-size: 1rem; }
     .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .submit-btn:hover { opacity: 0.9; }
+    @media (max-width: 640px) {
+      .container { padding: 40px 16px; }
+      h1 { font-size: 2.2rem; }
+      nav { padding: 0 16px; }
+      .nav-links { gap: 8px; }
+      .nav-links a { font-size: 0.66rem; letter-spacing: 0.8px; }
+      .nav-submit { padding: 6px 12px; font-size: 0.66rem; }
+      .contact-info { padding: 20px 16px; }
+      input, textarea { font-size: 16px; }
+    }
   </style>
 </head>
 <body>

@@ -66,12 +66,35 @@
   </div>
 </nav>
 
-<!-- ═══ TRACK OF THE WEEK ═══ -->
-<section class="totw" id="hero">
-  <div class="totw-inner" id="totwInner">
-    <!-- JS fills with top-rated track of the week -->
+<!-- ═══ HERO ═══ -->
+<section class="hero hero-compact" id="hero">
+  <h1>DISCOVER &amp; RATE<br><span class="accent">AI MUSIC</span></h1>
+  <p>The community rates tracks made with Suno, Udio, ElevenLabs and more.</p>
+  <a href="/submit.html" class="hero-cta">Submit Your Track <span>&rarr;</span></a>
+  <div class="hero-tools">
+    <a href="https://suno.com" target="_blank" rel="noopener" class="hero-tool" onclick="gtag('event','affiliate_click',{tool:'suno',location:'hero'})">
+      <span class="hero-tool-name">Suno</span>
+      <span class="hero-tool-cta">Try free &rarr;</span>
+    </a>
+    <a href="https://www.udio.com" target="_blank" rel="noopener" class="hero-tool" onclick="gtag('event','affiliate_click',{tool:'udio',location:'hero'})">
+      <span class="hero-tool-name">Udio</span>
+      <span class="hero-tool-cta">Try free &rarr;</span>
+    </a>
+    <a href="https://elevenlabs.io/?from=partnereirik9444" target="_blank" rel="noopener" class="hero-tool" onclick="gtag('event','affiliate_click',{tool:'elevenlabs',location:'hero'})">
+      <span class="hero-tool-name">ElevenLabs</span>
+      <span class="hero-tool-cta">Try free &rarr;</span>
+    </a>
   </div>
 </section>
+
+<!-- ═══ HOW IT WORKS (compact) ═══ -->
+<div class="how-inline" id="howInline">
+  <span class="how-step-i"><span class="how-n">01</span> SUBMIT</span>
+  <span class="how-arr">&rarr;</span>
+  <span class="how-step-i"><span class="how-n">02</span> GET RATED</span>
+  <span class="how-arr">&rarr;</span>
+  <span class="how-step-i"><span class="how-n">03</span> CLIMB THE BOARD</span>
+</div>
 
 <!-- ═══ GENRE NAVIGATION ═══ -->
 <section class="genre-nav" id="genreNav">
@@ -193,9 +216,9 @@
 </div>
 
 <!-- ═══ JAVASCRIPT ═══ -->
-<script src="/js/app.js?v=11"></script>
-<script src="/js/player.js?v=11"></script>
-<script src="/js/main.js?v=11"></script>
+<script src="/js/app.js?v=12"></script>
+<script src="/js/player.js?v=12"></script>
+<script src="/js/main.js?v=12"></script>
 <script>
   (async function boot() {
     VMA.initShareModal();

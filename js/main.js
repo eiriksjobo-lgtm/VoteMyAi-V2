@@ -48,88 +48,20 @@
     return '';
   }
 
-  function getHqThumb(track) {
-    if (track.thumbnail_url) return track.thumbnail_url;
-    if (track.embed_url) {
-      var sunoMatch = track.embed_url.match(/\/([a-f0-9-]{36})/);
-      if (sunoMatch && (track.embed_url.includes('suno.com') || track.embed_url.includes('suno.ai'))) {
-        return 'https://cdn2.suno.ai/image_large_' + sunoMatch[1] + '.jpeg';
-      }
-    }
-    if (track.yt_id) return 'https://img.youtube.com/vi/' + track.yt_id + '/hqdefault.jpg';
-    return '';
-  }
-
   // ═══════════════════════════════════════════════════════════════════════
-  // Track of the Week
+  // Top 3 rank helpers
   // ═══════════════════════════════════════════════════════════════════════
 
-  function renderTrackOfWeek() {
-    var container = document.getElementById('totwInner');
-    if (!container) return;
+  var _topThreeIds = {};
 
-    var tracks = VMA.allTracks;
-    if (!tracks || tracks.length === 0) return;
-
-    // Filter tracks from the last 7 days with at least 1 rating
-    var now = Date.now();
-    var weekAgo = now - 7 * 24 * 60 * 60 * 1000;
-    var recent = tracks.filter(function (t) {
-      return t.created_at && new Date(t.created_at).getTime() >= weekAgo && (t.rating_count || 0) >= 1;
-    });
-
-    // Fallback to all-time top if no recent tracks qualify
-    var pool = recent.length > 0 ? recent : tracks.filter(function (t) { return (t.rating_count || 0) >= 1; });
-    if (pool.length === 0) return;
-
-    // Sort by Wilson Score descending
-    pool.sort(function (a, b) {
+  function computeTopThree() {
+    _topThreeIds = {};
+    var ranked = VMA.allTracks.slice().sort(function (a, b) {
       return VMA.wilsonScore(b.avg_rating || 0, b.rating_count || 0) - VMA.wilsonScore(a.avg_rating || 0, a.rating_count || 0);
     });
-
-    var t = pool[0];
-    var thumb = getHqThumb(t) || getThumb(t);
-    var avg = t.avg_rating ? parseFloat(t.avg_rating).toFixed(1) : '—';
-    var count = t.rating_count || 0;
-    var genre = VMA.resolveGenre(t.genre);
-    var tool = t.tool || '';
-    var label = recent.length > 0 ? 'TRACK OF THE WEEK' : 'TOP RATED';
-
-    // Star display (read-only)
-    var starsHtml = '';
-    var avgRound = t.avg_rating ? Math.round(parseFloat(t.avg_rating)) : 0;
-    for (var i = 1; i <= 5; i++) {
-      starsHtml += '<span class="totw-star' + (i <= avgRound ? ' filled' : '') + '">' + VMA.starSVG + '</span>';
+    for (var i = 0; i < Math.min(3, ranked.length); i++) {
+      _topThreeIds[String(ranked[i].id)] = i + 1;
     }
-
-    var html =
-      '<div class="totw-art">' +
-        (thumb ? '<img src="' + thumb + '" alt="' + VMA.sanitizeAttr(t.title || '') + '" onerror="this.style.display=\'none\'">' : '') +
-        '<button class="totw-play-btn" data-action="totw-play" data-track-id="' + t.id + '" aria-label="Play">' +
-          '<svg viewBox="0 0 24 24" width="32" height="32" fill="#07070b"><polygon points="6 3 20 12 6 21"/></svg>' +
-        '</button>' +
-        '<span class="totw-badge">' + label + '</span>' +
-      '</div>' +
-      '<div class="totw-info">' +
-        '<div class="totw-title">' + VMA.sanitize(t.title || 'Untitled') + '</div>' +
-        '<div class="totw-meta">' +
-          (tool ? '<span class="track-badge tool">' + VMA.sanitize(tool) + '</span>' : '') +
-          '<span class="track-badge genre">' + VMA.sanitize(genre) + '</span>' +
-        '</div>' +
-        '<div class="totw-rating">' +
-          '<div class="totw-stars">' + starsHtml + '</div>' +
-          '<span class="totw-score">' + avg + '</span>' +
-          '<span class="totw-count">(' + count + ' ratings)</span>' +
-        '</div>' +
-        '<div class="totw-tools">' +
-          '<a href="https://suno.com/invite/@playfulsoprano318" target="_blank" rel="noopener" class="totw-tool-link suno">Suno</a>' +
-          '<a href="https://www.udio.com" target="_blank" rel="noopener" class="totw-tool-link udio">Udio</a>' +
-          '<a href="https://elevenlabs.io/?from=partnereirik9444" target="_blank" rel="noopener" class="totw-tool-link el">ElevenLabs</a>' +
-        '</div>' +
-        '<a href="/submit.html" class="totw-submit">Submit Your Track</a>' +
-      '</div>';
-
-    container.innerHTML = html;
   }
 
   function interactiveStarsHTML(track) {
@@ -283,7 +215,7 @@
 
   function initSticky() {
     var genreNav = document.getElementById('genreNav');
-    var sentinel = document.getElementById('hero');
+    var sentinel = document.getElementById('howInline') || document.getElementById('hero');
     if (!genreNav || !sentinel) return;
 
     var observer = new IntersectionObserver(function (entries) {
@@ -369,7 +301,8 @@
     var visible = sortedTracks.slice(0, displayCount);
 
     if (visible.length === 0) {
-      list.innerHTML = '<div class="empty-state"><div class="empty-icon">\uD83D\uDD0D</div><p>No tracks found.</p></div>';
+      var emptyMsg = searchQuery ? 'No tracks match "' + VMA.sanitize(searchQuery) + '"' : 'No tracks found for this filter.';
+      list.innerHTML = '<div class="empty-state"><div class="empty-icon">\uD83D\uDD0D</div><p>' + emptyMsg + '</p><p style="font-size:0.78rem;color:var(--muted);margin-top:6px">Try a different genre or clear your search.</p></div>';
       var wrap = document.getElementById('loadMoreWrap');
       if (wrap) wrap.style.display = 'none';
       return;
@@ -394,9 +327,13 @@
 
   function buildTrackRow(t, activeTrackId) {
     var thumb = getThumb(t);
+    var rank = _topThreeIds[String(t.id)] || 0;
+    var isTop3 = rank >= 1 && rank <= 3 && currentSort === 'top' && !currentGenreSlug && !searchQuery;
+    var rankBadges = ['', '\uD83C\uDFC6 #1', '#2', '#3'];
+    var thumbCls = 'track-thumb' + (isTop3 ? ' track-thumb-lg' : '');
     var thumbHTML = thumb
-      ? '<img class="track-thumb" src="' + thumb + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">'
-      : '<div class="track-thumb" style="display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:var(--muted)">\uD83C\uDFB5</div>';
+      ? '<img class="' + thumbCls + '" src="' + thumb + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">'
+      : '<div class="' + thumbCls + '" style="display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:var(--muted)">\uD83C\uDFB5</div>';
     var avg = t.avg_rating ? parseFloat(t.avg_rating).toFixed(1) : '\u2014';
     var count = t.rating_count || 0;
     var genre = VMA.resolveGenre(t.genre);
@@ -412,8 +349,10 @@
     var commentFormHTML = user
       ? '<div class="comment-form"><input class="comment-input" placeholder="Add a comment..." maxlength="500"><button class="comment-submit" data-action="post-comment" data-track="' + t.id + '">Post</button></div>'
       : '<div style="font-size:.72rem;color:var(--muted);margin-top:8px;"><a href="/login.html" style="color:var(--accent);">Log in</a> to comment</div>';
+    var rankHTML = isTop3 ? '<span class="track-rank rank-' + rank + '">' + rankBadges[rank] + '</span>' : '';
 
-    return '<div class="track-row' + (isPlaying ? ' playing' : '') + '" data-track-id="' + t.id + '" data-title="' + VMA.sanitizeAttr(t.title || 'Untitled') + '" data-tool="' + VMA.sanitizeAttr(tool) + '" data-genre="' + VMA.sanitizeAttr(genre) + '">' +
+    return '<div class="track-row' + (isPlaying ? ' playing' : '') + (isTop3 ? ' top-' + rank : '') + '" data-track-id="' + t.id + '" data-title="' + VMA.sanitizeAttr(t.title || 'Untitled') + '" data-tool="' + VMA.sanitizeAttr(tool) + '" data-genre="' + VMA.sanitizeAttr(genre) + '">' +
+      rankHTML +
       thumbHTML +
       '<div class="track-info">' +
         '<div class="track-title" title="' + VMA.sanitizeAttr(t.title || '') + '">' + VMA.sanitize(t.title || 'Untitled') + '</div>' +
@@ -631,15 +570,6 @@
       sortTracks();
       displayCount = DISPLAY_CHUNK;
       renderList();
-      return;
-    }
-
-    // TOTW play button
-    var totwPlay = e.target.closest('[data-action="totw-play"]');
-    if (totwPlay) {
-      e.preventDefault();
-      e.stopPropagation();
-      playTrack(totwPlay.dataset.trackId);
       return;
     }
 
@@ -879,14 +809,22 @@
   // ═══════════════════════════════════════════════════════════════════════
 
   function onTracksReady() {
-    renderTrackOfWeek();
+    computeTopThree();
     renderGenrePills();
     applyFilters();
     handleDeepLink();
   }
 
   function onTracksUpdated() {
+    computeTopThree();
     applyFilters();
+  }
+
+  function onTracksError() {
+    var list = document.getElementById('trackList');
+    if (list) {
+      list.innerHTML = '<div class="empty-state"><div class="empty-icon">\u26A0\uFE0F</div><p>Could not load tracks. Please refresh the page.</p><button class="load-more-btn" onclick="location.reload()" style="margin-top:12px">Retry</button></div>';
+    }
   }
 
 
@@ -968,9 +906,11 @@
     // Track data events
     document.addEventListener('vma:tracks-loaded', onTracksReady);
     document.addEventListener('vma:tracks-updated', onTracksUpdated);
+    document.addEventListener('vma:tracks-error', onTracksError);
     _cleanup.push(function () {
       document.removeEventListener('vma:tracks-loaded', onTracksReady);
       document.removeEventListener('vma:tracks-updated', onTracksUpdated);
+      document.removeEventListener('vma:tracks-error', onTracksError);
     });
 
     // If tracks are already loaded, render immediately

@@ -73,7 +73,11 @@ window.VMAPlayer = (function () {
     activePlayerTrackId = trackId;
     activePlayerPlatform = platform;
     playerTitle.textContent = title || 'Now Playing';
-    playerMeta.textContent = meta || '';
+    if (platform === 'udio') {
+      playerMeta.innerHTML = (meta || '') + ' <span class="udio-tap-hint">— Tap play in popup</span>';
+    } else {
+      playerMeta.textContent = meta || '';
+    }
     playerBar.classList.add('active', 'playing');
     document.body.classList.add('player-active');
     if (typeof gtag === 'function') {
@@ -366,7 +370,7 @@ window.VMAPlayer = (function () {
         wrapClass = 'soundcloud';
       } else if (embed.platform === 'udio') {
         var udioId = embed.udioId;
-        if (udioId) iframeSrc = 'https://www.udio.com/embed/' + udioId;
+        if (udioId) iframeSrc = 'https://www.udio.com/embed/' + udioId + '?autoplay=true';
         eqColorClass = 'udio';
         platformLabel = 'Udio';
         wrapClass = 'udio';
@@ -876,7 +880,7 @@ window.VMAPlayer = (function () {
       var embedId = info.udioId;
       if (embedId) {
         var udioH = isMobile ? '140px' : '180px';
-        var udioSrc = 'https://www.udio.com/embed/' + embedId;
+        var udioSrc = 'https://www.udio.com/embed/' + embedId + '?autoplay=true';
         embedArea.innerHTML =
           '<div style="position:relative;height:' + udioH + ';">' +
             '<div class="embed-loading">' +
@@ -959,9 +963,9 @@ window.VMAPlayer = (function () {
     createUdioContainer();
 
     var box = document.getElementById('udio-iframe-box');
-    var newSrc = 'https://www.udio.com/embed/' + udioId;
+    var newSrc = 'https://www.udio.com/embed/' + udioId + '?autoplay=true';
 
-    // Simple iframe load — matches original behavior (no retry complexity)
+    // Simple iframe load with autoplay parameter
     box.innerHTML =
       '<iframe src="' + newSrc + '" allow="autoplay; encrypted-media" style="width:100%;height:100%;border:none;"></iframe>';
 
