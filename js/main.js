@@ -232,9 +232,6 @@
   // ═══════════════════════════════════════════════════════════════════════
 
   function applyFilters() {
-    // Kill all playback before re-rendering track list
-    if (Player && Player.killAllPlayback) Player.killAllPlayback();
-
     var genreName = currentGenreSlug ? VMA.SLUG_TO_GENRE[currentGenreSlug] : null;
 
     // Genre filter
@@ -544,6 +541,7 @@
       var newSlug = pill.dataset.genre || null;
       if (newSlug === '') newSlug = null;
       if (newSlug === currentGenreSlug) return;
+      if (Player && Player.killAllPlayback) Player.killAllPlayback();
       currentGenreSlug = newSlug;
       currentSubgenre = null;
       var href = newSlug ? '/?genre=' + newSlug : '/';
@@ -559,6 +557,7 @@
     if (subPill && subPill.closest('#subgenrePills')) {
       var sub = subPill.dataset.sub || null;
       if ((sub || null) === (currentSubgenre || null)) return;
+      if (Player && Player.killAllPlayback) Player.killAllPlayback();
       currentSubgenre = sub || null;
       renderSubgenrePills();
       applyFilters();
@@ -771,6 +770,7 @@
   // ═══════════════════════════════════════════════════════════════════════
 
   function onPopState() {
+    if (window._pageFrameClosing) { window._pageFrameClosing = false; return; }
     var params = new URLSearchParams(window.location.search);
     currentGenreSlug = params.get('genre') || null;
     currentSubgenre = null;

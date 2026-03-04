@@ -507,47 +507,7 @@ window.VMA = (function() {
     }
   }
 
-  // Star hover/click delegation — works for both .browse-card-stars .bstar AND .track-stars .bstar
-  document.addEventListener('mouseover', function(e) {
-    var star = e.target.closest('.bstar');
-    if (!star) return;
-    var c = star.parentElement;
-    if (c.classList.contains('rated')) return;
-    var s = parseInt(star.dataset.score);
-    for (var i = 0; i < c.children.length; i++) {
-      var ch = c.children[i];
-      if (ch.classList.contains('bstar')) ch.classList.toggle('hover-fill', parseInt(ch.dataset.score) <= s);
-    }
-  }, { passive: true });
-
-  document.addEventListener('mouseout', function(e) {
-    var star = e.target.closest('.bstar');
-    if (!star) return;
-    var c = star.parentElement;
-    if (c.classList.contains('rated')) return;
-    for (var i = 0; i < c.children.length; i++) {
-      var ch = c.children[i];
-      if (ch.classList.contains('bstar')) ch.classList.remove('hover-fill');
-    }
-  }, { passive: true });
-
-  document.addEventListener('click', function(e) {
-    var star = e.target.closest('.bstar');
-    if (!star) return;
-    var container = star.parentElement;
-    if (container.classList.contains('rated')) return;
-    var trackId = star.dataset.track;
-    var score = parseInt(star.dataset.score);
-    container.classList.add('rated');
-    container.classList.add('just-rated');
-    setTimeout(function() { container.classList.remove('just-rated'); }, 500);
-    container.querySelectorAll('.bstar').forEach(function(s) {
-      s.classList.remove('hover-fill');
-      s.classList.remove('ghost');
-      s.classList.toggle('filled', parseInt(s.dataset.score) <= score);
-    });
-    rateStar(trackId, score, container);
-  });
+  // Star hover/click and data-action delegation handled by main.js to avoid duplicates
 
   // ═══════════════════════════════════════════════
   // 9. Comments
@@ -827,65 +787,7 @@ window.VMA = (function() {
   // Covers browse-card play/stop, comments, share, leaderboard play, artist notes.
   //
 
-  var _openNoteEl = null;
-  var _noteScrollStart = null;
-
-  document.addEventListener('click', function(e) {
-    var Player = window.VMAPlayer;
-
-    // ── Artist note toggle ──
-    var noteToggle = e.target.closest('[data-action="toggle-note"]');
-    if (noteToggle) {
-      var noteId = noteToggle.dataset.uid ? ('note-' + noteToggle.dataset.uid) : ('note-' + noteToggle.dataset.track);
-      var noteText = document.getElementById(noteId);
-      if (noteText) {
-        var wasOpen = noteText.classList.contains('open');
-        if (_openNoteEl && _openNoteEl !== noteText) _openNoteEl.classList.remove('open');
-        noteText.classList.toggle('open');
-        _openNoteEl = wasOpen ? null : noteText;
-        _noteScrollStart = null;
-      }
-      return;
-    }
-
-    // ── Comments button ──
-    var commentsBtn = e.target.closest('[data-action="comments"]');
-    if (commentsBtn) {
-      toggleComments(commentsBtn.dataset.track, commentsBtn);
-      return;
-    }
-
-    // ── Share button ──
-    var shareBtn = e.target.closest('[data-action="share"]');
-    if (shareBtn) {
-      shareTrack(shareBtn.dataset.track, shareBtn.dataset.title, shareBtn);
-      return;
-    }
-
-    // ── Post comment ──
-    var postBtn = e.target.closest('[data-action="post-comment"]');
-    if (postBtn) {
-      addComment(postBtn.dataset.track, postBtn);
-      return;
-    }
-
-    // ── AI tool card click analytics ──
-    var toolCard = e.target.closest('.tool-card[data-tool]');
-    if (toolCard && typeof gtag === 'function') {
-      gtag('event', 'tool_click', { tool: toolCard.dataset.tool, location: 'tools_section' });
-    }
-  });
-
-  // Auto-close artist note on significant page scroll
-  window.addEventListener('scroll', function() {
-    if (!_openNoteEl) return;
-    if (_noteScrollStart === null) { _noteScrollStart = window.scrollY; return; }
-    if (Math.abs(window.scrollY - _noteScrollStart) > 150) {
-      _openNoteEl.classList.remove('open');
-      _openNoteEl = null;
-      _noteScrollStart = null;
-    }
-  }, { passive: true });
+  // Data-action click delegation and note scroll handlers moved to main.js to avoid duplicates
 
   // ═══════════════════════════════════════════════
   // 13. Cookie Consent

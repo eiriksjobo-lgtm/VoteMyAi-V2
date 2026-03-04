@@ -254,7 +254,9 @@
     window.addEventListener('popstate', function(e) {
       var frame = document.getElementById('pageFrame');
       if (frame && frame.classList.contains('active')) {
+        window._pageFrameClosing = true;
         closePageFrame();
+        return;
       }
     });
 
