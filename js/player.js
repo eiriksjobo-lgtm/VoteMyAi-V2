@@ -78,9 +78,9 @@ window.VMAPlayer = (function () {
     playerBar.classList.remove('udio-active', 'sc-active', 'udio-waiting');
 
     if (platform === 'udio') {
-      playerMeta.innerHTML = '<span class="udio-tap-hint">\u25B6 Press play in embed \u25B6</span>';
-      playerBar.classList.add('active', 'udio-active', 'udio-waiting');
-      playerBar.classList.remove('playing');
+      playerMeta.textContent = (meta ? meta + ' \u00B7 ' : '') + 'Playing in embed \u25B2';
+      playerBar.classList.add('active', 'udio-active');
+      playerBar.classList.remove('playing'); // No EQ for Udio — can't detect playback state
     } else {
       playerMeta.textContent = meta || '';
       playerBar.classList.add('active', 'playing');
@@ -104,55 +104,8 @@ window.VMAPlayer = (function () {
     if (typeof gtag === 'function') {
       gtag('event', 'play_bar', { track_id: trackId, platform: platform });
     }
-  }
 
-  /**
-   * Called when Udio playback actually starts (user tapped play in embed/popup).
-   * Transitions player bar and track row from "waiting" to "playing" state.
-   */
-  function _udioPlaybackStarted() {
-    // Player bar: remove waiting glow, start EQ
-    playerBar.classList.remove('udio-waiting');
-    playerBar.classList.add('playing');
-    // Update meta text
-    if (activePlayerPlatform === 'udio') {
-      var genre = '';
-      var track = _getTrack(activePlayerTrackId);
-      if (track) {
-        if (VMA && typeof VMA.resolveGenre === 'function') {
-          genre = VMA.resolveGenre(track.genre);
-        } else {
-          genre = track.genre || '';
-        }
-        playerMeta.textContent = ['Udio', genre].filter(Boolean).join(' \u00B7 ');
-      }
-    }
-    // Track row: collapse inline embed, move iframe to persistent-media, show EQ
-    if (activeTrackId !== null) {
-      var row = document.querySelector('.track-row[data-track-id="' + activeTrackId + '"]');
-      if (row) {
-        row.classList.add('eq-active');
-        var embedArea = row.querySelector('.track-embed-area');
-        if (embedArea) {
-          var udioIframe = embedArea.querySelector('iframe');
-          if (udioIframe) {
-            // Move iframe to persistent-media so audio survives embed collapse
-            var pm = document.getElementById('persistent-media');
-            if (pm) {
-              var wrap = document.createElement('div');
-              wrap.id = 'pm-list-embed';
-              wrap.appendChild(udioIframe);
-              pm.appendChild(wrap);
-            }
-          }
-          embedArea.innerHTML = '';
-          embedArea.style.display = 'none';
-        }
-      }
-    }
-    // Clean up blur listener
-    window.removeEventListener('blur', window._udioBlurHandler);
-    clearTimeout(window._udioCollapseTimer);
+    _updateNavTargets();
   }
 
   /**
@@ -267,6 +220,7 @@ window.VMAPlayer = (function () {
     // Hide thumbnail
     var thumbEl = document.getElementById('playerThumb');
     if (thumbEl) { thumbEl.style.display = 'none'; }
+    _updateNavTargets();
     closePageFrame();
   }
 
@@ -473,7 +427,7 @@ window.VMAPlayer = (function () {
         wrapClass = 'soundcloud';
       } else if (embed.platform === 'udio') {
         var udioId = embed.udioId;
-        if (udioId) iframeSrc = 'https://www.udio.com/embed/' + udioId + '?autoplay=true';
+        if (udioId) iframeSrc = 'https://www.udio.com/songs/' + udioId;
         eqColorClass = 'udio';
         platformLabel = 'Udio';
         wrapClass = 'udio';
@@ -558,7 +512,8 @@ window.VMAPlayer = (function () {
 
       // ── Transition to PHASE 2 (audio platforms only) ──
       // YouTube stays in Phase 1 — user watches video.
-      if (embed.platform === 'youtube') return;
+      // Udio stays in Phase 1 — iframe must stay visible or audio stops.
+      if (embed.platform === 'youtube' || embed.platform === 'udio') return;
 
       var _iosPhase2Done = false;
 
@@ -675,42 +630,23 @@ window.VMAPlayer = (function () {
       return;
     }
 
-    // Udio: use popup player
+    // Udio: inline visible iframe (no popup, no hidden embed — Udio has no embed API)
     if (embed.platform === 'udio') {
       var udioIdVal = embed.udioId;
       if (udioIdVal) {
         thumbContainer.dataset.originalHtml = thumbContainer.innerHTML;
-
-        // Show loading state on card first
+        var udioSrc = 'https://www.udio.com/songs/' + udioIdVal;
+        thumbContainer.style.aspectRatio = 'auto';
         thumbContainer.innerHTML =
-          '<div class="browse-now-playing" data-action="browse-stop" data-uid="' + uid + '" data-track-id="' + trackId + '">' +
-            '<div class="bnp-bg"></div>' +
-            '<div class="bnp-content">' +
-              '<div class="embed-loading-spinner" style="border-top-color:#818cf8;"></div>' +
-              '<div class="bnp-title" style="color:#818cf8;">Loading...</div>' +
-              '<div class="bnp-stop">Click to cancel</div>' +
-            '</div>' +
+          '<div style="position:relative;">' +
+            '<iframe src="' + udioSrc + '" ' +
+            'style="width:100%;height:300px;border:none;border-radius:8px;" ' +
+            'allow="autoplay; encrypted-media" playsinline></iframe>' +
+            '<button class="ios-stop-btn" data-action="browse-stop" data-uid="' + uid + '" data-track-id="' + trackId + '" aria-label="Stop">' +
+              '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>' +
+            '</button>' +
           '</div>';
         thumbContainer.removeAttribute('data-action');
-
-        // Open popup — transition card to "Now Playing" when iframe is ready
-        openUdioPlayer(udioIdVal, track.title, function () {
-          if (activeBrowseUid !== uid) return;
-          var currentCard = document.getElementById(uid);
-          if (!currentCard) return;
-          var tc = currentCard.querySelector('.browse-card-thumb');
-          if (!tc) return;
-          tc.innerHTML =
-            '<div class="browse-now-playing" data-action="browse-stop" data-uid="' + uid + '" data-track-id="' + trackId + '">' +
-              '<div class="bnp-bg"></div>' +
-              '<div class="bnp-content">' +
-                '<div class="bnp-eq"><span></span><span></span><span></span><span></span><span></span></div>' +
-                '<div class="bnp-title">Now Playing</div>' +
-                '<div class="bnp-track">' + sanitize(track.title) + '</div>' +
-                '<div class="bnp-stop">Click to stop</div>' +
-              '</div>' +
-            '</div>';
-        });
 
         activeBrowseUid = uid;
         activeBrowseTrackId = String(trackId);
@@ -858,33 +794,23 @@ window.VMAPlayer = (function () {
       // Suno, SoundCloud, unknown: show equalizer immediately (autoplay works)
       row.classList.add('eq-active');
     }
-    // Udio: eq-active added after embed collapses (see below)
+    // Udio: no eq-active — can't detect playback state, iframe stays visible
 
     if (info.platform === 'udio' && info.udioId) {
-      // Udio: show iframe INLINE in the track row (visible, user must tap play)
-      var udioSrc = 'https://www.udio.com/embed/' + info.udioId;
+      // Udio: NO official embed API. Show /songs/ page in VISIBLE inline iframe.
+      // Iframe MUST stay visible — hiding it kills audio.
+      var udioSrc = (info.url && info.url.includes('/songs/'))
+        ? info.url
+        : 'https://www.udio.com/songs/' + info.udioId;
       var trackEmbed = document.getElementById('embed-' + trackId);
       if (trackEmbed) {
         trackEmbed.innerHTML =
-          '<iframe src="' + udioSrc + '" allow="autoplay; encrypted-media" ' +
-          'style="width:100%;height:180px;border:none;border-radius:8px;" playsinline></iframe>';
+          '<iframe src="' + sanitizeAttr(udioSrc) + '" ' +
+          'style="width:100%;height:300px;border:none;border-radius:8px;" ' +
+          'allow="autoplay; encrypted-media" playsinline></iframe>';
         trackEmbed.style.display = 'block';
       }
-      // After 3s assume user pressed play → collapse embed, show EQ
-      clearTimeout(window._udioCollapseTimer);
-      window._udioCollapseTimer = setTimeout(function () {
-        _udioPlaybackStarted();
-      }, 3000);
-      // Also detect early via blur (user clicked iframe → focus moves to it)
-      function _onUdioBlur() {
-        if (!playerBar.classList.contains('udio-waiting')) return;
-        clearTimeout(window._udioCollapseTimer);
-        setTimeout(_udioPlaybackStarted, 1500);
-        window.removeEventListener('blur', _onUdioBlur);
-      }
-      window.removeEventListener('blur', window._udioBlurHandler);
-      window._udioBlurHandler = _onUdioBlur;
-      window.addEventListener('blur', _onUdioBlur);
+      // NO collapse timer — iframe stays visible for the entire duration
     } else {
       // Non-Udio: iframe in #persistent-media (hidden, autoplay works)
       try {
@@ -962,7 +888,7 @@ window.VMAPlayer = (function () {
         setTimeout(function () { if (_scLoading.parentNode) _scLoading.remove(); }, 4000);
       }
     } else if (info.platform === 'udio') {
-      // Udio embed — try to extract ID from URL if not provided
+      // Udio: NO official embed API. Use /songs/ page in visible iframe.
       var embedId = info.udioId;
       if (!embedId && track.embed_url) {
         var fallbackMatch = track.embed_url.match(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/) ||
@@ -970,16 +896,19 @@ window.VMAPlayer = (function () {
         if (fallbackMatch) embedId = fallbackMatch[1] || fallbackMatch[0];
       }
       if (embedId) {
-        var udioSrc = 'https://www.udio.com/embed/' + embedId;
+        var udioSrc2 = (info.url && info.url.includes('/songs/'))
+          ? info.url
+          : 'https://www.udio.com/songs/' + embedId;
         embedArea.innerHTML =
-          '<iframe src="' + udioSrc + '" allow="autoplay; encrypted-media" ' +
-          'style="width:100%;height:100%;border:none;" playsinline></iframe>';
+          '<iframe src="' + sanitizeAttr(udioSrc2) + '" ' +
+          'style="width:100%;height:300px;border:none;border-radius:8px;" ' +
+          'allow="autoplay; encrypted-media" playsinline></iframe>';
         embedArea.style.display = 'block';
       } else {
         console.warn('[VMAPlayer] Udio track without embedId:', track.id, track.embed_url);
         embedArea.innerHTML =
           '<div style="display:flex;align-items:center;justify-content:center;height:48px;background:var(--surface-2);border-radius:8px;color:#818cf8;font-size:.82rem;">' +
-          'Udio track — embed unavailable</div>';
+          'Udio track \u2014 embed unavailable</div>';
         embedArea.style.display = 'block';
       }
     } else {
@@ -1044,9 +973,9 @@ window.VMAPlayer = (function () {
     createUdioContainer();
 
     var box = document.getElementById('udio-iframe-box');
-    var newSrc = 'https://www.udio.com/embed/' + udioId + '?autoplay=true';
+    var newSrc = 'https://www.udio.com/songs/' + udioId;
 
-    // Simple iframe load with autoplay parameter
+    // Udio has no embed API — load songs page directly
     box.innerHTML =
       '<iframe src="' + newSrc + '" allow="autoplay; encrypted-media" style="width:100%;height:100%;border:none;"></iframe>';
 
@@ -1082,8 +1011,6 @@ window.VMAPlayer = (function () {
     if (!udioContainer || udioState === 'minimized') return;
     udioContainer.className = 'udio-minimized';
     udioState = 'minimized';
-    // Signal that user has started Udio playback
-    _udioPlaybackStarted();
   }
 
   function expandUdio() {
@@ -1353,7 +1280,29 @@ window.VMAPlayer = (function () {
 
 
   // ═══════════════════════════════════════════════════════════════
-  //  8. EXPAND BUTTONS IN PLAYER BAR
+  //  8. NAV TARGET MANAGEMENT (REGEL 3)
+  //  When music is playing, internal nav links open in new tab
+  //  so playback is never interrupted by page navigation.
+  // ═══════════════════════════════════════════════════════════════
+
+  function _updateNavTargets() {
+    var isPlaying = !!(activePlayerTrackId);
+    var sel = 'nav a[href^="/"], .nav-links-mobile a[href^="/"], footer a[href^="/"], a.hero-cta[href^="/"]';
+    document.querySelectorAll(sel).forEach(function (a) {
+      if (a.classList.contains('logo')) return;
+      if (isPlaying) {
+        a.setAttribute('target', '_blank');
+        a.setAttribute('rel', 'noopener noreferrer');
+      } else {
+        a.removeAttribute('target');
+        a.removeAttribute('rel');
+      }
+    });
+  }
+
+
+  // ═══════════════════════════════════════════════════════════════
+  //  9. EXPAND BUTTONS IN PLAYER BAR
   // ═══════════════════════════════════════════════════════════════
 
   function _createExpandButtons() {
@@ -1384,7 +1333,8 @@ window.VMAPlayer = (function () {
 
   function _updateExpandButtons() {
     if (udioExpandBtn) {
-      udioExpandBtn.style.display = playerBar.classList.contains('udio-active')
+      // Only show expand button if popup is actually open (minimized)
+      udioExpandBtn.style.display = (playerBar.classList.contains('udio-active') && udioState !== 'closed')
         ? 'flex'
         : 'none';
     }

@@ -49,8 +49,10 @@ body {
    Kept in DOM at 1px so iOS Safari doesn't kill audio. */
 #persistent-media {
   position: fixed;
-  width: 1px;
-  height: 1px;
+  left: 0;
+  bottom: 0;
+  width: 10px;
+  height: 10px;
   overflow: hidden;
   opacity: 0.01;
   pointer-events: none;

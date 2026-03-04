@@ -664,7 +664,11 @@ window.VMA = (function() {
       var p = sharePlatforms[idx];
       var url = p.share(_shareUrl, _shareTitle);
       if (url) {
-        window.open(url, '_blank', 'width=600,height=400');
+        var shareLink = document.createElement('a');
+        shareLink.href = url;
+        shareLink.target = '_blank';
+        shareLink.rel = 'noopener noreferrer';
+        shareLink.click();
         if (typeof gtag === 'function') gtag('event', 'share', { method: p.name.toLowerCase() });
       } else {
         try { navigator.clipboard.writeText(_shareUrl); } catch(e2) { /* ignore */ }

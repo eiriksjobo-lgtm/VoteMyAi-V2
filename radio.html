@@ -2345,6 +2345,14 @@ function getShareText() {
   return `Listening to ${ch} on VoteMyAI Radio \u2014 AI-generated music, rated blind by humans`;
 }
 
+function _openShareLink(href) {
+  const a = document.createElement('a');
+  a.href = href;
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  a.click();
+}
+
 function shareRadio(platform) {
   const url = getShareUrl();
   const text = getShareText();
@@ -2376,25 +2384,25 @@ function shareRadio(platform) {
       }
       break;
     case 'facebook':
-      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`, '_blank', 'width=600,height=400');
+      _openShareLink(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`);
       break;
     case 'x':
-      window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank', 'width=600,height=400');
+      _openShareLink(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`);
       break;
     case 'reddit':
-      window.open(`https://www.reddit.com/submit?url=${encodeURIComponent(url)}&title=${encodeURIComponent(text)}`, '_blank', 'width=600,height=600');
+      _openShareLink(`https://www.reddit.com/submit?url=${encodeURIComponent(url)}&title=${encodeURIComponent(text)}`);
       break;
     case 'threads':
-      window.open(`https://www.threads.net/intent/post?text=${encodeURIComponent(text + ' ' + url)}`, '_blank', 'width=600,height=400');
+      _openShareLink(`https://www.threads.net/intent/post?text=${encodeURIComponent(text + ' ' + url)}`);
       break;
     case 'linkedin':
-      window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank', 'width=600,height=400');
+      _openShareLink(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`);
       break;
     case 'whatsapp':
-      window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`, '_blank');
+      _openShareLink(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`);
       break;
     case 'telegram':
-      window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank');
+      _openShareLink(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`);
       break;
     case 'discord':
       navigator.clipboard.writeText(text + ' ' + url).then(() => {
@@ -2405,7 +2413,7 @@ function shareRadio(platform) {
       }).catch(() => {});
       break;
     case 'pinterest':
-      window.open(`https://pinterest.com/pin/create/button/?url=${encodeURIComponent(url)}&description=${encodeURIComponent(text)}`, '_blank', 'width=600,height=500');
+      _openShareLink(`https://pinterest.com/pin/create/button/?url=${encodeURIComponent(url)}&description=${encodeURIComponent(text)}`);
       break;
     case 'email':
       window.location.href = `mailto:?subject=${encodeURIComponent('Check out VoteMyAI Radio')}&body=${encodeURIComponent(text + '\n\n' + url)}`;
