@@ -74,7 +74,7 @@ window.VMAPlayer = (function () {
     activePlayerPlatform = platform;
     playerTitle.textContent = title || 'Now Playing';
     if (platform === 'udio') {
-      playerMeta.innerHTML = '<span class="udio-tap-hint">\u25B6 TAP PLAY IN UDIO POPUP</span>';
+      playerMeta.innerHTML = '<span class="udio-tap-hint">\u25B6 Tap play in Udio player above</span>';
       playerBar.classList.add('active', 'udio-active', 'udio-waiting');
       playerBar.classList.remove('playing');
     } else {
@@ -89,7 +89,7 @@ window.VMAPlayer = (function () {
   }
 
   /**
-   * Called when Udio playback actually starts (user tapped play in popup).
+   * Called when Udio playback actually starts (user tapped play in embed/popup).
    * Transitions player bar and track row from "waiting" to "playing" state.
    */
   function _udioPlaybackStarted() {
@@ -200,7 +200,12 @@ window.VMAPlayer = (function () {
     // 11. Clear navigation saved state
     _savedState = null;
 
-    // 12. Reset bar platform classes (NOT visibility — caller handles that)
+    // 12. Clear player embed area (Udio visible iframe)
+    var pEmbed = document.getElementById('playerEmbed');
+    if (pEmbed) { pEmbed.innerHTML = ''; }
+    playerBar.classList.remove('has-embed');
+
+    // 13. Reset bar platform classes (NOT visibility — caller handles that)
     playerBar.classList.remove('udio-active', 'sc-active', 'udio-waiting');
   }
 
@@ -209,7 +214,7 @@ window.VMAPlayer = (function () {
    */
   function closePlayer() {
     _stopAllPlayback();
-    playerBar.classList.remove('active', 'playing', 'udio-waiting');
+    playerBar.classList.remove('active', 'playing', 'udio-waiting', 'has-embed');
     document.body.classList.remove('player-active');
     activePlayerTrackId = null;
     activePlayerPlatform = null;
@@ -318,27 +323,37 @@ window.VMAPlayer = (function () {
   function _getTrackPlatform(track) {
     if (!track) return { platform: 'unknown' };
     var url = track.embed_url;
+    var result;
     if (url) {
       var ytMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([^&?\/#]+)/);
-      if (ytMatch) return { platform: 'youtube', videoId: ytMatch[1] };
-      if (url.includes('soundcloud.com')) {
-        return { platform: 'soundcloud', url: url, isShort: url.includes('on.soundcloud.com') };
+      if (ytMatch) { result = { platform: 'youtube', videoId: ytMatch[1] }; }
+      else if (url.includes('soundcloud.com')) {
+        result = { platform: 'soundcloud', url: url, isShort: url.includes('on.soundcloud.com') };
       }
-      if (url.includes('suno.com') || url.includes('suno.ai')) {
+      else if (url.includes('suno.com') || url.includes('suno.ai')) {
         var sunoMatch = url.match(/\/([a-f0-9-]{36})/);
-        if (sunoMatch) return { platform: 'suno', sunoId: sunoMatch[1], url: url };
-        return { platform: 'suno', url: url };
+        result = sunoMatch
+          ? { platform: 'suno', sunoId: sunoMatch[1], url: url }
+          : { platform: 'suno', url: url };
       }
-      if (url.includes('udio.com')) {
+      else if (url.includes('udio.com')) {
         var udioUuid = url.match(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/);
-        if (udioUuid) return { platform: 'udio', udioId: udioUuid[0], url: url };
-        var udioSlug = url.match(/udio\.com\/songs\/([a-zA-Z0-9_-]+)/);
-        if (udioSlug) return { platform: 'udio', udioId: udioSlug[1], url: url };
-        return { platform: 'udio', url: url };
+        if (udioUuid) { result = { platform: 'udio', udioId: udioUuid[0], url: url }; }
+        else {
+          var udioSlug = url.match(/udio\.com\/songs\/([a-zA-Z0-9_-]+)/);
+          result = udioSlug
+            ? { platform: 'udio', udioId: udioSlug[1], url: url }
+            : { platform: 'udio', url: url };
+        }
       }
     }
-    if (track.yt_id) return { platform: 'youtube', videoId: track.yt_id };
-    return { platform: 'unknown' };
+    if (!result && track.yt_id) result = { platform: 'youtube', videoId: track.yt_id };
+    if (!result) result = { platform: 'unknown', url: url };
+    console.log('[VMAPlayer] platform:', result.platform, '| id:', track.id, '| url:', url || '(none)');
+    if (result.platform === 'unknown') {
+      console.warn('[VMAPlayer] UNKNOWN PLATFORM — track:', track.id, 'embed_url:', url, 'yt_id:', track.yt_id, 'tool:', track.tool);
+    }
+    return result;
   }
 
   /**
@@ -387,10 +402,6 @@ window.VMAPlayer = (function () {
 
       if (embed.platform === 'soundcloud') {
         var scUrl = track.embed_url || '';
-        if (scUrl.includes('on.soundcloud.com')) {
-          window.open(scUrl, '_blank');
-          return;
-        }
         iframeSrc =
           'https://w.soundcloud.com/player/?url=' +
           encodeURIComponent(scUrl) +
@@ -483,7 +494,7 @@ window.VMAPlayer = (function () {
         (track.genre || '');
       playerTitle.textContent = track.title || 'Now Playing';
       if (embed.platform === 'udio') {
-        playerMeta.innerHTML = '<span class="udio-tap-hint">\u25B6 TAP PLAY IN UDIO POPUP</span>';
+        playerMeta.innerHTML = '<span class="udio-tap-hint">\u25B6 Tap play in Udio player above</span>';
         playerBar.classList.add('active', 'udio-active', 'udio-waiting');
       } else {
         playerMeta.textContent = metaStr;
@@ -578,13 +589,9 @@ window.VMAPlayer = (function () {
     // Non-iOS: Original behaviour (hidden iframes, popups)
     // ══════════════════════════════════════════════════════
 
-    // SoundCloud: popup for full URLs, new tab for short links
+    // SoundCloud: inline iframe player (no new tabs, no popups)
     if (embed.platform === 'soundcloud') {
       var scUrl2 = track.embed_url || '';
-      if (scUrl2.includes('on.soundcloud.com')) {
-        window.open(scUrl2, '_blank');
-        return;
-      }
 
       thumbContainer.dataset.originalHtml = thumbContainer.innerHTML;
 
@@ -672,7 +679,7 @@ window.VMAPlayer = (function () {
         });
 
         playerTitle.textContent = track.title || 'Now Playing';
-        playerMeta.innerHTML = '<span class="udio-tap-hint">\u25B6 TAP PLAY IN UDIO POPUP</span>';
+        playerMeta.innerHTML = '<span class="udio-tap-hint">\u25B6 Tap play in Udio player above</span>';
         playerBar.classList.add('active', 'udio-active', 'udio-waiting');
         playerBar.classList.remove('playing');
         document.body.classList.add('player-active');
@@ -831,27 +838,42 @@ window.VMAPlayer = (function () {
           '<svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>';
         btn.setAttribute('aria-label', 'Stop');
       }
-    } else if (info.platform !== 'udio') {
-      // Suno, SoundCloud: show equalizer immediately (autoplay works)
+    } else {
+      // Suno, SoundCloud, Udio, unknown: show equalizer
       row.classList.add('eq-active');
     }
-    // Udio: eq-active added later by _udioPlaybackStarted()
 
-    // Udio: use popup system (autoplay doesn't work in hidden iframes)
-    if (info.platform === 'udio' && info.udioId) {
-      openUdioPlayer(info.udioId, track.title);
-    } else {
-      // Put embed in #persistent-media so it survives track list re-renders
-      try {
-        var pm = document.getElementById('persistent-media');
-        if (pm) {
-          var embedWrap = document.createElement('div');
-          embedWrap.id = 'pm-list-embed';
-          pm.appendChild(embedWrap);
-          populateEmbed(track, info, embedWrap);
+    // ALL platforms: iframe in #persistent-media (hidden, autoplay works for most)
+    try {
+      var pm = document.getElementById('persistent-media');
+      if (pm) {
+        var embedWrap = document.createElement('div');
+        embedWrap.id = 'pm-list-embed';
+        pm.appendChild(embedWrap);
+        populateEmbed(track, info, embedWrap);
+      }
+    } catch (err) {
+      console.warn('[VMAPlayer] populateEmbed error:', err);
+    }
+
+    // Udio: also show visible iframe in player bar embed area (autoplay doesn't work hidden)
+    if (info.platform === 'udio') {
+      var playerEmbed = document.getElementById('playerEmbed');
+      if (playerEmbed && info.udioId) {
+        var udioSrc = 'https://www.udio.com/embed/' + info.udioId;
+        playerEmbed.innerHTML =
+          '<iframe src="' + udioSrc + '" allow="autoplay; encrypted-media" ' +
+          'style="width:100%;height:100%;border:none;" playsinline></iframe>';
+        playerBar.classList.add('has-embed');
+        // Detect when user clicks play in the Udio iframe (focus goes to iframe → window blurs)
+        function _onUdioBlur() {
+          if (!playerBar.classList.contains('udio-waiting')) return;
+          setTimeout(_udioPlaybackStarted, 1500);
+          window.removeEventListener('blur', _onUdioBlur);
         }
-      } catch (err) {
-        console.warn('[VMAPlayer] populateEmbed error:', err);
+        window.removeEventListener('blur', window._udioBlurHandler);
+        window._udioBlurHandler = _onUdioBlur;
+        window.addEventListener('blur', _onUdioBlur);
       }
     }
 
@@ -893,74 +915,64 @@ window.VMAPlayer = (function () {
         '" playsinline></iframe></div>';
       embedArea.style.display = 'block';
     } else if (info.platform === 'soundcloud') {
-      if (info.isShort) {
-        embedArea.innerHTML =
-          '<a href="' + sanitizeAttr(track.embed_url) + '" target="_blank" rel="noopener" ' +
-          'style="display:flex;align-items:center;justify-content:center;height:48px;background:var(--surface-2);border-radius:8px;color:#ff5500;text-decoration:none;gap:8px;font-weight:600;font-size:.82rem;">' +
-          '<svg width="18" height="18" viewBox="0 0 24 24" fill="#ff5500"><polygon points="6 3 20 12 6 21 6 3"/></svg>Play on SoundCloud</a>';
-        embedArea.style.display = 'block';
-      } else {
-        var scH = isMobile ? '120px' : '166px';
-        embedArea.innerHTML =
-          '<div style="position:relative;height:' + scH + ';">' +
-            '<div class="embed-loading">' +
-              '<div style="text-align:center;">' +
-                '<div class="embed-loading-spinner" style="border-top-color:#ff5500;"></div>' +
-                '<div style="font-size:0.7rem;color:rgba(255,255,255,0.5);">Loading...</div>' +
-              '</div>' +
+      // ALL SoundCloud links (including short on.soundcloud.com) go through the widget player
+      var scUrl = info.url || track.embed_url || '';
+      var scH = isMobile ? '120px' : '166px';
+      embedArea.innerHTML =
+        '<div style="position:relative;height:' + scH + ';">' +
+          '<div class="embed-loading">' +
+            '<div style="text-align:center;">' +
+              '<div class="embed-loading-spinner" style="border-top-color:#ff5500;"></div>' +
+              '<div style="font-size:0.7rem;color:rgba(255,255,255,0.5);">Loading...</div>' +
             '</div>' +
-            '<iframe src="https://w.soundcloud.com/player/?url=' +
-            encodeURIComponent(info.url) +
-            '&color=%23ff5500&auto_play=true&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=true" ' +
-            'allow="autoplay" style="width:100%;height:100%;border:none;border-radius:8px" playsinline></iframe>' +
-          '</div>';
-        embedArea.style.display = 'block';
-        var _scIframe = embedArea.querySelector('iframe');
-        var _scLoading = embedArea.querySelector('.embed-loading');
-        if (_scIframe && _scLoading) {
-          _scIframe.addEventListener('load', function () { _scLoading.remove(); });
-          setTimeout(function () { if (_scLoading.parentNode) _scLoading.remove(); }, 4000);
-        }
+          '</div>' +
+          '<iframe src="https://w.soundcloud.com/player/?url=' +
+          encodeURIComponent(scUrl) +
+          '&color=%23ff5500&auto_play=true&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=true" ' +
+          'allow="autoplay" style="width:100%;height:100%;border:none;border-radius:8px" playsinline></iframe>' +
+        '</div>';
+      embedArea.style.display = 'block';
+      var _scIframe = embedArea.querySelector('iframe');
+      var _scLoading = embedArea.querySelector('.embed-loading');
+      if (_scIframe && _scLoading) {
+        _scIframe.addEventListener('load', function () { _scLoading.remove(); });
+        setTimeout(function () { if (_scLoading.parentNode) _scLoading.remove(); }, 4000);
       }
     } else if (info.platform === 'udio') {
+      // Udio embed — try to extract ID from URL if not provided
       var embedId = info.udioId;
+      if (!embedId && track.embed_url) {
+        var fallbackMatch = track.embed_url.match(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/) ||
+                            track.embed_url.match(/udio\.com\/songs\/([a-zA-Z0-9_-]+)/);
+        if (fallbackMatch) embedId = fallbackMatch[1] || fallbackMatch[0];
+      }
       if (embedId) {
-        var udioH = isMobile ? '140px' : '180px';
-        var udioSrc = 'https://www.udio.com/embed/' + embedId + '?autoplay=true';
+        var udioSrc = 'https://www.udio.com/embed/' + embedId;
         embedArea.innerHTML =
-          '<div style="position:relative;height:' + udioH + ';">' +
-            '<div class="embed-loading">' +
-              '<div style="text-align:center;">' +
-                '<div class="embed-loading-spinner" style="border-top-color:#818cf8;"></div>' +
-                '<div style="font-size:0.7rem;color:rgba(255,255,255,0.5);">Loading...</div>' +
-              '</div>' +
-            '</div>' +
-            '<iframe src="' + udioSrc + '" allow="autoplay" ' +
-            'style="width:100%;height:100%;border:none;border-radius:8px" playsinline></iframe>' +
-          '</div>';
+          '<iframe src="' + udioSrc + '" allow="autoplay; encrypted-media" ' +
+          'style="width:100%;height:100%;border:none;" playsinline></iframe>';
         embedArea.style.display = 'block';
-        var _eIframe = embedArea.querySelector('iframe');
-        var _eLoading = embedArea.querySelector('.embed-loading');
-        if (_eIframe && _eLoading) {
-          _eIframe.addEventListener('load', function () {
-            if (_eLoading.parentNode) _eLoading.remove();
-          });
-          setTimeout(function () { if (_eLoading.parentNode) _eLoading.remove(); }, 5000);
-        }
       } else {
+        console.warn('[VMAPlayer] Udio track without embedId:', track.id, track.embed_url);
         embedArea.innerHTML =
-          '<a href="' + sanitizeAttr(track.embed_url) + '" target="_blank" rel="noopener" ' +
-          'style="display:flex;align-items:center;justify-content:center;height:48px;background:var(--surface-2);border-radius:8px;color:#818cf8;text-decoration:none;gap:8px;font-weight:600;font-size:.82rem;">' +
-          '<svg width="18" height="18" viewBox="0 0 24 24" fill="#818cf8"><polygon points="6 3 20 12 6 21 6 3"/></svg>Play on Udio</a>';
+          '<div style="display:flex;align-items:center;justify-content:center;height:48px;background:var(--surface-2);border-radius:8px;color:#818cf8;font-size:.82rem;">' +
+          'Udio track — embed unavailable</div>';
         embedArea.style.display = 'block';
       }
     } else {
-      // Unknown platform — open in new tab
-      var url =
-        track.embed_url ||
-        (track.yt_id ? 'https://www.youtube.com/watch?v=' + track.yt_id : null);
-      if (url) window.open(url, '_blank');
-      stopTrack();
+      // Unknown platform — try generic iframe embed, NEVER open new window
+      var fallbackUrl = track.embed_url || (track.yt_id ? 'https://www.youtube.com/embed/' + track.yt_id : null);
+      if (fallbackUrl) {
+        console.warn('[VMAPlayer] Embedding unknown platform as iframe:', fallbackUrl);
+        embedArea.innerHTML =
+          '<iframe src="' + sanitizeAttr(fallbackUrl) + '" allow="autoplay; encrypted-media" ' +
+          'style="width:100%;height:160px;border:none;border-radius:8px;" playsinline></iframe>';
+        embedArea.style.display = 'block';
+      } else {
+        embedArea.innerHTML =
+          '<div style="display:flex;align-items:center;justify-content:center;height:48px;background:var(--surface-2);border-radius:8px;color:var(--muted);font-size:.82rem;">No playback source available</div>';
+        embedArea.style.display = 'block';
+      }
     }
   }
 

@@ -756,6 +756,12 @@ body.is-dragging .genre-pills, body.is-dragging .subgenre-pills { cursor: grabbi
 .player-ctrl svg { width: 18px; height: 18px; fill: currentColor; }
 body.player-active { padding-bottom: 68px; }
 
+/* Player embed area — visible iframe above the player bar (used for Udio) */
+.player-embed { display: none; position: absolute; bottom: 100%; left: 0; right: 0; height: 180px; background: rgba(10,10,18,0.98); border-top: 1px solid var(--border); overflow: hidden; }
+.player-embed iframe { width: 100%; height: 100%; border: none; }
+.player-bar.has-embed .player-embed { display: block; }
+.player-bar.has-embed ~ * { /* nothing — just a marker */ }
+
 /* ══════════════════════════════════════════════════════════════════════════
    9. COMMENTS (merged — index.html version is more complete with form styling)
    ══════════════════════════════════════════════════════════════════════════ */
@@ -965,6 +971,7 @@ body.player-active .page-frame { bottom: 68px; }
 
   /* Player Bar */
   .player-bar { padding: 0 12px; height: 56px; gap: 8px; }
+  .player-embed { height: 140px; }
   .player-title { font-size: 0.78rem; max-width: calc(100vw - 160px); }
   .player-meta { font-size: 0.62rem; }
   .player-ctrl { width: 44px; height: 44px; }
