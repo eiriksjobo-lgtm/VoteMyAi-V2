@@ -757,11 +757,7 @@ body.is-dragging .genre-pills, body.is-dragging .subgenre-pills { cursor: grabbi
 .player-ctrl svg { width: 18px; height: 18px; fill: currentColor; }
 body.player-active { padding-bottom: 68px; }
 
-/* Udio mini embed — small visible iframe INSIDE the player bar (must stay visible for audio) */
-.player-embed { display: none; flex-shrink: 0; width: 200px; height: 54px; border-radius: 6px; overflow: hidden; background: #111; margin-left: auto; }
-.player-embed iframe { width: 100%; height: 100%; border: none; }
-.player-bar.has-embed .player-embed { display: block; }
-.player-bar.has-embed .player-info { flex: 0 1 auto; }
+/* Player bar never shows embeds — all embeds live in tracklist or persistent-media */
 
 /* ══════════════════════════════════════════════════════════════════════════
    9. COMMENTS (merged — index.html version is more complete with form styling)
@@ -973,7 +969,6 @@ body.player-active .page-frame { bottom: 68px; }
   /* Player Bar */
   .player-bar { padding: 0 12px; height: 56px; gap: 8px; }
   .player-thumb { width: 36px; height: 36px; border-radius: 4px; }
-  .player-embed { width: 140px; height: 44px; border-radius: 4px; }
   .player-title { font-size: 0.78rem; max-width: calc(100vw - 160px); }
   .player-meta { font-size: 0.62rem; }
   .player-ctrl { width: 44px; height: 44px; }
