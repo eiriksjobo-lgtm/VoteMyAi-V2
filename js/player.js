@@ -94,8 +94,12 @@ window.VMAPlayer = (function () {
    */
   function _udioPlaybackStarted() {
     // Player bar: remove waiting glow, start EQ, update meta
-    playerBar.classList.remove('udio-waiting');
+    playerBar.classList.remove('udio-waiting', 'has-embed');
     playerBar.classList.add('playing');
+    // Clear player bar embed area
+    var pEmbed = document.getElementById('playerEmbed');
+    if (pEmbed) pEmbed.innerHTML = '';
+    // Update meta text
     if (activePlayerPlatform === 'udio') {
       var genre = '';
       var track = _getTrack(activePlayerTrackId);
@@ -108,11 +112,32 @@ window.VMAPlayer = (function () {
         playerMeta.textContent = ['Udio', genre].filter(Boolean).join(' \u00B7 ');
       }
     }
-    // Track row: show equalizer (add eq-active)
+    // Track row: collapse embed area, show equalizer
     if (activeTrackId !== null) {
       var row = document.querySelector('.track-row[data-track-id="' + activeTrackId + '"]');
-      if (row) row.classList.add('eq-active');
+      if (row) {
+        row.classList.add('eq-active');
+        // Move Udio iframe to persistent-media (keeps audio alive) then hide embed area
+        var embedArea = row.querySelector('.track-embed-area');
+        if (embedArea) {
+          var udioIframe = embedArea.querySelector('iframe');
+          if (udioIframe) {
+            var pm = document.getElementById('persistent-media');
+            if (pm) {
+              var wrap = document.createElement('div');
+              wrap.id = 'pm-list-embed';
+              wrap.appendChild(udioIframe);
+              pm.appendChild(wrap);
+            }
+          }
+          embedArea.innerHTML = '';
+          embedArea.style.display = 'none';
+        }
+      }
     }
+    // Clean up blur listener
+    window.removeEventListener('blur', window._udioBlurHandler);
+    clearTimeout(window._udioCollapseTimer);
   }
 
   /**
@@ -148,6 +173,10 @@ window.VMAPlayer = (function () {
         });
         embedArea.innerHTML = '';
         embedArea.style.display = 'none';
+        embedArea.style.height = '';
+        embedArea.style.overflow = '';
+        embedArea.style.padding = '';
+        embedArea.style.transition = '';
       }
     });
 
@@ -200,10 +229,12 @@ window.VMAPlayer = (function () {
     // 11. Clear navigation saved state
     _savedState = null;
 
-    // 12. Clear player embed area (Udio visible iframe)
+    // 12. Clear player embed area + Udio timers
     var pEmbed = document.getElementById('playerEmbed');
     if (pEmbed) { pEmbed.innerHTML = ''; }
     playerBar.classList.remove('has-embed');
+    clearTimeout(window._udioCollapseTimer);
+    window.removeEventListener('blur', window._udioBlurHandler);
 
     // 13. Reset bar platform classes (NOT visibility — caller handles that)
     playerBar.classList.remove('udio-active', 'sc-active', 'udio-waiting');
@@ -838,42 +869,49 @@ window.VMAPlayer = (function () {
           '<svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>';
         btn.setAttribute('aria-label', 'Stop');
       }
-    } else {
-      // Suno, SoundCloud, Udio, unknown: show equalizer
+    } else if (info.platform !== 'udio') {
+      // Suno, SoundCloud, unknown: show equalizer immediately (autoplay works)
       row.classList.add('eq-active');
     }
+    // Udio: eq-active added after embed collapses (see below)
 
-    // ALL platforms: iframe in #persistent-media (hidden, autoplay works for most)
-    try {
-      var pm = document.getElementById('persistent-media');
-      if (pm) {
-        var embedWrap = document.createElement('div');
-        embedWrap.id = 'pm-list-embed';
-        pm.appendChild(embedWrap);
-        populateEmbed(track, info, embedWrap);
-      }
-    } catch (err) {
-      console.warn('[VMAPlayer] populateEmbed error:', err);
-    }
-
-    // Udio: also show visible iframe in player bar embed area (autoplay doesn't work hidden)
-    if (info.platform === 'udio') {
-      var playerEmbed = document.getElementById('playerEmbed');
-      if (playerEmbed && info.udioId) {
+    if (info.platform === 'udio' && info.udioId) {
+      // Udio: show iframe inline in the track row embed area (visible, user taps play)
+      var trackEmbed = document.getElementById('embed-' + trackId);
+      if (trackEmbed) {
         var udioSrc = 'https://www.udio.com/embed/' + info.udioId;
-        playerEmbed.innerHTML =
+        trackEmbed.innerHTML =
           '<iframe src="' + udioSrc + '" allow="autoplay; encrypted-media" ' +
-          'style="width:100%;height:100%;border:none;" playsinline></iframe>';
-        playerBar.classList.add('has-embed');
-        // Detect when user clicks play in the Udio iframe (focus goes to iframe → window blurs)
-        function _onUdioBlur() {
-          if (!playerBar.classList.contains('udio-waiting')) return;
-          setTimeout(_udioPlaybackStarted, 1500);
-          window.removeEventListener('blur', _onUdioBlur);
+          'style="width:100%;height:180px;border:none;border-radius:8px;" playsinline></iframe>';
+        trackEmbed.style.display = 'block';
+      }
+      // Auto-collapse after 3s: assume user pressed play, collapse embed → show EQ
+      clearTimeout(window._udioCollapseTimer);
+      window._udioCollapseTimer = setTimeout(function () {
+        _udioPlaybackStarted();
+      }, 3000);
+      // Also detect early via blur (user clicked iframe → focus moves to it)
+      function _onUdioBlur() {
+        if (!playerBar.classList.contains('udio-waiting')) return;
+        clearTimeout(window._udioCollapseTimer);
+        setTimeout(_udioPlaybackStarted, 1500);
+        window.removeEventListener('blur', _onUdioBlur);
+      }
+      window.removeEventListener('blur', window._udioBlurHandler);
+      window._udioBlurHandler = _onUdioBlur;
+      window.addEventListener('blur', _onUdioBlur);
+    } else {
+      // Non-Udio: iframe in #persistent-media (hidden, autoplay works)
+      try {
+        var pm = document.getElementById('persistent-media');
+        if (pm) {
+          var embedWrap = document.createElement('div');
+          embedWrap.id = 'pm-list-embed';
+          pm.appendChild(embedWrap);
+          populateEmbed(track, info, embedWrap);
         }
-        window.removeEventListener('blur', window._udioBlurHandler);
-        window._udioBlurHandler = _onUdioBlur;
-        window.addEventListener('blur', _onUdioBlur);
+      } catch (err) {
+        console.warn('[VMAPlayer] populateEmbed error:', err);
       }
     }
 
