@@ -723,8 +723,9 @@ body.is-dragging .genre-pills, body.is-dragging .subgenre-pills { cursor: grabbi
 /* ══════════════════════════════════════════════════════════════════════════
    8. PLAYER BAR (merged — most complete version from both files)
    ══════════════════════════════════════════════════════════════════════════ */
-.player-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999; background: rgba(10,10,18,0.98); border-top: 1px solid var(--border); display: flex; align-items: center; gap: 14px; padding: 0 20px; height: 68px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.16,1,0.3,1); pointer-events: none; }
-.player-bar.active { transform: translateY(0); pointer-events: auto; }
+.player-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999; background: rgba(10,10,18,0.98); border-top: 1px solid var(--border); display: none; align-items: center; gap: 14px; padding: 0 20px; height: 68px; }
+.player-bar.active { display: flex; animation: slideUpBar 0.3s cubic-bezier(0.16,1,0.3,1); }
+@keyframes slideUpBar { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 .player-bar.playing .player-eq span { animation-play-state: running; }
 .player-eq { display: flex; align-items: flex-end; gap: 2px; height: 18px; flex-shrink: 0; }
 .player-eq span { width: 3px; background: var(--accent); border-radius: 2px; animation: eqBounce 1s ease-in-out infinite alternate; animation-play-state: paused; height: 18px; transform-origin: bottom; }
