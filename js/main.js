@@ -199,13 +199,13 @@
 
   function initSticky() {
     var genreNav = document.getElementById('genreNav');
-    var hero = document.getElementById('hero');
-    if (!genreNav || !hero) return;
+    var sentinel = document.getElementById('submitCta');
+    if (!genreNav || !sentinel) return;
 
     var observer = new IntersectionObserver(function (entries) {
       genreNav.classList.toggle('sticky', !entries[0].isIntersecting);
     }, { threshold: 0 });
-    observer.observe(hero);
+    observer.observe(sentinel);
 
     _cleanup.push(function () { observer.disconnect(); });
   }

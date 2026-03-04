@@ -1666,12 +1666,12 @@ body.player-active .page-frame { bottom: 68px; }
 .genre-nav {
   max-width: 900px; margin: 0 auto;
   padding: 0 clamp(16px, 4vw, 40px);
+  position: sticky; top: 60px;
   background: var(--bg);
-  transition: box-shadow 0.2s;
+  transition: box-shadow 0.2s, background 0.2s;
   z-index: 150;
 }
 .genre-nav.sticky {
-  position: sticky; top: 60px;
   background: rgba(7,7,11,0.96);
   backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   box-shadow: 0 2px 20px rgba(0,0,0,0.4);
@@ -1754,7 +1754,7 @@ body.player-active .page-frame { bottom: 68px; }
   .how-steps-inline { gap: 4px; }
   .how-steps-inline .step { font-size: 0.58rem; letter-spacing: 1px; }
   .how-steps-inline .step-arrow { font-size: 0.7rem; }
-  .genre-nav.sticky { top: 56px; }
+  .genre-nav { top: 56px; }
   .toolbar-section { padding: 12px 12px 4px; gap: 8px; }
   .toolbar-section .genre-sort-toggle { margin-left: 0; width: 100%; }
   .featured-section { padding: 16px 12px 4px; }

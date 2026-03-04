@@ -68,14 +68,57 @@
 
 <!-- ═══ HERO ═══ -->
 <section class="hero" id="hero">
-  <h1>AI music, rated by <span class="accent">humans</span>.</h1>
-  <p>Submit. Rate. Discover what's actually good.</p>
-  <div class="how-steps-inline">
-    <span class="step"><span class="step-num">01</span> SUBMIT</span>
-    <span class="step-arrow">&rarr;</span>
-    <span class="step"><span class="step-num">02</span> GET RATED</span>
-    <span class="step-arrow">&rarr;</span>
-    <span class="step"><span class="step-num">03</span> CLIMB THE BOARD</span>
+  <h1>DISCOVER &amp; RATE<br><span class="accent">AI MUSIC</span></h1>
+  <p>The community rates tracks made with Suno, Udio, ElevenLabs and more. The best rise to the top.</p>
+  <a href="/submit.html" class="hero-cta">Submit Your Track <span>&rarr;</span></a>
+  <div class="hero-tools">
+    <a href="https://suno.com" target="_blank" rel="noopener" class="hero-tool" onclick="gtag('event','affiliate_click',{tool:'suno',location:'hero'})">
+      <span class="hero-tool-name">Suno</span>
+      <span class="hero-tool-cta">Try free &rarr;</span>
+    </a>
+    <a href="https://www.udio.com" target="_blank" rel="noopener" class="hero-tool" onclick="gtag('event','affiliate_click',{tool:'udio',location:'hero'})">
+      <span class="hero-tool-name">Udio</span>
+      <span class="hero-tool-cta">Try free &rarr;</span>
+    </a>
+    <a href="https://elevenlabs.io/?from=partnereirik9444" target="_blank" rel="noopener" class="hero-tool" onclick="gtag('event','affiliate_click',{tool:'elevenlabs',location:'hero'})">
+      <span class="hero-tool-name">ElevenLabs</span>
+      <span class="hero-tool-cta">Try free &rarr;</span>
+    </a>
+  </div>
+</section>
+
+<!-- ═══ HOW IT WORKS ═══ -->
+<section class="how-section">
+  <div class="section-header">
+    <h2 class="section-title">How It Works</h2>
+    <p class="section-sub">Three steps to AI music fame</p>
+  </div>
+  <div class="how-steps">
+    <div class="how-step">
+      <div class="how-num">01</div>
+      <div class="how-icon"><svg viewBox="0 0 24 24"><path d="M12 15V3m0 12l-4-4m4 4l4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21h14.878a2 2 0 0 0 1.94-1.515L22 17"/></svg></div>
+      <div><div class="how-label">Submit</div><div class="how-desc">Upload your AI-generated track from Suno, Udio, or any platform</div></div>
+      <span class="how-connector">&rarr;</span>
+    </div>
+    <div class="how-step">
+      <div class="how-num">02</div>
+      <div class="how-icon"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg></div>
+      <div><div class="how-label">Get Rated</div><div class="how-desc">The community listens and rates your track from 1 to 5 stars</div></div>
+      <span class="how-connector">&rarr;</span>
+    </div>
+    <div class="how-step">
+      <div class="how-num">03</div>
+      <div class="how-icon"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg></div>
+      <div><div class="how-label">Climb the Board</div><div class="how-desc">Top-rated tracks rise to the leaderboard for everyone to discover</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SUBMIT CTA ═══ -->
+<section class="submit-cta" id="submitCta">
+  <div class="submit-cta-inner">
+    <span class="submit-cta-text">Got an AI track? Submit it and let the community decide.</span>
+    <a href="/submit.html" class="submit-cta-btn">SUBMIT YOUR TRACK &rarr;</a>
   </div>
 </section>
 
@@ -105,14 +148,6 @@
     <button class="genre-sort-btn active" data-sort="top">Top Rated</button>
     <button class="genre-sort-btn" data-sort="newest">Newest</button>
     <button class="genre-sort-btn" data-sort="most">Most Rated</button>
-  </div>
-</section>
-
-<!-- ═══ SUBMIT CTA ═══ -->
-<section class="submit-cta" id="submitCta">
-  <div class="submit-cta-inner">
-    <span class="submit-cta-text">Got an AI track? Submit it and let the community decide.</span>
-    <a href="/submit.html" class="submit-cta-btn">SUBMIT YOUR TRACK &rarr;</a>
   </div>
 </section>
 
