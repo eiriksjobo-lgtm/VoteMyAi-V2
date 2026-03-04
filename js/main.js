@@ -308,8 +308,13 @@
       return;
     }
 
-    // Playing iframes live inline in track rows — stopTrack() handles cleanup.
+    // Hidden iframes live on document.body — track rows only show EQ overlays.
     list.innerHTML = visible.map(function (t) { return buildTrackRow(t, activeTrackId); }).join('');
+
+    // Restore playing row visual state (hidden iframe on body survives re-render)
+    if (Player && typeof Player.restorePlayingRow === 'function') {
+      Player.restorePlayingRow();
+    }
 
     // Load more button
     var loadWrap = document.getElementById('loadMoreWrap');
