@@ -152,6 +152,7 @@ window.VMAPlayer = (function () {
 
   function openUdioPlayer(udioId, trackTitle) {
     createUdioContainer();
+    udioContainer.style.display = '';
 
     // CRITICAL: use /embed/ URL — NOT /songs/ (which returns X-Frame-Options: DENY)
     var box = document.getElementById('udio-iframe-box');
@@ -198,13 +199,17 @@ window.VMAPlayer = (function () {
   }
 
   function destroyUdioPlayer() {
-    if (udioContainer) {
-      udioContainer.querySelectorAll('iframe').forEach(function (f) {
-        f.src = 'about:blank'; f.remove();
+    // Always query DOM directly — don't trust cached ref
+    var el = udioContainer || document.getElementById('udio-container');
+    if (el) {
+      el.querySelectorAll('iframe').forEach(function (f) {
+        try { f.src = 'about:blank'; } catch (e) {}
+        f.remove();
       });
       var box = document.getElementById('udio-iframe-box');
       if (box) box.innerHTML = '';
-      udioContainer.className = 'udio-closed';
+      el.style.display = 'none';
+      el.className = 'udio-closed';
       udioState = 'closed';
     }
     clearTimeout(window._udioAutoMin);
@@ -247,6 +252,7 @@ window.VMAPlayer = (function () {
 
   function openSoundCloudPlayer(scUrl, trackTitle) {
     createScContainer();
+    scContainer.style.display = '';
     var box = document.getElementById('sc-iframe-box');
     var embedSrc = 'https://w.soundcloud.com/player/?url=' + encodeURIComponent(scUrl) +
       '&color=%23ff5500&auto_play=true&hide_related=true&show_comments=false&show_user=true' +
@@ -287,13 +293,17 @@ window.VMAPlayer = (function () {
   }
 
   function destroySc() {
-    if (scContainer) {
-      scContainer.querySelectorAll('iframe').forEach(function (f) {
-        f.src = 'about:blank'; f.remove();
+    // Always query DOM directly — don't trust cached ref
+    var el = scContainer || document.getElementById('sc-container');
+    if (el) {
+      el.querySelectorAll('iframe').forEach(function (f) {
+        try { f.src = 'about:blank'; } catch (e) {}
+        f.remove();
       });
       var box = document.getElementById('sc-iframe-box');
       if (box) box.innerHTML = '';
-      scContainer.className = 'sc-closed';
+      el.style.display = 'none';
+      el.className = 'sc-closed';
       scState = 'closed';
     }
     clearTimeout(window._scAutoMin);
