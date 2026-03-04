@@ -1711,6 +1711,26 @@ body.player-active .page-frame { bottom: 68px; }
   flex: 0 0 240px; scroll-snap-align: start;
 }
 
+/* Submit CTA */
+.submit-cta {
+  max-width: 900px; margin: 0 auto;
+  padding: 0 clamp(16px, 4vw, 40px) 12px;
+}
+.submit-cta-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; padding: 14px 24px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+}
+.submit-cta-text { font-size: 0.88rem; color: var(--muted); font-weight: 500; }
+.submit-cta-btn {
+  flex-shrink: 0; padding: 10px 24px;
+  background: var(--accent); color: var(--bg);
+  font-weight: 700; font-size: 0.82rem; border-radius: 8px;
+  text-decoration: none; letter-spacing: 0.04em; white-space: nowrap;
+  transition: opacity 0.2s; font-family: 'DM Sans', sans-serif;
+}
+.submit-cta-btn:hover { opacity: 0.85; }
+
 /* All tracks section */
 .tracks-section {
   max-width: 900px; margin: 0 auto;
@@ -1739,5 +1759,9 @@ body.player-active .page-frame { bottom: 68px; }
   .toolbar-section .genre-sort-toggle { margin-left: 0; width: 100%; }
   .featured-section { padding: 16px 12px 4px; }
   .featured-scroll > .browse-card { flex: 0 0 60vw; max-width: 220px; }
+  .submit-cta { padding: 0 12px 10px; }
+  .submit-cta-inner { flex-direction: column; text-align: center; padding: 12px 16px; gap: 10px; }
+  .submit-cta-text { font-size: 0.82rem; }
+  .submit-cta-btn { width: 100%; text-align: center; padding: 10px 16px; }
   .tracks-section { padding: 8px 0 80px; }
 }

@@ -375,22 +375,45 @@
   }
 
   function locateTrack() {
-    var activeTrackId = Player ? Player.listTrackId : null;
-    if (activeTrackId === null) return;
+    var activeId = Player ? Player.listTrackId : null;
+    if (activeId === null) return;
 
-    var row = document.querySelector('.track-row[data-track-id="' + activeTrackId + '"]');
-    if (!row) {
-      // Check if track is beyond displayCount
-      var idx = -1;
-      for (var i = 0; i < sortedTracks.length; i++) {
-        if (String(sortedTracks[i].id) === String(activeTrackId)) { idx = i; break; }
-      }
-      if (idx >= 0 && idx >= displayCount) {
-        displayCount = idx + DISPLAY_CHUNK;
-        renderList();
-        row = document.querySelector('.track-row[data-track-id="' + activeTrackId + '"]');
-      }
+    // Find track data to determine its genre
+    var track = VMA.getTrack(activeId);
+    if (!track) return;
+
+    // Check if track is in the current filtered+sorted view
+    var inView = false;
+    for (var i = 0; i < sortedTracks.length; i++) {
+      if (String(sortedTracks[i].id) === String(activeId)) { inView = true; break; }
     }
+
+    // If not in current view, switch to "All Genres" and clear search
+    if (!inView) {
+      currentGenreSlug = null;
+      currentSubgenre = null;
+      searchQuery = '';
+      var searchInput = document.getElementById('searchInput');
+      if (searchInput) searchInput.value = '';
+      var searchClear = document.getElementById('searchClear');
+      if (searchClear) searchClear.classList.remove('show');
+      window.history.pushState({}, '', '/');
+      renderGenrePills();
+      applyFilters();
+    }
+
+    // Expand displayCount if track is beyond current page
+    var idx = -1;
+    for (var j = 0; j < sortedTracks.length; j++) {
+      if (String(sortedTracks[j].id) === String(activeId)) { idx = j; break; }
+    }
+    if (idx >= 0 && idx >= displayCount) {
+      displayCount = idx + DISPLAY_CHUNK;
+      renderList();
+    }
+
+    // Scroll to row and flash highlight
+    var row = document.querySelector('.track-row[data-track-id="' + activeId + '"]');
     if (row) {
       row.scrollIntoView({ behavior: 'smooth', block: 'center' });
       row.style.boxShadow = '0 0 0 2px var(--accent), 0 8px 32px rgba(232,255,71,0.15)';
@@ -689,7 +712,43 @@
 
 
   // ═══════════════════════════════════════════════════════════════════════
-  // 16. Drag-to-scroll for horizontal containers
+  // 16. Nav Intercept — open in new tab when music is playing
+  // ═══════════════════════════════════════════════════════════════════════
+
+  function initNavIntercept() {
+    var handler = function (e) {
+      if (!Player || !Player.activeTrackId) return;
+
+      // Handle btn-submit (uses onclick, so intercept in capture phase)
+      var submitBtn = e.target.closest('.btn-submit');
+      if (submitBtn) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        window.open('/submit.html', '_blank');
+        return;
+      }
+
+      var link = e.target.closest('a[href]');
+      if (!link) return;
+
+      var href = link.getAttribute('href');
+      if (!href || href === '/' || href === '' || href.startsWith('#') || href.startsWith('javascript:')) return;
+      if (link.target === '_blank') return;
+
+      // Only intercept internal page links that would navigate away
+      if (href.startsWith('/') && href !== '/') {
+        e.preventDefault();
+        window.open(href, '_blank');
+      }
+    };
+    // Capture phase to intercept before onclick handlers
+    document.addEventListener('click', handler, true);
+    _cleanup.push(function () { document.removeEventListener('click', handler, true); });
+  }
+
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // 17. Drag-to-scroll for horizontal containers
   // ═══════════════════════════════════════════════════════════════════════
 
   function initDragScroll() {
@@ -710,7 +769,7 @@
 
 
   // ═══════════════════════════════════════════════════════════════════════
-  // 17. PopState handler (browser back/forward)
+  // 18. PopState handler (browser back/forward)
   // ═══════════════════════════════════════════════════════════════════════
 
   function onPopState() {
@@ -723,7 +782,7 @@
 
 
   // ═══════════════════════════════════════════════════════════════════════
-  // 18. Track Data Events
+  // 19. Track Data Events
   // ═══════════════════════════════════════════════════════════════════════
 
   function onTracksReady() {
@@ -738,7 +797,7 @@
 
 
   // ═══════════════════════════════════════════════════════════════════════
-  // 19. Cleanup
+  // 20. Cleanup
   // ═══════════════════════════════════════════════════════════════════════
 
   function cleanup() {
@@ -756,7 +815,7 @@
 
 
   // ═══════════════════════════════════════════════════════════════════════
-  // 20. Init
+  // 21. Init
   // ═══════════════════════════════════════════════════════════════════════
 
   function init() {
@@ -781,6 +840,9 @@
 
     // Init drag-to-scroll
     initDragScroll();
+
+    // Init nav intercept (open in new tab when music plays)
+    initNavIntercept();
 
     // Init scroll arrows
     var genrePillsEl = document.getElementById('genrePills');

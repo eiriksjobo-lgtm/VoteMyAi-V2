@@ -234,26 +234,17 @@ window.VMAPlayer = (function () {
       return;
     }
 
-    // If browse-card is active, scroll to it
-    if (activeBrowseUid) {
-      scrollToActiveCard();
+    // Delegate to main page module (handles genre switching + scroll)
+    if (VMA && VMA.mainPage && typeof VMA.mainPage.locateTrack === 'function') {
+      VMA.mainPage.locateTrack();
       return;
     }
 
-    // Playlist-page locate (may need to expand list)
+    // Fallback: direct scroll
     if (activeTrackId !== null) {
       var trackRow = document.querySelector(
         '.track-row[data-track-id="' + activeTrackId + '"]'
       );
-      if (!trackRow) {
-        // Track might be beyond displayCount — try to expand via page module
-        if (VMA && VMA.playlist && typeof VMA.playlist.expandToTrack === 'function') {
-          VMA.playlist.expandToTrack(activeTrackId);
-          trackRow = document.querySelector(
-            '.track-row[data-track-id="' + activeTrackId + '"]'
-          );
-        }
-      }
       if (trackRow) {
         trackRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
         trackRow.style.boxShadow =
