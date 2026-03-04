@@ -54,7 +54,7 @@
     <a href="/blog.html" class="nav-link">Blog</a>
     <a href="/radio.html" class="nav-link">Radio</a>
     <a href="/login.html" class="nav-link" id="authLink">Login</a>
-    <button class="btn-submit" onclick="window.location.href='/submit.html'">Submit</button>
+    <a href="/submit.html" class="btn-submit">Submit</a>
     <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
   </div>
   <div class="nav-links-mobile" id="mobileNav">
@@ -175,6 +175,7 @@
 
 <!-- ═══ PERSISTENT: Player Bar ═══ -->
 <div class="player-bar" id="playerBar">
+  <img class="player-thumb" id="playerThumb" alt="">
   <div class="player-eq"><span></span><span></span><span></span><span></span></div>
   <div class="player-info" id="playerInfo" title="Click to find this track" style="cursor:pointer;">
     <div class="player-title" id="playerTitle"></div>
@@ -217,9 +218,9 @@
 </div>
 
 <!-- ═══ JAVASCRIPT ═══ -->
-<script src="/js/app.js?v=18"></script>
-<script src="/js/player.js?v=18"></script>
-<script src="/js/main.js?v=18"></script>
+<script src="/js/app.js?v=19"></script>
+<script src="/js/player.js?v=19"></script>
+<script src="/js/main.js?v=19"></script>
 <script>
   (async function boot() {
     VMA.initShareModal();

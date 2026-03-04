@@ -73,16 +73,34 @@ window.VMAPlayer = (function () {
     activePlayerTrackId = trackId;
     activePlayerPlatform = platform;
     playerTitle.textContent = title || 'Now Playing';
+
+    // Clear platform-specific classes first
+    playerBar.classList.remove('udio-active', 'sc-active', 'udio-waiting');
+
     if (platform === 'udio') {
-      playerMeta.innerHTML = '<span class="udio-tap-hint">\u25B6 Tap play in Udio embed</span>';
+      playerMeta.innerHTML = '<span class="udio-tap-hint">\u25B6 Press play in embed \u25B6</span>';
       playerBar.classList.add('active', 'udio-active', 'udio-waiting');
       playerBar.classList.remove('playing');
     } else {
       playerMeta.textContent = meta || '';
       playerBar.classList.add('active', 'playing');
-      playerBar.classList.remove('udio-waiting');
+      if (platform === 'soundcloud') playerBar.classList.add('sc-active');
     }
     document.body.classList.add('player-active');
+
+    // Set thumbnail
+    var track = _getTrack(trackId);
+    var thumbUrl = _getThumb(track);
+    var thumbEl = document.getElementById('playerThumb');
+    if (thumbEl) {
+      if (thumbUrl) {
+        thumbEl.src = thumbUrl;
+        thumbEl.style.display = '';
+      } else {
+        thumbEl.style.display = 'none';
+      }
+    }
+
     if (typeof gtag === 'function') {
       gtag('event', 'play_bar', { track_id: trackId, platform: platform });
     }
@@ -226,10 +244,15 @@ window.VMAPlayer = (function () {
    */
   function closePlayer() {
     _stopAllPlayback();
-    playerBar.classList.remove('active', 'playing', 'udio-waiting', 'has-embed');
+    playerBar.classList.remove('active', 'playing', 'udio-waiting', 'has-embed', 'udio-active', 'sc-active');
     document.body.classList.remove('player-active');
     activePlayerTrackId = null;
     activePlayerPlatform = null;
+    // Hide thumbnail
+    var thumbEl = document.getElementById('playerThumb');
+    if (thumbEl) { thumbEl.style.display = 'none'; }
+    // Restore nav links to normal
+    _updateNavTargets();
     closePageFrame();
   }
 
@@ -318,6 +341,19 @@ window.VMAPlayer = (function () {
     if (VMA && typeof VMA.getTrack === 'function') return VMA.getTrack(id);
     if (VMA && typeof VMA.findTrackById === 'function') return VMA.findTrackById(id);
     return null;
+  }
+
+  function _getThumb(track) {
+    if (!track) return '';
+    if (track.thumbnail_url) return track.thumbnail_url;
+    if (track.embed_url) {
+      var m = track.embed_url.match(/\/([a-f0-9-]{36})/);
+      if (m && (track.embed_url.includes('suno.com') || track.embed_url.includes('suno.ai'))) {
+        return 'https://cdn2.suno.ai/image_' + m[1] + '.jpeg';
+      }
+    }
+    if (track.yt_id) return 'https://img.youtube.com/vi/' + track.yt_id + '/default.jpg';
+    return '';
   }
 
   /**
@@ -504,27 +540,11 @@ window.VMAPlayer = (function () {
           : platformLabel) +
         ' \u00B7 ' +
         (track.genre || '');
-      playerTitle.textContent = track.title || 'Now Playing';
-      if (embed.platform === 'udio') {
-        playerMeta.innerHTML = '<span class="udio-tap-hint">\u25B6 Tap play in Udio player above</span>';
-        playerBar.classList.add('active', 'udio-active', 'udio-waiting');
-      } else {
-        playerMeta.textContent = metaStr;
-        playerBar.classList.add('active', 'playing');
-      }
-      if (embed.platform === 'soundcloud') playerBar.classList.add('sc-active');
-      document.body.classList.add('player-active');
-      activePlayerTrackId = trackId;
-      activePlayerPlatform = embed.platform;
+      activatePlayerBar(trackId, track.title || 'Now Playing', metaStr, embed.platform);
 
       // ── Transition to PHASE 2 (audio platforms only) ──
       // YouTube stays in Phase 1 — user watches video.
-      if (embed.platform === 'youtube') {
-        if (typeof gtag === 'function') {
-          gtag('event', 'play_bar', { track_id: trackId, platform: embed.platform });
-        }
-        return;
-      }
+      if (embed.platform === 'youtube') return;
 
       var _iosPhase2Done = false;
 
@@ -590,10 +610,6 @@ window.VMAPlayer = (function () {
       window.addEventListener('blur', _iosBlurToPhase2);
 
       var _iosPhase2Timer = setTimeout(iosPhase2, 10000);
-
-      if (typeof gtag === 'function') {
-        gtag('event', 'play_bar', { track_id: trackId, platform: embed.platform });
-      }
       return;
     }
 
@@ -638,18 +654,10 @@ window.VMAPlayer = (function () {
           '</div>';
       });
 
-      playerTitle.textContent = track.title || 'Now Playing';
-      playerMeta.textContent = 'SoundCloud \u00B7 ' + (track.genre || '');
-      playerBar.classList.add('active', 'playing', 'sc-active');
-      document.body.classList.add('player-active');
-      activePlayerTrackId = trackId;
-      activePlayerPlatform = 'soundcloud';
       activeBrowseUid = uid;
       activeBrowseTrackId = String(trackId);
       card.classList.add('is-playing');
-      if (typeof gtag === 'function') {
-        gtag('event', 'play_bar', { track_id: trackId, platform: 'soundcloud' });
-      }
+      activatePlayerBar(trackId, track.title || 'Now Playing', 'SoundCloud \u00B7 ' + (track.genre || ''), 'soundcloud');
       return;
     }
 
@@ -690,19 +698,10 @@ window.VMAPlayer = (function () {
             '</div>';
         });
 
-        playerTitle.textContent = track.title || 'Now Playing';
-        playerMeta.innerHTML = '<span class="udio-tap-hint">\u25B6 Tap play in Udio player above</span>';
-        playerBar.classList.add('active', 'udio-active', 'udio-waiting');
-        playerBar.classList.remove('playing');
-        document.body.classList.add('player-active');
-        activePlayerTrackId = trackId;
-        activePlayerPlatform = 'udio';
         activeBrowseUid = uid;
         activeBrowseTrackId = String(trackId);
         card.classList.add('is-playing');
-        if (typeof gtag === 'function') {
-          gtag('event', 'play_bar', { track_id: trackId, platform: 'udio' });
-        }
+        activatePlayerBar(trackId, track.title || 'Now Playing', 'Udio \u00B7 ' + (track.genre || ''), 'udio');
       }
       return;
     }
@@ -753,16 +752,7 @@ window.VMAPlayer = (function () {
     card.classList.add('is-playing');
     activeBrowseUid = uid;
     activeBrowseTrackId = String(trackId);
-
-    playerTitle.textContent = track.title || 'Now Playing';
-    playerMeta.textContent = (track.tool || '') + ' \u00B7 ' + (track.genre || '');
-    playerBar.classList.add('active', 'playing');
-    document.body.classList.add('player-active');
-    activePlayerTrackId = trackId;
-    activePlayerPlatform = embed.platform;
-    if (typeof gtag === 'function') {
-      gtag('event', 'play_bar', { track_id: trackId, platform: embed.platform });
-    }
+    activatePlayerBar(trackId, track.title || 'Now Playing', (track.tool || '') + ' \u00B7 ' + (track.genre || ''), embed.platform);
   }
 
   /**
@@ -1392,6 +1382,38 @@ window.VMAPlayer = (function () {
 
 
   // ═══════════════════════════════════════════════════════════════
+  //  9. NAV SURVIVAL — target="_blank" on nav links while playing
+  // ═══════════════════════════════════════════════════════════════
+
+  function _updateNavTargets() {
+    var playing = !!activePlayerTrackId;
+    document.querySelectorAll('nav a[href], footer a[href], .hero-cta').forEach(function (link) {
+      var href = link.getAttribute('href') || '';
+      // Only modify internal page links (not /, not external, not #anchors)
+      if (!href.startsWith('/') || href === '/') return;
+      if (href.startsWith('//') || href.startsWith('http')) return;
+      if (playing) {
+        link.setAttribute('target', '_blank');
+        link.setAttribute('rel', 'noopener');
+      } else {
+        link.removeAttribute('target');
+        link.removeAttribute('rel');
+      }
+    });
+    // Also handle .btn-submit if it's an <a> tag
+    document.querySelectorAll('a.btn-submit[href]').forEach(function (link) {
+      if (playing) {
+        link.setAttribute('target', '_blank');
+        link.setAttribute('rel', 'noopener');
+      } else {
+        link.removeAttribute('target');
+        link.removeAttribute('rel');
+      }
+    });
+  }
+
+
+  // ═══════════════════════════════════════════════════════════════
   //  INIT — called once when the app shell loads
   // ═══════════════════════════════════════════════════════════════
 
@@ -1433,8 +1455,12 @@ window.VMAPlayer = (function () {
     // Create expand buttons
     _createExpandButtons();
 
-    // MutationObserver: show/hide expand buttons when playerBar class changes
-    new MutationObserver(_updateExpandButtons).observe(playerBar, {
+    // MutationObserver: update expand buttons + nav targets when playerBar class changes
+    new MutationObserver(function () {
+      _updateExpandButtons();
+      // Async so state vars (activePlayerTrackId) are set before we check them
+      setTimeout(_updateNavTargets, 0);
+    }).observe(playerBar, {
       attributes: true,
       attributeFilter: ['class']
     });
