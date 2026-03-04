@@ -74,7 +74,7 @@ window.VMAPlayer = (function () {
     activePlayerPlatform = platform;
     playerTitle.textContent = title || 'Now Playing';
     if (platform === 'udio') {
-      playerMeta.innerHTML = '<span class="udio-tap-hint">\u25B6 Tap play in Udio player above</span>';
+      playerMeta.innerHTML = '<span class="udio-tap-hint">\u25B6 Tap play in Udio embed</span>';
       playerBar.classList.add('active', 'udio-active', 'udio-waiting');
       playerBar.classList.remove('playing');
     } else {
@@ -93,12 +93,9 @@ window.VMAPlayer = (function () {
    * Transitions player bar and track row from "waiting" to "playing" state.
    */
   function _udioPlaybackStarted() {
-    // Player bar: remove waiting glow, start EQ, update meta
-    playerBar.classList.remove('udio-waiting', 'has-embed');
+    // Player bar: remove waiting glow, start EQ — but KEEP has-embed (iframe must stay visible!)
+    playerBar.classList.remove('udio-waiting');
     playerBar.classList.add('playing');
-    // Clear player bar embed area
-    var pEmbed = document.getElementById('playerEmbed');
-    if (pEmbed) pEmbed.innerHTML = '';
     // Update meta text
     if (activePlayerPlatform === 'udio') {
       var genre = '';
@@ -112,27 +109,11 @@ window.VMAPlayer = (function () {
         playerMeta.textContent = ['Udio', genre].filter(Boolean).join(' \u00B7 ');
       }
     }
-    // Track row: collapse embed area, show equalizer
+    // Track row: show equalizer
     if (activeTrackId !== null) {
       var row = document.querySelector('.track-row[data-track-id="' + activeTrackId + '"]');
       if (row) {
         row.classList.add('eq-active');
-        // Move Udio iframe to persistent-media (keeps audio alive) then hide embed area
-        var embedArea = row.querySelector('.track-embed-area');
-        if (embedArea) {
-          var udioIframe = embedArea.querySelector('iframe');
-          if (udioIframe) {
-            var pm = document.getElementById('persistent-media');
-            if (pm) {
-              var wrap = document.createElement('div');
-              wrap.id = 'pm-list-embed';
-              wrap.appendChild(udioIframe);
-              pm.appendChild(wrap);
-            }
-          }
-          embedArea.innerHTML = '';
-          embedArea.style.display = 'none';
-        }
       }
     }
     // Clean up blur listener
@@ -371,7 +352,7 @@ window.VMAPlayer = (function () {
         var udioUuid = url.match(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/);
         if (udioUuid) { result = { platform: 'udio', udioId: udioUuid[0], url: url }; }
         else {
-          var udioSlug = url.match(/udio\.com\/songs\/([a-zA-Z0-9_-]+)/);
+          var udioSlug = url.match(/udio\.com\/(?:songs|embed)\/([a-zA-Z0-9_-]+)/);
           result = udioSlug
             ? { platform: 'udio', udioId: udioSlug[1], url: url }
             : { platform: 'udio', url: url };
@@ -876,16 +857,15 @@ window.VMAPlayer = (function () {
     // Udio: eq-active added after embed collapses (see below)
 
     if (info.platform === 'udio' && info.udioId) {
-      // Udio: show iframe inline in the track row embed area (visible, user taps play)
-      var trackEmbed = document.getElementById('embed-' + trackId);
-      if (trackEmbed) {
-        var udioSrc = 'https://www.udio.com/embed/' + info.udioId;
-        trackEmbed.innerHTML =
-          '<iframe src="' + udioSrc + '" allow="autoplay; encrypted-media" ' +
-          'style="width:100%;height:180px;border:none;border-radius:8px;" playsinline></iframe>';
-        trackEmbed.style.display = 'block';
+      // Udio: iframe goes in #playerEmbed (VISIBLE inside player bar — Udio needs visible iframe for audio)
+      var udioSrc = 'https://www.udio.com/embed/' + info.udioId;
+      var pEmbed = document.getElementById('playerEmbed');
+      if (pEmbed) {
+        pEmbed.innerHTML =
+          '<iframe src="' + udioSrc + '" allow="autoplay; encrypted-media" playsinline></iframe>';
+        playerBar.classList.add('has-embed');
       }
-      // Auto-collapse after 3s: assume user pressed play, collapse embed → show EQ
+      // Auto-transition after 3s: waiting → playing (EQ starts)
       clearTimeout(window._udioCollapseTimer);
       window._udioCollapseTimer = setTimeout(function () {
         _udioPlaybackStarted();
