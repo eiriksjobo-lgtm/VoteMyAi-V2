@@ -691,7 +691,181 @@ body.is-dragging .genre-pills, body.is-dragging .subgenre-pills { cursor: grabbi
 .player-ctrl svg { width: 18px; height: 18px; fill: currentColor; }
 body.player-active { padding-bottom: 68px; }
 
-/* Player bar shows info only — all embeds live inline in track rows */
+/* Player bar — platform-specific colors */
+.player-bar.udio-active { border-top-color: rgba(129,140,248,0.2); }
+.player-bar.udio-active .player-eq span { background: #818cf8; }
+.player-bar.sc-active { border-top-color: rgba(255,85,0,0.2); }
+.player-bar.sc-active .player-eq span { background: #ff5500; }
+
+/* Expand buttons in player bar (hidden until platform is active) */
+.udio-expand-btn, .sc-expand-btn { display: none !important; }
+.player-bar.udio-active .udio-expand-btn {
+  display: flex !important; width: 36px; height: 36px; border-radius: 50%; border: none;
+  background: rgba(129,140,248,0.12); color: #818cf8; cursor: pointer;
+  align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0;
+}
+.player-bar.udio-active .udio-expand-btn:hover { background: rgba(129,140,248,0.25); transform: scale(1.1); }
+.player-bar.sc-active .sc-expand-btn {
+  display: flex !important; width: 36px; height: 36px; border-radius: 50%; border: none;
+  background: rgba(255,85,0,0.12); color: #ff5500; cursor: pointer;
+  align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0;
+}
+.player-bar.sc-active .sc-expand-btn:hover { background: rgba(255,85,0,0.25); transform: scale(1.1); }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   8b. UDIO POPUP OVERLAY (fixed DOM element — NOT a browser popup)
+   ══════════════════════════════════════════════════════════════════════════ */
+#udio-container { pointer-events: none; }
+#udio-container * { pointer-events: auto; }
+#udio-backdrop {
+  position: fixed; inset: 0; z-index: 8000;
+  background: rgba(0,0,0,0.75);
+  opacity: 0; transition: opacity 0.35s; pointer-events: none;
+}
+.udio-popup #udio-backdrop { opacity: 1; pointer-events: auto; cursor: pointer; }
+.udio-minimized #udio-backdrop, .udio-closed #udio-backdrop { opacity: 0; pointer-events: none; }
+#udio-wrapper {
+  position: fixed; z-index: 8001;
+  background: #111118; border: 1px solid rgba(129,140,248,0.2);
+  overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  transition: opacity 0.25s; opacity: 0; pointer-events: none;
+}
+.udio-popup #udio-wrapper {
+  top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: min(500px, 94vw); height: auto;
+  border-radius: 18px; opacity: 1; pointer-events: auto;
+}
+.udio-minimized #udio-wrapper {
+  position: fixed; bottom: 0; left: 0;
+  width: 1px; height: 1px; overflow: hidden;
+  opacity: 0.01; pointer-events: none;
+}
+.udio-closed #udio-wrapper { opacity: 0; pointer-events: none; top: -9999px; left: -9999px; width: 0; height: 0; }
+.udio-hdr {
+  display: flex; align-items: center; gap: 10px; padding: 12px 14px;
+  background: rgba(129,140,248,0.04); border-bottom: 1px solid rgba(129,140,248,0.08);
+}
+.udio-hdr-badge {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 0.6rem; font-weight: 800; letter-spacing: 2px; color: #818cf8;
+  white-space: nowrap; flex-shrink: 0;
+}
+.udio-hdr-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: #818cf8;
+  box-shadow: 0 0 10px rgba(129,140,248,0.7); animation: udioDot 1.8s ease-in-out infinite;
+}
+@keyframes udioDot { 0%,100%{opacity:1}50%{opacity:.35} }
+.udio-hdr-title {
+  flex: 1; font-size: 0.78rem; font-weight: 600; color: #fff;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.udio-hdr-btns { display: flex; gap: 6px; flex-shrink: 0; }
+.udio-hdr-btn {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.45); cursor: pointer;
+  display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+}
+.udio-hdr-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+#udioMinBtn:hover { background: rgba(129,140,248,0.2); color: #818cf8; border-color: rgba(129,140,248,0.3); }
+#udio-iframe-box { height: 380px; }
+.udio-hint {
+  padding: 6px 14px 10px; font-size: 0.62rem; color: rgba(129,140,248,0.45);
+  text-align: center; letter-spacing: 0.3px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   8c. SOUNDCLOUD POPUP OVERLAY (fixed DOM element — NOT a browser popup)
+   ══════════════════════════════════════════════════════════════════════════ */
+#sc-container { pointer-events: none; }
+#sc-container * { pointer-events: auto; }
+#sc-backdrop {
+  position: fixed; inset: 0; z-index: 8000;
+  background: rgba(0,0,0,0.75);
+  opacity: 0; transition: opacity 0.35s; pointer-events: none;
+}
+.sc-popup #sc-backdrop { opacity: 1; pointer-events: auto; cursor: pointer; }
+.sc-minimized #sc-backdrop, .sc-closed #sc-backdrop { opacity: 0; pointer-events: none; }
+#sc-wrapper {
+  position: fixed; z-index: 8001;
+  background: #111118; border: 1px solid rgba(255,85,0,0.2);
+  overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  transition: opacity 0.25s; opacity: 0; pointer-events: none;
+}
+.sc-popup #sc-wrapper {
+  top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: min(500px, 94vw); height: auto;
+  border-radius: 18px; opacity: 1; pointer-events: auto;
+}
+.sc-minimized #sc-wrapper {
+  position: fixed; bottom: 0; left: 0;
+  width: 1px; height: 1px; overflow: hidden;
+  opacity: 0.01; pointer-events: none;
+}
+.sc-closed #sc-wrapper { opacity: 0; pointer-events: none; top: -9999px; left: -9999px; width: 0; height: 0; }
+.sc-hdr {
+  display: flex; align-items: center; gap: 10px; padding: 12px 14px;
+  background: rgba(255,85,0,0.04); border-bottom: 1px solid rgba(255,85,0,0.08);
+}
+.sc-hdr-badge {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 0.6rem; font-weight: 800; letter-spacing: 2px; color: #ff5500;
+  white-space: nowrap; flex-shrink: 0;
+}
+.sc-hdr-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: #ff5500;
+  box-shadow: 0 0 10px rgba(255,85,0,0.7); animation: scDot 1.8s ease-in-out infinite;
+}
+@keyframes scDot { 0%,100%{opacity:1}50%{opacity:.35} }
+.sc-hdr-title {
+  flex: 1; font-size: 0.78rem; font-weight: 600; color: #fff;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sc-hdr-btns { display: flex; gap: 6px; flex-shrink: 0; }
+.sc-hdr-btn {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.45); cursor: pointer;
+  display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+}
+.sc-hdr-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+#scMinBtn:hover { background: rgba(255,85,0,0.2); color: #ff5500; border-color: rgba(255,85,0,0.3); }
+#sc-iframe-box { height: 380px; }
+.sc-hint {
+  padding: 6px 14px 10px; font-size: 0.62rem; color: rgba(255,85,0,0.45);
+  text-align: center; letter-spacing: 0.3px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   8d. iOS TWO-PHASE EMBED STYLES
+   ══════════════════════════════════════════════════════════════════════════ */
+.ios-embed-wrap { width: 100%; position: relative; overflow: hidden; background: var(--surface-2); }
+.ios-embed-wrap iframe { width: 100% !important; height: 100% !important; border: none !important; display: block; }
+.ios-embed-wrap.suno { height: 180px; }
+.ios-embed-wrap.udio { height: 200px; }
+.ios-embed-wrap.soundcloud { height: 180px; }
+.ios-embed-wrap.youtube { height: 0; padding-bottom: 56.25%; position: relative; }
+.ios-embed-wrap.youtube iframe { position: absolute; top: 0; left: 0; }
+.ios-stop-btn {
+  position: absolute; top: 8px; right: 8px; z-index: 10;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: rgba(0,0,0,0.7); border: 1px solid rgba(255,255,255,0.15);
+  color: #fff; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: background 0.2s; -webkit-tap-highlight-color: transparent;
+}
+.ios-stop-btn:active { background: rgba(232,255,71,0.3); }
+
+/* Popup responsive */
+@media (max-width: 640px) {
+  .udio-popup #udio-wrapper { width: 96vw; max-height: 80vh; }
+  #udio-iframe-box { height: 320px; }
+  .udio-hdr-title { font-size: 0.72rem; max-width: 50vw; }
+  .udio-hdr-btn { width: 36px; height: 36px; }
+  .sc-popup #sc-wrapper { width: 96vw; max-height: 80vh; }
+  #sc-iframe-box { height: 320px; }
+  .sc-hdr-title { font-size: 0.72rem; max-width: 50vw; }
+  .sc-hdr-btn { width: 36px; height: 36px; }
+}
 
 /* ══════════════════════════════════════════════════════════════════════════
    9. COMMENTS (merged — index.html version is more complete with form styling)
@@ -1101,11 +1275,7 @@ footer { background: var(--surface); border-top: 1px solid var(--border); paddin
   .search-box input { font-size: 16px; }
 }
 
-/* Udio active state in player bar */
-.player-bar.udio-active { border-top-color: rgba(129,140,248,0.2); }
-.player-bar.udio-active .player-eq span { background: #818cf8; }
-
-/* (SoundCloud popup removed — SoundCloud embeds live inline in track rows) */
+/* (Udio/SC player bar colors now in section 8b/8c above) */
 
 /* ═══ BLOG ═══ */
 .blog-hero { text-align: center; padding: 100px 40px 60px; max-width: 800px; margin: 0 auto; }
