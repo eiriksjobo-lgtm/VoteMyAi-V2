@@ -516,43 +516,8 @@ window.VMAPlayer = (function () {
       return;
     }
 
-    // ── KILL ABSOLUTELY EVERYTHING FIRST ──
-    // 1. Destroy Udio popup (minimized bar that looks like second player)
-    destroyUdioPlayer();
-    // 2. Destroy SoundCloud popup
-    destroySc();
-    // 3. Kill all music iframes (skip page-frame)
-    document.querySelectorAll('iframe').forEach(function (f) {
-      if (f.closest('.page-frame')) return;
-      var src = f.src || '';
-      if (src.includes('suno') || src.includes('udio') || src.includes('youtube') || src.includes('soundcloud')) {
-        try { f.src = 'about:blank'; } catch (e) {}
-      }
-    });
-    // 4. Remove all hidden player divs
-    document.querySelectorAll('[id^="hidden-player-"]').forEach(function (el) { el.remove(); });
-    // 5. Clear playing state from all rows
-    document.querySelectorAll('.track-row.playing, .track-row.eq-active').forEach(function (row) {
-      row.classList.remove('playing', 'eq-active');
-      var btn = row.querySelector('.track-play');
-      if (btn) {
-        btn.innerHTML = '<svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>';
-        btn.setAttribute('aria-label', 'Play');
-      }
-      var ea = row.querySelector('.track-embed-area');
-      if (ea) { ea.innerHTML = ''; ea.style.display = 'none'; }
-    });
-    // 6. Reset player bar state
-    if (playerBar) playerBar.classList.remove('active', 'playing', 'udio-active', 'sc-active');
-    // 7. Kill stray audio/video
-    document.querySelectorAll('audio, video').forEach(function (el) {
-      try { el.pause(); el.src = ''; } catch (e) {}
-    });
-    // 8. Clear iOS listeners
-    _clearIos();
-    // 9. Reset state
-    activeTrackId = null;
-    activePlatform = null;
+    // Stop all current playback and clean up
+    stopTrack();
 
     var track = _getTrack(trackId);
     if (!track) return;

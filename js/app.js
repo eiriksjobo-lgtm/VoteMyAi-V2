@@ -684,7 +684,7 @@ window.VMA = (function() {
     _drag = null;
   }
 
-  function onDragStart(e) {
+  function onDragStart(e, scrollEl) {
     // Don't intercept interactive elements
     if (e.button !== 0) return;
     if (e.target.closest('button, .bstar, a, .browse-card-footer, .comment-input, .comment-form, .comment-submit, .comments-panel, .browse-card-note, .browse-card-note-toggle, .browse-card-note-text, .browse-card-play, input, textarea')) return;
@@ -692,7 +692,7 @@ window.VMA = (function() {
     // Kill any previous drag/momentum
     cleanupDrag();
 
-    var scroll = e.currentTarget;
+    var scroll = scrollEl || e.currentTarget;
     _drag = {
       el: scroll,
       startX: e.clientX,
