@@ -735,40 +735,6 @@
   }
 
 
-  // ═══════════════════════════════════════════════════════════════════════
-  // 16. Nav Intercept — open in new tab when music is playing
-  // ═══════════════════════════════════════════════════════════════════════
-
-  function initNavIntercept() {
-    var handler = function (e) {
-      if (!Player || !Player.activeTrackId) return;
-
-      // Handle btn-submit (uses onclick, so intercept in capture phase)
-      var submitBtn = e.target.closest('.btn-submit');
-      if (submitBtn) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        window.open('/submit.html', '_blank');
-        return;
-      }
-
-      var link = e.target.closest('a[href]');
-      if (!link) return;
-
-      var href = link.getAttribute('href');
-      if (!href || href === '/' || href === '' || href.startsWith('#') || href.startsWith('javascript:')) return;
-      if (link.target === '_blank') return;
-
-      // Only intercept internal page links that would navigate away
-      if (href.startsWith('/') && href !== '/') {
-        e.preventDefault();
-        window.open(href, '_blank');
-      }
-    };
-    // Capture phase to intercept before onclick handlers
-    document.addEventListener('click', handler, true);
-    _cleanup.push(function () { document.removeEventListener('click', handler, true); });
-  }
 
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -873,9 +839,6 @@
 
     // Init drag-to-scroll
     initDragScroll();
-
-    // Init nav intercept (open in new tab when music plays)
-    initNavIntercept();
 
     // Init scroll arrows
     var genrePillsEl = document.getElementById('genrePills');
