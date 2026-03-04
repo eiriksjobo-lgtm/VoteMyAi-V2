@@ -467,8 +467,9 @@ window.VMAPlayer = (function () {
       }
     });
 
-    // Kill stray audio iframes anywhere on the page
+    // Kill stray audio iframes anywhere on the page (skip page-frame iframe)
     document.querySelectorAll('iframe').forEach(function (f) {
+      if (f.closest('.page-frame')) return;
       var src = f.src || '';
       if (src === '' || src === 'about:blank') return;
       if (src.includes('suno.com') || src.includes('youtube.com') ||
@@ -700,22 +701,11 @@ window.VMAPlayer = (function () {
 
 
   // ═══════════════════════════════════════════════════════════════
-  //  NAV TARGETS — open in new tab when music is playing
+  //  NAV TARGETS — replaced by page-frame system (no-op)
   // ═══════════════════════════════════════════════════════════════
 
   function _updateNavTargets() {
-    var isPlaying = !!(activeTrackId);
-    var sel = 'nav a[href^="/"], .nav-links-mobile a[href^="/"], footer a[href^="/"], a.hero-cta[href^="/"]';
-    document.querySelectorAll(sel).forEach(function (a) {
-      if (a.classList.contains('logo')) return;
-      if (isPlaying) {
-        a.setAttribute('target', '_blank');
-        a.setAttribute('rel', 'noopener noreferrer');
-      } else {
-        a.removeAttribute('target');
-        a.removeAttribute('rel');
-      }
-    });
+    // Page-frame link interceptor in index.html handles navigation
   }
 
 
