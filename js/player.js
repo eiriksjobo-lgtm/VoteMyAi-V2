@@ -267,8 +267,6 @@ window.VMAPlayer = (function () {
     // Hide thumbnail
     var thumbEl = document.getElementById('playerThumb');
     if (thumbEl) { thumbEl.style.display = 'none'; }
-    // Restore nav links to normal
-    _updateNavTargets();
     closePageFrame();
   }
 
@@ -1398,36 +1396,6 @@ window.VMAPlayer = (function () {
   }
 
 
-  // ═══════════════════════════════════════════════════════════════
-  //  9. NAV SURVIVAL — target="_blank" on nav links while playing
-  // ═══════════════════════════════════════════════════════════════
-
-  function _updateNavTargets() {
-    var playing = !!activePlayerTrackId;
-    document.querySelectorAll('nav a[href], footer a[href], .hero-cta').forEach(function (link) {
-      var href = link.getAttribute('href') || '';
-      // Only modify internal page links (not /, not external, not #anchors)
-      if (!href.startsWith('/') || href === '/') return;
-      if (href.startsWith('//') || href.startsWith('http')) return;
-      if (playing) {
-        link.setAttribute('target', '_blank');
-        link.setAttribute('rel', 'noopener');
-      } else {
-        link.removeAttribute('target');
-        link.removeAttribute('rel');
-      }
-    });
-    // Also handle .btn-submit if it's an <a> tag
-    document.querySelectorAll('a.btn-submit[href]').forEach(function (link) {
-      if (playing) {
-        link.setAttribute('target', '_blank');
-        link.setAttribute('rel', 'noopener');
-      } else {
-        link.removeAttribute('target');
-        link.removeAttribute('rel');
-      }
-    });
-  }
 
 
   // ═══════════════════════════════════════════════════════════════
@@ -1472,12 +1440,8 @@ window.VMAPlayer = (function () {
     // Create expand buttons
     _createExpandButtons();
 
-    // MutationObserver: update expand buttons + nav targets when playerBar class changes
-    new MutationObserver(function () {
-      _updateExpandButtons();
-      // Async so state vars (activePlayerTrackId) are set before we check them
-      setTimeout(_updateNavTargets, 0);
-    }).observe(playerBar, {
+    // MutationObserver: show/hide expand buttons when playerBar class changes
+    new MutationObserver(_updateExpandButtons).observe(playerBar, {
       attributes: true,
       attributeFilter: ['class']
     });

@@ -1,10 +1,10 @@
-const CACHE_NAME = 'votemyai-v20';
+const CACHE_NAME = 'votemyai-v21';
 const PRECACHE = [
   '/index.html',
   '/app.css',
-  '/js/app.js?v=20',
-  '/js/player.js?v=20',
-  '/js/main.js?v=20',
+  '/js/app.js?v=21',
+  '/js/player.js?v=21',
+  '/js/main.js?v=21',
   '/radio.html',
   '/favicon-192x192.png',
   '/favicon-512x512.png'
