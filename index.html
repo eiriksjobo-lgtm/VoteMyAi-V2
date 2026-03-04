@@ -237,6 +237,7 @@
       var frame = document.getElementById('pageFrame');
       frame.querySelector('iframe').src = url;
       frame.classList.add('active');
+      history.pushState({ pageFrame: true }, '', window.location.href);
     }
 
     function closePageFrame() {
@@ -245,7 +246,17 @@
       frame.querySelector('iframe').src = '';
     }
 
-    document.getElementById('pfClose').addEventListener('click', closePageFrame);
+    document.getElementById('pfClose').addEventListener('click', function() {
+      closePageFrame();
+      if (history.state && history.state.pageFrame) { history.back(); }
+    });
+
+    window.addEventListener('popstate', function(e) {
+      var frame = document.getElementById('pageFrame');
+      if (frame && frame.classList.contains('active')) {
+        closePageFrame();
+      }
+    });
 
     // Link interceptor — catch all nav clicks when music is playing
     document.addEventListener('click', function(e) {
