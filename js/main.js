@@ -199,7 +199,7 @@
 
   function initSticky() {
     var genreNav = document.getElementById('genreNav');
-    var sentinel = document.getElementById('submitCta');
+    var sentinel = document.getElementById('howSection');
     if (!genreNav || !sentinel) return;
 
     var observer = new IntersectionObserver(function (entries) {
