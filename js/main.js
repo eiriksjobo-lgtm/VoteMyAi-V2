@@ -1,11 +1,10 @@
 /**
- * VoteMyAI — Main Page Module (consolidated home + playlist)
+ * VoteMyAI — Main Page Module
  *
- * Combines the home page featured cards and the playlist track list into
- * a single unified page. Relies on VMA (app.js) for shared logic and
- * VMAPlayer (player.js) for all playback management.
+ * Unified track browsing and playback page. Relies on VMA (app.js) for
+ * shared logic and VMAPlayer (player.js) for all playback management.
  *
- * Runs as an IIFE with cleanup pattern for SPA compatibility.
+ * Runs as an IIFE with cleanup pattern.
  */
 (function () {
   'use strict';
@@ -26,7 +25,6 @@
   var currentSubgenre  = null;
   var searchQuery      = '';
   var searchTimeout    = null;
-  var browseCardUid    = 0;
 
   // ─── Comment & Note state ────────────────────────────────────────────
   var _openCommentPanel = null;
@@ -35,7 +33,7 @@
 
 
   // ═══════════════════════════════════════════════════════════════════════
-  // 1. Helpers — thumbnail, stars, platform detection
+  // 1. Helpers — thumbnail, stars
   // ═══════════════════════════════════════════════════════════════════════
 
   function getThumb(track) {
@@ -47,20 +45,6 @@
       }
     }
     if (track.yt_id) return 'https://img.youtube.com/vi/' + track.yt_id + '/default.jpg';
-    return '';
-  }
-
-  function getHqThumb(track) {
-    if (track.thumbnail_url) return track.thumbnail_url;
-    if (track.embed_url) {
-      var sunoMatch = track.embed_url.match(/suno\.com\/(?:song|embed)\/([a-f0-9-]{36})/);
-      if (sunoMatch) return 'https://cdn2.suno.ai/image_' + sunoMatch[1] + '.jpeg';
-      var sunoFallback = track.embed_url.match(/\/([a-f0-9-]{36})/);
-      if (sunoFallback && (track.embed_url.includes('suno.com') || track.embed_url.includes('suno.ai'))) {
-        return 'https://cdn2.suno.ai/image_' + sunoFallback[1] + '.jpeg';
-      }
-    }
-    if (track.yt_id) return 'https://img.youtube.com/vi/' + track.yt_id + '/hqdefault.jpg';
     return '';
   }
 
@@ -80,27 +64,6 @@
       html += '<span class="' + cls + '" data-track="' + trackId + '" data-score="' + i + '">' + VMA.starSVG + '</span>';
     }
     return '<div class="track-stars' + (isRated ? ' rated' : '') + '" data-track="' + trackId + '">' + html + '</div>';
-  }
-
-  function browseStarsHTML(track) {
-    var trackId = VMA.sanitizeAttr(String(track.id));
-    var userScore = (VMA.userRatings[track.id]) || 0;
-    var isRated = userScore > 0;
-    var avgRounded = Math.round(track.avg_rating || 0);
-    var html = '';
-    for (var s = 1; s <= 5; s++) {
-      var cls = isRated && s <= userScore ? 'filled' : (!isRated && avgRounded > 0 && s <= avgRounded ? 'ghost' : '');
-      html += '<div class="bstar ' + cls + '" data-track="' + trackId + '" data-score="' + s + '">' + VMA.starSVG + '</div>';
-    }
-    return { html: html, isRated: isRated };
-  }
-
-  function detectPlatformLabel(track) {
-    var embed = VMA.getEmbedHtml(track);
-    if (embed.platform !== 'unknown') {
-      return embed.platform.charAt(0).toUpperCase() + embed.platform.slice(1);
-    }
-    return '';
   }
 
 
@@ -282,7 +245,6 @@
     sortTracks();
     updateTrackCount();
     displayCount = DISPLAY_CHUNK;
-    renderFeatured();
     renderList();
   }
 
@@ -310,82 +272,7 @@
 
 
   // ═══════════════════════════════════════════════════════════════════════
-  // 8. Featured Cards (top 6 by Wilson Score)
-  // ═══════════════════════════════════════════════════════════════════════
-
-  function renderFeatured() {
-    var container = document.getElementById('featuredScroll');
-    if (!container) return;
-
-    // Always show top 6 by Wilson Score regardless of current sort or filter
-    var top6 = VMA.allTracks.slice().sort(function (a, b) {
-      return VMA.wilsonScore(b.avg_rating || 0, b.rating_count || 0) - VMA.wilsonScore(a.avg_rating || 0, a.rating_count || 0);
-    }).slice(0, 6);
-
-    container.innerHTML = '';
-    var frag = document.createDocumentFragment();
-    top6.forEach(function (t) {
-      var div = document.createElement('div');
-      div.innerHTML = buildFeaturedCard(t);
-      frag.appendChild(div.firstChild);
-    });
-    container.appendChild(frag);
-  }
-
-  function buildFeaturedCard(track) {
-    var uid = 'bc-' + (browseCardUid++);
-    var avg = track.avg_rating || 0;
-    var cnt = track.rating_count || 0;
-    var trackIdAttr = VMA.sanitizeAttr(String(track.id));
-    var titleAttr = VMA.sanitizeAttr(track.title || '');
-    var thumbSrc = getHqThumb(track);
-    var plat = detectPlatformLabel(track);
-    var isHot = cnt >= 3;
-    var isNew = (Date.now() - new Date(track.created_at).getTime()) < 7 * 24 * 60 * 60 * 1000;
-
-    var stars = browseStarsHTML(track);
-
-    var user = VMA.currentUser;
-    var commentFormHTML = user
-      ? '<div class="comment-form"><textarea class="comment-input" id="ci-' + uid + '" data-track-id="' + trackIdAttr + '" placeholder="Write a comment..." rows="2"></textarea><div class="comment-form-actions"><button class="comment-submit" data-action="post-comment" data-track="' + trackIdAttr + '" data-uid="' + uid + '"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg> Send</button></div></div>'
-      : '<p style="font-size:0.75rem;color:var(--muted);margin-top:8px;"><a href="/login.html" style="color:var(--accent);text-decoration:none;font-weight:600;">Log in</a> to comment</p>';
-
-    return '<div class="browse-card" id="' + uid + '" data-track-id="' + trackIdAttr + '" data-uid="' + uid + '">' +
-      '<div class="browse-card-thumb" data-action="load-embed" data-uid="' + uid + '" data-track-id="' + trackIdAttr + '">' +
-        (thumbSrc ? '<img src="' + VMA.sanitizeAttr(thumbSrc) + '" alt="' + titleAttr + '" loading="lazy" draggable="false">' : '<div style="width:100%;height:100%;background:var(--surface-2);"></div>') +
-        '<button class="browse-card-play" data-action="load-embed" data-uid="' + uid + '" data-track-id="' + trackIdAttr + '"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></button>' +
-        (plat ? '<span class="browse-card-platform">' + plat + '</span>' : '') +
-        (isHot ? '<span class="browse-card-hot"><span class="dot"></span> HOT</span>' : '') +
-        (isNew && !isHot ? '<span class="browse-card-new">NEW</span>' : '') +
-      '</div>' +
-      '<div class="browse-card-body">' +
-        '<div class="browse-card-title">' + VMA.sanitize(track.title) + '</div>' +
-        '<div class="browse-card-meta">' +
-          '<span class="browse-card-badge tool">' + VMA.sanitize(track.tool) + '</span>' +
-          '<span class="browse-card-badge genre">' + VMA.sanitize(track.genre) + '</span>' +
-        '</div>' +
-        '<div class="browse-card-rating">' +
-          '<div class="browse-card-stars ' + (stars.isRated ? 'rated' : '') + '">' + stars.html + '</div>' +
-          '<div class="browse-card-score">' +
-            '<div class="browse-card-score-num">' + (avg > 0 ? avg.toFixed(1) : '\u2014') + '</div>' +
-            '<div class="browse-card-score-count">' + cnt + ' rating' + (cnt !== 1 ? 's' : '') + '</div>' +
-          '</div>' +
-        '</div>' +
-        (track.artist_note ? '<div class="browse-card-note"><div class="browse-card-note-toggle" data-action="toggle-note" data-uid="' + uid + '">\uD83D\uDCDD Artist\'s Note</div><div class="browse-card-note-text" id="note-' + uid + '">' + VMA.sanitize(track.artist_note) + '</div></div>' : '') +
-        '<div class="browse-card-footer">' +
-          '<button data-action="comments" data-track="' + trackIdAttr + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Comments</button>' +
-          '<button data-action="share" data-track="' + trackIdAttr + '" data-title="' + titleAttr + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Share</button>' +
-        '</div>' +
-      '</div>' +
-      '<div class="comments-panel" id="cp-' + uid + '"><div class="comments-inner"><div id="cc-' + uid + '" data-track-id="' + track.id + '"><span style="color:var(--muted);font-size:0.8rem;">Loading...</span></div>' +
-      commentFormHTML +
-      '</div></div>' +
-    '</div>';
-  }
-
-
-  // ═══════════════════════════════════════════════════════════════════════
-  // 9. Track List (compact rows)
+  // 8. Track List (compact rows)
   // ═══════════════════════════════════════════════════════════════════════
 
   function renderList() {
@@ -404,38 +291,9 @@
       return;
     }
 
-    // Detach playing embed so it survives DOM rebuild
-    var savedEmbed = null;
-    var savedTrackId = null;
-    if (activeTrackId !== null) {
-      var playingRow = list.querySelector('.track-row[data-track-id="' + activeTrackId + '"]');
-      if (playingRow) {
-        var embedArea = playingRow.querySelector('.track-embed-area');
-        if (embedArea && embedArea.querySelector('iframe')) {
-          savedTrackId = activeTrackId;
-          savedEmbed = embedArea;
-          savedEmbed.remove();
-        }
-      }
-    }
-
+    // Playing iframes live in #persistent-media (outside trackList),
+    // so innerHTML rebuild is safe — audio never gets destroyed.
     list.innerHTML = visible.map(function (t) { return buildTrackRow(t, activeTrackId); }).join('');
-
-    // Re-attach saved embed if the playing track is still visible
-    if (savedEmbed && savedTrackId !== null) {
-      var newRow = list.querySelector('.track-row[data-track-id="' + savedTrackId + '"]');
-      if (newRow) {
-        var placeholder = newRow.querySelector('.track-embed-area');
-        if (placeholder) placeholder.replaceWith(savedEmbed);
-        savedEmbed.style.display = 'block';
-        newRow.classList.add('playing');
-        var btn = newRow.querySelector('.track-play');
-        if (btn) {
-          btn.innerHTML = '<svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>';
-          btn.setAttribute('aria-label', 'Stop');
-        }
-      }
-    }
 
     // Load more button
     var loadWrap = document.getElementById('loadMoreWrap');
@@ -504,7 +362,7 @@
 
 
   // ═══════════════════════════════════════════════════════════════════════
-  // 10. Playback delegation
+  // 9. Playback delegation
   // ═══════════════════════════════════════════════════════════════════════
 
   function playTrack(trackId) {
@@ -513,12 +371,6 @@
       if (typeof gtag === 'function') {
         gtag('event', 'playlist_play', { track_id: trackId });
       }
-    }
-  }
-
-  function browsePlay(uid, trackId) {
-    if (Player && typeof Player.browsePlay === 'function') {
-      Player.browsePlay(uid, trackId);
     }
   }
 
@@ -548,13 +400,13 @@
 
 
   // ═══════════════════════════════════════════════════════════════════════
-  // 11. Star hover/click delegation
+  // 10. Star hover/click delegation
   // ═══════════════════════════════════════════════════════════════════════
 
   function onStarMouseOver(e) {
     var star = e.target.closest('.bstar');
     if (!star) return;
-    var container = star.closest('.track-stars') || star.closest('.browse-card-stars');
+    var container = star.closest('.track-stars');
     if (!container || container.classList.contains('rated')) return;
     var score = parseInt(star.dataset.score);
     container.querySelectorAll('.bstar').forEach(function (s) {
@@ -566,7 +418,7 @@
   function onStarMouseOut(e) {
     var star = e.target.closest('.bstar');
     if (!star) return;
-    var container = star.closest('.track-stars') || star.closest('.browse-card-stars');
+    var container = star.closest('.track-stars');
     if (!container || container.classList.contains('rated')) return;
     container.querySelectorAll('.bstar').forEach(function (s) {
       s.classList.remove('hover-fill');
@@ -576,7 +428,7 @@
   function onStarClick(e) {
     var star = e.target.closest('.bstar');
     if (!star) return;
-    var container = star.closest('.track-stars') || star.closest('.browse-card-stars');
+    var container = star.closest('.track-stars');
     if (!container || container.classList.contains('rated')) return;
     var trackId = star.dataset.track;
     var score = parseInt(star.dataset.score);
@@ -585,34 +437,19 @@
 
 
   // ═══════════════════════════════════════════════════════════════════════
-  // 12. Artist Note toggle
+  // 11. Artist Note toggle
   // ═══════════════════════════════════════════════════════════════════════
 
   function onNoteToggleClick(el) {
-    // Track row notes
     var trackId = el.dataset.track;
-    if (trackId) {
-      var noteText = document.getElementById('note-' + trackId);
-      if (noteText) {
-        var wasOpen = noteText.classList.contains('open');
-        if (_openNoteEl && _openNoteEl !== noteText) _openNoteEl.classList.remove('open');
-        noteText.classList.toggle('open');
-        _openNoteEl = wasOpen ? null : noteText;
-        _noteScrollStart = null;
-      }
-      return;
-    }
-    // Browse card notes
-    var uid = el.dataset.uid;
-    if (uid) {
-      var noteEl = document.getElementById('note-' + uid);
-      if (noteEl) {
-        var wasOpen2 = noteEl.classList.contains('open');
-        if (_openNoteEl && _openNoteEl !== noteEl) _openNoteEl.classList.remove('open');
-        noteEl.classList.toggle('open');
-        _openNoteEl = wasOpen2 ? null : noteEl;
-        _noteScrollStart = null;
-      }
+    if (!trackId) return;
+    var noteText = document.getElementById('note-' + trackId);
+    if (noteText) {
+      var wasOpen = noteText.classList.contains('open');
+      if (_openNoteEl && _openNoteEl !== noteText) _openNoteEl.classList.remove('open');
+      noteText.classList.toggle('open');
+      _openNoteEl = wasOpen ? null : noteText;
+      _noteScrollStart = null;
     }
   }
 
@@ -628,7 +465,7 @@
 
 
   // ═══════════════════════════════════════════════════════════════════════
-  // 13. Show more comments
+  // 12. Show more comments
   // ═══════════════════════════════════════════════════════════════════════
 
   function onShowMoreComments(btn) {
@@ -642,12 +479,10 @@
 
 
   // ═══════════════════════════════════════════════════════════════════════
-  // 14. Event Delegation (single click handler)
+  // 13. Event Delegation (single click handler)
   // ═══════════════════════════════════════════════════════════════════════
 
   function onDocClick(e) {
-    // Star clicks are handled by onStarClick (separate listener)
-
     // Genre pill clicks
     var pill = e.target.closest('.genre-pill');
     if (pill && pill.closest('#genrePills')) {
@@ -689,15 +524,6 @@
       sortTracks();
       displayCount = DISPLAY_CHUNK;
       renderList();
-      return;
-    }
-
-    // Featured card play (browse-card)
-    var embedAction = e.target.closest('[data-action="load-embed"]');
-    if (embedAction) {
-      e.preventDefault();
-      e.stopPropagation();
-      browsePlay(embedAction.dataset.uid, embedAction.dataset.trackId);
       return;
     }
 
@@ -756,7 +582,7 @@
 
 
   // ═══════════════════════════════════════════════════════════════════════
-  // 15. Search (300ms debounce)
+  // 14. Search (300ms debounce)
   // ═══════════════════════════════════════════════════════════════════════
 
   function initSearch() {
@@ -791,7 +617,7 @@
 
 
   // ═══════════════════════════════════════════════════════════════════════
-  // 16. Deep Link Handling
+  // 15. Deep Link Handling
   // ═══════════════════════════════════════════════════════════════════════
 
   function handleDeepLink() {
@@ -815,8 +641,6 @@
 
     // Try to find track in the list and scroll to it
     requestAnimationFrame(function () {
-      // First check if it's a featured card
-      var targetCard = document.querySelector('.browse-card[data-track-id="' + trackParam + '"]');
       var targetRow = document.querySelector('.track-row[data-track-id="' + trackParam + '"]');
 
       // If not visible in the list, expand display count
@@ -845,10 +669,7 @@
       overlay.addEventListener('click', function () {
         overlay.remove();
         style.remove();
-        // Prefer featured card if available, otherwise track row
-        if (targetCard) {
-          Player.browsePlay(targetCard.dataset.uid, trackParam);
-        } else if (targetRow) {
+        if (targetRow) {
           playTrack(trackParam);
         }
       }, { once: true });
@@ -856,11 +677,10 @@
       document.body.appendChild(overlay);
 
       // Scroll to the track
-      var scrollTarget = targetRow || targetCard;
-      if (scrollTarget) {
-        scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        scrollTarget.style.boxShadow = '0 0 0 2px var(--accent), 0 12px 40px rgba(232,255,71,0.15)';
-        setTimeout(function () { scrollTarget.style.boxShadow = ''; }, 4000);
+      if (targetRow) {
+        targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        targetRow.style.boxShadow = '0 0 0 2px var(--accent), 0 12px 40px rgba(232,255,71,0.15)';
+        setTimeout(function () { targetRow.style.boxShadow = ''; }, 4000);
       }
 
       window.history.replaceState(null, '', currentGenreSlug ? '/?genre=' + currentGenreSlug : '/');
@@ -869,11 +689,11 @@
 
 
   // ═══════════════════════════════════════════════════════════════════════
-  // 17. Drag-to-scroll for horizontal containers
+  // 16. Drag-to-scroll for horizontal containers
   // ═══════════════════════════════════════════════════════════════════════
 
   function initDragScroll() {
-    ['genrePills', 'subgenrePills', 'featuredScroll'].forEach(function (id) {
+    ['genrePills', 'subgenrePills'].forEach(function (id) {
       var el = document.getElementById(id);
       if (el) {
         var mouseHandler = function (e) { VMA.onDragStart(e, el); };
@@ -890,7 +710,7 @@
 
 
   // ═══════════════════════════════════════════════════════════════════════
-  // 18. PopState handler (browser back/forward)
+  // 17. PopState handler (browser back/forward)
   // ═══════════════════════════════════════════════════════════════════════
 
   function onPopState() {
@@ -903,7 +723,7 @@
 
 
   // ═══════════════════════════════════════════════════════════════════════
-  // 19. Track Data Events
+  // 18. Track Data Events
   // ═══════════════════════════════════════════════════════════════════════
 
   function onTracksReady() {
@@ -918,7 +738,7 @@
 
 
   // ═══════════════════════════════════════════════════════════════════════
-  // 20. Cleanup
+  // 19. Cleanup
   // ═══════════════════════════════════════════════════════════════════════
 
   function cleanup() {
@@ -936,7 +756,7 @@
 
 
   // ═══════════════════════════════════════════════════════════════════════
-  // 21. Init
+  // 20. Init
   // ═══════════════════════════════════════════════════════════════════════
 
   function init() {
@@ -997,7 +817,7 @@
       document.removeEventListener('vma:tracks-updated', onTracksUpdated);
     });
 
-    // If tracks are already loaded (e.g. navigating back), render immediately
+    // If tracks are already loaded, render immediately
     if (VMA.allTracks.length > 0) {
       onTracksReady();
     }

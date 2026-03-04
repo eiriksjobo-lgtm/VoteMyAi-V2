@@ -801,9 +801,14 @@ window.VMAPlayer = (function () {
       btn.setAttribute('aria-label', 'Stop');
     }
 
-    // Embed area is always in DOM
-    var embedArea = row.querySelector('.track-embed-area');
-    populateEmbed(track, info, embedArea);
+    // Put embed in #persistent-media so it survives track list re-renders
+    var pm = document.getElementById('persistent-media');
+    if (pm) {
+      var embedWrap = document.createElement('div');
+      embedWrap.id = 'pm-list-embed';
+      pm.appendChild(embedWrap);
+      populateEmbed(track, info, embedWrap);
+    }
 
     // Activate player bar
     var genre = '';
