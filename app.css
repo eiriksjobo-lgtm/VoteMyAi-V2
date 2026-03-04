@@ -1765,3 +1765,96 @@ body.player-active .page-frame { bottom: 68px; }
   .submit-cta-btn { width: 100%; text-align: center; padding: 10px 16px; }
   .tracks-section { padding: 8px 0 80px; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TRACK OF THE WEEK — Hero Section
+   ══════════════════════════════════════════════════════════════════════════ */
+.totw {
+  max-width: 900px; margin: 0 auto;
+  padding: 20px clamp(16px, 4vw, 40px) 12px;
+}
+.totw-inner {
+  display: flex; align-items: center; gap: 24px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px;
+  max-height: 250px; overflow: hidden;
+  position: relative;
+}
+.totw-art {
+  position: relative; flex-shrink: 0;
+  width: 200px; height: 200px; border-radius: 10px;
+  overflow: hidden; background: var(--surface-2);
+}
+.totw-art img {
+  width: 100%; height: 100%; object-fit: cover;
+  display: block;
+}
+.totw-play-btn {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 64px; height: 64px; border-radius: 50%;
+  background: var(--accent); border: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; opacity: 0; transition: opacity 0.2s, transform 0.2s;
+  box-shadow: 0 4px 24px rgba(232,255,71,0.4);
+}
+.totw-play-btn svg { margin-left: 3px; }
+.totw-art:hover .totw-play-btn { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+.totw-badge {
+  position: absolute; top: 8px; left: 8px;
+  font-size: 0.55rem; font-weight: 800; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--bg);
+  background: var(--accent); padding: 3px 10px; border-radius: 4px;
+}
+.totw-info {
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.totw-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(1.4rem, 3vw, 2rem); letter-spacing: 1.5px;
+  line-height: 1.1; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.totw-meta { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.totw-rating { display: flex; align-items: center; gap: 8px; }
+.totw-stars { display: flex; gap: 2px; }
+.totw-star svg { width: 18px; height: 18px; fill: var(--star-empty); }
+.totw-star.filled svg { fill: var(--accent); }
+.totw-score { font-weight: 700; font-size: 1rem; color: var(--accent); }
+.totw-count { font-size: 0.72rem; color: var(--muted); }
+.totw-tools { display: flex; gap: 8px; flex-wrap: wrap; }
+.totw-tool-link {
+  font-size: 0.65rem; font-weight: 700; letter-spacing: 0.5px;
+  text-transform: uppercase; text-decoration: none;
+  padding: 4px 12px; border-radius: 100px;
+  transition: all 0.2s;
+}
+.totw-tool-link.suno { background: rgba(232,255,71,0.1); color: var(--accent); border: 1px solid rgba(232,255,71,0.15); }
+.totw-tool-link.suno:hover { background: rgba(232,255,71,0.2); }
+.totw-tool-link.udio { background: rgba(129,140,248,0.1); color: #818cf8; border: 1px solid rgba(129,140,248,0.15); }
+.totw-tool-link.udio:hover { background: rgba(129,140,248,0.2); }
+.totw-tool-link.el { background: rgba(56,189,248,0.1); color: #38bdf8; border: 1px solid rgba(56,189,248,0.15); }
+.totw-tool-link.el:hover { background: rgba(56,189,248,0.2); }
+.totw-submit {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--accent); color: var(--bg);
+  padding: 8px 20px; border-radius: 8px;
+  text-decoration: none; font-weight: 700;
+  font-size: 0.72rem; letter-spacing: 0.5px;
+  width: fit-content; transition: all 0.2s;
+  font-family: 'DM Sans', sans-serif;
+}
+.totw-submit:hover { box-shadow: 0 4px 20px rgba(232,255,71,0.25); transform: translateY(-1px); }
+
+@media (max-width: 640px) {
+  .totw { padding: 12px 12px 8px; }
+  .totw-inner {
+    flex-direction: column; max-height: none;
+    padding: 12px; gap: 12px;
+  }
+  .totw-art { width: 100%; height: 180px; border-radius: 8px; }
+  .totw-play-btn { opacity: 1; width: 56px; height: 56px; }
+  .totw-title { font-size: 1.3rem; white-space: normal; }
+  .totw-submit { width: 100%; justify-content: center; }
+}

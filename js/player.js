@@ -793,12 +793,16 @@ window.VMAPlayer = (function () {
     }
 
     // Put embed in #persistent-media so it survives track list re-renders
-    var pm = document.getElementById('persistent-media');
-    if (pm) {
-      var embedWrap = document.createElement('div');
-      embedWrap.id = 'pm-list-embed';
-      pm.appendChild(embedWrap);
-      populateEmbed(track, info, embedWrap);
+    try {
+      var pm = document.getElementById('persistent-media');
+      if (pm) {
+        var embedWrap = document.createElement('div');
+        embedWrap.id = 'pm-list-embed';
+        pm.appendChild(embedWrap);
+        populateEmbed(track, info, embedWrap);
+      }
+    } catch (err) {
+      console.warn('[VMAPlayer] populateEmbed error:', err);
     }
 
     // Activate player bar
