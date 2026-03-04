@@ -1,10 +1,10 @@
-const CACHE_NAME = 'votemyai-v9';
+const CACHE_NAME = 'votemyai-v10';
 const PRECACHE = [
   '/index.html',
   '/app.css',
-  '/js/app.js?v=9',
-  '/js/player.js?v=9',
-  '/js/router.js?v=9',
+  '/js/app.js?v=10',
+  '/js/player.js?v=10',
+  '/js/main.js?v=10',
   '/radio.html',
   '/favicon-192x192.png',
   '/favicon-512x512.png'
@@ -34,7 +34,7 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // Network-first for SPA shell and core JS, cache as fallback
+  // Network-first for core files, cache as fallback
   if (PRECACHE.includes(url.pathname)) {
     e.respondWith(
       fetch(e.request)

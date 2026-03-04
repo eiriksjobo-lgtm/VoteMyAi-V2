@@ -13,11 +13,6 @@
   ],
   "rewrites": [
     { "source": "/share/:id", "destination": "/api/share?id=:id" },
-    { "source": "/radio",     "destination": "/radio.html" },
-    { "source": "/radio.html","destination": "/radio.html" },
-    {
-      "source": "/((?!api|radio|blog/|.*\\..*).*)",
-      "destination": "/index.html"
-    }
+    { "source": "/radio",     "destination": "/radio.html" }
   ]
 }

@@ -47,38 +47,113 @@
 </head>
 <body>
 
-<!-- ═══ PERSISTENT NAV ═══ -->
+<!-- ═══ STICKY NAV ═══ -->
 <nav>
   <a href="/" class="logo"><span class="logo-dot"></span>VOTEMYAI</a>
   <div class="nav-right">
     <a href="/blog.html" class="nav-link">Blog</a>
-    <a href="/playlist.html" class="nav-link">Playlists</a>
+    <a href="/radio.html" class="nav-link">Radio</a>
     <a href="/login.html" class="nav-link" id="authLink">Login</a>
     <button class="btn-submit" onclick="window.location.href='/submit.html'">Submit</button>
     <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
   </div>
   <div class="nav-links-mobile" id="mobileNav">
     <a href="/blog.html" class="nav-link">Blog</a>
-    <a href="/playlist.html" class="nav-link">Playlists</a>
+    <a href="/radio.html" class="nav-link">Radio</a>
     <a href="/login.html" class="nav-link" id="authLinkMobile">Login</a>
     <a href="/submit.html" class="nav-link">Submit a Track</a>
-    <a href="/#leaderboard" class="nav-link">Leaderboard</a>
-    <a href="/#tools" class="nav-link">AI Tools</a>
     <a href="/faq.html" class="nav-link">FAQ</a>
   </div>
 </nav>
 
-<!-- ═══ SPA CONTENT (swapped on navigation) ═══ -->
-<div id="spa-content">
-  <!-- Content fragments are loaded here by the router -->
-  <div style="display:flex;align-items:center;justify-content:center;min-height:60vh;">
-    <div style="text-align:center;">
-      <div style="width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;"></div>
-      <div style="color:var(--muted);font-size:0.82rem;">Loading...</div>
+<!-- ═══ HERO ═══ -->
+<section class="hero" id="hero">
+  <h1>AI music, rated by <span class="accent">humans</span>.</h1>
+  <p>Submit. Rate. Discover what's actually good.</p>
+  <div class="how-steps-inline">
+    <span class="step"><span class="step-num">01</span> SUBMIT</span>
+    <span class="step-arrow">&rarr;</span>
+    <span class="step"><span class="step-num">02</span> GET RATED</span>
+    <span class="step-arrow">&rarr;</span>
+    <span class="step"><span class="step-num">03</span> CLIMB THE BOARD</span>
+  </div>
+</section>
+
+<!-- ═══ GENRE NAVIGATION ═══ -->
+<section class="genre-nav" id="genreNav">
+  <div class="genre-pills-wrap">
+    <button class="genre-arrow left" id="genreArrowL" aria-label="Scroll left"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="genre-pills" id="genrePills"></div>
+    <button class="genre-arrow right" id="genreArrowR" aria-label="Scroll right"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></button>
+  </div>
+  <div class="subgenre-pills-wrap" id="subgenreWrap" style="display:none">
+    <button class="sub-arrow left" id="subArrowL" aria-label="Scroll left"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="subgenre-pills" id="subgenrePills"></div>
+    <button class="sub-arrow right" id="subArrowR" aria-label="Scroll right"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></button>
+  </div>
+</section>
+
+<!-- ═══ SEARCH + SORT + STATS ═══ -->
+<section class="toolbar-section" id="toolbar">
+  <div class="search-box">
+    <svg class="search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="searchInput" placeholder="Search tracks, genres, tools...">
+    <button class="search-clear" id="searchClear" aria-label="Clear">&times;</button>
+  </div>
+  <span class="track-count" id="trackCount"></span>
+  <div class="genre-sort-toggle">
+    <button class="genre-sort-btn active" data-sort="top">Top Rated</button>
+    <button class="genre-sort-btn" data-sort="newest">Newest</button>
+    <button class="genre-sort-btn" data-sort="most">Most Rated</button>
+  </div>
+</section>
+
+<!-- ═══ FEATURED TRACKS ═══ -->
+<section class="featured-section" id="featuredSection">
+  <div class="section-header">
+    <h2 class="section-title">Featured Tracks</h2>
+  </div>
+  <div class="featured-scroll" id="featuredScroll">
+    <!-- JS fills with top 6 browse cards -->
+  </div>
+</section>
+
+<!-- ═══ ALL TRACKS ═══ -->
+<section class="tracks-section" id="tracksSection">
+  <div class="track-list" id="trackList">
+    <!-- JS fills with track rows -->
+  </div>
+  <div class="load-more-wrap" id="loadMoreWrap" style="display:none">
+    <button class="load-more-btn" id="loadMoreBtn">Load More</button>
+  </div>
+</section>
+
+<!-- ═══ SEO SECTION ═══ -->
+<section class="seo-section">
+  <div class="seo-inner">
+    <h2>The Home of AI-Generated Music</h2>
+    <p>VoteMyAI is the community-driven platform where AI music creators submit tracks made with tools like Suno, Udio, and ElevenLabs — and the community decides what's best. Every track is rated on a 1-5 star scale, and our Wilson Score algorithm ensures fair rankings regardless of when a track was submitted.</p>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <a href="/" class="logo"><span class="logo-dot"></span>VOTEMYAI</a>
+      <p>The community-driven platform for discovering and rating AI-generated music.</p>
+    </div>
+    <div class="footer-links">
+      <div class="footer-col"><h4>Platform</h4><a href="/">Browse Tracks</a><a href="/radio.html">Radio</a><a href="/blog.html">Blog</a><a href="/submit.html">Submit a Track</a><a href="/login.html">Login / Sign Up</a></div>
+      <div class="footer-col"><h4>AI Tools</h4><a href="https://suno.com/invite/@playfulsoprano318" target="_blank" rel="noopener">Suno</a><a href="https://www.udio.com" target="_blank" rel="noopener">Udio</a><a href="https://try.elevenlabs.io/xj2k88ooae07" target="_blank" rel="noopener">ElevenLabs</a></div>
+      <div class="footer-col"><h4>Info</h4><a href="/about.html">About</a><a href="/faq.html">FAQ</a><a href="/contact.html">Contact</a><a href="/terms.html">Terms</a><a href="/privacy.html">Privacy</a></div>
     </div>
   </div>
-  <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
-</div>
+  <div class="footer-bottom">
+    <span class="footer-copy">&copy; 2026 VoteMyAI. All rights reserved.</span>
+    <div class="footer-tools"><a href="https://suno.com/invite/@playfulsoprano318" target="_blank" rel="noopener">Suno</a><a href="https://www.udio.com" target="_blank" rel="noopener">Udio</a><a href="https://try.elevenlabs.io/xj2k88ooae07" target="_blank" rel="noopener">ElevenLabs</a></div>
+  </div>
+</footer>
 
 <!-- ═══ PERSISTENT: Page Frame (iOS navigation overlay) ═══ -->
 <div class="page-frame" id="pageFrame">
@@ -133,22 +208,15 @@
   </div>
 </div>
 
-<!-- ═══ JAVASCRIPT — loaded once, never reloaded ═══ -->
-<script src="/js/app.js?v=9"></script>
-<script src="/js/player.js?v=9"></script>
-<script src="/js/router.js?v=9"></script>
+<!-- ═══ JAVASCRIPT ═══ -->
+<script src="/js/app.js?v=10"></script>
+<script src="/js/player.js?v=10"></script>
+<script src="/js/main.js?v=10"></script>
 <script>
-  // Boot sequence: auth → load tracks → init player → init router
   (async function boot() {
-    // Init shared systems
     VMA.initShareModal();
     VMAPlayer.init();
-
-    // Auth check (non-blocking for page load)
     VMA.checkAuth().then(() => VMA.loadTracks());
-
-    // Start router — loads initial page content
-    VMARouter.init();
   })();
 </script>
 

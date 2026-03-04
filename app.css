@@ -104,7 +104,7 @@ nav {
 /* ══════════════════════════════════════════════════════════════════════════
    3. HERO
    ══════════════════════════════════════════════════════════════════════════ */
-.hero { text-align: center; padding: 72px 24px 48px; position: relative; }
+.hero { text-align: center; padding: 40px 24px 24px; position: relative; }
 .hero::before {
   content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
   width: 600px; height: 300px;
@@ -894,9 +894,9 @@ body.player-active .page-frame { bottom: 68px; }
   .btn-submit { padding: 7px 14px; font-size: 0.65rem; letter-spacing: 1px; min-height: 36px; }
 
   /* Hero */
-  .hero { padding: 36px 20px 24px; }
+  .hero { padding: 24px 16px 16px; }
   .hero::before { width: 300px; height: 150px; }
-  .hero h1 { font-size: clamp(1.8rem, 9vw, 2.4rem); letter-spacing: 2px; margin-bottom: 10px; }
+  .hero h1 { font-size: clamp(1.6rem, 8vw, 2rem); letter-spacing: 2px; margin-bottom: 8px; }
   .hero p { font-size: 0.82rem; margin-bottom: 20px; max-width: 300px; }
   .hero-cta { padding: 14px 28px; font-size: 0.8rem; width: 100%; max-width: 300px; justify-content: center; border-radius: 12px; }
   .hero-tools { gap: 8px; margin-top: 24px; }
@@ -1639,4 +1639,105 @@ body.player-active .page-frame { bottom: 68px; }
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin: 0 auto 8px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CONSOLIDATED INDEX — New Sections
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Hero — compact inline steps */
+.how-steps-inline {
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px; margin-top: 20px; flex-wrap: wrap;
+}
+.how-steps-inline .step {
+  font-size: 0.68rem; font-weight: 700;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.how-steps-inline .step-num {
+  color: var(--accent); font-weight: 700; margin-right: 4px;
+}
+.how-steps-inline .step-arrow {
+  color: var(--muted); font-size: 0.8rem;
+}
+
+/* Genre Navigation — sticky under header */
+.genre-nav {
+  max-width: 900px; margin: 0 auto;
+  padding: 0 clamp(16px, 4vw, 40px);
+  background: var(--bg);
+  transition: box-shadow 0.2s;
+  z-index: 150;
+}
+.genre-nav.sticky {
+  position: sticky; top: 60px;
+  background: rgba(7,7,11,0.96);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 2px 20px rgba(0,0,0,0.4);
+  padding-top: 8px; padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Toolbar — search + sort + count */
+.toolbar-section {
+  max-width: 900px; margin: 0 auto;
+  padding: 16px clamp(16px, 4vw, 40px) 8px;
+  display: flex; align-items: center; gap: 12px;
+  flex-wrap: wrap;
+}
+.toolbar-section .search-box { flex: 1; min-width: 200px; }
+.track-count {
+  font-size: 0.72rem; color: var(--muted);
+  font-weight: 600; white-space: nowrap;
+}
+.toolbar-section .genre-sort-toggle { margin-left: auto; }
+
+/* Featured section */
+.featured-section {
+  max-width: 1200px; margin: 0 auto;
+  padding: 20px clamp(16px, 4vw, 40px) 8px;
+}
+.featured-section .section-header { margin-bottom: 12px; }
+.featured-scroll {
+  display: flex; gap: 16px;
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; padding-bottom: 8px;
+  scroll-snap-type: x mandatory;
+  cursor: grab; user-select: none; -webkit-user-select: none;
+}
+.featured-scroll::-webkit-scrollbar { display: none; }
+.featured-scroll > .browse-card {
+  flex: 0 0 240px; scroll-snap-align: start;
+}
+
+/* All tracks section */
+.tracks-section {
+  max-width: 900px; margin: 0 auto;
+  padding: 12px clamp(16px, 4vw, 40px) 60px;
+}
+
+/* Skeleton loading for track list */
+.skeleton-row .skel { background: var(--surface-2); border-radius: 6px; animation: skelPulse 1.2s ease-in-out infinite; }
+.skel-thumb { width: 56px; height: 56px; flex-shrink: 0; border-radius: 8px; }
+.skel-text { height: 14px; border-radius: 4px; }
+.skel-text.w60 { width: 60%; }
+.skel-text.w30 { width: 30%; }
+.skel-btn { width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; }
+@keyframes skelPulse { 0%,100%{opacity:0.4} 50%{opacity:0.8} }
+
+/* ─── Mobile adjustments for new sections ─── */
+@media (max-width: 640px) {
+  .hero { padding: 24px 16px 16px; }
+  .hero h1 { font-size: clamp(1.6rem, 8vw, 2rem); }
+  .hero p { font-size: 0.82rem; margin-bottom: 12px; }
+  .how-steps-inline { gap: 4px; }
+  .how-steps-inline .step { font-size: 0.58rem; letter-spacing: 1px; }
+  .how-steps-inline .step-arrow { font-size: 0.7rem; }
+  .genre-nav.sticky { top: 56px; }
+  .toolbar-section { padding: 12px 12px 4px; gap: 8px; }
+  .toolbar-section .genre-sort-toggle { margin-left: 0; width: 100%; }
+  .featured-section { padding: 16px 12px 4px; }
+  .featured-scroll > .browse-card { flex: 0 0 60vw; max-width: 220px; }
+  .tracks-section { padding: 8px 0 80px; }
 }
