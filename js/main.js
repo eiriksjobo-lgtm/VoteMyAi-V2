@@ -374,6 +374,7 @@
       '<button class="track-play" aria-label="' + (isPlaying ? 'Stop' : 'Play') + '" data-action="play" data-track-id="' + t.id + '">' +
         playIcon +
       '</button>' +
+      '<div class="track-eq" data-action="play" data-track-id="' + t.id + '" aria-label="Stop playing"><span></span><span></span><span></span><span></span></div>' +
       (t.artist_note ? '<div class="track-note-text" id="note-' + t.id + '">' + VMA.sanitize(t.artist_note) + '</div>' : '') +
       '<div class="comments-panel" id="comments-' + t.id + '">' +
         '<div class="comments-inner" id="cc-' + t.id + '" data-track-id="' + t.id + '" data-comment-limit="30"></div>' +

@@ -74,14 +74,44 @@ window.VMAPlayer = (function () {
     activePlayerPlatform = platform;
     playerTitle.textContent = title || 'Now Playing';
     if (platform === 'udio') {
-      playerMeta.innerHTML = (meta || '') + ' <span class="udio-tap-hint">— Tap play in popup</span>';
+      playerMeta.innerHTML = '<span class="udio-tap-hint">\u25B6 TAP PLAY IN UDIO POPUP</span>';
+      playerBar.classList.add('active', 'udio-active', 'udio-waiting');
+      playerBar.classList.remove('playing');
     } else {
       playerMeta.textContent = meta || '';
+      playerBar.classList.add('active', 'playing');
+      playerBar.classList.remove('udio-waiting');
     }
-    playerBar.classList.add('active', 'playing');
     document.body.classList.add('player-active');
     if (typeof gtag === 'function') {
       gtag('event', 'play_bar', { track_id: trackId, platform: platform });
+    }
+  }
+
+  /**
+   * Called when Udio playback actually starts (user tapped play in popup).
+   * Transitions player bar and track row from "waiting" to "playing" state.
+   */
+  function _udioPlaybackStarted() {
+    // Player bar: remove waiting glow, start EQ, update meta
+    playerBar.classList.remove('udio-waiting');
+    playerBar.classList.add('playing');
+    if (activePlayerPlatform === 'udio') {
+      var genre = '';
+      var track = _getTrack(activePlayerTrackId);
+      if (track) {
+        if (VMA && typeof VMA.resolveGenre === 'function') {
+          genre = VMA.resolveGenre(track.genre);
+        } else {
+          genre = track.genre || '';
+        }
+        playerMeta.textContent = ['Udio', genre].filter(Boolean).join(' \u00B7 ');
+      }
+    }
+    // Track row: show equalizer (add eq-active)
+    if (activeTrackId !== null) {
+      var row = document.querySelector('.track-row[data-track-id="' + activeTrackId + '"]');
+      if (row) row.classList.add('eq-active');
     }
   }
 
@@ -104,8 +134,8 @@ window.VMAPlayer = (function () {
 
     // 4. Playlist inline track — clean up rows + iframes
     activeTrackId = null;
-    document.querySelectorAll('.track-row.playing').forEach(function (row) {
-      row.classList.remove('playing');
+    document.querySelectorAll('.track-row.playing, .track-row.eq-active').forEach(function (row) {
+      row.classList.remove('playing', 'eq-active');
       var btn = row.querySelector('.track-play');
       if (btn) {
         btn.innerHTML = '<svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>';
@@ -171,7 +201,7 @@ window.VMAPlayer = (function () {
     _savedState = null;
 
     // 12. Reset bar platform classes (NOT visibility — caller handles that)
-    playerBar.classList.remove('udio-active', 'sc-active');
+    playerBar.classList.remove('udio-active', 'sc-active', 'udio-waiting');
   }
 
   /**
@@ -179,7 +209,7 @@ window.VMAPlayer = (function () {
    */
   function closePlayer() {
     _stopAllPlayback();
-    playerBar.classList.remove('active', 'playing');
+    playerBar.classList.remove('active', 'playing', 'udio-waiting');
     document.body.classList.remove('player-active');
     activePlayerTrackId = null;
     activePlayerPlatform = null;
@@ -452,9 +482,13 @@ window.VMAPlayer = (function () {
         ' \u00B7 ' +
         (track.genre || '');
       playerTitle.textContent = track.title || 'Now Playing';
-      playerMeta.textContent = metaStr;
-      playerBar.classList.add('active', 'playing');
-      if (embed.platform === 'udio') playerBar.classList.add('udio-active');
+      if (embed.platform === 'udio') {
+        playerMeta.innerHTML = '<span class="udio-tap-hint">\u25B6 TAP PLAY IN UDIO POPUP</span>';
+        playerBar.classList.add('active', 'udio-active', 'udio-waiting');
+      } else {
+        playerMeta.textContent = metaStr;
+        playerBar.classList.add('active', 'playing');
+      }
       if (embed.platform === 'soundcloud') playerBar.classList.add('sc-active');
       document.body.classList.add('player-active');
       activePlayerTrackId = trackId;
@@ -638,8 +672,9 @@ window.VMAPlayer = (function () {
         });
 
         playerTitle.textContent = track.title || 'Now Playing';
-        playerMeta.textContent = 'Udio \u00B7 ' + (track.genre || '');
-        playerBar.classList.add('active', 'playing', 'udio-active');
+        playerMeta.innerHTML = '<span class="udio-tap-hint">\u25B6 TAP PLAY IN UDIO POPUP</span>';
+        playerBar.classList.add('active', 'udio-active', 'udio-waiting');
+        playerBar.classList.remove('playing');
         document.body.classList.add('player-active');
         activePlayerTrackId = trackId;
         activePlayerPlatform = 'udio';
@@ -788,25 +823,36 @@ window.VMAPlayer = (function () {
     activeTrackId = trackId;
     row.classList.add('playing');
 
-    // Change play icon to stop icon
+    // YouTube: show stop icon. Others: show equalizer via eq-active class.
     var btn = row.querySelector('.track-play');
-    if (btn) {
-      btn.innerHTML =
-        '<svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>';
-      btn.setAttribute('aria-label', 'Stop');
-    }
-
-    // Put embed in #persistent-media so it survives track list re-renders
-    try {
-      var pm = document.getElementById('persistent-media');
-      if (pm) {
-        var embedWrap = document.createElement('div');
-        embedWrap.id = 'pm-list-embed';
-        pm.appendChild(embedWrap);
-        populateEmbed(track, info, embedWrap);
+    if (info.platform === 'youtube') {
+      if (btn) {
+        btn.innerHTML =
+          '<svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>';
+        btn.setAttribute('aria-label', 'Stop');
       }
-    } catch (err) {
-      console.warn('[VMAPlayer] populateEmbed error:', err);
+    } else if (info.platform !== 'udio') {
+      // Suno, SoundCloud: show equalizer immediately (autoplay works)
+      row.classList.add('eq-active');
+    }
+    // Udio: eq-active added later by _udioPlaybackStarted()
+
+    // Udio: use popup system (autoplay doesn't work in hidden iframes)
+    if (info.platform === 'udio' && info.udioId) {
+      openUdioPlayer(info.udioId, track.title);
+    } else {
+      // Put embed in #persistent-media so it survives track list re-renders
+      try {
+        var pm = document.getElementById('persistent-media');
+        if (pm) {
+          var embedWrap = document.createElement('div');
+          embedWrap.id = 'pm-list-embed';
+          pm.appendChild(embedWrap);
+          populateEmbed(track, info, embedWrap);
+        }
+      } catch (err) {
+        console.warn('[VMAPlayer] populateEmbed error:', err);
+      }
     }
 
     // Activate player bar
@@ -1001,6 +1047,8 @@ window.VMAPlayer = (function () {
     if (!udioContainer || udioState === 'minimized') return;
     udioContainer.className = 'udio-minimized';
     udioState = 'minimized';
+    // Signal that user has started Udio playback
+    _udioPlaybackStarted();
   }
 
   function expandUdio() {
