@@ -232,6 +232,9 @@
   // ═══════════════════════════════════════════════════════════════════════
 
   function applyFilters() {
+    // Kill all playback before re-rendering track list
+    if (Player && Player.killAllPlayback) Player.killAllPlayback();
+
     var genreName = currentGenreSlug ? VMA.SLUG_TO_GENRE[currentGenreSlug] : null;
 
     // Genre filter
@@ -572,6 +575,7 @@
       document.querySelectorAll('#toolbar .genre-sort-btn').forEach(function (b) { b.classList.remove('active'); });
       sortBtn.classList.add('active');
       if (typeof gtag === 'function') gtag('event', 'sort_change', { sort_mode: sort });
+      if (Player && Player.killAllPlayback) Player.killAllPlayback();
       sortTracks();
       displayCount = DISPLAY_CHUNK;
       renderList();

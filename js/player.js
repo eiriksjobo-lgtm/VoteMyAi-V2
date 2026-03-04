@@ -805,6 +805,29 @@ window.VMAPlayer = (function () {
 
 
   // ═══════════════════════════════════════════════════════════════
+  //  KILL ALL PLAYBACK — nuclear option for list re-renders
+  // ═══════════════════════════════════════════════════════════════
+
+  function killAllPlayback() {
+    stopTrack();
+    destroyUdioPlayer();
+    destroySc();
+    document.querySelectorAll('[id^="hidden-player-"]').forEach(function (el) { el.remove(); });
+    document.querySelectorAll('iframe').forEach(function (f) {
+      if (f.closest('.page-frame')) return;
+      var src = f.src || '';
+      if (src.includes('suno') || src.includes('udio') || src.includes('youtube') || src.includes('soundcloud')) {
+        try { f.src = 'about:blank'; } catch (e) {}
+      }
+    });
+    if (playerBar) playerBar.classList.remove('active', 'playing', 'udio-active', 'sc-active');
+    document.body.classList.remove('player-active');
+    var thumbEl = document.getElementById('playerThumb');
+    if (thumbEl) thumbEl.style.display = 'none';
+  }
+
+
+  // ═══════════════════════════════════════════════════════════════
   //  PUBLIC API
   // ═══════════════════════════════════════════════════════════════
 
@@ -815,6 +838,7 @@ window.VMAPlayer = (function () {
 
     playTrack: playTrack,
     stopTrack: stopTrack,
+    killAllPlayback: killAllPlayback,
     closePlayer: stopTrack,
     locateTrack: locateTrack,
     restorePlayingRow: restorePlayingRow,
