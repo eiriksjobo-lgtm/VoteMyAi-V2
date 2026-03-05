@@ -315,8 +315,6 @@
     if (Player && typeof Player.restorePlayingRow === 'function') {
       Player.restorePlayingRow();
     }
-    console.log('[AFTER-RESTORE] activeTrackId=', Player ? Player.activeTrackId : 'no Player', 'player-bar classes=', document.getElementById('playerBar') ? document.getElementById('playerBar').className : 'none');
-
     // Load more button
     var loadWrap = document.getElementById('loadMoreWrap');
     if (loadWrap) {
