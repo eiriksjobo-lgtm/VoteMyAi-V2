@@ -541,7 +541,6 @@
       var newSlug = pill.dataset.genre || null;
       if (newSlug === '') newSlug = null;
       if (newSlug === currentGenreSlug) return;
-      if (Player && Player.killAllPlayback) Player.killAllPlayback();
       currentGenreSlug = newSlug;
       currentSubgenre = null;
       var href = newSlug ? '/?genre=' + newSlug : '/';
@@ -557,7 +556,6 @@
     if (subPill && subPill.closest('#subgenrePills')) {
       var sub = subPill.dataset.sub || null;
       if ((sub || null) === (currentSubgenre || null)) return;
-      if (Player && Player.killAllPlayback) Player.killAllPlayback();
       currentSubgenre = sub || null;
       renderSubgenrePills();
       applyFilters();
@@ -574,7 +572,6 @@
       document.querySelectorAll('#toolbar .genre-sort-btn').forEach(function (b) { b.classList.remove('active'); });
       sortBtn.classList.add('active');
       if (typeof gtag === 'function') gtag('event', 'sort_change', { sort_mode: sort });
-      if (Player && Player.killAllPlayback) Player.killAllPlayback();
       sortTracks();
       displayCount = DISPLAY_CHUNK;
       renderList();
