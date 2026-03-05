@@ -440,34 +440,28 @@ window.VMAPlayer = (function () {
   // ═══════════════════════════════════════════════════════════════
 
   function nukeAllAudio() {
-    // 1. Udio popup — kill iframe, hide container
+    // 1. Udio popup — kill iframe, REMOVE container entirely
     var udioEl = udioContainer || document.getElementById('udio-container');
     if (udioEl) {
       udioEl.querySelectorAll('iframe').forEach(function (f) {
         try { f.src = 'about:blank'; } catch (e) {}
-        f.remove();
       });
-      var udioBox = document.getElementById('udio-iframe-box');
-      if (udioBox) udioBox.innerHTML = '';
-      udioEl.style.display = 'none';
-      udioEl.className = 'udio-closed';
+      udioEl.remove();
     }
+    udioContainer = null;  // Force createUdioContainer() to build fresh next time
     udioState = 'closed';
     clearTimeout(window._udioAutoMin);
     window.removeEventListener('blur', window._udioBlurHandler);
 
-    // 2. SoundCloud popup — kill iframe, hide container
+    // 2. SoundCloud popup — kill iframe, REMOVE container entirely
     var scEl = scContainer || document.getElementById('sc-container');
     if (scEl) {
       scEl.querySelectorAll('iframe').forEach(function (f) {
         try { f.src = 'about:blank'; } catch (e) {}
-        f.remove();
       });
-      var scBox = document.getElementById('sc-iframe-box');
-      if (scBox) scBox.innerHTML = '';
-      scEl.style.display = 'none';
-      scEl.className = 'sc-closed';
+      scEl.remove();
     }
+    scContainer = null;  // Force createScContainer() to build fresh next time
     scState = 'closed';
     clearTimeout(window._scAutoMin);
     window.removeEventListener('blur', window._scBlurHandler);
@@ -692,50 +686,24 @@ window.VMAPlayer = (function () {
   // ═══════════════════════════════════════════════════════════════
 
   function restorePlayingRow() {
+    // VISUAL ONLY — never creates iframes, never starts playback.
+    // Audio lives in hidden-player divs / Udio popup / SC popup outside the track list.
     if (activeTrackId === null) return;
     var row = document.querySelector('.track-row[data-track-id="' + activeTrackId + '"]');
     if (!row) return;
 
-    if (activePlatform === 'suno') {
-      var hidden = document.getElementById('hidden-player-' + activeTrackId);
-      if (hidden) {
-        row.classList.add('eq-active');
-        var ea = row.querySelector('.track-embed-area');
-        if (ea) { ea.innerHTML = _eqOverlayHTML('suno'); ea.style.display = 'block'; }
-      }
-    } else if (activePlatform === 'soundcloud') {
-      if (scContainer && scState !== 'closed') {
-        row.classList.add('eq-active');
-        var ea2 = row.querySelector('.track-embed-area');
-        if (ea2) { ea2.innerHTML = _eqOverlayHTML('soundcloud'); ea2.style.display = 'block'; }
-      }
-    } else if (activePlatform === 'udio') {
-      if (udioContainer && udioState !== 'closed') {
-        row.classList.add('eq-active');
-        var ea3 = row.querySelector('.track-embed-area');
-        if (ea3) { ea3.innerHTML = _eqOverlayHTML('udio'); ea3.style.display = 'block'; }
-      }
-    } else if (activePlatform === 'youtube') {
+    row.classList.add('playing');
+
+    if (activePlatform === 'youtube') {
       var btn = row.querySelector('.track-play');
       if (btn) {
         btn.innerHTML = '<svg viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>';
         btn.setAttribute('aria-label', 'Stop');
       }
-      var t = _getTrack(activeTrackId);
-      if (t) {
-        var inf = _getTrackPlatform(t);
-        if (inf.videoId) {
-          var ea4 = row.querySelector('.track-embed-area');
-          if (ea4) {
-            ea4.innerHTML =
-              '<div class="embed-yt"><iframe src="https://www.youtube.com/embed/' + inf.videoId +
-              '?rel=0&autoplay=1&playsinline=1&enablejsapi=1&origin=' +
-              encodeURIComponent(window.location.origin) +
-              '" allow="autoplay; encrypted-media" allowfullscreen playsinline></iframe></div>';
-            ea4.style.display = 'block';
-          }
-        }
-      }
+    } else if (activePlatform === 'suno' || activePlatform === 'udio' || activePlatform === 'soundcloud') {
+      row.classList.add('eq-active');
+      var ea = row.querySelector('.track-embed-area');
+      if (ea) { ea.innerHTML = _eqOverlayHTML(activePlatform); ea.style.display = 'block'; }
     }
   }
 
