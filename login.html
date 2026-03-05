@@ -149,16 +149,8 @@
     if (!returnTo.startsWith('/') || returnTo.startsWith('//')) returnTo = '/';
     localStorage.setItem('login_redirect', returnTo);
 
-    // PKCE flow
-    const verifier = crypto.randomUUID() + crypto.randomUUID();
-    const encoder = new TextEncoder();
-    const digest = await crypto.subtle.digest('SHA-256', encoder.encode(verifier));
-    const challenge = btoa(String.fromCharCode(...new Uint8Array(digest)))
-      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-    sessionStorage.setItem('pkce_verifier', verifier);
-
     const redirectUrl = 'https://www.votemyai.com/';
-    const authUrl = `${SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${redirectUrl}&code_challenge=${challenge}&code_challenge_method=S256`;
+    const authUrl = `${SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${redirectUrl}`;
     window.location.href = authUrl;
   };
 </script>
