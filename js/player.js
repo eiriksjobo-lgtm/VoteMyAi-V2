@@ -527,6 +527,8 @@ window.VMAPlayer = (function () {
     activeTrackId = null;
     activePlatform = null;
     _updateNavTargets();
+    console.log('[NUKE] DONE. iframes remaining:', document.querySelectorAll('iframe').length, Array.from(document.querySelectorAll('iframe')).map(function(f){return f.src}).filter(function(s){return s && s !== 'about:blank'}));
+    console.log('[NUKE] DONE. player-bar classes:', playerBar ? playerBar.className : 'no playerBar', 'udio-container?', !!document.getElementById('udio-container'), 'sc-container?', !!document.getElementById('sc-container'));
   }
 
   // stopTrack and closePlayer are aliases — everything goes through nukeAllAudio
