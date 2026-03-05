@@ -1138,6 +1138,7 @@ const CHANNEL_HOSTS = {
     name: 'DJ Zero',
     preferVoice: 'Google UK English Male',
     gender: 'male',
+    voiceIndex: 0,
     pitch: 0.9,
     rate: 0.85,
     welcome: [
@@ -1170,6 +1171,7 @@ const CHANNEL_HOSTS = {
     name: 'The Algorithm',
     preferVoice: 'Google US English',
     gender: 'female',
+    voiceIndex: 1,
     pitch: 0.7,
     rate: 0.95,
     welcome: [
@@ -1181,8 +1183,9 @@ const CHANNEL_HOSTS = {
     name: 'Poppy',
     preferVoice: 'Google UK English Female',
     gender: 'female',
+    voiceIndex: 2,
     pitch: 1.3,
-    rate: 0.95,
+    rate: 1.05,
     welcome: [
       "It's Poppy! Pop channel! Let's GO!",
       "Poppy here! Welcome to Pop!",
@@ -1192,6 +1195,7 @@ const CHANNEL_HOSTS = {
     name: 'Riff',
     preferVoice: 'Daniel',
     gender: 'male',
+    voiceIndex: 3,
     pitch: 0.6,
     rate: 0.88,
     welcome: [
@@ -1203,6 +1207,7 @@ const CHANNEL_HOSTS = {
     name: 'MC Buffer',
     preferVoice: 'Google US English',
     gender: 'male',
+    voiceIndex: 4,
     pitch: 1.0,
     rate: 1.2,
     welcome: [
@@ -1214,6 +1219,7 @@ const CHANNEL_HOSTS = {
     name: 'Lord Distortion',
     preferVoice: 'Daniel',
     gender: 'male',
+    voiceIndex: 5,
     pitch: 0.4,
     rate: 0.8,
     welcome: [
@@ -1225,6 +1231,7 @@ const CHANNEL_HOSTS = {
     name: 'SYNC',
     preferVoice: 'Google UK English Female',
     gender: 'female',
+    voiceIndex: 6,
     pitch: 0.8,
     rate: 0.95,
     welcome: [
@@ -1236,6 +1243,7 @@ const CHANNEL_HOSTS = {
     name: 'Dusty',
     preferVoice: 'Google US English',
     gender: 'male',
+    voiceIndex: 7,
     pitch: 0.85,
     rate: 0.9,
     welcome: [
@@ -1247,6 +1255,7 @@ const CHANNEL_HOSTS = {
     name: 'Whisper',
     preferVoice: 'Karen',
     gender: 'female',
+    voiceIndex: 8,
     pitch: 1.1,
     rate: 0.75,
     welcome: [
@@ -1489,8 +1498,8 @@ function loadVoices() {
       console.log('🎙️ TTS voices loaded (async):', ttsVoices.length);
       resolve();
     };
-    // Timeout fallback
-    setTimeout(resolve, 3000);
+    // Timeout fallback (Android loads voices slower)
+    setTimeout(resolve, 6000);
   });
 }
 
@@ -1514,7 +1523,12 @@ function getPreferredVoice(hostConfig) {
     if (genderMatch) return genderMatch;
   }
 
-  // 3. Generic English fallback
+  // 3. voiceIndex fallback: rotate through available voices (helps Android where names don't match)
+  if (hostConfig && hostConfig.voiceIndex !== undefined && en.length > 1) {
+    return en[hostConfig.voiceIndex % en.length];
+  }
+
+  // 4. Generic English fallback
   return en.find(v => v.name.includes('Google') && v.lang.startsWith('en'))
     || en[0] || ttsVoices[0] || null;
 }
@@ -1705,8 +1719,8 @@ function bufferLoadAudio(url) {
     bufferAudio.onerror = () => done(false);
     bufferAudio.onstalled = () => {}; // ignore stalls, wait for timeout
 
-    // Timeout: if not loaded in 6 seconds, skip
-    setTimeout(() => done(false), 6000);
+    // Timeout: mobile networks need more time for CDN buffering
+    setTimeout(() => done(false), _isMobile ? 20000 : 10000);
 
     bufferAudio.src = url;
     bufferAudio.load();
@@ -1810,7 +1824,7 @@ async function preBufferNext() {
         let done = false;
         testAudio.oncanplaythrough = () => { if (!done) { done = true; resolve(true); } };
         testAudio.onerror = () => { if (!done) { done = true; resolve(false); } };
-        setTimeout(() => { if (!done) { done = true; resolve(false); } }, 6000);
+        setTimeout(() => { if (!done) { done = true; resolve(false); } }, _isMobile ? 20000 : 10000);
         testAudio.src = candidate.audio_url;
         testAudio.load();
       });
@@ -2071,7 +2085,7 @@ function playSoundCloudWidget(track, scUrl) {
 
   let scStarted = false;
   let scSkipped = false;
-  const scTimeout = _isMobile ? 4000 : 6000;
+  const scTimeout = _isMobile ? 15000 : 8000;
   const scQuickCheck = setTimeout(() => {
     if (!scStarted && !scSkipped) {
       scSkipped = true;
