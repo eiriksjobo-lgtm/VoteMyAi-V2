@@ -1243,6 +1243,7 @@
           if (r.ok) {
             const batch = await r.json();
             allTracks = allTracks.concat(batch);
+            batch.forEach(t => _trackMap.set(String(t.id), t));
           }
         };
         for (let p = 1; p < pages; p++) {
@@ -2259,7 +2260,7 @@
     }
 
     const track = getTrack(trackId);
-    if (!track) return;
+    if (!track) { showToast('Loading track data... try again in a moment'); return; }
     
     // ── STOP EVERYTHING first ──
     // 1. Stop any browse card playing
