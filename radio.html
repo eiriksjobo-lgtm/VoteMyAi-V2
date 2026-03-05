@@ -963,6 +963,10 @@ if (_isAndroid) {
   console.log('[ANDROID] User Agent:', navigator.userAgent);
 }
 
+// --- Android embed iframes (used instead of direct audio URLs which are blocked) ---
+let currentSunoIframe = null;
+let currentScIframe = null;
+
 // --- State ---
 let isPlaying = false;
 let currentTrackIndex = -1;
@@ -1714,13 +1718,22 @@ async function findNextWorkingTrack() {
     if (_isAndroid) console.log(`[ANDROID] findNextWorkingTrack attempt ${attempts}/${maxAttempts}: "${candidate.title}" platform=${candidate.platform} audio_url=${candidate.audio_url?.substring(0,60) || 'NONE'}`);
 
     if (candidate.platform === 'suno' && candidate.audio_url) {
+      if (_isAndroid) {
+        // Android blocks direct Suno CDN URLs — skip buffer check, will use embed iframe
+        if (candidate.suno_id) {
+          console.log(`✅ Suno track queued for embed: "${candidate.title}"`);
+          if (_isAndroid) console.log(`[ANDROID] Suno track accepted (embed path): "${candidate.title}" suno_id=${candidate.suno_id}`);
+          return candidate;
+        } else {
+          if (_isAndroid) console.log(`[ANDROID] ❌ Suno track has no suno_id, skipping: "${candidate.title}"`);
+          continue;
+        }
+      }
       const loaded = await bufferLoadAudio(candidate.audio_url);
       if (loaded) {
-        if (_isAndroid) console.log(`[ANDROID] ✅ Track loaded OK: "${candidate.title}"`);
         console.log(`✅ Buffered: "${candidate.title}"`);
         return candidate;
       } else {
-        if (_isAndroid) console.log(`[ANDROID] ❌ Track FAILED to load: "${candidate.title}"`);
         console.log(`⏭️ Silent skip (won't load): "${candidate.title}"`);
         continue;
       }
@@ -1809,31 +1822,44 @@ async function playVerifiedTrack(track) {
 
   // STEP 4: Play the new track (use track.audio_url directly, NOT bufferAudio.src)
   if (track.platform === 'suno' && track.audio_url) {
-    const audio = document.getElementById('audioPlayer');
-    audio.src = track.audio_url;
-    audio.volume = document.getElementById('volumeSlider').value / 100;
-    audio.currentTime = 0;
 
-    audio.onended = () => onTrackEnded();
-    audio.onerror = () => {
-      console.warn('🎵 Playback error, skipping');
-      onTrackEnded();
-    };
-    audio.ontimeupdate = () => updateProgress(audio.currentTime, audio.duration);
-    audio.onloadedmetadata = () => {
-      document.getElementById('timeDuration').textContent = formatTime(audio.duration);
-      setFallbackTimer(audio.duration);
-    };
-    setFallbackTimer(300);
+    if (_isAndroid && track.suno_id) {
+      // Android: direct CDN URLs blocked by URL safety check — use Suno embed iframe
+      if (_isAndroid) console.log(`[ANDROID] Playing Suno via embed iframe: "${track.title}" suno_id=${track.suno_id}`);
+      if (currentSunoIframe) { currentSunoIframe.src = 'about:blank'; currentSunoIframe.remove(); currentSunoIframe = null; }
+      const iframe = document.createElement('iframe');
+      iframe.src = `https://suno.com/embed/${track.suno_id}`;
+      iframe.allow = 'autoplay; encrypted-media';
+      iframe.style.cssText = 'width:1px;height:1px;position:fixed;bottom:0;left:0;opacity:0.01;pointer-events:none;';
+      document.body.appendChild(iframe);
+      currentSunoIframe = iframe;
+      setFallbackTimer(240); // Suno tracks are typically ~2-4 min
+    } else {
+      // Desktop/iOS: direct audio playback
+      const audio = document.getElementById('audioPlayer');
+      audio.src = track.audio_url;
+      audio.volume = document.getElementById('volumeSlider').value / 100;
+      audio.currentTime = 0;
 
-    audio.play().then(() => {
-      console.log('🎵 Playing:', track.title);
-      if (_isAndroid) console.log(`[ANDROID] audio.play() SUCCESS: "${track.title}" readyState=${audio.readyState} currentTime=${audio.currentTime} duration=${audio.duration}`);
-    }).catch(err => {
-      console.warn('🎵 Play failed:', err.message);
-      if (_isAndroid) console.log(`[ANDROID] audio.play() FAILED: "${track.title}" error="${err.message}" readyState=${audio.readyState}`);
-      onTrackEnded();
-    });
+      audio.onended = () => onTrackEnded();
+      audio.onerror = () => {
+        console.warn('🎵 Playback error, skipping');
+        onTrackEnded();
+      };
+      audio.ontimeupdate = () => updateProgress(audio.currentTime, audio.duration);
+      audio.onloadedmetadata = () => {
+        document.getElementById('timeDuration').textContent = formatTime(audio.duration);
+        setFallbackTimer(audio.duration);
+      };
+      setFallbackTimer(300);
+
+      audio.play().then(() => {
+        console.log('🎵 Playing:', track.title);
+      }).catch(err => {
+        console.warn('🎵 Play failed:', err.message);
+        onTrackEnded();
+      });
+    }
 
   } else if (track.platform === 'udio') {
     await playUdioTrack(track);
@@ -1873,6 +1899,15 @@ async function preBufferNext() {
     const candidate = schedule[tempIndex];
 
     if (candidate.platform === 'suno' && candidate.audio_url) {
+      if (_isAndroid) {
+        // Android: skip audio buffer check (CDN URLs blocked), just queue if suno_id exists
+        if (candidate.suno_id) {
+          nextBufferedTrack = { track: candidate, index: tempIndex };
+          console.log(`🔮 Next Suno queued for embed: "${candidate.title}"`);
+          return;
+        }
+        continue;
+      }
       // Use a separate Audio element for pre-buffering
       const testAudio = new Audio();
       testAudio.preload = 'auto';
@@ -1943,12 +1978,22 @@ function clearFallbackTimer() {
 
 // (playSunoTrack logic moved into playVerifiedTrack)
 
+let _ytRetryCount = 0;
 function playYouTubeTrack(track) {
   if (!ytPlayer || !ytPlayer.loadVideoById) {
-    console.warn('📺 YT Player not ready, skipping');
-    setTimeout(() => onTrackEnded(), 1000);
+    _ytRetryCount++;
+    if (_ytRetryCount < 5) {
+      console.warn(`📺 YT Player not ready, retrying in 2s... attempt ${_ytRetryCount}`);
+      if (_isAndroid) console.log(`[ANDROID] YT not ready, retry ${_ytRetryCount}/5 in 2s`);
+      setTimeout(() => playYouTubeTrack(track), 2000);
+      return;
+    }
+    console.warn('📺 YT Player not ready after 5 attempts, skipping');
+    _ytRetryCount = 0;
+    setTimeout(() => onTrackEnded(), 500);
     return;
   }
+  _ytRetryCount = 0;
 
   console.log('📺 Loading YouTube:', track.youtube_id);
   const vol = document.getElementById('volumeSlider').value;
@@ -2070,6 +2115,27 @@ async function playSoundCloudTrack(track) {
   if (!scUrl) {
     console.warn('🔊 No SC URL, skipping');
     setTimeout(() => onTrackEnded(), 500);
+    return;
+  }
+
+  // Android: direct audio URLs blocked by URL safety check — use widget iframe
+  if (_isAndroid) {
+    if (_isAndroid) console.log(`[ANDROID] Playing SoundCloud via widget iframe: "${track.title}"`);
+    if (currentScIframe) { currentScIframe.src = 'about:blank'; currentScIframe.remove(); currentScIframe = null; }
+
+    // Try SC Widget API first (already has an iframe in the page)
+    if (scWidgetObj) {
+      playSoundCloudWidget(track, scUrl);
+    } else {
+      // Fallback: create embed iframe
+      const iframe = document.createElement('iframe');
+      iframe.src = 'https://w.soundcloud.com/player/?url=' + encodeURIComponent(scUrl) + '&auto_play=true&hide_related=true&show_comments=false&show_user=false&show_reposts=false&visual=false';
+      iframe.allow = 'autoplay; encrypted-media';
+      iframe.style.cssText = 'width:1px;height:1px;position:fixed;bottom:0;left:0;opacity:0.01;pointer-events:none;';
+      document.body.appendChild(iframe);
+      currentScIframe = iframe;
+      setFallbackTimer(300);
+    }
     return;
   }
 
@@ -2240,6 +2306,10 @@ function stopAudioPlayback() {
   if (scWidgetObj) {
     try { scWidgetObj.pause(); } catch (e) {}
   }
+
+  // Cleanup Android embed iframes
+  if (currentSunoIframe) { currentSunoIframe.src = 'about:blank'; currentSunoIframe.remove(); currentSunoIframe = null; }
+  if (currentScIframe) { currentScIframe.src = 'about:blank'; currentScIframe.remove(); currentScIframe = null; }
 }
 
 // Stop everything: audio + video + TTS
