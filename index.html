@@ -905,6 +905,100 @@
       }
     }
 
+    /* === RADIO BANNER === */
+    .radio-banner {
+      display: block;
+      background: linear-gradient(135deg, #07070b 0%, #1a0a2e 50%, #07070b 100%);
+      border-bottom: 1px solid rgba(232,255,71,0.15);
+      text-decoration: none;
+      padding: 14px 24px;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .radio-banner::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%; width: 200%; height: 100%;
+      background: linear-gradient(90deg, transparent 0%, rgba(232,255,71,0.03) 50%, transparent 100%);
+      animation: radio-shimmer 3s ease-in-out infinite;
+    }
+    @keyframes radio-shimmer {
+      0% { transform: translateX(-50%); }
+      100% { transform: translateX(50%); }
+    }
+    .radio-banner:hover {
+      background: linear-gradient(135deg, #0a0a15 0%, #1f0d35 50%, #0a0a15 100%);
+    }
+    .radio-banner-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+      z-index: 1;
+    }
+    .radio-banner-live {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(232,255,71,0.1);
+      border: 1px solid rgba(232,255,71,0.2);
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      color: #e8ff47;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .radio-pulse {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #e8ff47;
+      animation: pulse-dot 1.5s ease-in-out infinite;
+      box-shadow: 0 0 6px #e8ff47;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+    .radio-banner-text {
+      flex: 1;
+      min-width: 0;
+    }
+    .radio-banner-big {
+      display: block;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.15rem;
+      letter-spacing: 2px;
+      color: #fff;
+      line-height: 1.2;
+    }
+    .radio-banner-sub {
+      display: block;
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .radio-banner-cta {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #e8ff47;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    @media (max-width: 600px) {
+      .radio-banner-inner { flex-wrap: wrap; gap: 8px; }
+      .radio-banner-big { font-size: 0.95rem; }
+      .radio-banner-sub { font-size: 0.65rem; }
+      .radio-banner-cta { display: none; }
+    }
+
   </style>
 </head>
 <body>
@@ -914,14 +1008,14 @@
   <a href="/" class="logo"><span class="logo-dot"></span>VOTEMYAI</a>
   <div class="nav-right">
     <a href="/blog.html" class="nav-link">Blog</a>
-    <a href="/radio.html" class="nav-link">Radio <span style="background:#e8ff47;color:#07070b;font-size:0.55rem;font-weight:800;padding:1px 5px;border-radius:3px;margin-left:4px;vertical-align:middle;letter-spacing:0.5px;">NEW</span></a>
+    <a href="/radio.html" class="nav-link" onclick="event.preventDefault(); if(typeof stopUdioFull==='function')stopUdioFull(); if(typeof closePlayer==='function')closePlayer(); document.querySelectorAll('iframe').forEach(f=>{if(f.src&&f.src!=='about:blank')f.src='about:blank'}); window.open('/radio.html','VoteMyAI Radio','width=420,height=720,scrollbars=no,resizable=yes'); gtag('event','radio_open',{location:'nav'});">Radio <span style="background:#e8ff47;color:#07070b;font-size:0.55rem;font-weight:800;padding:1px 5px;border-radius:3px;margin-left:4px;vertical-align:middle;letter-spacing:0.5px;">NEW</span></a>
     <a href="/login.html" class="nav-link" id="authLink">Login</a>
     <button class="btn-submit" onclick="window.location.href='/submit.html'">Submit</button>
     <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
   </div>
   <div class="nav-links-mobile" id="mobileNav">
     <a href="/blog.html" class="nav-link">Blog</a>
-    <a href="/radio.html" class="nav-link">Radio <span style="background:#e8ff47;color:#07070b;font-size:0.55rem;font-weight:800;padding:1px 5px;border-radius:3px;margin-left:4px;vertical-align:middle;letter-spacing:0.5px;">NEW</span></a>
+    <a href="/radio.html" class="nav-link" onclick="event.preventDefault(); if(typeof stopUdioFull==='function')stopUdioFull(); if(typeof closePlayer==='function')closePlayer(); document.querySelectorAll('iframe').forEach(f=>{if(f.src&&f.src!=='about:blank')f.src='about:blank'}); window.open('/radio.html','VoteMyAI Radio','width=420,height=720,scrollbars=no,resizable=yes'); gtag('event','radio_open',{location:'nav_mobile'});">Radio <span style="background:#e8ff47;color:#07070b;font-size:0.55rem;font-weight:800;padding:1px 5px;border-radius:3px;margin-left:4px;vertical-align:middle;letter-spacing:0.5px;">NEW</span></a>
     <a href="/login.html" class="nav-link" id="authLinkMobile">Login</a>
     <a href="/submit.html" class="nav-link">Submit a Track</a>
     <a href="/#leaderboard" class="nav-link">Leaderboard</a>
@@ -929,6 +1023,18 @@
     <a href="/faq.html" class="nav-link">FAQ</a>
   </div>
 </nav>
+
+<!-- ═══ RADIO BANNER ═══ -->
+<a href="/radio.html" class="radio-banner" onclick="event.preventDefault(); if(typeof stopUdioFull==='function')stopUdioFull(); if(typeof closePlayer==='function')closePlayer(); document.querySelectorAll('iframe').forEach(f=>{if(f.src&&f.src!=='about:blank')f.src='about:blank'}); window.open('/radio.html','VoteMyAI Radio','width=420,height=720,scrollbars=no,resizable=yes'); gtag('event','radio_banner_click',{location:'top'});">
+  <div class="radio-banner-inner">
+    <div class="radio-banner-live"><span class="radio-pulse"></span> LIVE</div>
+    <div class="radio-banner-text">
+      <span class="radio-banner-big">AI MUSIC RADIO IS HERE</span>
+      <span class="radio-banner-sub">Submit your track to VoteMyAI — top-rated songs get airplay with AI hosts</span>
+    </div>
+    <span class="radio-banner-cta">Listen Now →</span>
+  </div>
+</a>
 
 <!-- ═══ HERO ═══ -->
 <section class="hero">
@@ -1512,7 +1618,7 @@
     }, 2000);
   }
 
-  document.addEventListener('click', (e) => { if (!activePlayerTrackId) return; const link = e.target.closest('a[href]'); if (!link) return; const href = link.getAttribute('href'); if (!href || link.target === '_blank') return; if (href.startsWith('http') && !href.includes(window.location.hostname)) return; if (href.startsWith('#')) return; if (href.includes('radio')) { window.location.href = href; return; } e.preventDefault(); if (href === '/' || href === '/index.html') { closePageFrame(); return; } navigateToPage(href); }, true);
+  document.addEventListener('click', (e) => { if (!activePlayerTrackId) return; const link = e.target.closest('a[href]'); if (!link) return; const href = link.getAttribute('href'); if (!href || link.target === '_blank') return; if (href.startsWith('http') && !href.includes(window.location.hostname)) return; if (href.startsWith('#')) return; if (href.includes('radio')) return; e.preventDefault(); if (href === '/' || href === '/index.html') { closePageFrame(); return; } navigateToPage(href); }, true);
 
   // ─── Mobile: Hamburger Menu ───
   const hamburger = document.getElementById('hamburger');
