@@ -151,6 +151,7 @@ window.VMAPlayer = (function () {
   }
 
   function openUdioPlayer(udioId, trackTitle) {
+    console.log('[UDIO] openUdioPlayer called for:', udioId, 'title:', trackTitle, 'existing udioContainer?', !!udioContainer);
     createUdioContainer();
     udioContainer.style.display = '';
 
@@ -251,6 +252,7 @@ window.VMAPlayer = (function () {
   }
 
   function openSoundCloudPlayer(scUrl, trackTitle) {
+    console.log('[SC] openSoundCloudPlayer called for:', scUrl, 'title:', trackTitle);
     createScContainer();
     scContainer.style.display = '';
     var box = document.getElementById('sc-iframe-box');
@@ -440,6 +442,10 @@ window.VMAPlayer = (function () {
   // ═══════════════════════════════════════════════════════════════
 
   function nukeAllAudio() {
+    console.log('[NUKE] nukeAllAudio() called', new Date().toISOString(), 'activeTrackId=', activeTrackId, 'udioState=', udioState, 'scState=', scState);
+    console.log('[NUKE] udio-container in DOM?', !!document.getElementById('udio-container'), 'sc-container?', !!document.getElementById('sc-container'));
+    console.log('[NUKE] iframes on page:', document.querySelectorAll('iframe').length, Array.from(document.querySelectorAll('iframe')).map(function(f){return f.src}).filter(function(s){return s && s !== 'about:blank'}));
+    console.log('[NUKE] hidden-players:', document.querySelectorAll('[id^="hidden-player-"]').length);
     // 1. Udio popup — kill iframe, REMOVE container entirely
     var udioEl = udioContainer || document.getElementById('udio-container');
     if (udioEl) {
@@ -532,6 +538,7 @@ window.VMAPlayer = (function () {
   // ═══════════════════════════════════════════════════════════════
 
   function playTrack(trackId) {
+    console.log('[PLAY] playTrack called for:', trackId, 'current activeTrackId=', activeTrackId);
     // Toggle: same track => stop
     if (activeTrackId !== null && String(activeTrackId) === String(trackId)) {
       nukeAllAudio();
@@ -539,6 +546,7 @@ window.VMAPlayer = (function () {
     }
 
     // NUKE all current playback before starting anything new
+    console.log('[PLAY] About to nuke before starting trackId:', trackId);
     nukeAllAudio();
 
     var track = _getTrack(trackId);
@@ -654,6 +662,7 @@ window.VMAPlayer = (function () {
   // ═══════════════════════════════════════════════════════════════
 
   function _activateBar(track, info) {
+    console.log('[BAR] _activateBar called for:', track.title, 'platform:', info.platform);
     var genre = VMA && typeof VMA.resolveGenre === 'function' ? VMA.resolveGenre(track.genre) : (track.genre || '');
     var meta = [track.tool, genre].filter(Boolean).join(' \u00B7 ');
 
@@ -686,6 +695,7 @@ window.VMAPlayer = (function () {
   // ═══════════════════════════════════════════════════════════════
 
   function restorePlayingRow() {
+    console.log('[RESTORE] restorePlayingRow called, activeTrackId=', activeTrackId, 'activePlatform=', activePlatform);
     // VISUAL ONLY — never creates iframes, never starts playback.
     // Audio lives in hidden-player divs / Udio popup / SC popup outside the track list.
     if (activeTrackId === null) return;
