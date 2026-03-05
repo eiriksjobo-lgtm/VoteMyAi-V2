@@ -914,14 +914,14 @@
   <a href="/" class="logo"><span class="logo-dot"></span>VOTEMYAI</a>
   <div class="nav-right">
     <a href="/blog.html" class="nav-link">Blog</a>
-    <a href="/radio.html" class="nav-link">Radio</a>
+    <a href="/radio.html" class="nav-link">Radio <span style="background:#e8ff47;color:#07070b;font-size:0.55rem;font-weight:800;padding:1px 5px;border-radius:3px;margin-left:4px;vertical-align:middle;letter-spacing:0.5px;">NEW</span></a>
     <a href="/login.html" class="nav-link" id="authLink">Login</a>
     <button class="btn-submit" onclick="window.location.href='/submit.html'">Submit</button>
     <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
   </div>
   <div class="nav-links-mobile" id="mobileNav">
     <a href="/blog.html" class="nav-link">Blog</a>
-    <a href="/radio.html" class="nav-link">Radio</a>
+    <a href="/radio.html" class="nav-link">Radio <span style="background:#e8ff47;color:#07070b;font-size:0.55rem;font-weight:800;padding:1px 5px;border-radius:3px;margin-left:4px;vertical-align:middle;letter-spacing:0.5px;">NEW</span></a>
     <a href="/login.html" class="nav-link" id="authLinkMobile">Login</a>
     <a href="/submit.html" class="nav-link">Submit a Track</a>
     <a href="/#leaderboard" class="nav-link">Leaderboard</a>
@@ -1512,7 +1512,7 @@
     }, 2000);
   }
 
-  document.addEventListener('click', (e) => { if (!activePlayerTrackId) return; const link = e.target.closest('a[href]'); if (!link) return; const href = link.getAttribute('href'); if (!href || link.target === '_blank') return; if (href.startsWith('http') && !href.includes(window.location.hostname)) return; if (href.startsWith('#')) return; e.preventDefault(); if (href === '/' || href === '/index.html') { closePageFrame(); return; } navigateToPage(href); }, true);
+  document.addEventListener('click', (e) => { if (!activePlayerTrackId) return; const link = e.target.closest('a[href]'); if (!link) return; const href = link.getAttribute('href'); if (!href || link.target === '_blank') return; if (href.startsWith('http') && !href.includes(window.location.hostname)) return; if (href.startsWith('#')) return; if (href.includes('radio')) { window.location.href = href; return; } e.preventDefault(); if (href === '/' || href === '/index.html') { closePageFrame(); return; } navigateToPage(href); }, true);
 
   // ─── Mobile: Hamburger Menu ───
   const hamburger = document.getElementById('hamburger');

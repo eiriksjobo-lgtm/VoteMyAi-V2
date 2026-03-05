@@ -40,52 +40,7 @@ body {
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
-/* === PASSWORD GATE === */
-#passwordGate {
-  position: fixed; inset: 0; z-index: 9999;
-  background: var(--bg);
-  display: flex; align-items: center; justify-content: center;
-  flex-direction: column; gap: 24px;
-}
-#passwordGate h1 {
-  font-size: 2rem; font-weight: 900;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-}
-#passwordGate input {
-  background: var(--surface); border: 1px solid var(--border);
-  color: var(--text); padding: 14px 20px; border-radius: 12px;
-  font-size: 16px; width: 280px; max-width: 85vw; text-align: center;
-  font-family: 'Space Mono', monospace;
-  outline: none; transition: border-color 0.2s;
-  -webkit-appearance: none; appearance: none;
-}
-#passwordGate input:focus { border-color: var(--accent); }
-#passwordGate button {
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  color: white; border: none; padding: 14px 40px; border-radius: 12px;
-  font-size: 1rem; font-weight: 600; cursor: pointer;
-  font-family: 'Outfit', sans-serif;
-  transition: transform 0.15s, box-shadow 0.15s;
-}
-@media (hover: hover) {
-  #passwordGate button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px var(--accent-glow);
-  }
-}
-#passwordGate button:active {
-  transform: scale(0.97);
-  box-shadow: 0 4px 20px var(--accent-glow);
-}
-#passwordGate .error {
-  color: var(--accent); font-size: 0.85rem;
-  opacity: 0; transition: opacity 0.3s;
-}
-#passwordGate .error.show { opacity: 1; }
-
 /* === MAIN RADIO UI === */
-#radioApp { display: none; }
 
 .radio-bg {
   position: fixed; inset: 0; z-index: -1;
@@ -736,17 +691,8 @@ body {
 </head>
 <body>
 
-<!-- PASSWORD GATE -->
-<div id="passwordGate">
-  <h1>📻 VoteMyAI Radio</h1>
-  <p style="color: var(--text-dim); font-size: 0.9rem;">Invite only — enter the code</p>
-  <input type="password" id="pwInput" placeholder="••••••••" autofocus>
-  <button onclick="checkPassword()">Enter</button>
-  <div class="error" id="pwError">Wrong code, try again</div>
-</div>
-
 <!-- RADIO APP -->
-<div id="radioApp">
+<div id="radioApp" style="display:block">
   <div class="radio-bg"></div>
 
   <!-- Channel Picker -->
@@ -1172,33 +1118,6 @@ function generateHostIntro(track) {
   // No TTS — just play the song
   return '';
 }
-
-// --- Password ---
-async function checkPassword() {
-  const input = document.getElementById('pwInput').value;
-  try {
-    const res = await fetch('/api/radio-auth', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: input })
-    });
-    if (res.ok) {
-      document.getElementById('passwordGate').style.display = 'none';
-      document.getElementById('radioApp').style.display = 'block';
-    } else {
-      document.getElementById('pwError').classList.add('show');
-      document.getElementById('pwInput').value = '';
-      setTimeout(() => document.getElementById('pwError').classList.remove('show'), 2000);
-    }
-  } catch (e) {
-    document.getElementById('pwError').classList.add('show');
-    document.getElementById('pwInput').value = '';
-    setTimeout(() => document.getElementById('pwError').classList.remove('show'), 2000);
-  }
-}
-document.getElementById('pwInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter') checkPassword();
-});
 
 // --- Genre mapping for channels ---
 const CHANNEL_GENRES = {
