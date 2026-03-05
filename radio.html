@@ -956,7 +956,12 @@ body {
 // --- Platform Detection ---
 const _isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-const _isMobile = _isIOS || /Android/i.test(navigator.userAgent);
+const _isAndroid = /Android/i.test(navigator.userAgent);
+const _isMobile = _isIOS || _isAndroid;
+if (_isAndroid) {
+  console.log('[ANDROID] Detected Android device');
+  console.log('[ANDROID] User Agent:', navigator.userAgent);
+}
 
 // --- State ---
 let isPlaying = false;
@@ -1358,15 +1363,21 @@ async function startRadio(channel = 'all') {
   currentTrackIndex = -1;
 
   // Preload Web Speech voices
+  if (_isAndroid) console.log('[ANDROID] About to loadVoices...');
   await loadVoices();
+  if (_isAndroid) console.log('[ANDROID] loadVoices complete. ttsVoices count:', ttsVoices.length);
 
   console.log(`📻 Radio loaded ${schedule.length} tracks, starting with buffer approach`);
+  if (_isAndroid) console.log(`[ANDROID] Schedule: ${schedule.length} tracks. Platform breakdown:`, schedule.reduce((acc, t) => { acc[t.platform] = (acc[t.platform]||0)+1; return acc; }, {}));
   document.getElementById('statusText').textContent = 'TUNING IN...';
 
   // Find first working track and start
+  if (_isAndroid) console.log('[ANDROID] Calling findNextWorkingTrack for first track...');
   const firstTrack = await findNextWorkingTrack();
+  if (_isAndroid) console.log('[ANDROID] findNextWorkingTrack returned:', firstTrack ? `"${firstTrack.title}" (${firstTrack.platform})` : 'NULL');
   if (!firstTrack) {
     document.getElementById('statusText').textContent = 'NO TRACKS';
+    if (_isAndroid) console.log('[ANDROID] NO WORKING TRACKS FOUND — all failed to load');
     alert('Could not find any working tracks!');
     return;
   }
@@ -1489,29 +1500,44 @@ function loadVoices() {
     ttsVoices = window.speechSynthesis.getVoices();
     if (ttsVoices.length > 0) {
       console.log('🎙️ TTS voices loaded:', ttsVoices.length);
+      if (_isAndroid) console.log('[ANDROID] Voices (sync):', ttsVoices.length, ttsVoices.map(v => `${v.name} [${v.lang}]`).join(', '));
       resolve();
       return;
     }
+    if (_isAndroid) console.log('[ANDROID] No voices loaded synchronously, waiting for onvoiceschanged...');
     // Chrome loads voices async
     window.speechSynthesis.onvoiceschanged = () => {
       ttsVoices = window.speechSynthesis.getVoices();
       console.log('🎙️ TTS voices loaded (async):', ttsVoices.length);
+      if (_isAndroid) console.log('[ANDROID] Voices (async):', ttsVoices.length, ttsVoices.map(v => `${v.name} [${v.lang}]`).join(', '));
       resolve();
     };
     // Timeout fallback (Android loads voices slower)
-    setTimeout(resolve, 6000);
+    setTimeout(() => {
+      if (_isAndroid) console.log('[ANDROID] loadVoices TIMEOUT — voices so far:', ttsVoices.length);
+      resolve();
+    }, 6000);
   });
 }
 
 function getPreferredVoice(hostConfig) {
   if (ttsVoices.length === 0) ttsVoices = window.speechSynthesis.getVoices();
   const en = ttsVoices.filter(v => v.lang.startsWith('en'));
-  if (en.length === 0) return ttsVoices[0] || null;
+  if (_isAndroid) console.log(`[ANDROID] getPreferredVoice: totalVoices=${ttsVoices.length} enVoices=${en.length} preferVoice="${hostConfig?.preferVoice}" gender="${hostConfig?.gender}" voiceIndex=${hostConfig?.voiceIndex}`);
+  if (en.length === 0) {
+    const fallback = ttsVoices[0] || null;
+    if (_isAndroid) console.log('[ANDROID] getPreferredVoice: NO english voices, using:', fallback?.name || 'NULL');
+    return fallback;
+  }
 
   if (hostConfig && hostConfig.preferVoice) {
     // 1. Exact preferVoice match
     const exact = en.find(v => v.name.includes(hostConfig.preferVoice));
-    if (exact) return exact;
+    if (exact) {
+      if (_isAndroid) console.log('[ANDROID] getPreferredVoice: EXACT match:', exact.name);
+      return exact;
+    }
+    if (_isAndroid) console.log('[ANDROID] getPreferredVoice: no match for "' + hostConfig.preferVoice + '" in:', en.map(v=>v.name).join(', '));
   }
 
   if (hostConfig && hostConfig.gender) {
@@ -1520,17 +1546,25 @@ function getPreferredVoice(hostConfig) {
       ? ['Female', 'Samantha', 'Karen', 'Moira', 'Fiona', 'Victoria', 'Tessa']
       : ['Male', 'Daniel', 'Alex', 'Fred', 'Tom', 'James', 'Aaron'];
     const genderMatch = en.find(v => genderHints.some(h => v.name.includes(h)));
-    if (genderMatch) return genderMatch;
+    if (genderMatch) {
+      if (_isAndroid) console.log('[ANDROID] getPreferredVoice: GENDER match:', genderMatch.name);
+      return genderMatch;
+    }
+    if (_isAndroid) console.log('[ANDROID] getPreferredVoice: no gender match for', hostConfig.gender);
   }
 
   // 3. voiceIndex fallback: rotate through available voices (helps Android where names don't match)
   if (hostConfig && hostConfig.voiceIndex !== undefined && en.length > 1) {
-    return en[hostConfig.voiceIndex % en.length];
+    const picked = en[hostConfig.voiceIndex % en.length];
+    if (_isAndroid) console.log(`[ANDROID] getPreferredVoice: voiceIndex=${hostConfig.voiceIndex} picked=${picked.name} (${hostConfig.voiceIndex % en.length}/${en.length})`);
+    return picked;
   }
 
   // 4. Generic English fallback
-  return en.find(v => v.name.includes('Google') && v.lang.startsWith('en'))
+  const generic = en.find(v => v.name.includes('Google') && v.lang.startsWith('en'))
     || en[0] || ttsVoices[0] || null;
+  if (_isAndroid) console.log('[ANDROID] getPreferredVoice: GENERIC fallback:', generic?.name || 'NULL');
+  return generic;
 }
 
 // --- Web Speech TTS with per-channel voices ---
@@ -1677,13 +1711,16 @@ async function findNextWorkingTrack() {
     attempts++;
 
     const candidate = schedule[currentTrackIndex];
+    if (_isAndroid) console.log(`[ANDROID] findNextWorkingTrack attempt ${attempts}/${maxAttempts}: "${candidate.title}" platform=${candidate.platform} audio_url=${candidate.audio_url?.substring(0,60) || 'NONE'}`);
 
     if (candidate.platform === 'suno' && candidate.audio_url) {
       const loaded = await bufferLoadAudio(candidate.audio_url);
       if (loaded) {
+        if (_isAndroid) console.log(`[ANDROID] ✅ Track loaded OK: "${candidate.title}"`);
         console.log(`✅ Buffered: "${candidate.title}"`);
         return candidate;
       } else {
+        if (_isAndroid) console.log(`[ANDROID] ❌ Track FAILED to load: "${candidate.title}"`);
         console.log(`⏭️ Silent skip (won't load): "${candidate.title}"`);
         continue;
       }
@@ -1704,6 +1741,9 @@ async function findNextWorkingTrack() {
 // Try to load audio into buffer — returns true if canplaythrough fires
 function bufferLoadAudio(url) {
   return new Promise(resolve => {
+    if (_isAndroid) console.log('[ANDROID] bufferLoadAudio starting for:', url?.substring(0, 80));
+    const _t0 = Date.now();
+
     // Reset buffer
     bufferAudio.pause();
     bufferAudio.removeAttribute('src');
@@ -1712,15 +1752,28 @@ function bufferLoadAudio(url) {
     const done = (result) => {
       if (resolved) return;
       resolved = true;
+      if (_isAndroid) console.log(`[ANDROID] bufferLoadAudio done=${result} after ${Date.now()-_t0}ms for:`, url?.substring(0, 80));
       resolve(result);
     };
 
-    bufferAudio.oncanplaythrough = () => done(true);
-    bufferAudio.onerror = () => done(false);
-    bufferAudio.onstalled = () => {}; // ignore stalls, wait for timeout
+    bufferAudio.oncanplaythrough = () => {
+      if (_isAndroid) console.log('[ANDROID] canplaythrough fired after', Date.now()-_t0, 'ms for:', url?.substring(0, 80));
+      done(true);
+    };
+    bufferAudio.onerror = (e) => {
+      if (_isAndroid) console.log('[ANDROID] ERROR loading audio after', Date.now()-_t0, 'ms:', url?.substring(0, 80), bufferAudio.error?.message || bufferAudio.error?.code);
+      done(false);
+    };
+    bufferAudio.onstalled = () => {
+      if (_isAndroid) console.log('[ANDROID] stalled event after', Date.now()-_t0, 'ms for:', url?.substring(0, 80));
+    };
 
     // Timeout: mobile networks need more time for CDN buffering
-    setTimeout(() => done(false), _isMobile ? 20000 : 10000);
+    const _timeout = _isMobile ? 20000 : 10000;
+    setTimeout(() => {
+      if (_isAndroid && !resolved) console.log('[ANDROID] TIMEOUT after', _timeout, 'ms, readyState:', bufferAudio.readyState, 'networkState:', bufferAudio.networkState, 'for:', url?.substring(0, 80));
+      done(false);
+    }, _timeout);
 
     bufferAudio.src = url;
     bufferAudio.load();
@@ -1730,6 +1783,7 @@ function bufferLoadAudio(url) {
 // Play a track that has already been verified/buffered
 async function playVerifiedTrack(track) {
   const gen = _switchGen; // capture channel generation before TTS
+  if (_isAndroid) console.log(`[ANDROID] playVerifiedTrack called: "${track.title}" platform=${track.platform} audio_url=${track.audio_url?.substring(0,60) || 'NONE'}`);
   console.log(`📻 Now playing [${currentTrackIndex + 1}/${schedule.length}]: "${track.title}" (${track.platform}) on ch="${currentChannel}"`);
 
   // STEP 1: Stop ALL audio/video playback IMMEDIATELY (old song stops NOW)
@@ -1774,8 +1828,10 @@ async function playVerifiedTrack(track) {
 
     audio.play().then(() => {
       console.log('🎵 Playing:', track.title);
+      if (_isAndroid) console.log(`[ANDROID] audio.play() SUCCESS: "${track.title}" readyState=${audio.readyState} currentTime=${audio.currentTime} duration=${audio.duration}`);
     }).catch(err => {
       console.warn('🎵 Play failed:', err.message);
+      if (_isAndroid) console.log(`[ANDROID] audio.play() FAILED: "${track.title}" error="${err.message}" readyState=${audio.readyState}`);
       onTrackEnded();
     });
 
@@ -2128,6 +2184,7 @@ function playSoundCloudWidget(track, scUrl) {
 // --- On Track Ended (Central Flow) ---
 let isTransitioning = false;
 async function onTrackEnded() {
+  if (_isAndroid) console.log('[ANDROID] onTrackEnded called. Stack:', new Error().stack?.split('\n').slice(1,4).map(s=>s.trim()).join(' <- '));
   if (isTransitioning) return;
   isTransitioning = true;
 
