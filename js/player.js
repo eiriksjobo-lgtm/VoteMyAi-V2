@@ -146,7 +146,7 @@ window.VMAPlayer = (function () {
       '</div>';
     document.body.appendChild(udioContainer);
     document.getElementById('udioMinBtn').addEventListener('click', minimizeUdio);
-    document.getElementById('udioCloseBtn').addEventListener('click', stopTrack);
+    document.getElementById('udioCloseBtn').addEventListener('click', nukeAllAudio);
     document.getElementById('udio-backdrop').addEventListener('click', minimizeUdio);
   }
 
@@ -246,7 +246,7 @@ window.VMAPlayer = (function () {
       '</div>';
     document.body.appendChild(scContainer);
     document.getElementById('scMinBtn').addEventListener('click', minimizeSc);
-    document.getElementById('scCloseBtn').addEventListener('click', stopTrack);
+    document.getElementById('scCloseBtn').addEventListener('click', nukeAllAudio);
     document.getElementById('sc-backdrop').addEventListener('click', minimizeSc);
   }
 
@@ -435,40 +435,69 @@ window.VMAPlayer = (function () {
 
 
   // ═══════════════════════════════════════════════════════════════
-  //  STOP — kill all playback, clean up DOM
+  //  NUKE ALL AUDIO — the ONE AND ONLY way to stop sound
+  //  Every stop path funnels through here. No exceptions.
   // ═══════════════════════════════════════════════════════════════
 
-  function stopTrack() {
-    // ── STEP 1: KILL ALL AUDIO — global DOM queries, never depends on track rows ──
-    // Destroy Udio popup
-    destroyUdioPlayer();
-    // Destroy SoundCloud popup
-    destroySc();
-    // Kill ALL audio iframes anywhere on the page (skip page-frame)
+  function nukeAllAudio() {
+    // 1. Udio popup — kill iframe, hide container
+    var udioEl = udioContainer || document.getElementById('udio-container');
+    if (udioEl) {
+      udioEl.querySelectorAll('iframe').forEach(function (f) {
+        try { f.src = 'about:blank'; } catch (e) {}
+        f.remove();
+      });
+      var udioBox = document.getElementById('udio-iframe-box');
+      if (udioBox) udioBox.innerHTML = '';
+      udioEl.style.display = 'none';
+      udioEl.className = 'udio-closed';
+    }
+    udioState = 'closed';
+    clearTimeout(window._udioAutoMin);
+    window.removeEventListener('blur', window._udioBlurHandler);
+
+    // 2. SoundCloud popup — kill iframe, hide container
+    var scEl = scContainer || document.getElementById('sc-container');
+    if (scEl) {
+      scEl.querySelectorAll('iframe').forEach(function (f) {
+        try { f.src = 'about:blank'; } catch (e) {}
+        f.remove();
+      });
+      var scBox = document.getElementById('sc-iframe-box');
+      if (scBox) scBox.innerHTML = '';
+      scEl.style.display = 'none';
+      scEl.className = 'sc-closed';
+    }
+    scState = 'closed';
+    clearTimeout(window._scAutoMin);
+    window.removeEventListener('blur', window._scBlurHandler);
+
+    // 3. ALL iframes on ENTIRE page that play audio — nuclear sweep
     document.querySelectorAll('iframe').forEach(function (f) {
       if (f.closest('.page-frame')) return;
       var src = f.src || '';
-      if (src === '' || src === 'about:blank') return;
-      if (src.includes('suno.com') || src.includes('youtube.com') ||
-          src.includes('soundcloud.com') || src.includes('youtu.be') ||
-          src.includes('udio.com')) {
+      if (src.includes('suno.com') || src.includes('udio.com') ||
+          src.includes('youtube.com') || src.includes('youtu.be') ||
+          src.includes('soundcloud.com')) {
         try { f.src = 'about:blank'; } catch (e) {}
       }
     });
-    // Remove hidden-player divs (Suno hidden iframes on body)
-    document.querySelectorAll('[id^="hidden-player-"]').forEach(function (el) {
-      var f = el.querySelector('iframe');
-      if (f) { try { f.src = 'about:blank'; } catch (e) {} }
-      el.remove();
+
+    // 4. Remove ALL hidden player wraps (Suno hidden iframes on body)
+    document.querySelectorAll('[id^="hidden-player-"]').forEach(function (el) { el.remove(); });
+
+    // 5. iOS two-phase iframes
+    document.querySelectorAll('.ios-embed-wrap iframe, [id^="ios-live-player-"] iframe').forEach(function (f) {
+      try { f.src = 'about:blank'; } catch (e) {}
     });
-    // Kill stray audio/video elements
+    _clearIos();
+
+    // 6. Kill stray audio/video elements
     document.querySelectorAll('audio, video').forEach(function (el) {
       try { el.pause(); el.src = ''; } catch (e) {}
     });
-    // Clear iOS listeners
-    _clearIos();
 
-    // ── STEP 2: Clean up track rows (may fail if rows are gone — that's OK) ──
+    // 7. Clean ALL track rows (may fail if rows are gone — OK)
     document.querySelectorAll('.track-row.playing, .track-row.eq-active').forEach(function (row) {
       row.classList.remove('playing', 'eq-active');
       var btn = row.querySelector('.track-play');
@@ -486,7 +515,7 @@ window.VMAPlayer = (function () {
       }
     });
 
-    // ── STEP 3: Hide player bar ──
+    // 8. Hide player bar
     document.querySelectorAll('.player-bar').forEach(function (bar) {
       bar.classList.remove('active', 'playing', 'udio-active', 'sc-active');
     });
@@ -494,10 +523,14 @@ window.VMAPlayer = (function () {
     var thumbEl = document.getElementById('playerThumb');
     if (thumbEl) thumbEl.style.display = 'none';
 
+    // 9. Reset ALL tracking state
     activeTrackId = null;
     activePlatform = null;
     _updateNavTargets();
   }
+
+  // stopTrack and closePlayer are aliases — everything goes through nukeAllAudio
+  function stopTrack() { nukeAllAudio(); }
 
 
   // ═══════════════════════════════════════════════════════════════
@@ -507,12 +540,12 @@ window.VMAPlayer = (function () {
   function playTrack(trackId) {
     // Toggle: same track => stop
     if (activeTrackId !== null && String(activeTrackId) === String(trackId)) {
-      stopTrack();
+      nukeAllAudio();
       return;
     }
 
-    // Stop all current playback and clean up
-    stopTrack();
+    // NUKE all current playback before starting anything new
+    nukeAllAudio();
 
     var track = _getTrack(trackId);
     if (!track) return;
@@ -746,7 +779,7 @@ window.VMAPlayer = (function () {
     if (!playerBar) return;
 
     var btnClose = document.getElementById('btnClose');
-    if (btnClose) btnClose.addEventListener('click', stopTrack);
+    if (btnClose) btnClose.addEventListener('click', nukeAllAudio);
 
     var btnLocate = document.getElementById('btnLocate');
     if (btnLocate) btnLocate.addEventListener('click', locateTrack);
@@ -764,27 +797,8 @@ window.VMAPlayer = (function () {
   }
 
 
-  // ═══════════════════════════════════════════════════════════════
-  //  KILL ALL PLAYBACK — nuclear option for list re-renders
-  // ═══════════════════════════════════════════════════════════════
-
-  function killAllPlayback() {
-    stopTrack();
-    destroyUdioPlayer();
-    destroySc();
-    document.querySelectorAll('[id^="hidden-player-"]').forEach(function (el) { el.remove(); });
-    document.querySelectorAll('iframe').forEach(function (f) {
-      if (f.closest('.page-frame')) return;
-      var src = f.src || '';
-      if (src.includes('suno') || src.includes('udio') || src.includes('youtube') || src.includes('soundcloud')) {
-        try { f.src = 'about:blank'; } catch (e) {}
-      }
-    });
-    if (playerBar) playerBar.classList.remove('active', 'playing', 'udio-active', 'sc-active');
-    document.body.classList.remove('player-active');
-    var thumbEl = document.getElementById('playerThumb');
-    if (thumbEl) thumbEl.style.display = 'none';
-  }
+  // killAllPlayback is now an alias — everything goes through nukeAllAudio
+  function killAllPlayback() { nukeAllAudio(); }
 
 
   // ═══════════════════════════════════════════════════════════════
@@ -797,9 +811,9 @@ window.VMAPlayer = (function () {
     get listTrackId() { return activeTrackId; },
 
     playTrack: playTrack,
-    stopTrack: stopTrack,
-    killAllPlayback: killAllPlayback,
-    closePlayer: stopTrack,
+    stopTrack: nukeAllAudio,
+    killAllPlayback: nukeAllAudio,
+    closePlayer: nukeAllAudio,
     locateTrack: locateTrack,
     restorePlayingRow: restorePlayingRow,
     expandUdio: expandUdio,
