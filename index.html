@@ -2286,11 +2286,12 @@
     if (!thumbContainer) return;
     
     const embed = getEmbedHtml(track);
+    console.log('[UDIO-DEBUG] track:', track.title, 'embed_url:', track.embed_url, 'platform:', embed.platform, 'udioId:', embed.udioId);
     let embedHtml = embed.embedHtml;
 
     // ══════════════════════════════════════════════════════
     // iOS/iPadOS — TWO-PHASE PLAY SYSTEM
-    // 
+    //
     // CRITICAL: Safari kills audio when an iframe is moved in the DOM
     // (appendChild/insertBefore cause a reload). The iframe must NEVER
     // be moved — it stays in the card forever.
