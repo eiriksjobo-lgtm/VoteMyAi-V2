@@ -1,12 +1,14 @@
 const https = require('https');
 
 const SUPABASE_URL = 'https://gezijezmsecbtzytotax.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_hOOMtCz7gYsu_-CVD6lW9Q_SxtFlNhw';
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_KEY;
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 module.exports = async function handler(req, res) {
   const trackId = req.query.id;
 
-  if (!trackId) {
+  if (!trackId || !UUID_RE.test(trackId)) {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     return res.status(200).send('<html><head><script>window.location.replace("https://www.votemyai.com/")</script></head></html>');
   }

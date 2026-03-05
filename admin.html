@@ -514,16 +514,7 @@
         await loadData(); return;
       }
     } catch(e) {}
-    // Fallback: direct REST
-    try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, { method: 'DELETE', headers: headers() });
-      if (res.ok || res.status === 204) {
-        showStatus('adminStatus', `${label} deleted.`, 'success');
-        await loadData();
-      } else {
-        showStatus('adminStatus', `Failed to delete ${label}. Check RLS policies or deploy admin-delete edge function.`, 'error');
-      }
-    } catch(err) { showStatus('adminStatus', `Error: ${err.message}`, 'error'); }
+    showStatus('adminStatus', `Failed to delete ${label}. Check edge function deployment.`, 'error');
   }
 
   window.deleteTrack = (id) => adminDelete('tracks', id, 'Track');

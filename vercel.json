@@ -7,7 +7,9 @@
         { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
         { "key": "X-XSS-Protection", "value": "1; mode=block" },
         { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" }
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" },
+        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" },
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://w.soundcloud.com https://www.youtube.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https: http:; media-src 'self' blob: https://cdn1.suno.ai https://cdn2.suno.ai; frame-src https://www.youtube.com https://w.soundcloud.com https://cdn.suno.ai https://suno.com; connect-src 'self' https://gezijezmsecbtzytotax.supabase.co https://cdn1.suno.ai https://cdn2.suno.ai https://cdn.jsdelivr.net; object-src 'none'; base-uri 'self'; form-action 'self'" }
       ]
     }
   ],

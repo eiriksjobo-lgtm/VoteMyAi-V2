@@ -1007,8 +1007,6 @@ body {
 // VoteMyAI Radio — Core Engine
 // ============================================================
 
-const RADIO_PASSWORD = 'satansatan123!';
-
 // --- Platform Detection ---
 const _isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -1176,12 +1174,23 @@ function generateHostIntro(track) {
 }
 
 // --- Password ---
-function checkPassword() {
+async function checkPassword() {
   const input = document.getElementById('pwInput').value;
-  if (input === RADIO_PASSWORD) {
-    document.getElementById('passwordGate').style.display = 'none';
-    document.getElementById('radioApp').style.display = 'block';
-  } else {
+  try {
+    const res = await fetch('/api/radio-auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: input })
+    });
+    if (res.ok) {
+      document.getElementById('passwordGate').style.display = 'none';
+      document.getElementById('radioApp').style.display = 'block';
+    } else {
+      document.getElementById('pwError').classList.add('show');
+      document.getElementById('pwInput').value = '';
+      setTimeout(() => document.getElementById('pwError').classList.remove('show'), 2000);
+    }
+  } catch (e) {
     document.getElementById('pwError').classList.add('show');
     document.getElementById('pwInput').value = '';
     setTimeout(() => document.getElementById('pwError').classList.remove('show'), 2000);
@@ -2278,14 +2287,29 @@ function updateUpNext() {
     const track = schedule[idx];
     const item = document.createElement('div');
     item.className = 'up-next-item';
-    item.innerHTML = `
-      <div class="up-next-num">${i}</div>
-      <div class="up-next-info">
-        <div class="up-next-title">${track.title}</div>
-        <div class="up-next-genre">${track.genre} · ${track.platform.toUpperCase()}</div>
-      </div>
-      <div class="up-next-rating">★ ${track.avg_rating.toFixed(1)}</div>
-    `;
+
+    const num = document.createElement('div');
+    num.className = 'up-next-num';
+    num.textContent = i;
+
+    const info = document.createElement('div');
+    info.className = 'up-next-info';
+    const titleEl = document.createElement('div');
+    titleEl.className = 'up-next-title';
+    titleEl.textContent = track.title;
+    const genreEl = document.createElement('div');
+    genreEl.className = 'up-next-genre';
+    genreEl.textContent = track.genre + ' · ' + track.platform.toUpperCase();
+    info.appendChild(titleEl);
+    info.appendChild(genreEl);
+
+    const rating = document.createElement('div');
+    rating.className = 'up-next-rating';
+    rating.textContent = '★ ' + track.avg_rating.toFixed(1);
+
+    item.appendChild(num);
+    item.appendChild(info);
+    item.appendChild(rating);
     list.appendChild(item);
   }
 }

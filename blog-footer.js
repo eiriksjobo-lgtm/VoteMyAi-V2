@@ -4,6 +4,8 @@
    Usage: Add <script src="/blog-footer.js"></script> before </body> in each blog post */
 
 (function(){
+  function esc(s){return s?s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'):'';}
+
   /* Auto-set OG image based on filename */
   var path = window.location.pathname;
   var slug = path.split('/').pop().replace('.html','');
@@ -151,10 +153,10 @@
       var relHtml = '<div class="bf-rlabel">KEEP READING</div><div class="bf-grid">';
       picked.forEach(function(item){
         var p = item.post;
-        relHtml += '<a href="'+p.url+'" class="bf-card">';
-        relHtml += '<div class="bf-em">'+p.emoji+'</div>';
-        relHtml += '<div class="bf-tg">'+p.tag+'</div>';
-        relHtml += '<div class="bf-tt">'+p.title+'</div>';
+        relHtml += '<a href="'+esc(p.url)+'" class="bf-card">';
+        relHtml += '<div class="bf-em">'+esc(p.emoji)+'</div>';
+        relHtml += '<div class="bf-tg">'+esc(p.tag)+'</div>';
+        relHtml += '<div class="bf-tt">'+esc(p.title)+'</div>';
         relHtml += '</a>';
       });
       relHtml += '</div>';

@@ -132,8 +132,9 @@
         });
         if (res.ok) {
           // Already logged in — send them where they wanted to go
-          const redirect = localStorage.getItem('login_redirect') || '/';
+          let redirect = localStorage.getItem('login_redirect') || '/';
           localStorage.removeItem('login_redirect');
+          if (!redirect.startsWith('/') || redirect.startsWith('//')) redirect = '/';
           window.location.href = redirect;
           return;
         }
@@ -144,11 +145,20 @@
   window.loginWithGoogle = async function() {
     // Save where the user came from so we can redirect back after login
     const urlParams = new URLSearchParams(window.location.search);
-    const returnTo = urlParams.get('redirect') || document.referrer || '/';
+    let returnTo = urlParams.get('redirect') || document.referrer || '/';
+    if (!returnTo.startsWith('/') || returnTo.startsWith('//')) returnTo = '/';
     localStorage.setItem('login_redirect', returnTo);
-    
+
+    // PKCE flow
+    const verifier = crypto.randomUUID() + crypto.randomUUID();
+    const encoder = new TextEncoder();
+    const digest = await crypto.subtle.digest('SHA-256', encoder.encode(verifier));
+    const challenge = btoa(String.fromCharCode(...new Uint8Array(digest)))
+      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    sessionStorage.setItem('pkce_verifier', verifier);
+
     const redirectUrl = 'https://www.votemyai.com/';
-    const authUrl = `${SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${redirectUrl}`;
+    const authUrl = `${SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${redirectUrl}&code_challenge=${challenge}&code_challenge_method=S256`;
     window.location.href = authUrl;
   };
 </script>
