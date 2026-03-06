@@ -501,6 +501,9 @@
     .search-box .search-clear:hover { background: var(--accent); color: var(--bg); }
     
     .browse-count { color: var(--muted); font-size: 0.74rem; font-weight: 500; margin-left: auto; }
+    .btn-unrated { display: none; background: var(--surface); border: 1px solid var(--border); color: var(--muted); font-size: 0.74rem; font-weight: 600; padding: 7px 14px; border-radius: 100px; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
+    .btn-unrated:hover { border-color: var(--text-secondary); color: var(--text-secondary); }
+    .btn-unrated.active { background: var(--accent); border-color: var(--accent); color: var(--bg); }
 
     /* Genre Row */
     .genre-row { margin-bottom: 4px; position: relative; }
@@ -1100,6 +1103,7 @@
       <input type="text" id="browseSearch" placeholder="Search tracks, genres, tools...">
       <button class="search-clear" id="searchClear" aria-label="Clear">×</button>
     </div>
+    <button class="btn-unrated" id="unratedToggle" onclick="toggleUnratedFilter()">Unrated only</button>
     <div class="browse-count" id="browseCount"></div>
   </div>
   <div id="browseRows"></div>
@@ -1268,6 +1272,7 @@
       if (ml) { ml.textContent = currentUser.user_metadata?.name || 'Profile'; ml.href = '/profile.html'; }
       const lb = document.getElementById('logoutBtn'); if (lb) lb.style.display = 'inline-block';
       const lbm = document.getElementById('logoutBtnMobile'); if (lbm) lbm.style.display = '';
+      const ub = document.getElementById('unratedToggle'); if (ub) ub.style.display = 'inline-block';
     }
     await loadAnonRatings();
   }
@@ -1451,7 +1456,7 @@
 
   // ─── Rate (via Edge Function) ───
   let _lastRateTime = 0;
-  async function rateStar(trackId, score, container) { const now = Date.now(); if (now - _lastRateTime < 1500) { showToast('Vent litt...'); return; } _lastRateTime = now; container.classList.add('rated'); container.querySelectorAll('.bstar').forEach(s => { s.classList.remove('hover-fill'); s.classList.toggle('filled', parseInt(s.dataset.score) <= score); }); userRatings[trackId] = score; gtag('event', 'rate', { track_id: trackId, score }); try { const res = await fetch(SUPABASE_URL + '/functions/v1/rate-track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ track_id: trackId, score: score, anon_token: getAnonToken() }) }); const data = await res.json(); if (!res.ok) { showToast(data.error || 'Kunne ikke rate'); return; } const t = getTrack(trackId); if (t) { t.avg_rating = data.avg_rating; t.rating_count = data.rating_count; } showToast(score >= 4 ? '\u2b50 ' + score + '/5 \u2014 Great taste!' : '\u2705 Rated ' + score + '/5'); const card = document.getElementById(`card-${trackId}`); if (card) { const se = card.querySelector('.rating-score'); const ce = card.querySelector('.rating-count'); if (se) se.textContent = data.avg_rating ? data.avg_rating.toFixed(1) : '\u2014'; if (ce) ce.textContent = `${data.rating_count||0} rating${(data.rating_count||0)!==1?'s':''}`; } document.querySelectorAll(`.browse-card[data-track-id="${trackId}"]`).forEach(bc => { const sn = bc.querySelector('.browse-card-score-num'); const sc2 = bc.querySelector('.browse-card-score-count'); if (sn) sn.textContent = data.avg_rating ? data.avg_rating.toFixed(1) : '\u2014'; if (sc2) sc2.textContent = (data.rating_count||0) + ' rating' + ((data.rating_count||0)!==1?'s':''); const stars = bc.querySelector('.browse-card-stars'); if (stars && !stars.classList.contains('rated')) { stars.classList.add('rated'); stars.querySelectorAll('.bstar').forEach(s => s.classList.toggle('filled', parseInt(s.dataset.score) <= score)); } }); } catch(e) { showToast('Network error \u2014 try again'); } }
+  async function rateStar(trackId, score, container) { const now = Date.now(); if (now - _lastRateTime < 1500) { showToast('Vent litt...'); return; } _lastRateTime = now; container.classList.add('rated'); container.querySelectorAll('.bstar').forEach(s => { s.classList.remove('hover-fill'); s.classList.toggle('filled', parseInt(s.dataset.score) <= score); }); userRatings[trackId] = score; gtag('event', 'rate', { track_id: trackId, score }); try { const res = await fetch(SUPABASE_URL + '/functions/v1/rate-track', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ track_id: trackId, score: score, anon_token: getAnonToken() }) }); const data = await res.json(); if (!res.ok) { showToast(data.error || 'Kunne ikke rate'); return; } const t = getTrack(trackId); if (t) { t.avg_rating = data.avg_rating; t.rating_count = data.rating_count; } showToast(score >= 4 ? '\u2b50 ' + score + '/5 \u2014 Great taste!' : '\u2705 Rated ' + score + '/5'); const card = document.getElementById(`card-${trackId}`); if (card) { const se = card.querySelector('.rating-score'); const ce = card.querySelector('.rating-count'); if (se) se.textContent = data.avg_rating ? data.avg_rating.toFixed(1) : '\u2014'; if (ce) ce.textContent = `${data.rating_count||0} rating${(data.rating_count||0)!==1?'s':''}`; } document.querySelectorAll(`.browse-card[data-track-id="${trackId}"]`).forEach(bc => { const sn = bc.querySelector('.browse-card-score-num'); const sc2 = bc.querySelector('.browse-card-score-count'); if (sn) sn.textContent = data.avg_rating ? data.avg_rating.toFixed(1) : '\u2014'; if (sc2) sc2.textContent = (data.rating_count||0) + ' rating' + ((data.rating_count||0)!==1?'s':''); const stars = bc.querySelector('.browse-card-stars'); if (stars && !stars.classList.contains('rated')) { stars.classList.add('rated'); stars.querySelectorAll('.bstar').forEach(s => s.classList.toggle('filled', parseInt(s.dataset.score) <= score)); } }); if (showUnratedOnly) { _sortCache = { view: null, len: 0, result: null }; renderBrowse(); } } catch(e) { showToast('Network error \u2014 try again'); } }
 
   function showToast(msg) { let toast = document.getElementById('vote-toast'); if (!toast) { toast = document.createElement('div'); toast.id = 'vote-toast'; toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--surface);color:var(--text);padding:12px 24px;border-radius:12px;font-size:0.82rem;font-weight:600;z-index:9999;opacity:0;transition:opacity 0.3s,transform 0.3s;border:1px solid rgba(232,255,71,0.25);box-shadow:0 8px 32px rgba(0,0,0,0.5);'; document.body.appendChild(toast); } toast.textContent = msg; toast.style.opacity = '1'; toast.style.transform = 'translateX(-50%) translateY(0)'; setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(-50%) translateY(10px)'; }, 2500); }
 
@@ -1768,6 +1773,13 @@
 
   let browseView = 'discover';
   let searchQuery = '';
+  let showUnratedOnly = false;
+  function toggleUnratedFilter() {
+    showUnratedOnly = !showUnratedOnly;
+    document.getElementById('unratedToggle').classList.toggle('active', showUnratedOnly);
+    _sortCache = { view: null, len: 0, result: null };
+    renderBrowse();
+  }
 
   let browseCardUid = 0;
 
@@ -1869,8 +1881,9 @@
   function renderBrowse() {
     const container = document.getElementById('browseRows');
     const searchContainer = document.getElementById('searchResults');
-    const sorted = sortBrowseTracks(allTracks);
-    
+    const baseTracks = showUnratedOnly ? allTracks.filter(t => !userRatings[t.id]) : allTracks;
+    const sorted = sortBrowseTracks(baseTracks);
+
     document.getElementById('browseCount').textContent = sorted.length + ' track' + (sorted.length !== 1 ? 's' : '');
     
     // Search mode
