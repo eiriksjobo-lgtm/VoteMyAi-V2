@@ -328,6 +328,13 @@
       </div>
       
       <div class="form-group">
+        <label>Artist Name <span class="label-hint">&mdash; optional</span></label>
+        <input type="text" id="artistName" placeholder="Your artist or project name..." maxlength="30">
+        <div class="char-count"><span id="artistNameCount">0</span>/30</div>
+        <div class="url-help">Shown on your track card and in radio rotation</div>
+      </div>
+
+      <div class="form-group">
         <label>AI Tool Used</label>
         <select id="tool" required>
           <option value="">Select tool...</option>
@@ -366,6 +373,7 @@
   const SUPABASE_URL = 'https://gezijezmsecbtzytotax.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_hOOMtCz7gYsu_-CVD6lW9Q_SxtFlNhw';
   
+  // SQL: ALTER TABLE tracks ADD COLUMN IF NOT EXISTS artist_name text;
   let currentUser = null;
   let accessToken = null;
   let detectedPlatform = null;
@@ -743,7 +751,10 @@
     msg.style.display = 'block';
   }
   
-  // Character counter for artist note
+  // Character counters
+  document.getElementById('artistName').addEventListener('input', (e) => {
+    document.getElementById('artistNameCount').textContent = e.target.value.length;
+  });
   document.getElementById('artistNote').addEventListener('input', (e) => {
     document.getElementById('noteCount').textContent = e.target.value.length;
   });
@@ -759,8 +770,9 @@
     const title = document.getElementById('title').value.trim();
     const tool = document.getElementById('tool').value;
     const genre = document.getElementById('genre').value;
+    const artistName = document.getElementById('artistName').value.trim() || null;
     const artistNote = document.getElementById('artistNote').value.trim() || null;
-    
+
     if (!genre) {
       showMessage('Please select a genre', 'error');
       btn.disabled = false;
@@ -799,6 +811,7 @@
         thumbnail_url: thumbnailUrl,
         tool,
         genre,
+        artist_name: artistName,
         artist_note: artistNote,
         votes: 0,
         user_id: currentUser.id

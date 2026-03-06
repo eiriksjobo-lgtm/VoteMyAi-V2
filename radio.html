@@ -1038,6 +1038,7 @@ async function fetchSchedule() {
     return {
       id: t.id,
       title: t.title || 'Untitled',
+      artist_name: t.artist_name || null,
       genre: t.genre || 'Unknown',
       platform: actualPlatform,
       artist_note: t.artist_note || null,
@@ -2320,7 +2321,7 @@ function stopAllPlayers() {
 
 // --- UI Updates ---
 function updateNowPlaying(track) {
-  document.getElementById('npTitle').textContent = track.title;
+  document.getElementById('npTitle').textContent = track.artist_name ? track.title + ' — ' + track.artist_name : track.title;
   document.getElementById('npGenre').textContent = track.genre;
   document.getElementById('npPlatform').textContent = track.platform.toUpperCase();
   document.getElementById('npRating').textContent = track.avg_rating ? track.avg_rating.toFixed(1) : '—';
@@ -2356,7 +2357,7 @@ function updateUpNext() {
     info.className = 'up-next-info';
     const titleEl = document.createElement('div');
     titleEl.className = 'up-next-title';
-    titleEl.textContent = track.title;
+    titleEl.textContent = track.artist_name ? track.title + ' — ' + track.artist_name : track.title;
     const genreEl = document.createElement('div');
     genreEl.className = 'up-next-genre';
     genreEl.textContent = track.genre + ' · ' + track.platform.toUpperCase();
