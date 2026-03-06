@@ -97,6 +97,8 @@
     }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
     .nav-right { display: flex; align-items: center; gap: 8px; }
+    .btn-logout { background: none; border: 1px solid var(--border); color: var(--muted); font-size: 0.65rem; padding: 5px 10px; border-radius: 6px; cursor: pointer; letter-spacing: 0.3px; transition: color 0.2s, border-color 0.2s; display: none; }
+    .btn-logout:hover { color: var(--text); border-color: var(--text-secondary); }
     .hamburger { display: none; }
     .nav-links-mobile { display: none; }
     .nav-link {
@@ -1014,6 +1016,7 @@
     <a href="/blog.html" class="nav-link">Blog</a>
     <a href="/radio.html" class="nav-link" onclick="event.preventDefault(); if(typeof stopUdioFull==='function')stopUdioFull(); if(typeof closePlayer==='function')closePlayer(); document.querySelectorAll('iframe').forEach(f=>{if(f.src&&f.src!=='about:blank')f.src='about:blank'}); window.open('/radio.html','VoteMyAI Radio','width=420,height=720,scrollbars=no,resizable=yes'); gtag('event','radio_open',{location:'nav'});">Radio <span style="background:#e8ff47;color:#07070b;font-size:0.55rem;font-weight:800;padding:1px 5px;border-radius:3px;margin-left:4px;vertical-align:middle;letter-spacing:0.5px;">NEW</span></a>
     <a href="/login.html" class="nav-link" id="authLink">Login</a>
+    <button class="btn-logout" id="logoutBtn" onclick="handleLogout()">Log out</button>
     <button class="btn-submit" onclick="window.location.href='/submit.html'">Submit</button>
     <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
   </div>
@@ -1021,6 +1024,7 @@
     <a href="/blog.html" class="nav-link">Blog</a>
     <a href="/radio.html" class="nav-link" onclick="event.preventDefault(); if(typeof stopUdioFull==='function')stopUdioFull(); if(typeof closePlayer==='function')closePlayer(); document.querySelectorAll('iframe').forEach(f=>{if(f.src&&f.src!=='about:blank')f.src='about:blank'}); window.open('/radio.html','VoteMyAI Radio','width=420,height=720,scrollbars=no,resizable=yes'); gtag('event','radio_open',{location:'nav_mobile'});">Radio <span style="background:#e8ff47;color:#07070b;font-size:0.55rem;font-weight:800;padding:1px 5px;border-radius:3px;margin-left:4px;vertical-align:middle;letter-spacing:0.5px;">NEW</span></a>
     <a href="/login.html" class="nav-link" id="authLinkMobile">Login</a>
+    <a href="#" class="nav-link" id="logoutBtnMobile" style="display:none;" onclick="event.preventDefault();handleLogout();">Log out</a>
     <a href="/submit.html" class="nav-link">Submit a Track</a>
     <a href="/#leaderboard" class="nav-link">Leaderboard</a>
     <a href="/#tools" class="nav-link">AI Tools</a>
@@ -1262,8 +1266,19 @@
       authLink.href = '/profile.html';
       const ml = document.getElementById('authLinkMobile');
       if (ml) { ml.textContent = currentUser.user_metadata?.name || 'Profile'; ml.href = '/profile.html'; }
+      const lb = document.getElementById('logoutBtn'); if (lb) lb.style.display = 'inline-block';
+      const lbm = document.getElementById('logoutBtnMobile'); if (lbm) lbm.style.display = '';
     }
     await loadAnonRatings();
+  }
+
+  async function handleLogout() {
+    const token = localStorage.getItem('sb_token');
+    if (token) {
+      await fetch(`${SUPABASE_URL}/auth/v1/logout`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'apikey': SUPABASE_KEY } }).catch(() => {});
+    }
+    localStorage.removeItem('sb_token');
+    window.location.href = '/index.html';
   }
 
   async function loadAnonRatings() {
