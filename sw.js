@@ -1,4 +1,4 @@
-const CACHE_NAME = 'votemyai-v30';
+const CACHE_NAME = 'votemyai-v31';
 const PRECACHE = [
   '/index.html',
   '/radio.html',
@@ -25,8 +25,11 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
 
-  // Never cache API or Supabase requests
-  if (url.pathname.startsWith('/api/') || url.hostname.includes('supabase')) {
+  // Don't intercept third-party requests
+  if (url.origin !== location.origin) return;
+
+  // Never cache API requests
+  if (url.pathname.startsWith('/api/')) {
     return;
   }
 
