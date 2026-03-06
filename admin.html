@@ -96,10 +96,13 @@
     .status.error { display: block; background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2); color: var(--error); }
     .status.success { display: block; background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.2); color: var(--success); }
 
-    .expandable { cursor: pointer; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .expandable:hover { color: var(--accent); }
-    .expandable.expanded { white-space: normal; overflow: visible; text-overflow: unset; max-width: 500px; word-break: break-word; }
-    .expand-hint { font-size: 0.65rem; color: var(--muted); margin-left: 4px; }
+    td.expandable { cursor: pointer; position: relative; }
+    td.expandable:hover { color: var(--accent); }
+    td.expandable.expanded { white-space: normal; word-break: break-word; max-width: 400px; }
+    td.expandable::after { content: ' ...'; color: var(--muted); font-size: 0.7rem; }
+    td.expandable.expanded::after { content: ''; }
+
+    .empty-state { text-align: center; padding: 48px; color: var(--muted); font-size: 0.85rem; }
     .loading { text-align: center; padding: 32px; color: var(--muted); font-size: 0.82rem; }
 
     /* Pagination */
@@ -502,21 +505,16 @@
     }
   }
 
-  // ─── DELETE (direct REST with service key) ───
+  // ─── DELETE (via edge function with service role key) ───
   async function adminDelete(table, id, label) {
     if (!confirm(`Delete this ${label}?`)) return;
     try {
-      // For tracks, also delete related ratings and comments first
-      if (table === 'tracks') {
-        await fetch(`${SUPABASE_URL}/rest/v1/ratings?track_id=eq.${id}`, { method: 'DELETE', headers: headers() });
-        await fetch(`${SUPABASE_URL}/rest/v1/anonymous_ratings?track_id=eq.${id}`, { method: 'DELETE', headers: headers() });
-        await fetch(`${SUPABASE_URL}/rest/v1/comments?track_id=eq.${id}`, { method: 'DELETE', headers: headers() });
-      }
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
-        method: 'DELETE',
-        headers: headers()
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/admin-delete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+        body: JSON.stringify({ table, id })
       });
-      if (res.ok || res.status === 204) {
+      if (res.ok) {
         showStatus('adminStatus', `${label} deleted.`, 'success');
         await loadData(); return;
       }
@@ -535,23 +533,16 @@
     if (!confirm('Delete this user and ALL their data (tracks, comments, ratings, auth account)?\n\nThis is permanent and cannot be undone.')) return;
     showStatus('adminStatus', 'Deleting user data...', 'success');
     try {
-      // 1. Delete user's comments
-      await fetch(`${SUPABASE_URL}/rest/v1/comments?user_id=eq.${userId}`, { method: 'DELETE', headers: headers() });
-      // 2. Delete user's tracks
-      await fetch(`${SUPABASE_URL}/rest/v1/tracks?user_id=eq.${userId}`, { method: 'DELETE', headers: headers() });
-      // 3. Delete user's ratings (if they have user-linked ratings)
-      await fetch(`${SUPABASE_URL}/rest/v1/anonymous_ratings?user_id=eq.${userId}`, { method: 'DELETE', headers: headers() });
-      // 4. Delete auth account via edge function
-      const authRes = await fetch(`${SUPABASE_URL}/functions/v1/admin-delete-user`, {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/admin-delete`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
         body: JSON.stringify({ user_id: userId })
       });
-      if (authRes.ok) {
+      if (res.ok) {
         showStatus('adminStatus', 'User fully deleted (data + auth account).', 'success');
       } else {
-        const err = await authRes.text();
-        showStatus('adminStatus', 'User data deleted, but auth account removal failed: ' + err + '. Delete manually in Supabase Dashboard → Authentication.', 'error');
+        const err = await res.text();
+        showStatus('adminStatus', 'Delete failed: ' + err, 'error');
       }
       await loadData();
     } catch(err) { showStatus('adminStatus', `Error: ${err.message}`, 'error'); }
