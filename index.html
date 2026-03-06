@@ -677,6 +677,7 @@
     }
     .browse-card-badge.tool { background: var(--accent-dim); color: var(--accent); }
     .browse-card-badge.genre { background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid rgba(255,255,255,0.06); }
+    .browse-card-badge.needs-ratings { background: rgba(99,102,241,0.15); color: #818cf8; border: 1px solid rgba(99,102,241,0.2); }
 
     .browse-card-rating { display: flex; align-items: center; justify-content: space-between; }
     .browse-card-stars { display: flex; gap: 2px; }
@@ -1827,6 +1828,7 @@
         '<div class="browse-card-meta">' +
           '<span class="browse-card-badge tool">' + sanitize(track.tool) + '</span>' +
           '<span class="browse-card-badge genre">' + sanitize(track.genre) + '</span>' +
+          (cnt < 5 ? '<span class="browse-card-badge needs-ratings">Needs ratings</span>' : '') +
         '</div>' +
         '<div class="browse-card-rating">' +
           '<div class="browse-card-stars ' + (isRated ? 'rated' : '') + '">' + starsHtml + '</div>' +
@@ -1855,6 +1857,7 @@
     switch (browseView) {
       case 'top': result = [...tracks].sort((a, b) => wilsonScore(b.avg_rating||0, b.rating_count||0) - wilsonScore(a.avg_rating||0, a.rating_count||0)); break;
       case 'new': result = [...tracks].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); break;
+      case 'needs': result = [...tracks].sort((a, b) => { const ca = a.rating_count||0, cb = b.rating_count||0; if (ca < 5 && cb >= 5) return -1; if (cb < 5 && ca >= 5) return 1; return ca - cb || new Date(b.created_at) - new Date(a.created_at); }); break;
       default: result = [...tracks].sort((a, b) => {
         const ca = a.rating_count||0, cb = b.rating_count||0;
         if (ca <= 5 && cb > 5) return -1;
@@ -2057,6 +2060,10 @@
       if (recent.length) {
         rowData.push({ emoji: '🆕', title: 'Just Added', tracks: recent });
       }
+      const needsRatings = sorted.filter(t => (t.rating_count || 0) < 5).sort((a, b) => (a.rating_count||0) - (b.rating_count||0) || new Date(b.created_at) - new Date(a.created_at)).slice(0, 20);
+      if (needsRatings.length) {
+        rowData.push({ emoji: '⭐', title: 'Needs Ratings', tracks: needsRatings });
+      }
     }
 
     const genreOrder = Object.entries(genreMap).sort((a, b) => b[1].length - a[1].length);
@@ -2077,7 +2084,7 @@
       row.innerHTML =
         '<div class="genre-row-header">' +
           '<div class="genre-row-title"><span class="genre-emoji">' + rd.emoji + '</span> ' + sanitize(rd.title) + '</div>' +
-          (rd.isGenre ? '<div class="genre-sort-toggle"><button class="genre-sort-btn active" data-sort="top" data-row="' + idx + '">Top</button><button class="genre-sort-btn" data-sort="new" data-row="' + idx + '">New</button></div>' : '') +
+          (rd.isGenre ? '<div class="genre-sort-toggle"><button class="genre-sort-btn active" data-sort="top" data-row="' + idx + '">Top</button><button class="genre-sort-btn" data-sort="new" data-row="' + idx + '">New</button><button class="genre-sort-btn" data-sort="needs" data-row="' + idx + '">Needs ratings</button></div>' : '') +
           '<span class="genre-row-count">' + rd.tracks.length + ' track' + (rd.tracks.length !== 1 ? 's' : '') + '</span>' +
           '<div class="genre-row-line"></div>' +
         '</div>' +
@@ -2139,6 +2146,8 @@
       rd.sortMode = sortMode;
       if (sortMode === 'new') {
         rd.tracks = [...rd.allTracks].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      } else if (sortMode === 'needs') {
+        rd.tracks = [...rd.allTracks].sort((a, b) => { const ca = a.rating_count||0, cb = b.rating_count||0; if (ca < 5 && cb >= 5) return -1; if (cb < 5 && ca >= 5) return 1; return ca - cb || new Date(b.created_at) - new Date(a.created_at); });
       } else {
         rd.tracks = [...rd.allTracks].sort((a, b) => wilsonScore(b.avg_rating||0, b.rating_count||0) - wilsonScore(a.avg_rating||0, a.rating_count||0));
       }

@@ -1661,6 +1661,14 @@ function genreDiverseShuffle(tracks) {
     const top100 = sorted.slice(0, 100);
     const rest = sorted.slice(100);
     pool = [...top100, ...top100, ...top100, ...rest];
+
+    // Boost low-rating-count tracks so they get more airplay
+    // 0-2 ratings: 4x extra copies, 3-4 ratings: 2x extra copies
+    tracks.forEach(t => {
+      const cnt = t.rating_count || 0;
+      if (cnt <= 2) { for (let i = 0; i < 4; i++) pool.push(t); }
+      else if (cnt <= 4) { for (let i = 0; i < 2; i++) pool.push(t); }
+    });
   }
 
   // Shuffle the pool
