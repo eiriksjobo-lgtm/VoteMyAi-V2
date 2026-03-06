@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Admin – VoteMyAI</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07070b; --surface: #0e0e14; --surface-2: #131319;
+      --border: #1a1a26; --border-hover: #252535;
+      --accent: #e8ff47; --accent-dim: rgba(232,255,71,0.12);
+      --text: #f2f2f4; --text-secondary: #a8a8b8; --muted: #5c5c72;
+      --success: #4ade80; --error: #f87171; --warn: #fbbf24;
+      --radius: 14px; --radius-sm: 8px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    ::selection { background: var(--accent); color: var(--bg); }
+
+    .admin-nav {
+      position: sticky; top: 0; z-index: 200;
+      background: rgba(7,7,11,0.88); backdrop-filter: blur(24px) saturate(1.4);
+      border-bottom: 1px solid rgba(26,26,38,0.6);
+      height: 60px; display: flex; align-items: center; justify-content: space-between;
+      padding: 0 clamp(16px, 4vw, 40px);
+    }
+    .logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 3px; color: var(--accent); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+    .logo-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+    .logo .badge { background: rgba(248,113,113,0.15); color: var(--error); font-family: 'DM Sans', sans-serif; font-size: 0.6rem; font-weight: 700; padding: 2px 8px; border-radius: 100px; letter-spacing: 1px; }
+    .admin-nav a { color: var(--muted); text-decoration: none; font-size: 0.72rem; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; padding: 8px 14px; border-radius: 8px; transition: all 0.2s; }
+    .admin-nav a:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+
+    .container { max-width: 1300px; margin: 0 auto; padding: 32px clamp(16px, 4vw, 40px); }
+
+    .login-box {
+      max-width: 400px; margin: 120px auto; text-align: center;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 48px 32px;
+    }
+    .login-box h1 { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: var(--accent); margin-bottom: 8px; letter-spacing: 3px; }
+    .login-box p { color: var(--muted); font-size: 0.82rem; margin-bottom: 28px; }
+    .login-box input {
+      width: 100%; background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
+      padding: 12px 16px; border-radius: var(--radius-sm); font-size: 0.88rem; margin-bottom: 16px;
+      font-family: 'DM Sans', sans-serif; outline: none; transition: border-color 0.2s;
+    }
+    .login-box input:focus { border-color: var(--accent); }
+    .login-box .btn {
+      width: 100%; background: var(--accent); color: var(--bg); border: none; padding: 12px;
+      border-radius: var(--radius-sm); font-weight: 700; cursor: pointer; font-size: 0.85rem;
+      font-family: 'DM Sans', sans-serif; letter-spacing: 0.5px; transition: all 0.2s;
+    }
+    .login-box .btn:hover { box-shadow: 0 4px 20px rgba(232,255,71,0.25); }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 32px; }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+    .stat-label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; margin-bottom: 6px; }
+    .stat-value { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: var(--accent); letter-spacing: 1px; line-height: 1; }
+
+    .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
+    .tab {
+      background: none; border: none; color: var(--muted); padding: 10px 20px; cursor: pointer;
+      font-size: 0.78rem; font-weight: 600; font-family: 'DM Sans', sans-serif;
+      border-bottom: 2px solid transparent; transition: all 0.2s; letter-spacing: 0.5px;
+    }
+    .tab:hover { color: var(--text); }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 600px; table-layout: auto; }
+    th { padding: 12px 16px; text-align: left; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.2px; background: var(--surface-2); border-bottom: 1px solid var(--border); font-weight: 600; }
+    td { padding: 10px 16px; font-size: 0.82rem; border-bottom: 1px solid rgba(26,26,38,0.5); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(232,255,71,0.02); }
+
+    .btn-delete { background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2); color: var(--error); padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 0.7rem; font-weight: 600; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+    .btn-delete:hover { background: rgba(248,113,113,0.2); }
+    .btn-edit { background: rgba(232,255,71,0.08); border: 1px solid rgba(232,255,71,0.2); color: var(--accent); padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 0.7rem; font-weight: 600; transition: all 0.2s; font-family: 'DM Sans', sans-serif; margin-right: 4px; }
+    .btn-edit:hover { background: rgba(232,255,71,0.15); }
+
+    .user-badge { display: inline-flex; align-items: center; gap: 8px; }
+    .user-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: var(--bg); display: inline-flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; flex-shrink: 0; overflow: hidden; }
+    .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .text-accent { color: var(--accent); font-weight: 700; }
+    .text-muted { color: var(--muted); }
+    .text-sm { font-size: 0.75rem; }
+    .text-email { color: var(--text-secondary); font-size: 0.78rem; }
+
+    .status { padding: 10px 16px; border-radius: var(--radius-sm); margin-bottom: 16px; font-size: 0.82rem; display: none; }
+    .status.error { display: block; background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2); color: var(--error); }
+    .status.success { display: block; background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.2); color: var(--success); }
+
+    .expandable { cursor: pointer; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .expandable:hover { color: var(--accent); }
+    .expandable.expanded { white-space: normal; overflow: visible; text-overflow: unset; max-width: 500px; word-break: break-word; }
+    .expand-hint { font-size: 0.65rem; color: var(--muted); margin-left: 4px; }
+    .loading { text-align: center; padding: 32px; color: var(--muted); font-size: 0.82rem; }
+
+    /* Pagination */
+    .pagination { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 16px; padding: 12px 0; }
+    .pagination button {
+      background: var(--surface); border: 1px solid var(--border); color: var(--text-secondary);
+      padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 0.78rem;
+      font-weight: 600; font-family: 'DM Sans', sans-serif; transition: all 0.2s;
+    }
+    .pagination button:hover { border-color: var(--accent); color: var(--accent); }
+    .pagination button.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+    .pagination button:disabled { opacity: 0.3; cursor: default; }
+    .pagination button:disabled:hover { border-color: var(--border); color: var(--text-secondary); }
+    .pagination .page-info { font-size: 0.72rem; color: var(--muted); padding: 0 8px; }
+    .table-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+    .table-header-left { font-size: 0.82rem; color: var(--text-secondary); font-weight: 600; }
+    .table-header-right { font-size: 0.72rem; color: var(--warn); font-weight: 500; }
+    #adminSearch:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(232,255,71,0.08); }
+    .search-match { background: rgba(232,255,71,0.15); color: var(--accent); border-radius: 2px; padding: 0 2px; }
+
+    @media (max-width: 768px) {
+      .container { padding: 20px 12px; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      td, th { padding: 8px 10px; font-size: 0.75rem; }
+      .tab { padding: 8px 12px; font-size: 0.7rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="loginSection">
+  <div class="login-box">
+    <h1>ADMIN</h1>
+    <p>VoteMyAI dashboard — authorized access only</p>
+    <input type="password" id="passwordInput" placeholder="Password" onkeydown="if(event.key==='Enter')login()">
+    <button class="btn" onclick="login()">Login</button>
+    <div class="status" id="loginStatus" style="margin-top:16px;"></div>
+  </div>
+</div>
+
+<div id="adminPanel" style="display:none;">
+  <nav class="admin-nav">
+    <a href="/admin.html" class="logo"><span class="logo-dot"></span>VOTEMYAI <span class="badge">ADMIN</span></a>
+    <a href="/">← Back to site</a>
+  </nav>
+
+  <div class="container">
+    <div class="status" id="adminStatus"></div>
+
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-label">Tracks</div><div class="stat-value" id="sTracks">—</div></div>
+      <div class="stat-card"><div class="stat-label">Ratings</div><div class="stat-value" id="sRatings">—</div></div>
+      <div class="stat-card"><div class="stat-label">Comments</div><div class="stat-value" id="sComments">—</div></div>
+      <div class="stat-card"><div class="stat-label">Users</div><div class="stat-value" id="sUsers">—</div></div>
+      <div class="stat-card"><div class="stat-label">Messages</div><div class="stat-value" id="sMessages">—</div></div>
+      <div class="stat-card"><div class="stat-label">Avg Rating</div><div class="stat-value" id="sAvg">—</div></div>
+    </div>
+
+    <div style="margin-bottom:16px;">
+      <input type="text" id="adminSearch" placeholder="Search users, tracks, comments, messages..." style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 16px 10px 42px;border-radius:100px;font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;transition:border-color 0.2s;background-image:url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%235c5c72%22 stroke-width=%222%22><circle cx=%2211%22 cy=%2211%22 r=%228%22/><line x1=%2221%22 y1=%2221%22 x2=%2216.65%22 y2=%2216.65%22/></svg>');background-repeat:no-repeat;background-position:14px center;">
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('users', this)">Users</button>
+      <button class="tab" onclick="switchTab('tracks', this)">Tracks</button>
+      <button class="tab" onclick="switchTab('comments', this)">Comments</button>
+      <button class="tab" onclick="switchTab('messages', this)">Messages</button>
+    </div>
+
+    <div class="tab-content active" id="tab-users"><div class="loading">Loading users...</div></div>
+    <div class="tab-content" id="tab-tracks"><div class="loading">Loading tracks...</div></div>
+    <div class="tab-content" id="tab-comments"><div class="loading">Loading comments...</div></div>
+    <div class="tab-content" id="tab-messages"><div class="loading">Loading messages...</div></div>
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://gezijezmsecbtzytotax.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_hOOMtCz7gYsu_-CVD6lW9Q_SxtFlNhw';
+  const PAGE_SIZE = 50;
+  let adminPassword = '';
+  let authUsers = [];
+  let allTracks = [];
+  let allComments = [];
+  let allMessages = [];
+  let userMap = {};
+
+  // Pagination state per tab
+  const pages = { users: 1, tracks: 1, comments: 1, messages: 1 };
+  let searchQuery = '';
+
+  function sanitize(str) { if (!str) return ''; const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+  function formatDate(d) { if (!d) return '\u2014'; return new Date(d).toLocaleDateString('no-NO', { day: 'numeric', month: 'short', year: 'numeric' }); }
+
+  // Highlight matching text
+  function hl(text) {
+    if (!searchQuery || !text) return sanitize(text);
+    const safe = sanitize(text);
+    const q = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return safe.replace(new RegExp('(' + q + ')', 'gi'), '<span class="search-match">$1</span>');
+  }
+
+  // Search input handler
+  document.getElementById('adminSearch').addEventListener('input', function() {
+    clearTimeout(this._debounce);
+    this._debounce = setTimeout(() => {
+      searchQuery = this.value.trim().toLowerCase();
+      pages.users = 1; pages.tracks = 1; pages.comments = 1; pages.messages = 1;
+      const activeTab = document.querySelector('.tab.active');
+      const tabName = activeTab ? activeTab.textContent.toLowerCase() : 'users';
+      renderTab(tabName);
+    }, 200);
+  });
+
+  function showStatus(id, msg, type) {
+    const el = document.getElementById(id);
+    el.textContent = msg; el.className = `status ${type}`;
+    if (type === 'success') setTimeout(() => { el.style.display = 'none'; }, 3000);
+  }
+
+  function headers() {
+    return { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' };
+  }
+
+  function buildPagination(tab, totalItems) {
+    const totalPages = Math.ceil(totalItems / PAGE_SIZE);
+    if (totalPages <= 1) return '';
+    const current = pages[tab];
+    let html = '<div class="pagination">';
+    html += `<button ${current <= 1 ? 'disabled' : ''} onclick="goPage('${tab}', ${current - 1})">← Prev</button>`;
+    for (let p = 1; p <= totalPages; p++) {
+      if (totalPages > 7 && p > 2 && p < totalPages - 1 && Math.abs(p - current) > 1) {
+        if (p === 3 || p === totalPages - 2) html += '<span class="page-info">…</span>';
+        continue;
+      }
+      html += `<button class="${p === current ? 'active' : ''}" onclick="goPage('${tab}', ${p})">${p}</button>`;
+    }
+    html += `<button ${current >= totalPages ? 'disabled' : ''} onclick="goPage('${tab}', ${current + 1})">Next →</button>`;
+    html += `<span class="page-info">${totalItems} total</span>`;
+    html += '</div>';
+    return html;
+  }
+
+  window.goPage = function(tab, page) {
+    pages[tab] = page;
+    renderTab(tab);
+    document.getElementById(`tab-${tab}`).scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  window.switchTab = function(tab, el) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById(`tab-${tab}`).classList.add('active');
+    renderTab(tab);
+  };
+
+  // ─── LOGIN ───
+  window.login = async function() {
+    adminPassword = document.getElementById('passwordInput').value;
+    try {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/admin-users`, {
+        headers: { 'x-admin-password': adminPassword }
+      });
+      if (!res.ok) {
+        showStatus('loginStatus', 'Wrong password', 'error');
+        return;
+      }
+      const data = await res.json();
+      authUsers = data.users || [];
+    } catch(e) {
+      showStatus('loginStatus', 'Could not connect', 'error');
+      return;
+    }
+    document.getElementById('loginSection').style.display = 'none';
+    document.getElementById('adminPanel').style.display = 'block';
+    loadData();
+  };
+
+  function rebuildUserMap() {
+    userMap = {};
+    authUsers.forEach(u => {
+      userMap[u.id] = { ...u, trackCount: 0, ratingCount: 0, commentCount: 0 };
+    });
+    allTracks.forEach(t => {
+      if (t.user_id && userMap[t.user_id]) userMap[t.user_id].trackCount++;
+    });
+    allComments.forEach(c => {
+      if (c.user_id && userMap[c.user_id]) userMap[c.user_id].commentCount++;
+    });
+  }
+
+  async function loadData() {
+    try {
+      // Refresh auth users list
+      try {
+        const authRes = await fetch(`${SUPABASE_URL}/functions/v1/admin-users`, {
+          headers: { 'x-admin-password': adminPassword }
+        });
+        if (authRes.ok) {
+          const authData = await authRes.json();
+          authUsers = authData.users || [];
+        }
+      } catch(e) { console.warn('Could not refresh auth users:', e); }
+
+      // Fetch tracks, comments and messages in parallel
+      const TRACK_FIELDS = 'id,title,user_id,tool,genre,avg_rating,rating_count,created_at';
+      
+      const [tracksResult, commentsResult, messagesRes] = await Promise.all([
+        // Tracks
+        (async () => {
+          let result = [];
+          let off = 0;
+          while (true) {
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/tracks?select=${TRACK_FIELDS}&order=created_at.desc&offset=${off}&limit=1000`, { headers: headers() });
+            const batch = await res.json();
+            result = result.concat(batch);
+            if (batch.length < 1000) break;
+            off += 1000;
+          }
+          return result;
+        })(),
+        // Comments
+        (async () => {
+          let result = [];
+          let off = 0;
+          while (true) {
+            const res = await fetch(`${SUPABASE_URL}/rest/v1/comments?select=id,content,author_name,user_id,track_id,created_at,tracks(title)&order=created_at.desc&offset=${off}&limit=1000`, { headers: headers() });
+            const batch = await res.json();
+            result = result.concat(batch);
+            if (batch.length < 1000) break;
+            off += 1000;
+          }
+          return result;
+        })(),
+        // Messages
+        fetch(`${SUPABASE_URL}/rest/v1/contact_messages?select=*&order=created_at.desc`, { headers: headers() })
+      ]);
+
+      allTracks = tracksResult;
+      allComments = commentsResult;
+      allMessages = await messagesRes.json();
+
+      rebuildUserMap();
+
+      // Stats
+      const users = Object.values(userMap);
+      const totalRatings = allTracks.reduce((s, t) => s + (t.rating_count || 0), 0);
+      const ratedTracks = allTracks.filter(t => t.rating_count > 0);
+      const avgRating = ratedTracks.length ? (ratedTracks.reduce((s, t) => s + (parseFloat(t.avg_rating) || 0), 0) / ratedTracks.length).toFixed(1) : '\u2014';
+
+      document.getElementById('sTracks').textContent = allTracks.length;
+      document.getElementById('sRatings').textContent = totalRatings;
+      document.getElementById('sComments').textContent = allComments.length;
+      document.getElementById('sUsers').textContent = users.length;
+      document.getElementById('sMessages').textContent = allMessages.length;
+      document.getElementById('sAvg').textContent = avgRating;
+
+      renderTab('users');
+
+    } catch(err) {
+      console.error('Load error:', err);
+      showStatus('adminStatus', 'Failed to load data: ' + err.message, 'error');
+    }
+  }
+
+  function renderTab(tab) {
+    const container = document.getElementById(`tab-${tab}`);
+    const page = pages[tab];
+    const q = searchQuery;
+
+    if (tab === 'users') {
+      let users = Object.values(userMap);
+      users.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      if (q) users = users.filter(u => 
+        (u.name || '').toLowerCase().includes(q) || 
+        (u.email || '').toLowerCase().includes(q)
+      );
+      const total = users.length;
+      const start = (page - 1) * PAGE_SIZE;
+      const slice = users.slice(start, start + PAGE_SIZE);
+      const warn = !q && authUsers.length >= 50 && authUsers.length % 50 === 0;
+
+      container.innerHTML = `<div class="table-header">
+        <span class="table-header-left">${total} ${q ? 'matching' : 'registered'} users</span>
+        ${warn ? '<span class="table-header-right">⚠️ Showing first ' + total + ' — update edge function for full list</span>' : ''}
+      </div><div class="table-wrap"><table>
+        <tr><th style="width:40px;">#</th><th>User</th><th>Email</th><th>Tracks</th><th>Comments</th><th>Joined</th><th>Actions</th></tr>
+        ${slice.length ? slice.map((u, idx) => {
+          const num = start + idx + 1;
+          const avatarHtml = u.avatar ? `<img src="${sanitize(u.avatar)}" alt="">` : (u.name || u.email || '?').charAt(0).toUpperCase();
+          return `<tr>
+            <td style="color:var(--muted);font-weight:600;font-size:0.75rem;">${num}</td>
+            <td><span class="user-badge"><span class="user-avatar">${avatarHtml}</span>${hl(u.name || 'No name')}</span></td>
+            <td class="text-email">${hl(u.email)}</td>
+            <td class="text-accent">${u.trackCount}</td>
+            <td>${u.commentCount}</td>
+            <td class="text-muted">${formatDate(u.created_at)}</td>
+            <td><button class="btn-delete" onclick="deleteUser('${u.id}')">Delete</button></td>
+          </tr>`;
+        }).join('') : '<tr><td colspan="7" class="empty-state">' + (q ? 'No users matching "' + sanitize(searchQuery) + '"' : 'No users yet') + '</td></tr>'}
+      </table></div>` + buildPagination('users', total);
+    }
+
+    else if (tab === 'tracks') {
+      let tracks = [...allTracks];
+      if (q) tracks = tracks.filter(t =>
+        (t.title || '').toLowerCase().includes(q) ||
+        (t.tool || '').toLowerCase().includes(q) ||
+        (t.genre || '').toLowerCase().includes(q) ||
+        ((userMap[t.user_id]?.name || userMap[t.user_id]?.email || '')).toLowerCase().includes(q)
+      );
+      const total = tracks.length;
+      const start = (page - 1) * PAGE_SIZE;
+      const slice = tracks.slice(start, start + PAGE_SIZE);
+
+      container.innerHTML = `<div class="table-header">
+        <span class="table-header-left">${total} ${q ? 'matching' : ''} tracks</span>
+      </div><div class="table-wrap"><table>
+        <tr><th style="width:40px;">#</th><th>Title</th><th>Submitted By</th><th>Tool</th><th>Genre</th><th>Avg</th><th>Ratings</th><th>Submitted</th><th>Actions</th></tr>
+        ${slice.length ? slice.map((t, idx) => {
+          const num = start + idx + 1;
+          const user = t.user_id && userMap[t.user_id] ? userMap[t.user_id] : null;
+          const submitter = user ? hl(user.name || user.email || 'Unknown') : '<span class="text-muted">Unknown</span>';
+          const avg = t.avg_rating ? parseFloat(t.avg_rating).toFixed(1) : '\u2014';
+          return `<tr>
+            <td style="color:var(--muted);font-weight:600;font-size:0.75rem;">${num}</td>
+            <td><strong>${hl(t.title)}</strong></td>
+            <td class="text-sm">${submitter}</td>
+            <td>${hl(t.tool)}</td>
+            <td>${hl(t.genre)}</td>
+            <td class="text-accent">${avg}</td>
+            <td>${t.rating_count || 0}</td>
+            <td class="text-muted">${formatDate(t.created_at)}</td>
+            <td><button class="btn-delete" onclick="deleteTrack('${t.id}')">Delete</button></td>
+          </tr>`;
+        }).join('') : '<tr><td colspan="9" class="empty-state">' + (q ? 'No tracks matching "' + sanitize(searchQuery) + '"' : 'No tracks yet') + '</td></tr>'}
+      </table></div>` + buildPagination('tracks', total);
+    }
+
+    else if (tab === 'comments') {
+      let comments = [...allComments];
+      if (q) comments = comments.filter(c =>
+        (c.content || '').toLowerCase().includes(q) ||
+        (c.author_name || '').toLowerCase().includes(q) ||
+        (c.tracks?.title || '').toLowerCase().includes(q)
+      );
+      const total = comments.length;
+      const start = (page - 1) * PAGE_SIZE;
+      const slice = comments.slice(start, start + PAGE_SIZE);
+
+      container.innerHTML = `<div class="table-header">
+        <span class="table-header-left">${total} ${q ? 'matching' : ''} comments</span>
+      </div><div class="table-wrap"><table>
+        <tr><th style="width:40px;">#</th><th>Track</th><th>Author</th><th>Email</th><th>Comment</th><th>Date</th><th>Actions</th></tr>
+        ${slice.length ? slice.map((c, idx) => {
+          const num = start + idx + 1;
+          const user = c.user_id && userMap[c.user_id] ? userMap[c.user_id] : null;
+          const email = user ? sanitize(user.email) : '<span class="text-muted">\u2014</span>';
+          return `<tr>
+            <td style="color:var(--muted);font-weight:600;font-size:0.75rem;">${num}</td>
+            <td>${hl(c.tracks?.title || 'Unknown')}</td>
+            <td>${hl(c.author_name || 'Anonymous')}</td>
+            <td class="text-email text-sm">${email}</td>
+            <td class="expandable" onclick="this.classList.toggle('expanded')">${hl(c.content)}</td>
+            <td class="text-muted">${formatDate(c.created_at)}</td>
+            <td><button class="btn-delete" onclick="deleteComment('${c.id}')">Delete</button></td>
+          </tr>`;
+        }).join('') : '<tr><td colspan="7" class="empty-state">' + (q ? 'No comments matching "' + sanitize(searchQuery) + '"' : 'No comments yet') + '</td></tr>'}
+      </table></div>` + buildPagination('comments', total);
+    }
+
+    else if (tab === 'messages') {
+      let messages = [...allMessages];
+      if (q) messages = messages.filter(m =>
+        (m.name || '').toLowerCase().includes(q) ||
+        (m.email || '').toLowerCase().includes(q) ||
+        (m.message || '').toLowerCase().includes(q)
+      );
+      const total = messages.length;
+      const start = (page - 1) * PAGE_SIZE;
+      const slice = messages.slice(start, start + PAGE_SIZE);
+
+      container.innerHTML = `<div class="table-header">
+        <span class="table-header-left">${total} ${q ? 'matching' : ''} messages</span>
+      </div><div class="table-wrap"><table>
+        <tr><th style="width:40px;">#</th><th>Name</th><th>Email</th><th>Message</th><th>Date</th><th>Actions</th></tr>
+        ${slice.length ? slice.map((m, idx) => {
+          const num = start + idx + 1;
+          return `<tr>
+            <td style="color:var(--muted);font-weight:600;font-size:0.75rem;">${num}</td>
+            <td>${hl(m.name)}</td>
+            <td class="text-email">${hl(m.email)}</td>
+            <td class="expandable" onclick="this.classList.toggle('expanded')">${hl(m.message)}</td>
+            <td class="text-muted">${formatDate(m.created_at)}</td>
+            <td><button class="btn-delete" onclick="deleteMessage('${m.id}')">Delete</button></td>
+          </tr>`;
+        }).join('') : '<tr><td colspan="6" class="empty-state">' + (q ? 'No messages matching "' + sanitize(searchQuery) + '"' : 'No messages yet') + '</td></tr>'}
+      </table></div>` + buildPagination('messages', total);
+    }
+  }
+
+  // ─── DELETE (direct REST with service key) ───
+  async function adminDelete(table, id, label) {
+    if (!confirm(`Delete this ${label}?`)) return;
+    try {
+      // For tracks, also delete related ratings and comments first
+      if (table === 'tracks') {
+        await fetch(`${SUPABASE_URL}/rest/v1/ratings?track_id=eq.${id}`, { method: 'DELETE', headers: headers() });
+        await fetch(`${SUPABASE_URL}/rest/v1/anonymous_ratings?track_id=eq.${id}`, { method: 'DELETE', headers: headers() });
+        await fetch(`${SUPABASE_URL}/rest/v1/comments?track_id=eq.${id}`, { method: 'DELETE', headers: headers() });
+      }
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
+        method: 'DELETE',
+        headers: headers()
+      });
+      if (res.ok || res.status === 204) {
+        showStatus('adminStatus', `${label} deleted.`, 'success');
+        await loadData(); return;
+      }
+      const errText = await res.text();
+      showStatus('adminStatus', `Failed to delete ${label}: ${errText}`, 'error');
+    } catch(e) {
+      showStatus('adminStatus', `Error deleting ${label}: ${e.message}`, 'error');
+    }
+  }
+
+  window.deleteTrack = (id) => adminDelete('tracks', id, 'Track');
+  window.deleteComment = (id) => adminDelete('comments', id, 'Comment');
+  window.deleteMessage = (id) => adminDelete('contact_messages', id, 'Message');
+
+  window.deleteUser = async function(userId) {
+    if (!confirm('Delete this user and ALL their data (tracks, comments, ratings, auth account)?\n\nThis is permanent and cannot be undone.')) return;
+    showStatus('adminStatus', 'Deleting user data...', 'success');
+    try {
+      // 1. Delete user's comments
+      await fetch(`${SUPABASE_URL}/rest/v1/comments?user_id=eq.${userId}`, { method: 'DELETE', headers: headers() });
+      // 2. Delete user's tracks
+      await fetch(`${SUPABASE_URL}/rest/v1/tracks?user_id=eq.${userId}`, { method: 'DELETE', headers: headers() });
+      // 3. Delete user's ratings (if they have user-linked ratings)
+      await fetch(`${SUPABASE_URL}/rest/v1/anonymous_ratings?user_id=eq.${userId}`, { method: 'DELETE', headers: headers() });
+      // 4. Delete auth account via edge function
+      const authRes = await fetch(`${SUPABASE_URL}/functions/v1/admin-delete-user`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+        body: JSON.stringify({ user_id: userId })
+      });
+      if (authRes.ok) {
+        showStatus('adminStatus', 'User fully deleted (data + auth account).', 'success');
+      } else {
+        const err = await authRes.text();
+        showStatus('adminStatus', 'User data deleted, but auth account removal failed: ' + err + '. Delete manually in Supabase Dashboard → Authentication.', 'error');
+      }
+      await loadData();
+    } catch(err) { showStatus('adminStatus', `Error: ${err.message}`, 'error'); }
+  };
+</script>
+</body>
+</html>
