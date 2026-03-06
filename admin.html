@@ -96,7 +96,10 @@
     .status.error { display: block; background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2); color: var(--error); }
     .status.success { display: block; background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.2); color: var(--success); }
 
-    .empty-state { text-align: center; padding: 48px; color: var(--muted); font-size: 0.85rem; }
+    .expandable { cursor: pointer; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .expandable:hover { color: var(--accent); }
+    .expandable.expanded { white-space: normal; overflow: visible; text-overflow: unset; max-width: 500px; word-break: break-word; }
+    .expand-hint { font-size: 0.65rem; color: var(--muted); margin-left: 4px; }
     .loading { text-align: center; padding: 32px; color: var(--muted); font-size: 0.82rem; }
 
     /* Pagination */
@@ -461,7 +464,7 @@
             <td>${hl(c.tracks?.title || 'Unknown')}</td>
             <td>${hl(c.author_name || 'Anonymous')}</td>
             <td class="text-email text-sm">${email}</td>
-            <td>${hl(c.content)}</td>
+            <td class="expandable" onclick="this.classList.toggle('expanded')">${hl(c.content)}</td>
             <td class="text-muted">${formatDate(c.created_at)}</td>
             <td><button class="btn-delete" onclick="deleteComment('${c.id}')">Delete</button></td>
           </tr>`;
@@ -490,7 +493,7 @@
             <td style="color:var(--muted);font-weight:600;font-size:0.75rem;">${num}</td>
             <td>${hl(m.name)}</td>
             <td class="text-email">${hl(m.email)}</td>
-            <td>${hl(m.message)}</td>
+            <td class="expandable" onclick="this.classList.toggle('expanded')">${hl(m.message)}</td>
             <td class="text-muted">${formatDate(m.created_at)}</td>
             <td><button class="btn-delete" onclick="deleteMessage('${m.id}')">Delete</button></td>
           </tr>`;
@@ -499,22 +502,29 @@
     }
   }
 
-  // ─── DELETE (try edge function, fallback to direct REST) ───
+  // ─── DELETE (direct REST with service key) ───
   async function adminDelete(table, id, label) {
     if (!confirm(`Delete this ${label}?`)) return;
     try {
-      // Try edge function first
-      const res = await fetch(`${SUPABASE_URL}/functions/v1/admin-delete`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
-        body: JSON.stringify({ table, id })
+      // For tracks, also delete related ratings and comments first
+      if (table === 'tracks') {
+        await fetch(`${SUPABASE_URL}/rest/v1/ratings?track_id=eq.${id}`, { method: 'DELETE', headers: headers() });
+        await fetch(`${SUPABASE_URL}/rest/v1/anonymous_ratings?track_id=eq.${id}`, { method: 'DELETE', headers: headers() });
+        await fetch(`${SUPABASE_URL}/rest/v1/comments?track_id=eq.${id}`, { method: 'DELETE', headers: headers() });
+      }
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
+        method: 'DELETE',
+        headers: headers()
       });
-      if (res.ok) {
+      if (res.ok || res.status === 204) {
         showStatus('adminStatus', `${label} deleted.`, 'success');
         await loadData(); return;
       }
-    } catch(e) {}
-    showStatus('adminStatus', `Failed to delete ${label}. Check edge function deployment.`, 'error');
+      const errText = await res.text();
+      showStatus('adminStatus', `Failed to delete ${label}: ${errText}`, 'error');
+    } catch(e) {
+      showStatus('adminStatus', `Error deleting ${label}: ${e.message}`, 'error');
+    }
   }
 
   window.deleteTrack = (id) => adminDelete('tracks', id, 'Track');
