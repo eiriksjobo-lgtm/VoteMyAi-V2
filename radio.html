@@ -933,6 +933,14 @@ body {
     });
   }
   let _ytPauseRetried = false;
+  // Suppress YouTube iframe postMessage errors (fires before iframe src is ready)
+  window.addEventListener('error', function(e) {
+    if (e.message && e.message.includes("Failed to execute 'postMessage'") && e.message.includes('about:blank')) {
+      e.preventDefault();
+      return true;
+    }
+  });
+
   function onYTStateChange(event) {
     if (event.data === YT.PlayerState.ENDED) {
       _ytPauseRetried = false;
@@ -1962,12 +1970,20 @@ function showHostMessage(track) {
 
 // --- Fallback timer (skips if track fails or hangs) ---
 let fallbackTimer = null;
+const fallbackSkipLog = [];
 function setFallbackTimer(seconds) {
   clearFallbackTimer();
   const duration = Math.min(seconds || 300, 600); // cap at 10 minutes
   const timeout = duration + 10; // track duration + 10s buffer
   fallbackTimer = setTimeout(() => {
-    console.warn('⏭️ Fallback timer triggered — skipping to next');
+    const track = schedule[currentTrackIndex];
+    if (track) {
+      const entry = { title: track.title, platform: track.platform, youtube_id: track.youtube_id || null, time: new Date().toISOString() };
+      fallbackSkipLog.push(entry);
+      console.warn(`⏭️ Fallback timer triggered — skipping "${track.title}" (${track.platform}${track.youtube_id ? ', yt:' + track.youtube_id : ''}). Total skips: ${fallbackSkipLog.length}`);
+    } else {
+      console.warn('⏭️ Fallback timer triggered — skipping to next');
+    }
     onTrackEnded();
   }, timeout * 1000);
 }
