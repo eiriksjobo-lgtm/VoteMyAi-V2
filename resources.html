@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Creator Resources – VoteMyAI</title>
+  <meta name="description" content="The ultimate toolkit for AI music creators. Tools, tips and resources to take your Suno and Udio tracks further.">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:opsz,wght@9..40,300;9..40,500;9..40,700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07070b;
+      --surface: #0e0e14;
+      --surface-2: #131319;
+      --surface-hover: #17171f;
+      --border: #1a1a26;
+      --border-hover: #252535;
+      --accent: #e8ff47;
+      --accent-dim: rgba(232,255,71,0.12);
+      --accent-glow: rgba(232,255,71,0.06);
+      --text: #f2f2f4;
+      --text-secondary: #a8a8b8;
+      --muted: #5c5c72;
+      --radius: 14px;
+      --radius-sm: 8px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+    ::selection { background: var(--accent); color: var(--bg); }
+
+    /* NAV */
+    nav { position: sticky; top: 0; z-index: 200; background: rgba(7,7,11,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(26,26,38,0.6); height: 60px; display: flex; align-items: center; justify-content: space-between; padding: 0 clamp(16px,4vw,40px); }
+    .logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 3px; color: var(--accent); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+    .logo-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); animation: pulse 2.5s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+    .nav-links { display: flex; align-items: center; gap: 4px; }
+    .nav-link { color: var(--muted); text-decoration: none; font-size: 0.72rem; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; padding: 8px 14px; border-radius: 8px; transition: all 0.2s; }
+    .nav-link:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+    .nav-link.active { color: var(--accent); }
+    @media(max-width:768px){ .nav-links { display: none; } }
+
+    /* HERO */
+    .hero { text-align: center; padding: 90px 24px 70px; position: relative; overflow: hidden; }
+    .hero::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 800px; height: 400px; background: radial-gradient(ellipse, rgba(232,255,71,0.07) 0%, transparent 65%); pointer-events: none; }
+    .hero-eyebrow { display: inline-block; font-size: 0.7rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); background: var(--accent-dim); border: 1px solid rgba(232,255,71,0.2); padding: 5px 14px; border-radius: 100px; margin-bottom: 1.5rem; opacity: 0; animation: fade-up 0.6s 0.1s forwards; }
+    .hero h1 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(3rem,8vw,6rem); letter-spacing: 4px; line-height: 1.0; margin-bottom: 1rem; opacity: 0; animation: fade-up 0.6s 0.25s forwards; }
+    .hero h1 .accent { color: var(--accent); }
+    .hero-sub { color: var(--muted); font-size: 0.95rem; max-width: 480px; margin: 0 auto 2.5rem; line-height: 1.7; opacity: 0; animation: fade-up 0.6s 0.4s forwards; }
+    .hero-cta { display: inline-flex; align-items: center; gap: 8px; background: var(--accent); color: var(--bg); padding: 12px 28px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 0.82rem; letter-spacing: 0.5px; transition: all 0.2s; opacity: 0; animation: fade-up 0.6s 0.55s forwards; }
+    .hero-cta:hover { box-shadow: 0 8px 32px rgba(232,255,71,0.25); transform: translateY(-2px); }
+    @keyframes fade-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* JOURNEY */
+    .journey-section { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 70px clamp(16px,4vw,40px); }
+    .journey-inner { max-width: 1100px; margin: 0 auto; }
+    .section-label { font-size: 0.7rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 0.5rem; }
+    .section-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2rem,5vw,3rem); letter-spacing: 3px; color: var(--text); margin-bottom: 0.5rem; }
+    .section-title .accent { color: var(--accent); }
+    .section-desc { color: var(--muted); font-size: 0.88rem; max-width: 480px; margin-bottom: 2.5rem; }
+    .journey-steps { display: grid; grid-template-columns: repeat(5,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .journey-step { background: var(--surface-2); padding: 2rem 1.2rem; display: flex; flex-direction: column; gap: 0.8rem; transition: background 0.2s; }
+    .journey-step:hover { background: var(--surface-hover); }
+    .step-num { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 2px; color: var(--accent); line-height: 1; }
+    .step-title { font-weight: 700; font-size: 0.72rem; letter-spacing: 1px; color: var(--text); text-transform: uppercase; }
+    .step-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.55; }
+    @media(max-width:768px){ .journey-steps { grid-template-columns: 1fr 1fr; } }
+    @media(max-width:480px){ .journey-steps { grid-template-columns: 1fr; } }
+
+    /* TOOLS */
+    .tools-section { max-width: 1100px; margin: 0 auto; padding: 70px clamp(16px,4vw,40px); }
+    .category-block { margin-bottom: 3.5rem; }
+    .category-header { display: flex; align-items: center; gap: 12px; margin-bottom: 1.2rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border); }
+    .category-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 2px; color: var(--text); }
+    .tools-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(290px,1fr)); gap: 1rem; }
+    .tool-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; display: flex; flex-direction: column; gap: 0.9rem; transition: border-color 0.2s, background 0.2s, transform 0.2s; position: relative; overflow: hidden; }
+    .tool-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(to right, transparent, var(--accent), transparent); opacity: 0; transition: opacity 0.2s; }
+    .tool-card:hover { border-color: rgba(232,255,71,0.25); background: var(--surface-hover); transform: translateY(-3px); }
+    .tool-card:hover::after { opacity: 0.5; }
+    .tool-card.coming-soon { opacity: 0.4; pointer-events: none; }
+    .tool-header { display: flex; align-items: center; gap: 0.8rem; }
+    .tool-icon { width: 40px; height: 40px; border-radius: var(--radius-sm); background: var(--surface-2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+    .tool-name { font-weight: 700; font-size: 0.95rem; color: var(--text); }
+    .tool-category { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-top: 1px; }
+    .tool-desc { font-size: 0.83rem; color: var(--text-secondary); line-height: 1.6; flex: 1; }
+    .tool-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 0.25rem; }
+    .tool-tag { font-size: 0.68rem; color: var(--muted); }
+    .tool-btn { display: inline-block; background: var(--accent-dim); border: 1px solid rgba(232,255,71,0.2); color: var(--accent); text-decoration: none; padding: 6px 16px; border-radius: var(--radius-sm); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px; transition: background 0.2s, box-shadow 0.2s, color 0.2s; }
+    .tool-btn:hover { background: var(--accent); color: var(--bg); box-shadow: 0 4px 16px rgba(232,255,71,0.2); }
+    .coming-badge { font-size: 0.68rem; color: var(--muted); background: var(--surface-2); border: 1px solid var(--border); padding: 4px 10px; border-radius: var(--radius-sm); }
+
+    /* QUOTE */
+    .quote-section { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 70px clamp(16px,4vw,40px); text-align: center; }
+    .quote-text { font-family: 'Bebas Neue', sans-serif; font-size: clamp(1.6rem,4vw,2.8rem); letter-spacing: 2px; color: var(--text); max-width: 760px; margin: 0 auto 1rem; line-height: 1.2; }
+    .quote-text .accent { color: var(--accent); }
+    .quote-source { font-size: 0.72rem; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 1.5rem; display: block; }
+
+    /* TIPS */
+    .tips-section { max-width: 1100px; margin: 0 auto; padding: 70px clamp(16px,4vw,40px); }
+    .tips-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(280px,1fr)); gap: 1rem; margin-top: 2.5rem; }
+    .tip-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; transition: border-color 0.2s, background 0.2s; }
+    .tip-card:hover { border-color: var(--border-hover); background: var(--surface-hover); }
+    .tip-num { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; letter-spacing: 2px; color: rgba(232,255,71,0.15); line-height: 1; margin-bottom: 0.6rem; }
+    .tip-title { font-weight: 700; font-size: 0.88rem; color: var(--text); margin-bottom: 0.5rem; }
+    .tip-text { font-size: 0.82rem; color: var(--muted); line-height: 1.65; }
+    .tip-text a { color: var(--accent); text-decoration: none; }
+
+    /* CTA */
+    .cta-banner { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 70px clamp(16px,4vw,40px); text-align: center; }
+    .cta-banner h2 { font-family: 'Bebas Neue', sans-serif; font-size: clamp(1.8rem,4vw,2.8rem); letter-spacing: 3px; margin-bottom: 0.75rem; }
+    .cta-banner h2 .accent { color: var(--accent); }
+    .cta-banner p { color: var(--muted); font-size: 0.88rem; max-width: 420px; margin: 0 auto 1.8rem; }
+    .cta-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--accent); color: var(--bg); padding: 12px 28px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 0.82rem; letter-spacing: 0.5px; transition: all 0.2s; }
+    .cta-btn:hover { box-shadow: 0 8px 32px rgba(232,255,71,0.25); transform: translateY(-2px); }
+
+    /* DISCLOSURE + FOOTER */
+    .disclosure { text-align: center; padding: 2rem clamp(16px,4vw,40px); border-top: 1px solid var(--border); }
+    .disclosure p { font-size: 0.72rem; color: var(--muted); max-width: 560px; margin: 0 auto; line-height: 1.6; }
+    footer { background: var(--surface); border-top: 1px solid var(--border); padding: 2rem clamp(16px,4vw,40px); text-align: center; }
+    footer p { font-size: 0.75rem; color: var(--muted); }
+    footer a { color: var(--text-secondary); text-decoration: none; }
+    footer a:hover { color: var(--accent); }
+
+    /* REVEAL */
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo"><div class="logo-dot"></div>VoteMyAI</a>
+  <div class="nav-links">
+    <a href="/" class="nav-link">Discover</a>
+    <a href="/blog.html" class="nav-link">Blog</a>
+    <a href="/radio.html" class="nav-link">Radio</a>
+    <a href="/resources.html" class="nav-link active">Resources</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <p class="hero-eyebrow">For AI Music Creators</p>
+  <h1>YOUR MUSIC<br>GOES <span class="accent">FURTHER</span><br>FROM HERE</h1>
+  <p class="hero-sub">We've gathered the best tools, tips and resources so you can spend less time searching and more time creating. Every recommendation here is something we genuinely believe in.</p>
+  <a href="#tools" class="hero-cta">Explore the toolkit ↓</a>
+</div>
+
+<div class="journey-section">
+  <div class="journey-inner">
+    <div class="reveal">
+      <p class="section-label">The Creator Path</p>
+      <h2 class="section-title">FROM IDEA TO <span class="accent">RELEASE</span></h2>
+      <p class="section-desc">Every great AI track follows the same journey. Here's yours.</p>
+    </div>
+    <div class="journey-steps reveal">
+      <div class="journey-step">
+        <div class="step-num">01</div>
+        <div class="step-title">Generate</div>
+        <div class="step-desc">Create your track with Suno or Udio. Let the AI do the heavy lifting.</div>
+      </div>
+      <div class="journey-step">
+        <div class="step-num">02</div>
+        <div class="step-title">Refine</div>
+        <div class="step-desc">Separate stems, isolate vocals, clean up your audio with precision tools.</div>
+      </div>
+      <div class="journey-step">
+        <div class="step-num">03</div>
+        <div class="step-title">Voice & Video</div>
+        <div class="step-desc">Add narration, voiceovers or produce a music video with AI.</div>
+      </div>
+      <div class="journey-step">
+        <div class="step-num">04</div>
+        <div class="step-title">Present</div>
+        <div class="step-desc">Build your press kit or artist pitch with beautiful AI tools.</div>
+      </div>
+      <div class="journey-step">
+        <div class="step-num">05</div>
+        <div class="step-title">Release</div>
+        <div class="step-desc">Master and distribute your track to Spotify, Apple Music and beyond.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="tools-section" id="tools">
+  <div class="reveal">
+    <p class="section-label">The Toolkit</p>
+    <h2 class="section-title">TOOLS WE <span class="accent">LOVE</span></h2>
+    <p class="section-desc">Handpicked for AI music creators. No fluff — just tools that genuinely help.</p>
+  </div>
+
+  <div class="category-block reveal">
+    <div class="category-header"><span>🎵</span><span class="category-title">GENERATE</span></div>
+    <div class="tools-grid">
+      <div class="tool-card">
+        <div class="tool-header"><div class="tool-icon">🟢</div><div><div class="tool-name">Suno</div><div class="tool-category">AI Music Generator</div></div></div>
+        <p class="tool-desc">The most popular AI music generator. Type a prompt, get a complete song with vocals in seconds. The best place to start if you're new to AI music.</p>
+        <div class="tool-footer"><span class="tool-tag">Free tier available</span><a href="https://suno.com" target="_blank" class="tool-btn">Try free →</a></div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-header"><div class="tool-icon">🎶</div><div><div class="tool-name">Udio</div><div class="tool-category">AI Music Generator</div></div></div>
+        <p class="tool-desc">Known for exceptionally high audio quality. Great for experimental genres and tracks where production detail matters most.</p>
+        <div class="tool-footer"><span class="tool-tag">Free tier available</span><a href="https://udio.com" target="_blank" class="tool-btn">Try free →</a></div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-header"><div class="tool-icon">🎼</div><div><div class="tool-name">AI Song Maker</div><div class="tool-category">AI Music Generator</div></div></div>
+        <p class="tool-desc">Text-to-music, AI covers, vocal generation and more. A versatile all-in-one platform for creators who want to explore beyond Suno and Udio.</p>
+        <div class="tool-footer"><span class="tool-tag">Free tier available</span><a href="https://www.aisongmaker.io?via=eirik" target="_blank" class="tool-btn">Try free →</a></div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-header"><div class="tool-icon">🎹</div><div><div class="tool-name">Soundverse</div><div class="tool-category">AI Music Generator</div></div></div>
+        <p class="tool-desc">AI music generation with deep creative control. Extend tracks, control instruments and generate royalty-free music built to your exact spec.</p>
+        <div class="tool-footer"><span class="tool-tag">Free tier available</span><a href="https://www.soundverse.ai/?ref=eirik" target="_blank" class="tool-btn">Try free →</a></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="category-block reveal">
+    <div class="category-header"><span>✂️</span><span class="category-title">REFINE</span></div>
+    <div class="tools-grid">
+      <div class="tool-card">
+        <div class="tool-header"><div class="tool-icon">🔬</div><div><div class="tool-name">LALAL.AI</div><div class="tool-category">Stem Separation</div></div></div>
+        <p class="tool-desc">World-class stem separation. Isolate vocals, drums, bass and instruments from any track with stunning accuracy. Essential for remixing AI-generated music.</p>
+        <div class="tool-footer"><span class="tool-tag">Pay-per-use or subscription</span><a href="https://www.lalal.ai" target="_blank" class="tool-btn">Try it →</a></div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-header"><div class="tool-icon">🎬</div><div><div class="tool-name">Descript</div><div class="tool-category">Audio & Video Editor</div></div></div>
+        <p class="tool-desc">Edit audio and video by editing text. Remove filler words, fix mistakes, add captions — all with AI. Perfect for music videos and lyric videos.</p>
+        <div class="tool-footer"><span class="tool-tag">Free tier available</span><a href="https://www.descript.com" target="_blank" class="tool-btn">Try free →</a></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="category-block reveal">
+    <div class="category-header"><span>🎙️</span><span class="category-title">VOICE & VIDEO</span></div>
+    <div class="tools-grid">
+      <div class="tool-card">
+        <div class="tool-header"><div class="tool-icon">🔊</div><div><div class="tool-name">ElevenLabs</div><div class="tool-category">AI Voice Generation</div></div></div>
+        <p class="tool-desc">The gold standard for AI voices. Generate lifelike narration, clone voices and produce voiceovers in 29+ languages. The voice behind VoteMyAI Radio.</p>
+        <div class="tool-footer"><span class="tool-tag">Free tier available</span><a href="https://elevenlabs.io" target="_blank" class="tool-btn">Try free →</a></div>
+      </div>
+      <div class="tool-card coming-soon">
+        <div class="tool-header"><div class="tool-icon">🎤</div><div><div class="tool-name">Murf AI</div><div class="tool-category">AI Voiceover Studio</div></div></div>
+        <p class="tool-desc">Professional AI voiceover studio with 120+ voices and fine-grained control over pitch, speed and tone. Great for intros, outros and lyric videos.</p>
+        <div class="tool-footer"><span class="coming-badge">Coming soon</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="category-block reveal">
+    <div class="category-header"><span>✨</span><span class="category-title">PRESENT</span></div>
+    <div class="tools-grid">
+      <div class="tool-card coming-soon">
+        <div class="tool-header"><div class="tool-icon">📊</div><div><div class="tool-name">Gamma</div><div class="tool-category">AI Presentations</div></div></div>
+        <p class="tool-desc">Turn your artist story into a stunning press kit or pitch deck in minutes. No design skills needed — just describe what you want and Gamma builds it.</p>
+        <div class="tool-footer"><span class="coming-badge">Coming soon</span></div>
+      </div>
+      <div class="tool-card coming-soon">
+        <div class="tool-header"><div class="tool-icon">🎯</div><div><div class="tool-name">Prezi</div><div class="tool-category">Interactive Presentations</div></div></div>
+        <p class="tool-desc">Create dynamic, non-linear presentations that stand out. Perfect for pitching to labels, presenting at events or sharing your creative process.</p>
+        <div class="tool-footer"><span class="coming-badge">Coming soon</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="category-block reveal">
+    <div class="category-header"><span>🚀</span><span class="category-title">RELEASE</span></div>
+    <div class="tools-grid">
+      <div class="tool-card coming-soon">
+        <div class="tool-header"><div class="tool-icon">🎧</div><div><div class="tool-name">LANDR</div><div class="tool-category">Mastering & Distribution</div></div></div>
+        <p class="tool-desc">AI mastering and music distribution in one place. Get your track sounding professional and onto Spotify, Apple Music and 150+ platforms in one workflow.</p>
+        <div class="tool-footer"><span class="coming-badge">Coming soon</span></div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<div class="quote-section">
+  <p class="quote-text">THE TOOLS DON'T MAKE THE MUSIC.<br><span class="accent">YOU DO.</span><br>WE JUST WANT YOU TO HAVE THE BEST ONES.</p>
+  <span class="quote-source">— VoteMyAI</span>
+</div>
+
+<section class="tips-section">
+  <div class="reveal">
+    <p class="section-label">Creator Tips</p>
+    <h2 class="section-title">MAKE BETTER MUSIC, <span class="accent">FASTER</span></h2>
+    <p class="section-desc">Hard-won lessons from the AI music community — from your first prompt to your first release.</p>
+  </div>
+
+  <!-- BEGINNER -->
+  <div style="margin-bottom:0.5rem; margin-top:2.5rem;" class="reveal">
+    <div class="category-header"><span>🟢</span><span class="category-title">FOR BEGINNERS</span></div>
+  </div>
+  <div class="tips-grid reveal">
+    <div class="tip-card">
+      <div class="tip-num">01</div>
+      <div class="tip-title">Start with Suno, explore with Udio</div>
+      <p class="tip-text">Suno is the best starting point — it generates complete songs with vocals from a single text prompt in under 30 seconds. Once you're comfortable, try Udio for higher audio fidelity and more control over individual elements. Both have free tiers, so there's no reason not to try both.</p>
+    </div>
+    <div class="tip-card">
+      <div class="tip-num">02</div>
+      <div class="tip-title">Use Custom Mode from day one</div>
+      <p class="tip-text">Suno's Simple Mode is fine for experiments, but Custom Mode is where the real control lives. It lets you define your own lyrics, style, and song structure separately — which is exactly how you get intentional music instead of random outputs. Switch to it early and never look back.</p>
+    </div>
+    <div class="tip-card">
+      <div class="tip-num">03</div>
+      <div class="tip-title">Your first prompt doesn't need to be perfect</div>
+      <p class="tip-text">Start simple to understand how the tool interprets your style preferences, then add specifics as you learn. Every generation teaches you something. Most creators find that their intuition for what works develops naturally after 10–20 tracks.</p>
+    </div>
+    <div class="tip-card">
+      <div class="tip-num">04</div>
+      <div class="tip-title">Always generate two versions</div>
+      <p class="tip-text">Both Suno and Udio generate two versions of every prompt by default. Never skip this — the second version is often dramatically different from the first. Listen to both before deciding, and use the better one as your starting point for further refinement.</p>
+    </div>
+  </div>
+
+  <!-- PROMPT CRAFT -->
+  <div style="margin-bottom:0.5rem; margin-top:3rem;" class="reveal">
+    <div class="category-header"><span>✍️</span><span class="category-title">PROMPT CRAFT</span></div>
+  </div>
+  <div class="tips-grid reveal">
+    <div class="tip-card">
+      <div class="tip-num">05</div>
+      <div class="tip-title">The four-part prompt structure</div>
+      <p class="tip-text">Every strong AI music prompt has four components: genre, mood, instrumentation, and vocal preference. For example: "indie folk, melancholic and warm, fingerstyle guitar with soft strings, gentle male vocals." Hitting all four dramatically improves consistency. Too few descriptors gives generic output — too many confuses the AI. Four to seven is the sweet spot.</p>
+    </div>
+    <div class="tip-card">
+      <div class="tip-num">06</div>
+      <div class="tip-title">Describe the feeling, not just the genre</div>
+      <p class="tip-text">AI music tools respond better to emotions and vibes than to music theory terminology. Instead of "lo-fi hip-hop at 90 BPM in C major," try "late night studying, rain on the window, warm lamp, a little melancholy but cozy." The emotional description gives the AI much richer context to work with.</p>
+    </div>
+    <div class="tip-card">
+      <div class="tip-num">07</div>
+      <div class="tip-title">Use decades to nail a sound</div>
+      <p class="tip-text">Specifying a decade sharpens your prompt dramatically. "80s synth-pop" produces a completely different result than "2020s synth-pop" — even with identical other descriptors. The AI has learned the distinct production conventions of each era and applies them. This is one of the highest-leverage tricks in prompting.</p>
+    </div>
+    <div class="tip-card">
+      <div class="tip-num">08</div>
+      <div class="tip-title">Structure tags control your song layout</div>
+      <p class="tip-text">In Suno's lyrics field, use tags like [Verse], [Chorus], [Bridge], [Outro] and [Instrumental Break] to define your song's structure. Without them, the AI freestyles the arrangement and results are unpredictable. Adding [Instrumental Break] where you want a solo or breathing room is especially useful. <a href="/blog/suno-lyrics-structure-tags.html">Full guide →</a></p>
+    </div>
+    <div class="tip-card">
+      <div class="tip-num">09</div>
+      <div class="tip-title">Want clearer vocals? Choose your genre carefully</div>
+      <p class="tip-text">Different genres have different mixing conventions baked into the AI's training. If vocal clarity is important to you, lean towards genres known for it: indie folk, acoustic pop, singer-songwriter, R&B. Genres with aggressive production — metal, EDM, trap — tend to bury vocals unless you're very specific with your prompting.</p>
+    </div>
+    <div class="tip-card">
+      <div class="tip-num">10</div>
+      <div class="tip-title">Blend genres for something original</div>
+      <p class="tip-text">Some of the most interesting AI tracks come from unexpected genre combinations. "Baroque pop with trap hi-hats," "country twang meets lo-fi hip-hop," "80s synth with flamenco guitar." The AI handles these crossovers surprisingly well, and the results are often far more distinctive than single-genre prompts.</p>
+    </div>
+  </div>
+
+  <!-- PRODUCTION -->
+  <div style="margin-bottom:0.5rem; margin-top:3rem;" class="reveal">
+    <div class="category-header"><span>🎛️</span><span class="category-title">PRODUCTION & REFINEMENT</span></div>
+  </div>
+  <div class="tips-grid reveal">
+    <div class="tip-card">
+      <div class="tip-num">11</div>
+      <div class="tip-title">Use Remix to evolve, not restart</div>
+      <p class="tip-text">Suno's Remix feature lets you transform a track into a new genre without losing the melody or lyrics. Found a great folk track but want an EDM version? Remix it. This is one of the most underused features — it saves you from burning credits re-generating from scratch whenever you want a variation.</p>
+    </div>
+    <div class="tip-card">
+      <div class="tip-num">12</div>
+      <div class="tip-title">Suno gives you one file — use stem tools to go further</div>
+      <p class="tip-text">Suno exports a single stereo audio file with no stems. If you want to remix, isolate vocals, or import into a DAW like Ableton or Logic, you'll need a stem separation tool like LALAL.AI. It can separate vocals, drums, bass and instruments with impressive accuracy — opening up your AI tracks for real production work.</p>
+    </div>
+    <div class="tip-card">
+      <div class="tip-num">13</div>
+      <div class="tip-title">Udio lets you download stems directly</div>
+      <p class="tip-text">Unlike Suno, Udio's Standard and Pro plans include stem downloads — giving you individual tracks for vocals, drums, bass and more without needing a third-party separation tool. If you plan to seriously edit your AI music in a DAW, this feature alone might make Udio the better choice for your workflow.</p>
+    </div>
+    <div class="tip-card">
+      <div class="tip-num">14</div>
+      <div class="tip-title">Master before you release</div>
+      <p class="tip-text">AI-generated tracks often have inconsistent loudness compared to commercially mastered music. Streaming platforms like Spotify normalize volume, which can make unmastered tracks sound thin or quiet. A quick pass through an AI mastering tool brings your track up to professional loudness standards and adds the final polish listeners expect.</p>
+    </div>
+  </div>
+
+  <!-- RELEASE -->
+  <div style="margin-bottom:0.5rem; margin-top:3rem;" class="reveal">
+    <div class="category-header"><span>🚀</span><span class="category-title">SHARING & RELEASING</span></div>
+  </div>
+  <div class="tips-grid reveal">
+    <div class="tip-card">
+      <div class="tip-num">15</div>
+      <div class="tip-title">Commercial rights require a paid plan</div>
+      <p class="tip-text">Both Suno and Udio allow personal use on their free plans, but commercial rights — releasing on streaming platforms, using in ads, monetizing on YouTube — require a paid subscription. Suno's Pro plan starts at $10/month, Udio's Standard at $10/month. Always check the platform's current terms before releasing publicly.</p>
+    </div>
+    <div class="tip-card">
+      <div class="tip-num">16</div>
+      <div class="tip-title">Disclose AI when sharing your music</div>
+      <p class="tip-text">Transparency is increasingly expected — and in some cases required. When sharing AI-generated music on YouTube, include a note in your description like "This track was created using AI music tools." It builds trust with your audience and keeps you compliant as platform policies around AI disclosure continue to evolve.</p>
+    </div>
+    <div class="tip-card">
+      <div class="tip-num">17</div>
+      <div class="tip-title">Let the community judge blind</div>
+      <p class="tip-text">Clout bias is real — even in AI music. A track by a famous creator gets more attention not because it's better, but because of who made it. Submit your tracks to VoteMyAI for blind ratings where the music speaks entirely for itself. You might be surprised which of your tracks actually connects with listeners.</p>
+    </div>
+    <div class="tip-card">
+      <div class="tip-num">18</div>
+      <div class="tip-title">Build a release workflow and stick to it</div>
+      <p class="tip-text">Generate → Refine stems → Master → Distribute. Having a consistent workflow means you spend less time figuring out your process on every track and more time creating. The best creators treat their AI music setup like a production pipeline — repeatable, efficient, and always moving forward.</p>
+    </div>
+  </div>
+</section>
+
+<div class="cta-banner">
+  <h2>READY TO SEE HOW YOUR<br>MUSIC <span class="accent">STACKS UP?</span></h2>
+  <p>Submit your AI track and let the community rate it blind. No clout, no bias — just the music.</p>
+  <a href="/" class="cta-btn">Submit a track →</a>
+</div>
+
+<div class="disclosure">
+  <p>Some links on this page are affiliate links. If you sign up through them, VoteMyAI may earn a small commission at no extra cost to you. We only recommend tools we genuinely believe help AI music creators.</p>
+</div>
+
+<footer>
+  <p>© 2026 VoteMyAI &nbsp;·&nbsp; <a href="/">Discover</a> &nbsp;·&nbsp; <a href="/blog.html">Blog</a> &nbsp;·&nbsp; <a href="/radio.html">Radio</a> &nbsp;·&nbsp; <a href="/resources.html">Resources</a> &nbsp;·&nbsp; <a href="/cdn-cgi/l/email-protection#d1b2bebfa5b0b2a591a7bea5b4bca8b0b8ffb2bebc"><span class="__cf_email__" data-cfemail="96f5f9f8e2f7f5e2d6e0f9e2f3fbeff7ffb8f5f9fb">[email&#160;protected]</span></a></p>
+</footer>
+
+<script>
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
