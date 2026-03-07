@@ -5,5 +5,8 @@ User-agent: *
 Allow: /
 Disallow: /admin.html
 Disallow: /login.html
+Disallow: /*?q=
+Disallow: /*?track=
+Disallow: /index.html
 
 Sitemap: https://www.votemyai.com/sitemap.xml

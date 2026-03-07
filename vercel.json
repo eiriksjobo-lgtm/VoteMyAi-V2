@@ -13,6 +13,16 @@
       ]
     }
   ],
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        { "type": "host", "value": "votemyai.com" }
+      ],
+      "destination": "https://www.votemyai.com/:path*",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     { "source": "/share/:id", "destination": "/api/share?id=:id" },
     { "source": "/radio",     "destination": "/radio.html" }
