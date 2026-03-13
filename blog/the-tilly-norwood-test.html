@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Tilly Norwood Test: Why AI Music Gets Judged Before It's Heard | VoteMyAI Blog</title>
+  <meta name="description" content="The most-talked-about AI music release of 2026 has under 30,000 YouTube views. Deadline, Variety, TechCrunch and Gizmodo all covered it. Almost nobody actually listened. This is the bias problem nobody wants to name." />
+  <meta property="og:title" content="The Tilly Norwood Test: Why AI Music Gets Judged Before It's Heard" />
+  <meta property="og:description" content="Tilly Norwood's AI-generated song got destroyed by every major outlet this week — timed to the Oscars. Almost nobody watched it. That tells you everything about how we judge AI music." />
+  <meta property="og:url" content="https://votemyai.com/blog/the-tilly-norwood-test" />
+  <meta property="og:type" content="article" />
+  <link rel="canonical" href="https://votemyai.com/blog/the-tilly-norwood-test" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #07070B;
+      color: #e8e8f0;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 18px;
+      line-height: 1.75;
+    }
+    a { color: #E8FF47; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.2rem 2rem;
+      border-bottom: 1px solid #1a1a2e;
+      position: sticky;
+      top: 0;
+      background: #07070B;
+      z-index: 100;
+    }
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      color: #fff;
+      letter-spacing: 0.05em;
+    }
+    .nav-logo span { color: #E8FF47; }
+    .nav-links { display: flex; gap: 1.5rem; font-size: 0.9rem; }
+    .nav-links a { color: #aaa; }
+    .nav-links a:hover { color: #E8FF47; }
+
+    .hero {
+      max-width: 780px;
+      margin: 4rem auto 0;
+      padding: 0 2rem;
+    }
+    .tag {
+      display: inline-block;
+      background: #E8FF47;
+      color: #07070B;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.25rem 0.6rem;
+      border-radius: 3px;
+      margin-bottom: 1.2rem;
+    }
+    h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.4rem, 6vw, 3.8rem);
+      line-height: 1.05;
+      color: #fff;
+      letter-spacing: 0.02em;
+      margin-bottom: 1rem;
+    }
+    .subtitle {
+      font-size: 1.15rem;
+      color: #aaa;
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+    }
+    .meta {
+      font-size: 0.82rem;
+      color: #555;
+      margin-bottom: 3rem;
+    }
+
+    .content {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 0 2rem 5rem;
+    }
+    .content p { margin-bottom: 1.5rem; }
+    .content h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.9rem;
+      color: #E8FF47;
+      letter-spacing: 0.04em;
+      margin: 2.8rem 0 1rem;
+    }
+    .content h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #fff;
+      margin: 2rem 0 0.8rem;
+    }
+    .pullquote {
+      border-left: 3px solid #E8FF47;
+      padding: 1rem 1.5rem;
+      margin: 2.5rem 0;
+      background: #0d0d18;
+      border-radius: 0 6px 6px 0;
+      font-size: 1.15rem;
+      color: #e8e8f0;
+      font-style: italic;
+    }
+    .stat-box {
+      background: #0d0d18;
+      border: 1px solid #1a1a2e;
+      border-radius: 8px;
+      padding: 1.5rem 2rem;
+      margin: 2rem 0;
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+    .stat-item { text-align: center; flex: 1; min-width: 120px; }
+    .stat-number {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.6rem;
+      color: #E8FF47;
+      display: block;
+    }
+    .stat-label { font-size: 0.78rem; color: #888; letter-spacing: 0.05em; text-transform: uppercase; }
+
+    .cta-box {
+      background: linear-gradient(135deg, #0d0d18, #111128);
+      border: 1px solid #E8FF47;
+      border-radius: 10px;
+      padding: 2.5rem;
+      margin: 3rem 0;
+      text-align: center;
+    }
+    .cta-box h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; color: #fff; margin-bottom: 0.6rem; letter-spacing: 0.05em; }
+    .cta-box p { color: #aaa; margin-bottom: 1.5rem; font-size: 0.95rem; }
+    .cta-btn {
+      display: inline-block;
+      background: #E8FF47;
+      color: #07070B;
+      font-weight: 700;
+      font-size: 0.95rem;
+      padding: 0.75rem 2rem;
+      border-radius: 6px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .cta-btn:hover { background: #d4eb30; text-decoration: none; }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: #666;
+      font-size: 0.85rem;
+      margin-bottom: 3rem;
+    }
+    .back-link:hover { color: #E8FF47; }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: #333;
+      font-size: 0.8rem;
+      border-top: 1px solid #1a1a2e;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="nav-logo">VoteMy<span>AI</span></a>
+  <div class="nav-links">
+    <a href="/">Rate Tracks</a>
+    <a href="/leaderboard.html">Leaderboard</a>
+    <a href="/blog/">Blog</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <a href="/blog/" class="back-link">← Back to Blog</a>
+  <span class="tag">Industry</span>
+  <h1>The Tilly Norwood Test: Why AI Music Gets Judged Before It's Heard</h1>
+  <p class="subtitle">The most-covered AI music story of 2026 has a fraction of the views you'd expect. Deadline covered it. Variety covered it. Gizmodo called it the worst song ever recorded. Almost nobody actually watched it. That gap tells you everything about how we judge AI music right now.</p>
+  <div class="meta">March 13, 2026 &nbsp;·&nbsp; 6 min read</div>
+</div>
+
+<div class="content">
+
+  <p>On March 10, a music video called "Take the Lead" was released on YouTube. By the time the major outlets had finished writing about it, the video had fewer views than a decent cat video gets on a slow Tuesday.</p>
+
+  <p>The song was made by Tilly Norwood — or rather, by the team at Particle6 behind the AI-generated "actress" they've been building into a character. The tune was generated using Suno. The video was assembled using AI tools and performance capture from the company's founder, Eline van der Velden, along with 18 other human contributors. The timing was deliberate: the Oscars are this Sunday, and the song is framed as a message to the film and entertainment industry about embracing AI.</p>
+
+  <p>It didn't land well. Gizmodo called it "the worst song I've ever heard." TechCrunch said the same. Euronews published a piece describing it as "cringe-inducing and obnoxious slop." The Hollywood Reporter covered it straight. Deadline, Variety, ABC News, NBC Today, Forbes — all covered it. The comment sections on every platform were brutal.</p>
+
+  <div class="stat-box">
+    <div class="stat-item"><span class="stat-number">4K</span><span class="stat-label">Views after 4 hours</span></div>
+    <div class="stat-item"><span class="stat-number">~29K</span><span class="stat-label">Views after 24 hours</span></div>
+    <div class="stat-item"><span class="stat-number">80</span><span class="stat-label">Comments, mostly negative</span></div>
+    <div class="stat-item"><span class="stat-number">10+</span><span class="stat-label">Major outlets covered it</span></div>
+  </div>
+
+  <p>Ten major outlets. Under 30,000 views in the first day. That gap is the story.</p>
+
+  <h2>The Label Comes First</h2>
+
+  <p>This isn't really about Tilly Norwood. The song is what it is — generic pop production, on-the-nose lyrics, a PR stunt with flamingos. But the response it got has almost nothing to do with the music itself.</p>
+
+  <p>Consider what happened before most people pressed play: they read a headline calling it the worst song ever recorded. They saw "AI-generated actress." They knew it was made with Suno. They knew it was timed to the Oscars, which had just announced its theme as "human touch, human connection, and actual intelligence — not artificial intelligence." The music director of the 98th Academy Awards said that line out loud at a press conference. The industry had already drawn the battle lines.</p>
+
+  <p>By the time anyone clicked on the video, the verdict was in.</p>
+
+  <div class="pullquote">
+    "Music labelled as AI-generated gets rated lower — even when it is the same piece of music. The label changes the score. The sound doesn't."
+  </div>
+
+  <p>This is not speculation. A 2023 study published in the Journal of Experimental Psychology: Applied tested exactly this dynamic across three experiments. When participants were told that classical music was composed by an AI, they rated it significantly lower than when told it was composed by a human — even though the actual audio was identical. Researcher Shank et al. called it "AI composer bias": listeners like music less when they think it was made by an AI, and that bias is consistent across populations and music styles.</p>
+
+  <p>A more recent 2025 study from researchers at the Universitat Autònoma de Barcelona found the same pattern extends to performance: the same music rated lower when attributed to AI. Another 2025 paper found that among participants who listened to AI-generated pop songs labelled either as AI or human-composed, the AI label consistently lowered scores across liking, quality, and emotional response measures — and that the effect was "sticky," meaning attempts to reduce the bias through information didn't reliably work.</p>
+
+  <p>This is not a niche finding. It has been replicated multiple times, across genres, across cultures, among both expert listeners and casual ones. The phenomenon is real, well-documented, and almost never discussed in the coverage of actual AI music releases.</p>
+
+  <h2>What the Oscars Week Reveals</h2>
+
+  <p>The context around the Tilly Norwood video this week makes it a near-perfect experiment in how labeled environments shape music reception.</p>
+
+  <p>The Oscars — Hollywood's most-watched night — explicitly framed 2026 as a stand against artificial intelligence in creative work. The ceremony is this Sunday. Every entertainment journalist covering AI music this week was writing inside that frame. The word "slop" appears in multiple headlines. The response was pre-loaded before anyone heard a note.</p>
+
+  <p>Is the song bad? The production is generic, yes. The lyrics are painfully literal — "I'm just a tool, but I've got life" isn't going to outlast the news cycle. But "bad" and "worst song ever recorded" describe different things. The gap between those two assessments is almost entirely explained by the label on the tin, the timing of the release, and the political context of AI in entertainment right now.</p>
+
+  <p>Strip away the Tilly Norwood branding, remove the Suno credit, post the song anonymously on a platform where nobody knows where it came from — and you get a completely different conversation.</p>
+
+  <h2>The Wider Problem</h2>
+
+  <p>The Tilly Norwood situation is extreme because of the AI actress framing, the Hollywood politics, and the Oscars timing. But the same dynamic plays out constantly, at a lower intensity, across all AI music.</p>
+
+  <p>AI music avatars like Solomon Ray (who topped Gospel Digital Song Sales in November) and Xania Monet (who hit No. 1 on R&B Digital Song Sales in September) succeeded partly because their AI origin wasn't front and center when listeners first discovered them. When the label came later, the backlash followed. When there's no label, the music competes on its own terms.</p>
+
+  <p>Apple Music just introduced AI transparency metadata tags. Streaming platforms are adding disclosure systems. The broader industry move is toward more labeling, more transparency, more context baked into how people encounter AI music. That's not inherently wrong. Transparency has legitimate value.</p>
+
+  <p>But it does mean that AI music will increasingly be consumed through a filter that changes how it's perceived before a single note plays. The label arrives before the sound.</p>
+
+  <h2>What Blind Rating Actually Changes</h2>
+
+  <p>This is the problem VoteMyAI was built around. Not "AI music is good, actually" — the quality varies wildly, just like any other category of music. The problem is that we can't currently have an honest conversation about which AI music is good and which isn't, because the label overwrites the listening.</p>
+
+  <p>On VoteMyAI, you hear the track first. You rate it. Then you find out what it was — what tool made it, whether it charted, who submitted it. The rating happens before the context, not after. That's not a revolutionary idea. It's just not what any major platform is currently building toward.</p>
+
+  <p>We've been running this for a few weeks. The results are interesting. Tracks that wouldn't survive a labeled environment — submitted from obscure Suno accounts with no following — regularly score above 4.0. Tracks with good PR context sometimes tank. Because the music is doing the work, not the story around it.</p>
+
+  <p>That's a harder thing to build an audience around than "AI is taking over music." But it's a more honest one.</p>
+
+  <div class="pullquote">
+    The Tilly Norwood song may or may not be bad. We can't actually tell right now — not because the music is ambiguous, but because the environment it was released into makes a fair hearing almost impossible.
+  </div>
+
+  <p>That's worth thinking about. Not just for AI music, but for how we listen to anything that arrives with a loaded label attached.</p>
+
+  <p>The Oscars are Sunday. Conan O'Brien is hosting. Sinners is expected to break records. And somewhere in the middle of all that, there's a four-minute video about a fictional AI actress riding a flamingo through the sky that got ten times more press coverage than views.</p>
+
+  <p>That's the test. That's where we are.</p>
+
+  <div class="cta-box">
+    <h3>Hear First. Judge Second.</h3>
+    <p>VoteMyAI is a blind rating platform for AI-generated music. No artist names, no tool credits, no clout. Just the track — and your honest reaction.</p>
+    <a href="https://votemyai.com" class="cta-btn">Rate Tracks on VoteMyAI →</a>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2026 VoteMyAI &nbsp;·&nbsp; <a href="/">votemyai.com</a></p>
+</footer>
+
+</body>
+</html>
