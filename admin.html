@@ -390,11 +390,8 @@
       const total = users.length;
       const start = (page - 1) * PAGE_SIZE;
       const slice = users.slice(start, start + PAGE_SIZE);
-      const warn = !q && authUsers.length >= 50 && authUsers.length % 50 === 0;
-
       container.innerHTML = `<div class="table-header">
         <span class="table-header-left">${total} ${q ? 'matching' : 'registered'} users</span>
-        ${warn ? '<span class="table-header-right">⚠️ Showing first ' + total + ' — update edge function for full list</span>' : ''}
       </div><div class="table-wrap"><table>
         <tr><th style="width:40px;">#</th><th>User</th><th>Email</th><th>Tracks</th><th>Comments</th><th>Joined</th><th>Actions</th></tr>
         ${slice.length ? slice.map((u, idx) => {
