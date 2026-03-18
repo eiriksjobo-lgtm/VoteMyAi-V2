@@ -353,20 +353,32 @@
     if (!anonToken) { document.getElementById('ratingsList').innerHTML = '<div class="empty">No ratings yet</div>'; return; }
 
     try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/anonymous_ratings?anon_token=eq.${anonToken}&select=track_id,score`, {
-        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-      });
-      const ratings = await res.json();
+      const PAGE = 1000;
+      let offset = 0;
+      const ratings = [];
+      while (true) {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/anonymous_ratings?anon_token=eq.${anonToken}&select=track_id,score&order=created_at.asc&limit=${PAGE}&offset=${offset}`, {
+          headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+        });
+        const batch = await res.json();
+        ratings.push(...batch);
+        if (batch.length < PAGE) break;
+        offset += PAGE;
+      }
       if (!ratings.length) { document.getElementById('ratingsList').innerHTML = '<div class="empty">No ratings yet — go rate some tracks!</div>'; return; }
 
-      // Fetch track details
+      // Fetch track details (paginate in chunks to avoid 1000-row cap and URL length limits)
       const trackIds = ratings.map(r => r.track_id);
-      const tracksRes = await fetch(`${SUPABASE_URL}/rest/v1/tracks?id=in.(${trackIds.join(',')})&select=id,title,tool,genre,thumbnail_url,yt_id`, {
-        headers: { 'apikey': SUPABASE_KEY }
-      });
-      const tracks = await tracksRes.json();
       const trackMap = {};
-      tracks.forEach(t => { trackMap[t.id] = t; });
+      const CHUNK = 500;
+      for (let i = 0; i < trackIds.length; i += CHUNK) {
+        const chunk = trackIds.slice(i, i + CHUNK);
+        const tracksRes = await fetch(`${SUPABASE_URL}/rest/v1/tracks?id=in.(${chunk.join(',')})&select=id,title,tool,genre,thumbnail_url,yt_id`, {
+          headers: { 'apikey': SUPABASE_KEY }
+        });
+        const tracks = await tracksRes.json();
+        tracks.forEach(t => { trackMap[t.id] = t; });
+      }
 
       const list = document.getElementById('ratingsList');
       list.innerHTML = ratings.map(r => {

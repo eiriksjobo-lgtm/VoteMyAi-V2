@@ -140,21 +140,31 @@ Deno.serve(async (req) => {
     }
 
     // --- OPPDATER avg_rating & rating_count på tracks ---
-    const { data: stats } = await supabase
-      .from("anonymous_ratings")
-      .select("score")
-      .eq("track_id", track_id);
+    // Paginate past the 1000-row PostgREST cap
+    const allScores: number[] = [];
+    let offset = 0;
+    const PAGE = 1000;
+    while (true) {
+      const { data: page } = await supabase
+        .from("anonymous_ratings")
+        .select("score")
+        .eq("track_id", track_id)
+        .range(offset, offset + PAGE - 1);
+      if (!page || page.length === 0) break;
+      page.forEach((r) => allScores.push(r.score));
+      if (page.length < PAGE) break;
+      offset += PAGE;
+    }
 
-    const scores = stats?.map((r) => r.score) || [];
-    const avg = scores.length
-      ? scores.reduce((a, b) => a + b, 0) / scores.length
+    const avg = allScores.length
+      ? allScores.reduce((a, b) => a + b, 0) / allScores.length
       : 0;
 
     await supabase
       .from("tracks")
       .update({
         avg_rating: Math.round(avg * 100) / 100,
-        rating_count: scores.length,
+        rating_count: allScores.length,
       })
       .eq("id", track_id);
 
@@ -162,7 +172,7 @@ Deno.serve(async (req) => {
       JSON.stringify({
         success: true,
         avg_rating: Math.round(avg * 100) / 100,
-        rating_count: scores.length,
+        rating_count: allScores.length,
         your_score: score,
       }),
       { status: 200, headers: corsHeaders }
