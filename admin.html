@@ -285,6 +285,7 @@
       }
       const data = await res.json();
       authUsers = data.users || [];
+      allMessages = data.messages || [];
     } catch(e) {
       showStatus('loginStatus', 'Could not connect', 'error');
       return;
@@ -316,8 +317,8 @@
         });
         if (authRes.ok) {
           const authData = await authRes.json();
-          authUsers = authData.users || [];
-          allMessages = authData.messages || [];
+          if (authData.users) authUsers = authData.users;
+          if (authData.messages) allMessages = authData.messages;
         }
       } catch(e) {}
 
