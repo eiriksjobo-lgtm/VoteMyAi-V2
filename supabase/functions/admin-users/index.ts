@@ -1,18 +1,35 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+const ALLOWED_ORIGIN = "https://www.votemyai.com";
+
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
   "Access-Control-Allow-Headers": "authorization, x-admin-password, apikey, content-type",
   "Access-Control-Allow-Methods": "GET, OPTIONS",
 };
 
+// K4: Timing-safe password comparison
+function timingSafeEqual(a: string, b: string): boolean {
+  const encoder = new TextEncoder();
+  const bufA = encoder.encode(a);
+  const bufB = encoder.encode(b);
+  if (bufA.byteLength !== bufB.byteLength) {
+    let x = 0;
+    for (let i = 0; i < bufA.byteLength; i++) x |= bufA[i] ^ bufA[i];
+    return false;
+  }
+  let diff = 0;
+  for (let i = 0; i < bufA.byteLength; i++) diff |= bufA[i] ^ bufB[i];
+  return diff === 0;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  // Simple admin password check
   const adminPass = req.headers.get("x-admin-password");
-  if (adminPass !== Deno.env.get("ADMIN_PASSWORD")) {
+  const adminPw = Deno.env.get("ADMIN_PASSWORD");
+  if (!adminPass || !adminPw || !timingSafeEqual(adminPass, adminPw)) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 

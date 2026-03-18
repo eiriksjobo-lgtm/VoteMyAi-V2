@@ -6,6 +6,11 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+// Validation patterns
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const ANON_TOKEN_RE = /^anon_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const IP_RE = /^[\da-fA-F.:]{3,45}$/;
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -28,11 +33,29 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Hent IP fra request
-    const ip_address =
-      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
-      || req.headers.get("cf-connecting-ip")
-      || "unknown";
+    // K1: Validate format before using in queries
+    if (!UUID_RE.test(track_id)) {
+      return new Response(
+        JSON.stringify({ error: "Ugyldig track_id" }),
+        { status: 400, headers: corsHeaders }
+      );
+    }
+    if (!ANON_TOKEN_RE.test(anon_token)) {
+      return new Response(
+        JSON.stringify({ error: "Ugyldig anon_token" }),
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    // K2: Use only cf-connecting-ip (trusted proxy header, not spoofable)
+    const ip_address = req.headers.get("cf-connecting-ip") || "unknown";
+
+    if (ip_address !== "unknown" && !IP_RE.test(ip_address)) {
+      return new Response(
+        JSON.stringify({ error: "Ugyldig IP" }),
+        { status: 400, headers: corsHeaders }
+      );
+    }
 
     // Supabase-klient med service_role (full tilgang)
     const supabase = createClient(
@@ -103,76 +126,65 @@ Deno.serve(async (req) => {
       );
     }
 
-    // --- SJEKK EKSISTERENDE RATING ---
-    const { data: existing } = await supabase
+    // K5: Check IP conflict first, then upsert (eliminates race condition)
+    // Check if a DIFFERENT token from same IP already rated this track
+    const { data: ipConflict } = await supabase
       .from("anonymous_ratings")
-      .select("id, anon_token, ip_address")
+      .select("id")
       .eq("track_id", track_id)
-      .or(`anon_token.eq.${anon_token},ip_address.eq.${ip_address}`);
+      .eq("ip_address", ip_address)
+      .neq("anon_token", anon_token)
+      .limit(1);
 
-    const tokenMatch = existing?.find((r) => r.anon_token === anon_token);
-    const ipMatch = existing?.find((r) => r.ip_address === ip_address);
-
-    if (tokenMatch) {
-      // Samme token → oppdater scoren
-      await supabase
-        .from("anonymous_ratings")
-        .update({ score, ip_address })
-        .eq("id", tokenMatch.id);
-    } else if (ipMatch) {
-      // Annen token men samme IP → avvis
+    if (ipConflict && ipConflict.length > 0) {
       return new Response(
         JSON.stringify({ error: "Allerede ratet fra dette nettverket." }),
         { status: 409, headers: corsHeaders }
       );
-    } else {
-      // Helt ny rating
-      const { error: insertErr } = await supabase
-        .from("anonymous_ratings")
-        .insert({ track_id, anon_token, ip_address, score });
-
-      if (insertErr) {
-        return new Response(
-          JSON.stringify({ error: "Kunne ikke lagre rating." }),
-          { status: 500, headers: corsHeaders }
-        );
-      }
     }
 
-    // --- OPPDATER avg_rating & rating_count på tracks ---
-    // Paginate past the 1000-row PostgREST cap
-    const allScores: number[] = [];
-    let offset = 0;
-    const PAGE = 1000;
-    while (true) {
-      const { data: page } = await supabase
-        .from("anonymous_ratings")
-        .select("score")
-        .eq("track_id", track_id)
-        .range(offset, offset + PAGE - 1);
-      if (!page || page.length === 0) break;
-      page.forEach((r) => allScores.push(r.score));
-      if (page.length < PAGE) break;
-      offset += PAGE;
+    // Atomic upsert: insert or update on (track_id, anon_token)
+    const { error: upsertErr } = await supabase
+      .from("anonymous_ratings")
+      .upsert(
+        { track_id, anon_token, ip_address, score },
+        { onConflict: "track_id,anon_token" }
+      );
+
+    if (upsertErr) {
+      return new Response(
+        JSON.stringify({ error: "Kunne ikke lagre rating." }),
+        { status: 500, headers: corsHeaders }
+      );
     }
 
-    const avg = allScores.length
-      ? allScores.reduce((a, b) => a + b, 0) / allScores.length
-      : 0;
+    // H1: Use SQL aggregate instead of fetching all rows in JS
+    const { data: stats, error: statsErr } = await supabase
+      .rpc("get_track_stats", { p_track_id: track_id });
+
+    let avg = 0;
+    let count = 0;
+
+    if (!statsErr && stats && stats.length > 0) {
+      avg = parseFloat(stats[0].avg_score) || 0;
+      count = parseInt(stats[0].total_count, 10) || 0;
+    }
+
+    const roundedAvg = Math.round(avg * 100) / 100;
 
     await supabase
       .from("tracks")
       .update({
-        avg_rating: Math.round(avg * 100) / 100,
-        rating_count: allScores.length,
+        avg_rating: roundedAvg,
+        rating_count: count,
       })
       .eq("id", track_id);
 
     return new Response(
       JSON.stringify({
         success: true,
-        avg_rating: Math.round(avg * 100) / 100,
-        rating_count: allScores.length,
+        avg_rating: roundedAvg,
+        rating_count: count,
         your_score: score,
       }),
       { status: 200, headers: corsHeaders }
