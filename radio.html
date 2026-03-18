@@ -927,7 +927,6 @@ body {
             iframe.setAttribute('allow', 'autoplay; encrypted-media; playsinline');
             iframe.setAttribute('playsinline', '');
           }
-          console.log('📺 YT Player ready');
           // If radio already started, warm up the player
           if (window._ytNeedsUnlock) {
             window._ytNeedsUnlock = false;
@@ -954,7 +953,6 @@ body {
     } else if (event.data === YT.PlayerState.PAUSED && typeof _isMobile !== 'undefined' && _isMobile && !_ytPauseRetried) {
       // Mobile "paused to save power" — retry once
       _ytPauseRetried = true;
-      console.log('📺 YouTube paused on mobile, retrying playback once');
       try { ytPlayer.playVideo(); } catch(e) {}
     } else if (event.data === YT.PlayerState.PLAYING) {
       _ytPauseRetried = false;
@@ -973,8 +971,6 @@ const _isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
 const _isAndroid = /Android/i.test(navigator.userAgent);
 const _isMobile = _isIOS || _isAndroid;
 if (_isAndroid) {
-  console.log('[ANDROID] Detected Android device');
-  console.log('[ANDROID] User Agent:', navigator.userAgent);
 }
 
 // --- Android embed iframes (used instead of direct audio URLs which are blocked) ---
@@ -1069,7 +1065,6 @@ async function fetchSchedule() {
   }).filter(t => t.audio_url || t.youtube_id || t.soundcloud_url);
 
   // Apply channel filter
-  console.log(`📻 fetchSchedule: filtering for channel="${currentChannel}", ${mapped.length} total tracks`);
   let filtered = mapped;
   if (currentChannel === 'trending') {
     // Top 50 by rating
@@ -1080,13 +1075,11 @@ async function fetchSchedule() {
       const g = (t.genre || '').toLowerCase();
       return genres.some(genre => g.includes(genre));
     });
-    console.log(`📻 fetchSchedule: genre filter [${genres.join(', ')}] → ${filtered.length} matches`);
   }
 
   // STRICT: No fallback. If genre has 0 tracks, return empty — callers show "NO TRACKS".
   // Even 1 track is fine — it will loop that single track.
   if (filtered.length === 0 && currentChannel !== 'all') {
-    console.warn(`📻 0 tracks for channel "${currentChannel}" — NO TRACKS`);
     allTracks = [];
     return [];
   }
@@ -1096,7 +1089,6 @@ async function fetchSchedule() {
 
   // Initial genre-diverse shuffle with top-100 boost
   const reordered = genreDiverseShuffle(allTracks);
-  console.log(`📻 Channel "${currentChannel}": ${reordered.length} tracks (from ${mapped.length} total)`);
   return reordered;
 }
 
@@ -1307,7 +1299,6 @@ async function startRadio(channel = 'all') {
     warmup.rate = 10; // fastest possible to finish instantly
     window._ttsWarmupUtterance = warmup; // prevent GC on Safari
     window.speechSynthesis.speak(warmup);
-    console.log('🎙️ TTS warmup: unlocked speechSynthesis via user gesture');
   }
 
   // 2. Unlock HTML5 Audio + AudioContext on iOS (needs play() in gesture chain)
@@ -1322,7 +1313,6 @@ async function startRadio(channel = 'all') {
     audioPlayer.pause();
     audioPlayer.muted = false;
     audioPlayer.currentTime = 0;
-    console.log('🔊 Audio unlock: HTML5 audio unlocked via user gesture');
   }).catch(() => {
     audioPlayer.muted = false;
   });
@@ -1335,7 +1325,6 @@ async function startRadio(channel = 'all') {
       setTimeout(() => {
         try { ytPlayer.stopVideo(); ytPlayer.unMute(); _ytUnlocked = true; } catch(e) {}
       }, 200);
-      console.log('📺 YT warmup: unlocked YouTube player via user gesture');
     } catch(e) {}
   } else {
     // YT API not loaded yet — flag for unlock when ready
@@ -1349,7 +1338,6 @@ async function startRadio(channel = 'all') {
   try {
     scWidgetObj = SC.Widget(document.getElementById('scWidget'));
   } catch(e) {
-    console.warn('🔊 SC Widget API failed to initialize:', e.message);
     scWidgetObj = null;
   }
 
@@ -1361,7 +1349,6 @@ async function startRadio(channel = 'all') {
       alert('No playable tracks found in the database!');
       return;
     }
-    console.log(`📻 Radio loaded ${schedule.length} playable tracks`);
     
     // Show channel name in header
     const channelNames = {
@@ -1372,7 +1359,6 @@ async function startRadio(channel = 'all') {
     document.querySelector('.header h1').innerHTML = 
       `VoteMyAI <span>Radio</span><div style="font-size:0.5em;color:var(--accent2);font-weight:400;margin-top:4px;">${channelNames[currentChannel] || 'All Tracks'}</div>`;
   } catch (err) {
-    console.error('Failed to fetch schedule:', err);
     document.getElementById('statusText').textContent = 'ERROR';
     alert('Could not load tracks. Check console.');
     return;
@@ -1382,21 +1368,14 @@ async function startRadio(channel = 'all') {
   currentTrackIndex = -1;
 
   // Preload Web Speech voices
-  if (_isAndroid) console.log('[ANDROID] About to loadVoices...');
   await loadVoices();
-  if (_isAndroid) console.log('[ANDROID] loadVoices complete. ttsVoices count:', ttsVoices.length);
 
-  console.log(`📻 Radio loaded ${schedule.length} tracks, starting with buffer approach`);
-  if (_isAndroid) console.log(`[ANDROID] Schedule: ${schedule.length} tracks. Platform breakdown:`, schedule.reduce((acc, t) => { acc[t.platform] = (acc[t.platform]||0)+1; return acc; }, {}));
   document.getElementById('statusText').textContent = 'TUNING IN...';
 
   // Find first working track and start
-  if (_isAndroid) console.log('[ANDROID] Calling findNextWorkingTrack for first track...');
   const firstTrack = await findNextWorkingTrack();
-  if (_isAndroid) console.log('[ANDROID] findNextWorkingTrack returned:', firstTrack ? `"${firstTrack.title}" (${firstTrack.platform})` : 'NULL');
   if (!firstTrack) {
     document.getElementById('statusText').textContent = 'NO TRACKS';
-    if (_isAndroid) console.log('[ANDROID] NO WORKING TRACKS FOUND — all failed to load');
     alert('Could not find any working tracks!');
     return;
   }
@@ -1449,7 +1428,6 @@ async function switchChannel(channel) {
   if (channel === currentChannel) return;
   const gen = ++_switchGen;
 
-  console.log(`📻 Switching channel: ${currentChannel} → ${channel} (gen=${_switchGen + 1})`);
   currentChannel = channel;
 
   // Update active chip
@@ -1477,7 +1455,6 @@ async function switchChannel(channel) {
     }
   } catch(err) {
     if (gen !== _switchGen) return;
-    console.error('Channel switch failed:', err);
     document.getElementById('statusText').textContent = 'ERROR';
     return;
   }
@@ -1518,22 +1495,16 @@ function loadVoices() {
     if (!('speechSynthesis' in window)) { resolve(); return; }
     ttsVoices = window.speechSynthesis.getVoices();
     if (ttsVoices.length > 0) {
-      console.log('🎙️ TTS voices loaded:', ttsVoices.length);
-      if (_isAndroid) console.log('[ANDROID] Voices (sync):', ttsVoices.length, ttsVoices.map(v => `${v.name} [${v.lang}]`).join(', '));
       resolve();
       return;
     }
-    if (_isAndroid) console.log('[ANDROID] No voices loaded synchronously, waiting for onvoiceschanged...');
     // Chrome loads voices async
     window.speechSynthesis.onvoiceschanged = () => {
       ttsVoices = window.speechSynthesis.getVoices();
-      console.log('🎙️ TTS voices loaded (async):', ttsVoices.length);
-      if (_isAndroid) console.log('[ANDROID] Voices (async):', ttsVoices.length, ttsVoices.map(v => `${v.name} [${v.lang}]`).join(', '));
       resolve();
     };
     // Timeout fallback (Android loads voices slower)
     setTimeout(() => {
-      if (_isAndroid) console.log('[ANDROID] loadVoices TIMEOUT — voices so far:', ttsVoices.length);
       resolve();
     }, 6000);
   });
@@ -1542,10 +1513,8 @@ function loadVoices() {
 function getPreferredVoice(hostConfig) {
   if (ttsVoices.length === 0) ttsVoices = window.speechSynthesis.getVoices();
   const en = ttsVoices.filter(v => v.lang.startsWith('en'));
-  if (_isAndroid) console.log(`[ANDROID] getPreferredVoice: totalVoices=${ttsVoices.length} enVoices=${en.length} preferVoice="${hostConfig?.preferVoice}" gender="${hostConfig?.gender}" voiceIndex=${hostConfig?.voiceIndex}`);
   if (en.length === 0) {
     const fallback = ttsVoices[0] || null;
-    if (_isAndroid) console.log('[ANDROID] getPreferredVoice: NO english voices, using:', fallback?.name || 'NULL');
     return fallback;
   }
 
@@ -1553,10 +1522,8 @@ function getPreferredVoice(hostConfig) {
     // 1. Exact preferVoice match
     const exact = en.find(v => v.name.includes(hostConfig.preferVoice));
     if (exact) {
-      if (_isAndroid) console.log('[ANDROID] getPreferredVoice: EXACT match:', exact.name);
       return exact;
     }
-    if (_isAndroid) console.log('[ANDROID] getPreferredVoice: no match for "' + hostConfig.preferVoice + '" in:', en.map(v=>v.name).join(', '));
   }
 
   if (hostConfig && hostConfig.gender) {
@@ -1566,23 +1533,19 @@ function getPreferredVoice(hostConfig) {
       : ['Male', 'Daniel', 'Alex', 'Fred', 'Tom', 'James', 'Aaron'];
     const genderMatch = en.find(v => genderHints.some(h => v.name.includes(h)));
     if (genderMatch) {
-      if (_isAndroid) console.log('[ANDROID] getPreferredVoice: GENDER match:', genderMatch.name);
       return genderMatch;
     }
-    if (_isAndroid) console.log('[ANDROID] getPreferredVoice: no gender match for', hostConfig.gender);
   }
 
   // 3. voiceIndex fallback: rotate through available voices (helps Android where names don't match)
   if (hostConfig && hostConfig.voiceIndex !== undefined && en.length > 1) {
     const picked = en[hostConfig.voiceIndex % en.length];
-    if (_isAndroid) console.log(`[ANDROID] getPreferredVoice: voiceIndex=${hostConfig.voiceIndex} picked=${picked.name} (${hostConfig.voiceIndex % en.length}/${en.length})`);
     return picked;
   }
 
   // 4. Generic English fallback
   const generic = en.find(v => v.name.includes('Google') && v.lang.startsWith('en'))
     || en[0] || ttsVoices[0] || null;
-  if (_isAndroid) console.log('[ANDROID] getPreferredVoice: GENERIC fallback:', generic?.name || 'NULL');
   return generic;
 }
 
@@ -1591,7 +1554,6 @@ function getPreferredVoice(hostConfig) {
 function speakText(text) {
   return new Promise(resolve => {
     if (!('speechSynthesis' in window) || ttsVoices.length === 0) {
-      console.warn('🎙️ No TTS available, skipping intro');
       resolve();
       return;
     }
@@ -1602,7 +1564,6 @@ function speakText(text) {
     const host = _isDJZeroPromo ? CHANNEL_HOSTS['all'] : (CHANNEL_HOSTS[currentChannel] || CHANNEL_HOSTS['all']);
     const voice = getPreferredVoice(host);
 
-    console.log(`🎙️ ${host.name} speaking (pitch:${host.pitch}, rate:${host.rate}, voice:${voice ? voice.name : 'default'}): ${text.substring(0, 60)}...`);
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'en-US';
@@ -1619,7 +1580,6 @@ function speakText(text) {
       if (resolved) return;
       resolved = true;
       clearInterval(watchdog);
-      console.log('🎙️ TTS done:', reason);
       resolve();
     };
 
@@ -1730,7 +1690,6 @@ async function findNextWorkingTrack() {
 
     // Loop: re-shuffle when we reach the end
     if (currentTrackIndex >= schedule.length) {
-      console.log('🔄 Playlist complete! Re-shuffling with fresh order...');
       schedule = genreDiverseShuffle(allTracks);
       currentTrackIndex = 0;
     }
@@ -1738,36 +1697,27 @@ async function findNextWorkingTrack() {
     attempts++;
 
     const candidate = schedule[currentTrackIndex];
-    if (_isAndroid) console.log(`[ANDROID] findNextWorkingTrack attempt ${attempts}/${maxAttempts}: "${candidate.title}" platform=${candidate.platform} audio_url=${candidate.audio_url?.substring(0,60) || 'NONE'}`);
 
     if (candidate.platform === 'suno' && candidate.audio_url) {
       if (_isAndroid) {
         // Android blocks direct Suno CDN URLs — skip buffer check, will use embed iframe
         if (candidate.suno_id) {
-          console.log(`✅ Suno track queued for embed: "${candidate.title}"`);
-          if (_isAndroid) console.log(`[ANDROID] Suno track accepted (embed path): "${candidate.title}" suno_id=${candidate.suno_id}`);
           return candidate;
         } else {
-          if (_isAndroid) console.log(`[ANDROID] ❌ Suno track has no suno_id, skipping: "${candidate.title}"`);
           continue;
         }
       }
       const loaded = await bufferLoadAudio(candidate.audio_url);
       if (loaded) {
-        console.log(`✅ Buffered: "${candidate.title}"`);
         return candidate;
       } else {
-        console.log(`⏭️ Silent skip (won't load): "${candidate.title}"`);
         continue;
       }
     } else if (candidate.platform === 'udio') {
-      console.log(`✅ Udio track queued: "${candidate.title}"`);
       return candidate;
     } else if (candidate.youtube_id) {
-      console.log(`✅ YouTube track queued: "${candidate.title}"`);
       return candidate;
     } else if (candidate.soundcloud_url) {
-      console.log(`✅ SoundCloud track queued: "${candidate.title}"`);
       return candidate;
     }
   }
@@ -1777,7 +1727,6 @@ async function findNextWorkingTrack() {
 // Try to load audio into buffer — returns true if canplaythrough fires
 function bufferLoadAudio(url) {
   return new Promise(resolve => {
-    if (_isAndroid) console.log('[ANDROID] bufferLoadAudio starting for:', url?.substring(0, 80));
     const _t0 = Date.now();
 
     // Reset buffer
@@ -1788,26 +1737,21 @@ function bufferLoadAudio(url) {
     const done = (result) => {
       if (resolved) return;
       resolved = true;
-      if (_isAndroid) console.log(`[ANDROID] bufferLoadAudio done=${result} after ${Date.now()-_t0}ms for:`, url?.substring(0, 80));
       resolve(result);
     };
 
     bufferAudio.oncanplaythrough = () => {
-      if (_isAndroid) console.log('[ANDROID] canplaythrough fired after', Date.now()-_t0, 'ms for:', url?.substring(0, 80));
       done(true);
     };
     bufferAudio.onerror = (e) => {
-      if (_isAndroid) console.log('[ANDROID] ERROR loading audio after', Date.now()-_t0, 'ms:', url?.substring(0, 80), bufferAudio.error?.message || bufferAudio.error?.code);
       done(false);
     };
     bufferAudio.onstalled = () => {
-      if (_isAndroid) console.log('[ANDROID] stalled event after', Date.now()-_t0, 'ms for:', url?.substring(0, 80));
     };
 
     // Timeout: mobile networks need more time for CDN buffering
     const _timeout = _isMobile ? 20000 : 10000;
     setTimeout(() => {
-      if (_isAndroid && !resolved) console.log('[ANDROID] TIMEOUT after', _timeout, 'ms, readyState:', bufferAudio.readyState, 'networkState:', bufferAudio.networkState, 'for:', url?.substring(0, 80));
       done(false);
     }, _timeout);
 
@@ -1819,8 +1763,6 @@ function bufferLoadAudio(url) {
 // Play a track that has already been verified/buffered
 async function playVerifiedTrack(track) {
   const gen = _switchGen; // capture channel generation before TTS
-  if (_isAndroid) console.log(`[ANDROID] playVerifiedTrack called: "${track.title}" platform=${track.platform} audio_url=${track.audio_url?.substring(0,60) || 'NONE'}`);
-  console.log(`📻 Now playing [${currentTrackIndex + 1}/${schedule.length}]: "${track.title}" (${track.platform}) on ch="${currentChannel}"`);
 
   // STEP 1: Stop ALL audio/video playback IMMEDIATELY (old song stops NOW)
   stopAudioPlayback();
@@ -1838,7 +1780,6 @@ async function playVerifiedTrack(track) {
 
   // Bail if channel switched while TTS was speaking
   if (gen !== _switchGen) {
-    console.log(`📻 Channel switched during TTS, aborting stale playback for "${track.title}"`);
     return;
   }
   if (!isPlaying) return;
@@ -1848,7 +1789,6 @@ async function playVerifiedTrack(track) {
 
     if (_isAndroid && track.suno_id) {
       // Android: direct CDN URLs blocked by URL safety check — use Suno embed iframe
-      if (_isAndroid) console.log(`[ANDROID] Playing Suno via embed iframe: "${track.title}" suno_id=${track.suno_id}`);
       if (currentSunoIframe) { currentSunoIframe.src = 'about:blank'; currentSunoIframe.remove(); currentSunoIframe = null; }
       const iframe = document.createElement('iframe');
       iframe.src = `https://suno.com/embed/${track.suno_id}`;
@@ -1866,7 +1806,6 @@ async function playVerifiedTrack(track) {
 
       audio.onended = () => onTrackEnded();
       audio.onerror = () => {
-        console.warn('🎵 Playback error, skipping');
         onTrackEnded();
       };
       audio.ontimeupdate = () => updateProgress(audio.currentTime, audio.duration);
@@ -1877,9 +1816,7 @@ async function playVerifiedTrack(track) {
       setFallbackTimer(300);
 
       audio.play().then(() => {
-        console.log('🎵 Playing:', track.title);
       }).catch(err => {
-        console.warn('🎵 Play failed:', err.message);
         onTrackEnded();
       });
     }
@@ -1926,7 +1863,6 @@ async function preBufferNext() {
         // Android: skip audio buffer check (CDN URLs blocked), just queue if suno_id exists
         if (candidate.suno_id) {
           nextBufferedTrack = { track: candidate, index: tempIndex };
-          console.log(`🔮 Next Suno queued for embed: "${candidate.title}"`);
           return;
         }
         continue;
@@ -1945,19 +1881,15 @@ async function preBufferNext() {
 
       if (works) {
         nextBufferedTrack = { track: candidate, index: tempIndex };
-        console.log(`🔮 Pre-buffered next: "${candidate.title}"`);
         return;
       } else {
-        console.log(`⏭️ Pre-buffer skip: "${candidate.title}"`);
         continue;
       }
     } else if (candidate.platform === 'udio' || candidate.youtube_id || candidate.soundcloud_url) {
       nextBufferedTrack = { track: candidate, index: tempIndex };
-      console.log(`🔮 Next queued (${candidate.platform}): "${candidate.title}"`);
       return;
     }
   }
-  console.warn('🔮 No next track could be pre-buffered');
 }
 
 function showHostMessage(track) {
@@ -1994,9 +1926,7 @@ function setFallbackTimer(seconds) {
     if (track) {
       const entry = { title: track.title, platform: track.platform, youtube_id: track.youtube_id || null, time: new Date().toISOString() };
       fallbackSkipLog.push(entry);
-      console.warn(`⏭️ Fallback timer triggered — skipping "${track.title}" (${track.platform}${track.youtube_id ? ', yt:' + track.youtube_id : ''}). Total skips: ${fallbackSkipLog.length}`);
     } else {
-      console.warn('⏭️ Fallback timer triggered — skipping to next');
     }
     onTrackEnded();
   }, timeout * 1000);
@@ -2014,19 +1944,15 @@ function playYouTubeTrack(track) {
   if (!ytPlayer || !ytPlayer.loadVideoById) {
     _ytRetryCount++;
     if (_ytRetryCount < 5) {
-      console.warn(`📺 YT Player not ready, retrying in 2s... attempt ${_ytRetryCount}`);
-      if (_isAndroid) console.log(`[ANDROID] YT not ready, retry ${_ytRetryCount}/5 in 2s`);
       setTimeout(() => playYouTubeTrack(track), 2000);
       return;
     }
-    console.warn('📺 YT Player not ready after 5 attempts, skipping');
     _ytRetryCount = 0;
     setTimeout(() => onTrackEnded(), 500);
     return;
   }
   _ytRetryCount = 0;
 
-  console.log('📺 Loading YouTube:', track.youtube_id);
   const vol = document.getElementById('volumeSlider').value;
   ytPlayer.setVolume(vol);
   ytPlayer.loadVideoById({ videoId: track.youtube_id, startSeconds: 0 });
@@ -2050,7 +1976,6 @@ function playYouTubeTrack(track) {
   const ytQuickCheck = setTimeout(() => {
     if (!ytStarted && !ytSkipped) {
       ytSkipped = true;
-      console.warn(`📺 YouTube failed to start within ${timeout/1000}s, skipping:`, track.title);
       onTrackEnded();
     }
   }, timeout);
@@ -2065,7 +1990,6 @@ function playYouTubeTrack(track) {
       if (current > 0.5 && !ytStarted) {
         ytStarted = true;
         clearTimeout(ytQuickCheck);
-        console.log('📺 YouTube playing:', track.title);
       }
       updateProgress(current, duration);
       if (duration > 0 && !fallbackTimer) setFallbackTimer(duration);
@@ -2079,12 +2003,10 @@ async function playUdioTrack(track) {
   const gen = _switchGen;
   const udioUrl = track.embed_url;
   if (!udioUrl || !udioUrl.includes('udio.com')) {
-    console.warn('🎶 No Udio URL, skipping');
     setTimeout(() => onTrackEnded(), 500);
     return;
   }
 
-  console.log('🎶 Resolving Udio stream:', udioUrl);
 
   try {
     const resp = await fetch(`${SUPABASE_URL}/functions/v1/udio-stream`, {
@@ -2105,7 +2027,6 @@ async function playUdioTrack(track) {
     const data = await resp.json();
     if (!data.stream_url) throw new Error('No stream URL returned');
 
-    console.log('🎶 Udio stream resolved:', data.stream_url.substring(0, 80) + '...');
 
     // Bail if channel switched during fetch
     if (gen !== _switchGen) return;
@@ -2117,7 +2038,6 @@ async function playUdioTrack(track) {
 
     audio.onended = () => onTrackEnded();
     audio.onerror = () => {
-      console.warn('🎶 Udio playback error, skipping');
       onTrackEnded();
     };
     audio.ontimeupdate = () => updateProgress(audio.currentTime, audio.duration);
@@ -2128,14 +2048,11 @@ async function playUdioTrack(track) {
     setFallbackTimer(300);
 
     audio.play().then(() => {
-      console.log('🎶 Udio playing:', track.title);
     }).catch(err => {
-      console.warn('🎶 Udio play failed:', err.message);
       onTrackEnded();
     });
 
   } catch (err) {
-    console.warn('🎶 Udio stream resolve failed:', err.message, '— skipping');
     onTrackEnded();
   }
 }
@@ -2144,14 +2061,12 @@ async function playSoundCloudTrack(track) {
   const gen = _switchGen;
   const scUrl = track.soundcloud_url || track.embed_url;
   if (!scUrl) {
-    console.warn('🔊 No SC URL, skipping');
     setTimeout(() => onTrackEnded(), 500);
     return;
   }
 
   // Android: direct audio URLs blocked by URL safety check — use widget iframe
   if (_isAndroid) {
-    if (_isAndroid) console.log(`[ANDROID] Playing SoundCloud via widget iframe: "${track.title}"`);
     if (currentScIframe) { currentScIframe.src = 'about:blank'; currentScIframe.remove(); currentScIframe = null; }
 
     // Try SC Widget API first (already has an iframe in the page)
@@ -2170,7 +2085,6 @@ async function playSoundCloudTrack(track) {
     return;
   }
 
-  console.log('🔊 Resolving SoundCloud stream:', scUrl);
 
   try {
     // Call Edge Function to get direct stream URL
@@ -2192,7 +2106,6 @@ async function playSoundCloudTrack(track) {
     const data = await resp.json();
     if (!data.stream_url) throw new Error('No stream URL returned');
 
-    console.log(`🔊 SC stream resolved (${data.format}):`, data.stream_url.substring(0, 80) + '...');
 
     // Bail if channel switched during fetch
     if (gen !== _switchGen) return;
@@ -2205,7 +2118,6 @@ async function playSoundCloudTrack(track) {
 
     audio.onended = () => onTrackEnded();
     audio.onerror = () => {
-      console.warn('🔊 SC audio playback error, skipping');
       onTrackEnded();
     };
     audio.ontimeupdate = () => updateProgress(audio.currentTime, audio.duration);
@@ -2216,14 +2128,11 @@ async function playSoundCloudTrack(track) {
     setFallbackTimer(300);
 
     audio.play().then(() => {
-      console.log('🔊 SoundCloud playing:', track.title);
     }).catch(err => {
-      console.warn('🔊 SC play failed:', err.message);
       onTrackEnded();
     });
 
   } catch (err) {
-    console.warn('🔊 SC stream resolve failed:', err.message, '— trying widget fallback');
     playSoundCloudWidget(track, scUrl);
   }
 }
@@ -2231,7 +2140,6 @@ async function playSoundCloudTrack(track) {
 // Fallback: SC Widget for when Edge Function fails (e.g. CORS, rate limit)
 function playSoundCloudWidget(track, scUrl) {
   if (!scWidgetObj) {
-    console.warn('🔊 No SC widget available, skipping');
     setTimeout(() => onTrackEnded(), 500);
     return;
   }
@@ -2242,7 +2150,6 @@ function playSoundCloudWidget(track, scUrl) {
   const scQuickCheck = setTimeout(() => {
     if (!scStarted && !scSkipped) {
       scSkipped = true;
-      console.warn('🔊 SC widget fallback timed out, skipping:', track.title);
       onTrackEnded();
     }
   }, scTimeout);
@@ -2281,7 +2188,6 @@ function playSoundCloudWidget(track, scUrl) {
 // --- On Track Ended (Central Flow) ---
 let isTransitioning = false;
 async function onTrackEnded() {
-  if (_isAndroid) console.log('[ANDROID] onTrackEnded called. Stack:', new Error().stack?.split('\n').slice(1,4).map(s=>s.trim()).join(' <- '));
   if (isTransitioning) return;
   isTransitioning = true;
 
@@ -2297,7 +2203,6 @@ async function onTrackEnded() {
     currentTrackIndex = nextBufferedTrack.index;
     nextTrack = nextBufferedTrack.track;
     nextBufferedTrack = null;
-    console.log(`📻 Using pre-buffered: "${nextTrack.title}"`);
   } else {
     nextTrack = await findNextWorkingTrack();
   }
@@ -2307,7 +2212,6 @@ async function onTrackEnded() {
   if (nextTrack) {
     await playVerifiedTrack(nextTrack);
   } else {
-    console.error('📻 No more playable tracks');
     document.getElementById('statusText').textContent = 'NO TRACKS';
   }
 }

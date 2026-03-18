@@ -208,7 +208,13 @@
     if (!searchQuery || !text) return sanitize(text);
     const safe = sanitize(text);
     const q = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    return safe.replace(new RegExp('(' + q + ')', 'gi'), '<span class="search-match">$1</span>');
+    const parts = safe.split(new RegExp('(' + q + ')', 'gi'));
+    return parts.map(function(p) {
+      if (new RegExp('^' + q + '$', 'i').test(p)) {
+        return '<span class="search-match">' + sanitize(p) + '</span>';
+      }
+      return p;
+    }).join('');
   }
 
   // Search input handler

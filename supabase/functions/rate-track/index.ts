@@ -56,12 +56,19 @@ Deno.serve(async (req) => {
       );
     }
 
-    // K2: Use only cf-connecting-ip (trusted proxy header, not spoofable)
-    const ip_address = req.headers.get("cf-connecting-ip") || "unknown";
+    // P2: Use only cf-connecting-ip — reject if missing
+    const ip_address = req.headers.get("cf-connecting-ip");
 
-    if (ip_address !== "unknown" && !isValidIP(ip_address)) {
+    if (!ip_address) {
       return new Response(
-        JSON.stringify({ error: "Ugyldig IP" }),
+        JSON.stringify({ error: "Unable to verify request origin" }),
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    if (!isValidIP(ip_address)) {
+      return new Response(
+        JSON.stringify({ error: "Unable to verify request origin" }),
         { status: 400, headers: corsHeaders }
       );
     }
@@ -160,14 +167,9 @@ Deno.serve(async (req) => {
         { onConflict: "track_id,anon_token" }
       );
 
-    // F4: Explicit error check — detect missing constraint or other upsert failures
     if (upsertErr) {
-      const msg = upsertErr.message || "Kunne ikke lagre rating.";
-      const hint = msg.includes("unique") || msg.includes("constraint")
-        ? "Database constraint missing. Run migration."
-        : msg;
       return new Response(
-        JSON.stringify({ error: hint }),
+        JSON.stringify({ error: "Rating failed. Please try again." }),
         { status: 500, headers: corsHeaders }
       );
     }

@@ -8,7 +8,6 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-// F1: Constant-time password comparison (fixed: no length leak)
 function timingSafeEqual(a: string, b: string): boolean {
   const enc = new TextEncoder();
   const bufA = enc.encode(a);
@@ -21,20 +20,42 @@ function timingSafeEqual(a: string, b: string): boolean {
   return diff === 0;
 }
 
-// F3: In-memory rate limiting for admin endpoints
-const adminAttempts = new Map<string, { count: number; resetAt: number }>();
+// P3: Persistent rate limiting via Supabase table
 const ADMIN_MAX_ATTEMPTS = 10;
-const ADMIN_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 
-function checkAdminRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const entry = adminAttempts.get(ip);
-  if (!entry || now > entry.resetAt) {
-    adminAttempts.set(ip, { count: 1, resetAt: now + ADMIN_WINDOW_MS });
+async function checkAdminRateLimit(supabase: any, ip: string): Promise<boolean> {
+  // Clean expired entries and check/increment in one flow
+  const now = new Date().toISOString();
+
+  const { data: existing } = await supabase
+    .from("admin_rate_limits")
+    .select("attempts, reset_at")
+    .eq("ip", ip)
+    .single();
+
+  if (!existing || new Date(existing.reset_at) < new Date()) {
+    // No entry or expired — upsert fresh entry
+    await supabase
+      .from("admin_rate_limits")
+      .upsert({
+        ip,
+        attempts: 1,
+        reset_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+      });
     return true;
   }
-  entry.count++;
-  return entry.count <= ADMIN_MAX_ATTEMPTS;
+
+  if (existing.attempts >= ADMIN_MAX_ATTEMPTS) {
+    return false;
+  }
+
+  // Increment
+  await supabase
+    .from("admin_rate_limits")
+    .update({ attempts: existing.attempts + 1 })
+    .eq("ip", ip);
+
+  return true;
 }
 
 Deno.serve(async (req) => {
@@ -42,8 +63,19 @@ Deno.serve(async (req) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  if (!serviceKey || !supabaseUrl) {
+    return new Response(JSON.stringify({ error: "Server config missing" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  const supabase = createClient(supabaseUrl, serviceKey);
+
   const ip = req.headers.get("cf-connecting-ip") || "unknown";
-  if (!checkAdminRateLimit(ip)) {
+  if (!(await checkAdminRateLimit(supabase, ip))) {
     return new Response(JSON.stringify({ error: "Too many attempts. Try again later." }), {
       status: 429,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -59,26 +91,13 @@ Deno.serve(async (req) => {
     });
   }
 
-  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  if (!serviceKey || !supabaseUrl) {
-    return new Response(JSON.stringify({ error: "Server config missing" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
-
-  const supabase = createClient(supabaseUrl, serviceKey);
-
   try {
     const { table, id, user_id } = await req.json();
 
-    // User deletion: delete all related data + auth account
     if (user_id) {
       const { error: e1 } = await supabase.from("comments").delete().eq("user_id", user_id);
       const { error: e2 } = await supabase.from("anonymous_ratings").delete().eq("user_id", user_id);
 
-      // Get user's track IDs to delete their ratings too
       const { data: userTracks } = await supabase.from("tracks").select("id").eq("user_id", user_id);
       if (userTracks && userTracks.length > 0) {
         const trackIds = userTracks.map((t: { id: string }) => t.id);
@@ -87,8 +106,6 @@ Deno.serve(async (req) => {
       }
 
       const { error: e3 } = await supabase.from("tracks").delete().eq("user_id", user_id);
-
-      // Delete auth account
       const { error: authErr } = await supabase.auth.admin.deleteUser(user_id);
 
       const errors = [e1, e2, e3, authErr].filter(Boolean);
@@ -104,7 +121,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Single row deletion
     if (!table || !id) {
       return new Response(JSON.stringify({ error: "Missing table or id" }), {
         status: 400,
@@ -120,7 +136,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // When deleting a track, also delete its ratings and comments
     if (table === "tracks") {
       await supabase.from("anonymous_ratings").delete().eq("track_id", id);
       await supabase.from("comments").delete().eq("track_id", id);

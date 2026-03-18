@@ -3,8 +3,7 @@
 
 User-agent: *
 Allow: /
-Disallow: /admin.html
-Disallow: /login.html
+Disallow: /api/
 Disallow: /*?q=
 Disallow: /*?track=
 Disallow: /index.html

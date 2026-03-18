@@ -151,7 +151,7 @@
   window.loginWithGoogle = async function() {
     // Save where the user came from so we can redirect back after login
     const urlParams = new URLSearchParams(window.location.search);
-    let returnTo = urlParams.get('redirect') || document.referrer || '/';
+    let returnTo = urlParams.get('redirect') || '/';
     if (!returnTo.startsWith('/') || returnTo.startsWith('//')) returnTo = '/';
     localStorage.setItem('login_redirect', returnTo);
 

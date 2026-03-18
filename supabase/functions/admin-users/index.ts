@@ -9,7 +9,6 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "GET, OPTIONS",
 };
 
-// F1: Constant-time password comparison (fixed: no length leak)
 function timingSafeEqual(a: string, b: string): boolean {
   const enc = new TextEncoder();
   const bufA = enc.encode(a);
@@ -22,27 +21,52 @@ function timingSafeEqual(a: string, b: string): boolean {
   return diff === 0;
 }
 
-// F3: In-memory rate limiting for admin endpoints
-const adminAttempts = new Map<string, { count: number; resetAt: number }>();
+// P3: Persistent rate limiting via Supabase table
 const ADMIN_MAX_ATTEMPTS = 10;
-const ADMIN_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 
-function checkAdminRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const entry = adminAttempts.get(ip);
-  if (!entry || now > entry.resetAt) {
-    adminAttempts.set(ip, { count: 1, resetAt: now + ADMIN_WINDOW_MS });
+async function checkAdminRateLimit(supabase: any, ip: string): Promise<boolean> {
+  const { data: existing } = await supabase
+    .from("admin_rate_limits")
+    .select("attempts, reset_at")
+    .eq("ip", ip)
+    .single();
+
+  if (!existing || new Date(existing.reset_at) < new Date()) {
+    await supabase
+      .from("admin_rate_limits")
+      .upsert({
+        ip,
+        attempts: 1,
+        reset_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+      });
     return true;
   }
-  entry.count++;
-  return entry.count <= ADMIN_MAX_ATTEMPTS;
+
+  if (existing.attempts >= ADMIN_MAX_ATTEMPTS) {
+    return false;
+  }
+
+  await supabase
+    .from("admin_rate_limits")
+    .update({ attempts: existing.attempts + 1 })
+    .eq("ip", ip);
+
+  return true;
 }
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  if (!serviceKey || !supabaseUrl) {
+    return new Response(JSON.stringify({ error: "Server config missing" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  }
+
+  const supabase = createClient(supabaseUrl, serviceKey);
+
   const ip = req.headers.get("cf-connecting-ip") || "unknown";
-  if (!checkAdminRateLimit(ip)) {
+  if (!(await checkAdminRateLimit(supabase, ip))) {
     return new Response(JSON.stringify({ error: "Too many attempts. Try again later." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 
@@ -52,13 +76,6 @@ serve(async (req) => {
     return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 
-  // Use service_role key to access auth.users
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-  );
-
-  // Fetch all users with pagination (listUsers defaults to 50 per page)
   const allUsers: any[] = [];
   let page = 1;
   const perPage = 300;
@@ -69,7 +86,6 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
     allUsers.push(...data.users);
-    // Stop when we got fewer than a full page
     if (data.users.length < perPage) break;
     page++;
   }
