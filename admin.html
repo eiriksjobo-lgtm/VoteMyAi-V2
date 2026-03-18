@@ -309,7 +309,7 @@
 
   async function loadData() {
     try {
-      // Refresh auth users list
+      // Refresh auth users list + contact messages (via service_role edge function)
       try {
         const authRes = await fetch(`${SUPABASE_URL}/functions/v1/admin-users`, {
           headers: { 'x-admin-password': adminPassword }
@@ -317,13 +317,14 @@
         if (authRes.ok) {
           const authData = await authRes.json();
           authUsers = authData.users || [];
+          allMessages = authData.messages || [];
         }
-      } catch(e) { console.warn('Could not refresh auth users:', e); }
+      } catch(e) {}
 
-      // Fetch tracks, comments and messages in parallel
+      // Fetch tracks and comments in parallel
       const TRACK_FIELDS = 'id,title,user_id,tool,genre,avg_rating,rating_count,created_at';
-      
-      const [tracksResult, commentsResult, messagesRes] = await Promise.all([
+
+      const [tracksResult, commentsResult] = await Promise.all([
         // Tracks
         (async () => {
           let result = [];
@@ -349,14 +350,11 @@
             off += 1000;
           }
           return result;
-        })(),
-        // Messages
-        fetch(`${SUPABASE_URL}/rest/v1/contact_messages?select=*&order=created_at.desc`, { headers: headers() })
+        })()
       ]);
 
       allTracks = tracksResult;
       allComments = commentsResult;
-      allMessages = await messagesRes.json();
 
       rebuildUserMap();
 

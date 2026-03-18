@@ -98,5 +98,11 @@ serve(async (req) => {
     created_at: u.created_at,
   }));
 
-  return new Response(JSON.stringify({ users }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  // Also fetch contact_messages (service_role bypasses RLS)
+  const { data: messages } = await supabase
+    .from("contact_messages")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  return new Response(JSON.stringify({ users, messages: messages || [] }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
 });
