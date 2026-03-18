@@ -310,7 +310,7 @@
 
   async function loadData() {
     try {
-      // Refresh auth users list + contact messages (via service_role edge function)
+      // Refresh auth users list
       try {
         const authRes = await fetch(`${SUPABASE_URL}/functions/v1/admin-users`, {
           headers: { 'x-admin-password': adminPassword }
@@ -319,6 +319,19 @@
           const authData = await authRes.json();
           if (authData.users) authUsers = authData.users;
           if (authData.messages) allMessages = authData.messages;
+        }
+      } catch(e) {}
+
+      // Fetch contact messages via admin-delete (service_role, bypasses RLS)
+      try {
+        const msgRes = await fetch(`${SUPABASE_URL}/functions/v1/admin-delete`, {
+          method: 'POST',
+          headers: { 'x-admin-password': adminPassword, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'list_messages' })
+        });
+        if (msgRes.ok) {
+          const msgData = await msgRes.json();
+          if (msgData.messages) allMessages = msgData.messages;
         }
       } catch(e) {}
 

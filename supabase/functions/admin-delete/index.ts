@@ -92,7 +92,18 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { table, id, user_id } = await req.json();
+    const { table, id, user_id, action } = await req.json();
+
+    // List contact messages (service_role bypasses RLS)
+    if (action === "list_messages") {
+      const { data: messages } = await supabase
+        .from("contact_messages")
+        .select("*")
+        .order("created_at", { ascending: false });
+      return new Response(JSON.stringify({ messages: messages || [] }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     if (user_id) {
       const { error: e1 } = await supabase.from("comments").delete().eq("user_id", user_id);
