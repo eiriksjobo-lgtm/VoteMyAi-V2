@@ -1264,7 +1264,7 @@
         localStorage.setItem('sb_token', accessToken);
         window.history.replaceState(null, '', window.location.pathname + window.location.search);
         const redirect = localStorage.getItem('login_redirect');
-        if (redirect && redirect !== '/' && redirect !== window.location.pathname) { localStorage.removeItem('login_redirect'); window.location.href = redirect; return; }
+        if (redirect && redirect.startsWith('/') && !redirect.startsWith('//') && redirect !== '/' && redirect !== window.location.pathname) { localStorage.removeItem('login_redirect'); window.location.href = redirect; return; }
         localStorage.removeItem('login_redirect');
       }
     } else {
@@ -1674,6 +1674,9 @@
     const params = new URLSearchParams(window.location.search);
     const trackParam = params.get('track');
     if (!trackParam) return;
+
+    // E4: Validate trackParam is a UUID before using in querySelector
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(trackParam)) return;
 
     const track = getTrack(trackParam);
     if (!track) return;

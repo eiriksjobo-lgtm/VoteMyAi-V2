@@ -9,7 +9,16 @@ const corsHeaders = {
 // Validation patterns
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const ANON_TOKEN_RE = /^anon_[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const IP_RE = /^[\da-fA-F.:]{3,45}$/;
+
+// F2: Proper IPv4/IPv6 validation
+const IPV4_RE = /^(\d{1,3}\.){3}\d{1,3}$/;
+const IPV6_RE = /^[\da-fA-F:]{2,39}$/;
+function isValidIP(ip: string): boolean {
+  if (IPV4_RE.test(ip)) {
+    return ip.split(".").every((o) => { const n = parseInt(o, 10); return n >= 0 && n <= 255; });
+  }
+  return IPV6_RE.test(ip);
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -50,7 +59,7 @@ Deno.serve(async (req) => {
     // K2: Use only cf-connecting-ip (trusted proxy header, not spoofable)
     const ip_address = req.headers.get("cf-connecting-ip") || "unknown";
 
-    if (ip_address !== "unknown" && !IP_RE.test(ip_address)) {
+    if (ip_address !== "unknown" && !isValidIP(ip_address)) {
       return new Response(
         JSON.stringify({ error: "Ugyldig IP" }),
         { status: 400, headers: corsHeaders }
@@ -151,9 +160,14 @@ Deno.serve(async (req) => {
         { onConflict: "track_id,anon_token" }
       );
 
+    // F4: Explicit error check — detect missing constraint or other upsert failures
     if (upsertErr) {
+      const msg = upsertErr.message || "Kunne ikke lagre rating.";
+      const hint = msg.includes("unique") || msg.includes("constraint")
+        ? "Database constraint missing. Run migration."
+        : msg;
       return new Response(
-        JSON.stringify({ error: "Kunne ikke lagre rating." }),
+        JSON.stringify({ error: hint }),
         { status: 500, headers: corsHeaders }
       );
     }
@@ -162,14 +176,21 @@ Deno.serve(async (req) => {
     const { data: stats, error: statsErr } = await supabase
       .rpc("get_track_stats", { p_track_id: track_id });
 
-    let avg = 0;
-    let count = 0;
-
-    if (!statsErr && stats && stats.length > 0) {
-      avg = parseFloat(stats[0].avg_score) || 0;
-      count = parseInt(stats[0].total_count, 10) || 0;
+    // F5: If RPC fails, don't overwrite tracks with avg=0/count=0
+    if (statsErr || !stats || stats.length === 0) {
+      // Rating was saved, but stats update skipped — return success
+      return new Response(
+        JSON.stringify({
+          success: true,
+          your_score: score,
+          stats_updated: false,
+        }),
+        { status: 200, headers: corsHeaders }
+      );
     }
 
+    const avg = parseFloat(stats[0].avg_score) || 0;
+    const count = parseInt(stats[0].total_count, 10) || 0;
     const roundedAvg = Math.round(avg * 100) / 100;
 
     await supabase

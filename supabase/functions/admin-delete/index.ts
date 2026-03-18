@@ -8,25 +8,46 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-// K4: Timing-safe password comparison
+// F1: Constant-time password comparison (fixed: no length leak)
 function timingSafeEqual(a: string, b: string): boolean {
-  const encoder = new TextEncoder();
-  const bufA = encoder.encode(a);
-  const bufB = encoder.encode(b);
-  if (bufA.byteLength !== bufB.byteLength) {
-    // Compare against self to burn same time, then return false
-    let x = 0;
-    for (let i = 0; i < bufA.byteLength; i++) x |= bufA[i] ^ bufA[i];
-    return false;
+  const enc = new TextEncoder();
+  const bufA = enc.encode(a);
+  const bufB = enc.encode(b);
+  const maxLen = Math.max(bufA.byteLength, bufB.byteLength);
+  let diff = bufA.byteLength ^ bufB.byteLength;
+  for (let i = 0; i < maxLen; i++) {
+    diff |= (bufA[i] || 0) ^ (bufB[i] || 0);
   }
-  let diff = 0;
-  for (let i = 0; i < bufA.byteLength; i++) diff |= bufA[i] ^ bufB[i];
   return diff === 0;
+}
+
+// F3: In-memory rate limiting for admin endpoints
+const adminAttempts = new Map<string, { count: number; resetAt: number }>();
+const ADMIN_MAX_ATTEMPTS = 10;
+const ADMIN_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+
+function checkAdminRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const entry = adminAttempts.get(ip);
+  if (!entry || now > entry.resetAt) {
+    adminAttempts.set(ip, { count: 1, resetAt: now + ADMIN_WINDOW_MS });
+    return true;
+  }
+  entry.count++;
+  return entry.count <= ADMIN_MAX_ATTEMPTS;
 }
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
+  }
+
+  const ip = req.headers.get("cf-connecting-ip") || "unknown";
+  if (!checkAdminRateLimit(ip)) {
+    return new Response(JSON.stringify({ error: "Too many attempts. Try again later." }), {
+      status: 429,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   const password = req.headers.get("x-admin-password");
