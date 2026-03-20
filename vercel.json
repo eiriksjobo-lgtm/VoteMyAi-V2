@@ -20,7 +20,7 @@
         { "type": "host", "value": "votemyai.com" }
       ],
       "destination": "https://www.votemyai.com/:path*",
-      "permanent": true
+      "statusCode": 301
     }
   ],
   "rewrites": [
