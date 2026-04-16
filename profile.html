@@ -117,6 +117,20 @@
       font-family: 'DM Sans', sans-serif; transition: all 0.2s; flex-shrink: 0;
     }
     .btn-delete:hover { background: rgba(248,113,113,0.2); }
+    .btn-share {
+      background: rgba(232,255,71,0.08); border: 1px solid rgba(232,255,71,0.2);
+      color: var(--accent); padding: 6px 12px; border-radius: 6px; cursor: pointer;
+      font-size: 0.7rem; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;
+      font-family: 'DM Sans', sans-serif; transition: all 0.2s; flex-shrink: 0;
+    }
+    .btn-share:hover { background: rgba(232,255,71,0.16); }
+    .btn-submit-track {
+      background: var(--accent); color: var(--bg); border: none; padding: 10px 22px;
+      border-radius: var(--radius-sm); font-weight: 700; font-size: 0.75rem;
+      letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
+      font-family: 'DM Sans', sans-serif; transition: all 0.2s; white-space: nowrap;
+    }
+    .btn-submit-track:hover { box-shadow: 0 4px 20px rgba(232,255,71,0.25); transform: translateY(-1px); }
 
     /* Rated tracks */
     .rated-star { color: var(--accent); font-size: 0.85rem; }
@@ -160,6 +174,7 @@
       .track-item { padding: 12px; gap: 10px; }
       .track-thumb { width: 64px; height: 42px; }
       .track-title { font-size: 0.82rem; }
+      .btn-share { padding: 5px 10px; font-size: 0.62rem; }
       .btn-delete { padding: 5px 10px; font-size: 0.62rem; }
     }
   </style>
@@ -197,6 +212,9 @@
       <button class="btn-save" id="btnSave" onclick="saveName()">Save</button>
     </div>
     <div class="save-status" id="saveStatus"></div>
+    <div id="submitTrackRow" style="display:none; margin-top:16px; padding-top:16px; border-top:1px solid var(--border);">
+      <button class="btn-submit-track" onclick="window.location.href='/submit.html'">+ Submit Track</button>
+    </div>
   </div>
 
   <!-- Stats -->
@@ -256,6 +274,9 @@
     });
     if (!res.ok) { localStorage.removeItem('sb_token'); window.location.href = '/login.html'; return; }
     currentUser = await res.json();
+
+    // Show Submit Track button (own profile)
+    document.getElementById('submitTrackRow').style.display = 'block';
 
     // Profile info
     const displayName = currentUser.user_metadata?.display_name || currentUser.user_metadata?.name || currentUser.email.split('@')[0];
@@ -341,6 +362,7 @@
             <span class="track-rating-score">${avg}</span>
             <span class="track-rating-count">avg</span>
           </div>
+          <button class="btn-share" onclick="shareTrack('${t.id}')">Share</button>
           <button class="btn-delete" onclick="deleteTrack('${t.id}')">Delete</button>
         </div>`;
       }).join('');
@@ -398,6 +420,17 @@
       if (!list.innerHTML) list.innerHTML = '<div class="empty">No ratings yet</div>';
     } catch(e) { document.getElementById('ratingsList').innerHTML = '<div class="empty">Could not load ratings</div>'; }
   }
+
+  // ─── Share Track ───
+  window.shareTrack = async (id) => {
+    const url = window.location.origin + '/?track=' + id;
+    try {
+      await navigator.clipboard.writeText(url);
+      showToast('Link copied!');
+    } catch(e) {
+      showToast('Could not copy link');
+    }
+  };
 
   // ─── Delete Track ───
   window.deleteTrack = async (id) => {
